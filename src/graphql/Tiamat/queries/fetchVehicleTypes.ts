@@ -1,0 +1,26 @@
+import { request, gql } from 'graphql-request';
+
+const fetchVehicleTypesGQL = gql`
+  query VehicleTypes {
+    vehicleTypes {
+      id
+      name {
+        value
+      }
+      length
+      width
+      height
+      deckPlan {
+        id
+        description
+        name {
+          value
+        }
+      }
+    }
+  }
+`;
+
+export const fetchVehicleTypesRequest = (applicationBaseUrl: string, query: string) => {
+  return request(applicationBaseUrl, fetchVehicleTypesGQL);
+};

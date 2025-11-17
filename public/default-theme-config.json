@@ -1,0 +1,29 @@
+{
+  "applicationName": "INANNA",
+  "companyName": "ROR",
+  "palette": {
+    "primary": { "main": "#75ccdd" },
+    "secondary": { "main": "#FA94E0" },
+    "info": { "main": "#ed3e42" },
+    "background": { "default": "#ffffff" },
+    "action": { "hover": "#FECDF2", "active": "#FECDF2" }
+  },
+  "typography": {
+    "fontFamily": "\"Patrick Hand\", \"Helvetica\", \"Arial\", sans-serif",
+    "fontSize": 18
+  },
+  "shape": {
+    "borderRadius": 30
+  },
+  "components": {
+    "MuiButton": {
+      "styleOverrides": {
+        "root": {
+          "textTransform": "uppercase"
+        }
+      }
+    }
+  },
+  "logoUrl": "/assets/inanna-logo.png",
+  "logoHeight": 48
+}
