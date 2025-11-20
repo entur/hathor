@@ -20,7 +20,7 @@ export interface UseDataReturn<T, K extends string> {
   setPage: (page: number) => void;
   setRowsPerPage: (rowsPerPage: number) => void;
   addRow?: (newRow: T) => void;
-  updateRow?: (updatedRow: T) => void;
+  updateRow?: (updatedRow: T, column: ColumnDefinition<T, K>) => void;
 }
 
 // The parameters for the useTableLogic hook

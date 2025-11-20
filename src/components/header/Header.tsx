@@ -4,7 +4,7 @@ import Menu from '../Menu.tsx';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
 import DesktopSearchBar from '../search/DesktopSearchBar.tsx';
 import MobileSearchBar from '../search/MobileSearchBar.tsx';
@@ -18,16 +18,16 @@ export default function Header() {
   const [searchActive, setSearchActive] = useState(false);
 
   const auth = useAuth();
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
-  const handleMobileSearchUIClose = () => {
-    setSearchActive(false);
-  };
+  // const handleMobileSearchUIClose = () => {
+  //   setSearchActive(false);
+  // };
 
   return (
     <>
@@ -42,14 +42,14 @@ export default function Header() {
         >
           {isMobile && searchActive ? (
             <MobileSearchBar
-              onCloseRequest={handleMobileSearchUIClose}
-              placeholder={t('search.searchPlaceholder')}
+              // onCloseRequest={handleMobileSearchUIClose}
+              // placeholder={t('search.searchPlaceholder')}
             />
           ) : (
             <>
               <HeaderBranding />
               {!isHomePage && !isMobile && (
-                <DesktopSearchBar placeholder={t('search.searchPlaceholder')} />
+                <DesktopSearchBar />
               )}
               <HeaderActions
                 isMobile={isMobile}

@@ -167,7 +167,7 @@ export default function GenericDataEditPage<T, K extends string>({
             }
             if (event === 'updated') {
               // Here you can handle the updated item if needed
-              updateRow?.(item);
+              updateRow?.(item, column);
             }
           }}
         />

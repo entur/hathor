@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { SearchResultItem, SearchContextViewType } from '../components/search/searchTypes';
-import type { Order } from '../data/vehicle-types/useStopPlaces.ts';
+import type { Order } from '../components/data/dataTableTypes';
 
 interface UseDataViewTableLogicParams<T, K extends string> {
   allData: T[] | null;

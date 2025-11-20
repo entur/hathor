@@ -6,6 +6,7 @@ interface Props<T, K extends string> {
   item: T;
   colSpan: number;
   columns: ColumnDefinition<T, K>[];
+  handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
 }
 
 /**
@@ -17,6 +18,7 @@ export default function MobileDetailRow<T, K extends string>({
   item,
   colSpan,
   columns,
+  handleColumnEvent
 }: Props<T, K>) {
   if (columns.length === 0) {
     return null;
@@ -40,7 +42,7 @@ export default function MobileDetailRow<T, K extends string>({
                 <Typography variant="subtitle2" component="div" gutterBottom>
                   <strong>{col.headerLabel}</strong>
                 </Typography>
-                <Box>{col.renderCell(item)}</Box>
+                <Box>{col.renderCell(item, (event, item) => handleColumnEvent && handleColumnEvent(event, col, item))}</Box>
               </Box>
             ))}
           </Box>

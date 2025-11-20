@@ -1,12 +1,13 @@
 import { Box } from '@mui/material';
-import SearchAutocomplete from './SearchAutocomplete';
+// import SearchAutocomplete from './SearchAutocomplete';
 import SearchFilterControl from './SearchFilterControl';
 
-interface DesktopSearchBarProps {
-  placeholder: string;
-}
+// interface DesktopSearchBarProps {
+//   placeholder: string;
+// }
 
-export default function DesktopSearchBar({ placeholder }: DesktopSearchBarProps) {
+// export default function DesktopSearchBar({ placeholder }: DesktopSearchBarProps) {
+export default function DesktopSearchBar() {
   return (
     <Box
       sx={{
@@ -17,9 +18,9 @@ export default function DesktopSearchBar({ placeholder }: DesktopSearchBarProps)
         gap: 1,
       }}
     >
-      <Box sx={{ width: '100%', maxWidth: 400 }}>
+      {/* <Box sx={{ width: '100%', maxWidth: 400 }}>
         <SearchAutocomplete placeholder={placeholder} />
-      </Box>
+      </Box> */}
       <SearchFilterControl />
     </Box>
   );

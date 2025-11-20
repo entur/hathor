@@ -21,6 +21,6 @@ const fetchVehicleTypesGQL = gql`
   }
 `;
 
-export const fetchVehicleTypesRequest = (applicationBaseUrl: string, query: string) => {
+export const fetchVehicleTypesRequest = (applicationBaseUrl: string) => {
   return request(applicationBaseUrl, fetchVehicleTypesGQL);
 };

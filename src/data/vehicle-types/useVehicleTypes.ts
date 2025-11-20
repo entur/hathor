@@ -20,7 +20,7 @@ export function useVehicleTypes() {
 
   useEffect(() => {
     if (!applicationBaseUrl) return;
-    fetchVehicleTypes(applicationBaseUrl, '')
+    fetchVehicleTypes(applicationBaseUrl)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
       })

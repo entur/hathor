@@ -1,6 +1,5 @@
 import { TableCell, TableHead, TableRow, TableSortLabel } from '@mui/material';
-import type { Order } from '../../data/vehicle-types/useStopPlaces.ts';
-import type { ColumnDefinition } from './dataTableTypes.ts';
+import type { ColumnDefinition, Order } from './dataTableTypes.ts';
 
 interface Props<T, K extends string> {
   useCompactView: boolean;

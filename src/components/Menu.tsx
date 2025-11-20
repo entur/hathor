@@ -35,7 +35,6 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 const menuItems = [
   { textKey: 'home', path: '/', iconKey: 'home' },
   { textKey: 'Vehicle Types', path: '/vehicle-type', iconKey: 'data' },
-  { textKey: 'Import vehicles & types', path: '/vehicle-import', iconKey: 'data' },
 ];
 
 interface SideMenuProps {
