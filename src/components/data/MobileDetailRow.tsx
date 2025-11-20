@@ -18,7 +18,7 @@ export default function MobileDetailRow<T, K extends string>({
   item,
   colSpan,
   columns,
-  handleColumnEvent
+  handleColumnEvent,
 }: Props<T, K>) {
   if (columns.length === 0) {
     return null;
@@ -42,7 +42,12 @@ export default function MobileDetailRow<T, K extends string>({
                 <Typography variant="subtitle2" component="div" gutterBottom>
                   <strong>{col.headerLabel}</strong>
                 </Typography>
-                <Box>{col.renderCell(item, (event, item) => handleColumnEvent && handleColumnEvent(event, col, item))}</Box>
+                <Box>
+                  {col.renderCell(
+                    item,
+                    (event, item) => handleColumnEvent && handleColumnEvent(event, col, item)
+                  )}
+                </Box>
               </Box>
             ))}
           </Box>

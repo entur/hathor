@@ -42,15 +42,13 @@ export default function Header() {
         >
           {isMobile && searchActive ? (
             <MobileSearchBar
-              // onCloseRequest={handleMobileSearchUIClose}
-              // placeholder={t('search.searchPlaceholder')}
+            // onCloseRequest={handleMobileSearchUIClose}
+            // placeholder={t('search.searchPlaceholder')}
             />
           ) : (
             <>
               <HeaderBranding />
-              {!isHomePage && !isMobile && (
-                <DesktopSearchBar />
-              )}
+              {!isHomePage && !isMobile && <DesktopSearchBar />}
               <HeaderActions
                 isMobile={isMobile}
                 isHomePage={isHomePage}

@@ -30,7 +30,7 @@ export type NeTExPassengerCapacity = {
 
 export type NeTExVehicleType = {
   id: string;
-  PassengerCapacity: NeTExPassengerCapacity
+  PassengerCapacity: NeTExPassengerCapacity;
   Name: {
     value: string;
   };

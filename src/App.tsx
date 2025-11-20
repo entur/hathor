@@ -10,7 +10,6 @@ import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
 
-
 export default function App() {
   const { useCustomFeatures } = useCustomization();
 
