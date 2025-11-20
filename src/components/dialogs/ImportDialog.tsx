@@ -10,6 +10,7 @@ import {
   fetchVehicleFromAutosys,
   importVehicle,
 } from '../../data/vehicle-imports/vehicleImportServices';
+import type { NeTExResourceFrame } from '../../data/vehicle-types/vehicleTypeTypes';
 import { useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 
@@ -26,7 +27,7 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
   const [operationalId, setOperationalId] = useState('');
   const [step, setStep] = useState(1);
   const [neTExXML, setNeTExXML] = useState('');
-  const [NeTExResourceFrame, setNeTExResourceFrame] = useState<any>(null);
+  const [NeTExResourceFrame, setNeTExResourceFrame] = useState<NeTExResourceFrame | null>(null);
 
   const onFetch = async () => {
     const retXML = await fetchVehicleFromAutosys(

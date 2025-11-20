@@ -22,3 +22,48 @@ export type VehicleType = {
 export type VehicleTypeContext = {
   vehicleTypes: VehicleType[];
 };
+
+export type NeTExPassengerCapacity = {
+  StandingCapacity?: number;
+  SeatingCapacity?: number;
+};
+
+export type NeTExVehicleType = {
+  id: string;
+  PassengerCapacity: NeTExPassengerCapacity
+  Name: {
+    value: string;
+  };
+  Length: number;
+  Width: number;
+  Height: number;
+  FuelTypes?: string;
+  DeckPlan?: {
+    id: string;
+    Description?: string;
+    Name?: {
+      value: string;
+    };
+  };
+};
+
+export type NeTExVehicleTypes = {
+  VehicleType: NeTExVehicleType;
+};
+
+export type NeTExResourceFrame = {
+  id: string;
+  vehicleTypes: NeTExVehicleTypes;
+  deckPlans?: {
+    DeckPlan: {
+      id: string;
+      Description?: string;
+      Name?: string;
+    };
+  };
+  vehicles?: {
+    Vehicle: {
+      RegistrationNumber: string;
+    };
+  };
+};
