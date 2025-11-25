@@ -8,6 +8,12 @@ export type DeckPlan = {
   name?: Name;
 };
 
+export type Vehicle = {
+  id: string;
+  registrationNumber: string;
+  version: number;
+};
+
 export type VehicleType = {
   id: string;
   version: number;
@@ -16,6 +22,7 @@ export type VehicleType = {
   length: number;
   width: number;
   height: number;
+  vehicles?: Vehicle[];
   __typename: string;
 };
 

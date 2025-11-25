@@ -17,7 +17,12 @@ const fetchVehicleTypesGQL = gql`
           value
         }
       }
-    }
+      vehicles {
+        id
+        registrationNumber
+        version
+      }
+  }
   }
 `;
 

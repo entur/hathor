@@ -46,6 +46,14 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     renderCell: item => item.deckPlan?.name?.value,
     display: 'always',
   },
+  {
+    id: 'vehicles',
+    headerLabel: 'Vehicles',
+    isSortable: false,
+    renderCell: item => item.vehicles?.map(vehicle => vehicle.registrationNumber).join(', ') || '',
+    display: 'always',
+  },
+
 ];
 
 /**
