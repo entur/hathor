@@ -1,5 +1,16 @@
 {
   "projects": {
-    "default": "ent-hathor-dev"
-  }
+    "dev": "ent-hathor-dev"
+
+  },
+  "targets": {
+    "ent-hathor-dev": {
+      "hosting": {
+        "dev": [
+          "ent-hathor-dev"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
