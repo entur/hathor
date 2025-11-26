@@ -19,8 +19,8 @@ jobs:
           name: dist
           path: dist
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Copy favicon
-        run: cp .github/environments/nsr-d.ico dist/favicon.ico
+      # - name: Copy favicon
+      #   run: cp .github/environments/nsr-d.ico dist/favicon.ico
       - name: Copy bootstrap config
         run: cp .github/environments/config-dev.json dist/bootstrap.json
       - uses: FirebaseExtended/action-hosting-deploy@v0
@@ -28,7 +28,7 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.SERVICE_ACCOUNT }}'
           channelId: live
-          projectId: ent-ror-hathor-dev
+          projectId: ent-hathor-dev
           target: dev
 
 
