@@ -26,7 +26,7 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.SERVICE_ACCOUNT }}'
+          firebaseServiceAccount: '${{ env.SERVICE_ACCOUNT }}'
           channelId: live
           projectId: ent-hathor-dev
           target: dev
