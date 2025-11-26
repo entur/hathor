@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [Build]
+    types:
+      - completed
+
+jobs:
+  deploy_dev:
+    runs-on: ubuntu-latest
+    environment: 'dev'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          name: build
+          path: build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy favicon
+        run: cp .github/environments/nsr-d.ico build/favicon.ico
+      - name: Copy bootstrap config
+        run: cp .github/environments/config-dev.json build/bootstrap.json
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: ent-ror-hathor-dev
+          target: dev
+
+
