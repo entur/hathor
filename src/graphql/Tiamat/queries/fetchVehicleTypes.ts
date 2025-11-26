@@ -22,7 +22,7 @@ const fetchVehicleTypesGQL = gql`
         registrationNumber
         version
       }
-  }
+    }
   }
 `;
 

@@ -53,7 +53,6 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     renderCell: item => item.vehicles?.map(vehicle => vehicle.registrationNumber).join(', ') || '',
     display: 'always',
   },
-
 ];
 
 /**
