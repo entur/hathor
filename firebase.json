@@ -37,11 +37,20 @@
           ]
         },
         {
-          "source": "/index.html",
+          "source": "/**",
           "headers": [
             {
-              "key": "Content-Type",
-              "value": "text/html; charset=UTF-8"
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|js|map|css|eot|otf|ttf|ttc|woff|woff2|ico|font.css)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "max-age=31536000"
             }
           ]
         }
