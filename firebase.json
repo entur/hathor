@@ -1,5 +1,5 @@
 {
-  "hosting": [ 
+  "hosting": [
     {
       "target": "dev",
       "public": "build",
