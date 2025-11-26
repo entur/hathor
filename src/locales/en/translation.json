@@ -43,9 +43,9 @@
   "settings.enableCustomTheme": "Enable custom theme & icons",
 
   "home": "Home",
-  "home.welcomeMessage": "Welcome to Inanna",
-  "home.description": "Inanna is your React starter kit for Entur Open Source applications— providing a consistent, Material-UI based design system and out-of-the-box support for authentication, routing, and common data workflows.",
-  "home.features.title": "With Inanna you get:",
+  "home.welcomeMessage": "Welcome to Hathor",
+  "home.description": "Hathor is your React starter kit for Entur Open Source applications— providing a consistent, Material-UI based design system and out-of-the-box support for authentication, routing, and common data workflows.",
+  "home.features.title": "With Hathor you get:",
 
   "home.features.layout.headline": "Responsive Layout",
   "home.features.layout.description": "A responsive AppBar + Drawer layout, with built-in search and user menus.",

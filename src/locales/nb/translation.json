@@ -44,9 +44,9 @@
   "settings.enableCustomTheme": "Aktiver egendefinert tema & ikoner",
 
   "home": "Hjem",
-  "home.welcomeMessage": "Velkommen til Inanna",
-  "home.description": "Inanna er ditt React-startsett for Entur Open Source-applikasjoner – og tilbyr et konsistent, Material-UI-basert designsystem og umiddelbar støtte for autentisering, ruting og vanlige dataflyter.",
-  "home.features.title": "Med Inanna får du:",
+  "home.welcomeMessage": "Velkommen til Hathor",
+  "home.description": "Hathor er ditt React-startsett for Entur Open Source-applikasjoner – og tilbyr et konsistent, Material-UI-basert designsystem og umiddelbar støtte for autentisering, ruting og vanlige dataflyter.",
+  "home.features.title": "Med Hathor får du:",
 
   "home.features.layout.headline": "Responsivt oppsett",
   "home.features.layout.description": "Et responsivt header og meny oppsett, med innebygd søk.",

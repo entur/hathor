@@ -1,12 +1,12 @@
-# Inanna
+# Hathor
 
 A Structured Starting Point for Open-Source Frontend Applications.
 
 ---
 
-## What is Inanna?
+## What is Hathor?
 
-**Inanna** is an open-source starter template designed to streamline the creation of structured, maintainable, themeable and scalable frontend applications. Leveraging modern best practices, Inanna provides a robust foundational framework that developers can easily customize to kickstart their projects.
+**Hathor** is an open-source starter template designed to streamline the creation of structured, maintainable, themeable and scalable frontend applications. Leveraging modern best practices, Hathor provides a robust foundational framework that developers can easily customize to kickstart their projects.
 
 ## Core Technologies
 
@@ -37,14 +37,14 @@ A Structured Starting Point for Open-Source Frontend Applications.
 
 ---
 
-## How to Use Inanna in Your Project
+## How to Use Hathor in Your Project
 
 ## Getting Started
 
 * **Clone the repository:**
 
   ```bash
-  git clone https://github.com/entur/inanna.git
+  git clone https://github.com/entur/hathor.git
   ```
 
 * **Install dependencies:**
@@ -93,7 +93,7 @@ Your application can switch between a default theme and a custom theme. This beh
     * If enabled, fetches `/custom-theme-config.json`.
     * Otherwise or on failure, fetches `/default-theme-config.json`.
 
-* **`public/default-theme-config.json`:** Default Inanna theme settings.
+* **`public/default-theme-config.json`:** Default Hathor theme settings.
 
 * **`public/custom-theme-config.json`:** Define or override any MUI theme options here.
 
@@ -239,7 +239,7 @@ Extend MUI’s theme object in `src/types/theme-config.d.ts` for additional cust
       {
         "applicationName": "INANNA",
         "companyName": "ROR",
-        "logoUrl": "/assets/inanna-logo.png",
+        "logoUrl": "/assets/hathor-logo.png",
         "logoHeight": 48,
         "customSpacing": { "small": 8, "medium": 16, "large": "32px" },
         "brandColors": { "accentFocus": "#FFD700" }
@@ -288,7 +288,7 @@ The `createThemeFromConfig` utility in `src/utils/createThemeFromConfig.ts` will
 
 ---
 
-By following these instructions, you can fully customize the Inanna application’s theme, icons, and extend its theming system in a type-safe manner.
+By following these instructions, you can fully customize the Hathor application’s theme, icons, and extend its theming system in a type-safe manner.
 
 
 # User Guide: Adding a New Data Table Page
