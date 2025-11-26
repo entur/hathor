@@ -6,4 +6,9 @@ export default defineConfig({
   server: {
     port: process.env.PORT ? Number(process.env.PORT) : 5000,
   },
+  publicDir: 'public',
+  build: {
+    outDir: 'build',
+    sourcemap: true,
+  },
 });

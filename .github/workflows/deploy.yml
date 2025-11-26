@@ -16,13 +16,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           run-id: ${{ github.event.workflow_run.id }}
-          name: dist
-          path: dist
+          name: build
+          path: build
           github-token: ${{ secrets.GITHUB_TOKEN }}
       # - name: Copy favicon
-      #   run: cp .github/environments/nsr-d.ico dist/favicon.ico
+      #   run: cp .github/environments/nsr-d.ico build/favicon.ico
       - name: Copy bootstrap config
-        run: cp .github/environments/config-dev.json dist/bootstrap.json
+        run: cp .github/environments/config-dev.json build/bootstrap.json
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
