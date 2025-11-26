@@ -23,6 +23,8 @@ jobs:
       #   run: cp .github/environments/nsr-d.ico build/favicon.ico
       - name: Copy config for this environment
         run: cp .github/environments/config-dev.json build/config.json
+      - name: Copy theme
+        run: cp .github/environments/theme-dev.json build/theme.json
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

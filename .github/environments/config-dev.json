@@ -11,7 +11,7 @@
     "extraQueryParams": {
       "audience": "https://ror.api.dev.entur.io"
     },
-    "redirect_uri": "http://localhost:5000"
+    "redirect_uri": "https://ent-hathor-dev.firebaseapp.com/"
   },
-  "themeFilePath": "/theme-dev.json"
+  "themeFilePath": "/theme.json"
 }
