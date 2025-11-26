@@ -35,7 +35,7 @@
               "value": "strict-origin-when-cross-origin"
             }
           ]
-        }
+        },
         {
           "source": "/index.html",
           "headers": [
