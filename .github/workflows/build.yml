@@ -35,7 +35,7 @@ jobs:
         name: List the state of node modules
         continue-on-error: true
         run: npm list
-      - run: npm ci --legacy-peer-deps
+      - run: npm ci npm r--legacy-peer-deps
       - run: npm run check
       # - run: npm run test -- run --coverage --coverage.reporter=lcov --reporter=vitest-sonar-reporter --outputFile.vitest-sonar-reporter=test-report.xml --reporter=default
       # - name: SonarQube Scan
@@ -62,8 +62,8 @@ jobs:
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: dist
           path: |
-            build
+            dist
       - name: Push version update to GitHub
         run: git push && git push --tags
