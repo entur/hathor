@@ -1,11 +1,8 @@
 import { Container, Box, Typography, Paper, useTheme, Grid } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
-import MapIcon from '@mui/icons-material/Map';
-import StorageIcon from '@mui/icons-material/Storage';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import PaletteIcon from '@mui/icons-material/Palette';
-import TranslateIcon from '@mui/icons-material/Translate';
+import { EmojiTransportation } from '@mui/icons-material';
+
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -13,35 +10,10 @@ export default function HomePage() {
 
   const features = [
     {
-      icon: <ViewQuiltIcon fontSize="large" color="primary" />,
-      headlineKey: 'home.features.layout.headline',
-      descriptionKey: 'home.features.layout.description',
-    },
-    {
-      icon: <PaletteIcon fontSize="large" color="primary" />,
-      headlineKey: 'home.features.ui.headline',
-      descriptionKey: 'home.features.ui.description',
-    },
-    {
-      icon: <TranslateIcon fontSize="large" color="primary" />,
-      headlineKey: 'home.features.localization.headline',
-      descriptionKey: 'home.features.localization.description',
-    },
-    {
-      icon: <MapIcon fontSize="large" color="primary" />,
-      headlineKey: 'home.features.map.headline',
-      descriptionKey: 'home.features.map.description',
-    },
-    {
-      icon: <StorageIcon fontSize="large" color="primary" />,
-      headlineKey: 'home.features.data.headline',
-      descriptionKey: 'home.features.data.description',
-    },
-    {
-      icon: <LockOpenIcon fontSize="large" color="primary" />,
-      headlineKey: 'home.features.auth.headline',
-      descriptionKey: '',
-      isAuthItem: true,
+      icon: <EmojiTransportation fontSize="large" color="primary" />,
+      headlineKey: 'home.features.vehicletypes.headline',
+      descriptionKey: 'home.features.vehicletypes.description',
+      path: '/vehicle-type',
     },
   ];
 
@@ -96,11 +68,13 @@ export default function HomePage() {
                     alignItems: 'center',
                     height: '100%',
                     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                    cursor: feature.path ? 'pointer' : 'default',
                     '&:hover': {
                       transform: 'translateY(-5px)',
                       boxShadow: theme.shadows[6],
                     },
                   }}
+                  {...(feature.path ? { component: Link, to: feature.path } : {})}
                 >
                   <Box sx={{ mb: 2, color: theme.palette.primary.main }}>{feature.icon}</Box>
                   <Typography
