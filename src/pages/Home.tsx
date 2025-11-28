@@ -86,15 +86,7 @@ export default function HomePage() {
                     {t(feature.headlineKey)}
                   </Typography>
                   <Typography variant="body1" color="text.secondary" align="center">
-                    {feature.isAuthItem ? (
-                      <>
-                        {t('home.features.auth.description_prefix')}
-                        <code>useAuth</code>
-                        {t('home.features.auth.description_suffix')}
-                      </>
-                    ) : (
-                      t(feature.descriptionKey)
-                    )}
+                    {t(feature.descriptionKey)}
                   </Typography>
                 </Paper>
               </Grid>
