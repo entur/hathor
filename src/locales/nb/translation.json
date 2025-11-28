@@ -46,11 +46,10 @@
   "home": "Hjem",
   "home.welcomeMessage": "Velkommen til Materiellregister",
   "home.description": "Materillregisteret inneholder informasjon om kjøretøy som brukes i kollektivtransport i Norge. Det gir transportoperatører, myndigheter og utviklere tilgang til oppdaterte data om båter, ferger, busser, trikker, tog og andre kjøretøy.",
-   "home.features.title": "Velg funksjon",
+  "home.features.title": "Velg funksjon",
 
   "home.features.vehicletypes.headline": "Kjøretøytyper",
   "home.features.vehicletypes.description": "En liste over kjøretøytyper som brukes i kollektivtransport.",
- 
 
   "map.layers.title": "Kartlag",
   "map.layers.circles": "Sirkler",

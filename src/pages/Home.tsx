@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EmojiTransportation } from '@mui/icons-material';
 
-
 export default function HomePage() {
   const { t } = useTranslation();
   const theme = useTheme();
