@@ -3,6 +3,7 @@ import { useConfig } from '../../contexts/ConfigContext.tsx';
 import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
 import { fetchVehicleTypes } from './fetchVehicleTypes.tsx';
 import type { Order } from '../../components/data/dataTableTypes.ts';
+import { useAuth } from '../../auth/authUtils.ts';
 
 export type OrderBy = 'name' | 'id' | 'length' | 'height' | 'width' | 'deckPlanName';
 
@@ -17,18 +18,26 @@ export function useVehicleTypes() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { applicationBaseUrl } = useConfig();
   const [error, setError] = useState<string | null>(null);
+  const { getAccessToken } = useAuth();
 
   useEffect(() => {
     if (!applicationBaseUrl) return;
-    fetchVehicleTypes(applicationBaseUrl)
-      .then((ctx: VehicleTypeContext) => {
-        setData(ctx.vehicleTypes);
-      })
-      .catch(() => {
-        setError('Failed to fetch data');
-      })
-      .finally(() => setLoading(false));
-  }, [applicationBaseUrl]);
+    async function fetchData() {
+      const token = await getAccessToken();
+      if (!token) {
+        throw new Error('You must be authenticated to fetch vehicle types');
+      }
+      fetchVehicleTypes(applicationBaseUrl || '', token)
+        .then((ctx: VehicleTypeContext) => {
+          setData(ctx.vehicleTypes);
+        })
+        .catch(() => {
+          setError('Failed to fetch data');
+        })
+        .finally(() => setLoading(false));
+    }
+    fetchData();
+  }, [applicationBaseUrl, getAccessToken]);
 
   const handleRequestSort = (property: OrderBy) => {
     const isAsc = orderBy === property && order === 'asc';

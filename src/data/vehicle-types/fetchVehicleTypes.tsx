@@ -4,9 +4,10 @@ import type { VehicleTypeContext } from './vehicleTypeTypes.ts';
 let fetchedVehicleTypes: VehicleTypeContext | undefined = undefined;
 
 export const fetchVehicleTypes = async (
-  applicationBaseUrl: string
+  applicationBaseUrl: string,
+  token: string
 ): Promise<VehicleTypeContext> => {
-  fetchedVehicleTypes = await fetchVehicleTypesRequest(applicationBaseUrl);
+  fetchedVehicleTypes = await fetchVehicleTypesRequest(applicationBaseUrl, token);
 
   return Object.assign({}, fetchedVehicleTypes);
 };

@@ -13,6 +13,7 @@ import {
 import type { NeTExResourceFrame } from '../../data/vehicle-types/vehicleTypeTypes';
 import { useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
+import { useAuth } from '../../auth';
 
 interface ImportDialogProps {
   open: boolean;
@@ -28,11 +29,17 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
   const [step, setStep] = useState(1);
   const [neTExXML, setNeTExXML] = useState('');
   const [NeTExResourceFrame, setNeTExResourceFrame] = useState<NeTExResourceFrame | null>(null);
+  const { getAccessToken } = useAuth();
 
   const onFetch = async () => {
+    const token = await getAccessToken();
+    if (!token) {
+      throw new Error('You must be authenticated to import vehicle data');
+    }
     const retXML = await fetchVehicleFromAutosys(
       applicationGetAutosysUrl || '',
-      registrationNumber
+      registrationNumber,
+      token
     );
 
     setNeTExXML(retXML);
@@ -49,7 +56,11 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
   };
 
   const onImport = async () => {
-    await importVehicle(applicationImportBaseUrl || '', neTExXML);
+    const token = await getAccessToken();
+    if (!token) {
+      throw new Error('You must be authenticated to import vehicle data');
+    }
+    await importVehicle(applicationImportBaseUrl || '', neTExXML, token);
     setStep(1);
     setRegistrationNumber('');
     setOperationalId('');

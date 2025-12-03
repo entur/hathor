@@ -26,6 +26,8 @@ const fetchVehicleTypesGQL = gql`
   }
 `;
 
-export const fetchVehicleTypesRequest = (applicationBaseUrl: string) => {
-  return request(applicationBaseUrl, fetchVehicleTypesGQL);
+export const fetchVehicleTypesRequest = (applicationBaseUrl: string, token: string) => {
+  return request(applicationBaseUrl, fetchVehicleTypesGQL, undefined, {
+    Authorization: `Bearer ${token}`,
+  });
 };
