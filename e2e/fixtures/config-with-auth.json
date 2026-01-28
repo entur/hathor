@@ -1,0 +1,17 @@
+{
+  "applicationBaseUrl": "http://localhost:37999/services/vehicles/graphql",
+  "applicationGetAutosysUrl": "http://localhost:37999/services/vehicles/autosys?registrationNumber=",
+  "applicationImportBaseUrl": "http://localhost:37999/services/vehicles/netex",
+  "applicationEnv": "test",
+  "claimsNamespace": "https://ror.entur.io/role_assignments",
+  "preferredNameNamespace": "https://ror.entur.io/preferred_name",
+  "oidcConfig": {
+    "authority": "https://partner.dev.entur.org",
+    "client_id": "0gQVx7xpSkg7lJDYuewMSr1sXKr7OJ3z",
+    "extraQueryParams": {
+      "audience": "https://api.dev.entur.io"
+    },
+    "redirect_uri": "http://localhost:5000"
+  },
+  "themeFilePath": "/theme-dev.json"
+}
