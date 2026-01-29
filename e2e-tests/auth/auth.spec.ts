@@ -14,8 +14,8 @@ const APP_CSS_ID = '.app-content';
 test.describe('Authentication', () => {
   test.beforeAll(async () => {
     // Ensure config with oidcConfig is in place
-    const authConfig = path.join(__dirname, 'fixtures', 'config-with-auth.json');
-    const targetConfig = path.join(__dirname, '..', 'public', 'config.json');
+    const authConfig = path.join(__dirname, '..', 'fixtures', 'config-with-auth.json');
+    const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
     fs.copyFileSync(authConfig, targetConfig);
   });
 
