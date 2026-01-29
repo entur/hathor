@@ -33,9 +33,6 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
 
   const onFetch = async () => {
     const token = await getAccessToken();
-    if (!token) {
-      throw new Error('You must be authenticated to import vehicle data');
-    }
     const retXML = await fetchVehicleFromAutosys(
       applicationGetAutosysUrl || '',
       registrationNumber,
@@ -57,9 +54,6 @@ export default function ImportDialog({ open, onClose }: ImportDialogProps) {
 
   const onImport = async () => {
     const token = await getAccessToken();
-    if (!token) {
-      throw new Error('You must be authenticated to import vehicle data');
-    }
     await importVehicle(applicationImportBaseUrl || '', neTExXML, token);
     setStep(1);
     setRegistrationNumber('');

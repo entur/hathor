@@ -1,6 +1,12 @@
 import { useCallback } from 'react';
-import { useAuth as useOidcAuth } from 'react-oidc-context';
+import { useAuth as useOidcAuth, type AuthContextProps } from 'react-oidc-context';
 import { useConfig } from '../contexts/ConfigContext.tsx';
+
+export type AccessToken = string | null;
+
+export function authHeader(token: AccessToken): Record<string, string> {
+  return token !== null ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export interface Auth {
   isLoading: boolean;
@@ -9,46 +15,43 @@ export interface Auth {
     name?: string;
   };
   roleAssignments?: string[] | null;
-  getAccessToken: () => Promise<string>;
+  getAccessToken: () => Promise<AccessToken>;
   logout: ({ returnTo }: { returnTo?: string }) => Promise<void>;
   login: (redirectUri?: string) => Promise<void>;
 }
 
 export const useAuth = (): Auth => {
-  const { isLoading, isAuthenticated, user, signoutRedirect, signinRedirect } = useOidcAuth();
+  const oidcAuth = useOidcAuth() as AuthContextProps | undefined;
 
   const { claimsNamespace, preferredNameNamespace } = useConfig();
 
-  const getAccessToken = useCallback(() => {
-    return new Promise<string>((resolve, reject) => {
-      const accessToken = user?.access_token;
-      if (accessToken) {
-        resolve(accessToken);
-      } else {
-        reject();
-      }
-    });
-  }, [user]);
+  const getAccessToken = useCallback((): Promise<AccessToken> => {
+    return Promise.resolve(oidcAuth?.user?.access_token ?? null);
+  }, [oidcAuth?.user]);
 
   const logout = useCallback(
     ({ returnTo }: { returnTo?: string }) => {
-      return signoutRedirect({ post_logout_redirect_uri: returnTo });
+      if (!oidcAuth) return Promise.resolve();
+      return oidcAuth.signoutRedirect({ post_logout_redirect_uri: returnTo });
     },
-    [signoutRedirect]
+    [oidcAuth],
   );
 
   const login = useCallback(
-    (redirectUri?: string) => signinRedirect({ redirect_uri: redirectUri }),
-    [signinRedirect]
+    (redirectUri?: string) => {
+      if (!oidcAuth) return Promise.resolve();
+      return oidcAuth.signinRedirect({ redirect_uri: redirectUri });
+    },
+    [oidcAuth],
   );
 
   return {
-    isLoading,
-    isAuthenticated,
+    isLoading: oidcAuth?.isLoading ?? false,
+    isAuthenticated: oidcAuth?.isAuthenticated ?? false,
     user: {
-      name: user?.profile[preferredNameNamespace!] as string,
+      name: oidcAuth?.user?.profile[preferredNameNamespace!] as string,
     },
-    roleAssignments: user?.profile[claimsNamespace!] as string[],
+    roleAssignments: oidcAuth?.user?.profile[claimsNamespace!] as string[],
     getAccessToken,
     logout,
     login,

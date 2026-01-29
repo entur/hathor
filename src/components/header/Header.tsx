@@ -4,6 +4,7 @@ import Menu from '../Menu.tsx';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
+import { useConfig } from '../../contexts/ConfigContext.tsx';
 // import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
 import DesktopSearchBar from '../search/DesktopSearchBar.tsx';
@@ -18,6 +19,7 @@ export default function Header() {
   const [searchActive, setSearchActive] = useState(false);
 
   const auth = useAuth();
+  const { oidcConfig } = useConfig();
   // const { t } = useTranslation();
 
   const theme = useTheme();
@@ -57,6 +59,7 @@ export default function Header() {
                 onSettingsIconClick={() => setSettingsOpen(true)}
                 onMenuIconClick={() => setDrawerOpen(o => !o)}
                 isAuthenticated={auth.isAuthenticated}
+                authConfigured={!!oidcConfig}
               />
             </>
           )}

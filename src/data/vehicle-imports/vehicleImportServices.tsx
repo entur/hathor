@@ -1,13 +1,13 @@
+import { authHeader, type AccessToken } from '../../auth';
+
 export const fetchVehicleFromAutosys = async (
   applicationGetAutosysUrl: string,
   registrationNumber: string,
-  token: string
+  token: AccessToken
 ): Promise<string> => {
   const response = await fetch(`${applicationGetAutosysUrl}${registrationNumber}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: authHeader(token),
   });
   if (!response.ok) {
     throw new Error(`Error fetching vehicle data: ${response.statusText}`);
@@ -19,13 +19,13 @@ export const fetchVehicleFromAutosys = async (
 export const importVehicle = async (
   applicationImportBaseUrl: string,
   vehicleData: string,
-  token: string
+  token: AccessToken
 ): Promise<string> => {
   const response = await fetch(`${applicationImportBaseUrl}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
-      Authorization: `Bearer ${token}`,
+      ...authHeader(token),
     },
     body: vehicleData,
   });

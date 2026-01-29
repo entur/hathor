@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { useAuth as useOidcAuth } from 'react-oidc-context';
+import { useAuth as useOidcAuth, type AuthContextProps } from 'react-oidc-context';
 import { useAuth } from '../auth';
 
 interface SessionContextType {
@@ -11,10 +11,13 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [isSessionExpired, setSessionExpired] = useState(false);
-  const { events } = useOidcAuth();
+  const oidcAuth = useOidcAuth() as AuthContextProps | undefined;
   const { login, isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!oidcAuth?.events) return;
+    const { events } = oidcAuth;
+
     const onAccessTokenExpired = () => {
       console.log('Access token expired, user session is considered expired.');
       if (isAuthenticated) {
@@ -36,7 +39,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       events.removeAccessTokenExpired(onAccessTokenExpired);
       events.removeSilentRenewError(onSilentRenewError);
     };
-  }, [events, isAuthenticated]);
+  }, [oidcAuth?.events, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && isSessionExpired) {

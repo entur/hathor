@@ -4,13 +4,17 @@ import { useConfig } from '../contexts/ConfigContext.tsx';
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { oidcConfig } = useConfig();
 
+  if (!oidcConfig) {
+    return <>{children}</>;
+  }
+
   return (
     <OidcAuthProvider
-      {...oidcConfig!}
+      {...oidcConfig}
       onSigninCallback={() => {
         window.history.replaceState({}, document.title, window.location.pathname);
       }}
-      redirect_uri={oidcConfig?.redirect_uri || window.location.origin + import.meta.env.BASE_URL}
+      redirect_uri={oidcConfig.redirect_uri || window.location.origin + import.meta.env.BASE_URL}
     >
       {children}
     </OidcAuthProvider>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ClientError } from 'graphql-request';
 import { useConfig } from '../../contexts/ConfigContext.tsx';
 import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
 import { fetchVehicleTypes } from './fetchVehicleTypes.tsx';
@@ -24,15 +25,32 @@ export function useVehicleTypes() {
     if (!applicationBaseUrl) return;
     async function fetchData() {
       const token = await getAccessToken();
-      if (!token) {
-        throw new Error('You must be authenticated to fetch vehicle types');
-      }
       fetchVehicleTypes(applicationBaseUrl || '', token)
         .then((ctx: VehicleTypeContext) => {
           setData(ctx.vehicleTypes);
         })
-        .catch(() => {
-          setError('Failed to fetch data');
+        .catch((err: unknown) => {
+          if (err instanceof ClientError) {
+            const status = err.response.status;
+            switch (status) {
+              case 401:
+                setError('Not authenticated — please log in to access this data');
+                break;
+              case 403:
+                setError('Access denied — you do not have permission to view this data');
+                break;
+              default: {
+                const message = err.response.errors?.[0]?.message;
+                setError(message ?? `Server error (${status})`);
+              }
+            }
+          } else if (err instanceof TypeError) {
+            setError('Unable to reach server — check that the backend is running');
+          } else if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError('An unexpected error occurred');
+          }
         })
         .finally(() => setLoading(false));
     }

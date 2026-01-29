@@ -1,3 +1,3 @@
-export type { Auth } from './authUtils';
-export { useAuth } from './authUtils';
+export type { Auth, AccessToken } from './authUtils';
+export { useAuth, authHeader } from './authUtils';
 export { AuthProvider } from './Auth';
