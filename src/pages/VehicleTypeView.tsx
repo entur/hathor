@@ -5,7 +5,7 @@ import type { OrderBy } from '../data/vehicle-types/useVehicleTypes.ts';
 import { useState } from 'react';
 import { Box, Button } from '@mui/material';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
-import ImportDialog from '../components/dialogs/ImportDialog.tsx';
+import AutosysImportDialog from '../components/dialogs/AutosysImportDialog.tsx';
 import { useTranslation } from 'react-i18next';
 
 export default function VehicleTypeView() {
@@ -36,7 +36,7 @@ export default function VehicleTypeView() {
       <Box sx={{ flex: 1, minHeight: 0 }}>
         <GenericDataViewPage<VehicleType, OrderBy> viewConfig={vehicleTypeViewConfig} />
       </Box>
-      <ImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <AutosysImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </Box>
   );
 }
