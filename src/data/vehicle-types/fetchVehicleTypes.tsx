@@ -1,4 +1,4 @@
-import { fetchVehicleTypesRequest } from '../../graphql/Tiamat/queries/fetchVehicleTypes.ts';
+import { fetchVehicleTypesRequest } from '../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 import type { VehicleTypeContext } from './vehicleTypeTypes.ts';
 import type { AccessToken } from '../../auth';
 
