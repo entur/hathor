@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:ns2="http://www.opengis.net/gml/3.2" xmlns:ns3="http://www.siri.org.uk/siri" version="1.12:NO-NeTEx-vehicle:1.4">
+    <PublicationTimestamp>2026-01-30T15:45:49.163</PublicationTimestamp>
+    <ParticipantRef>NMR</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame modification="new" version="1" status="active" id="NMR:CompositeFrame:1074224112">
+            <Description/>
+            <FrameDefaults>
+                <DefaultLocale>
+                    <TimeZone>Europe/Oslo</TimeZone>
+                    <DefaultLanguage>eng</DefaultLanguage>
+                </DefaultLocale>
+            </FrameDefaults>
+            <frames>
+                <ResourceFrame modification="new" version="1" status="active" id="NMR:ResourceFrame:577423032">
+                    <vehicleTypes>
+                        <VehicleType version="1" id="AUTOSYS:VehicleType:0">
+                            <keyList>
+<KeyValue>
+    <Key>MaximumEngineEffectKW</Key>
+    <Value>103.0</Value>
+</KeyValue>
+                            </keyList>
+                            <EuroClass>U</EuroClass>
+                            <PropulsionTypes>combustion</PropulsionTypes>
+                            <FuelTypes>petrol</FuelTypes>
+                            <MaximumVelocity>150</MaximumVelocity>
+                            <PassengerCapacity>
+<SeatingCapacity>6</SeatingCapacity>
+                            </PassengerCapacity>
+                            <DeckPlanRef ref="AUTOSYS:DeckPlan:0"/>
+                            <LowFloor>false</LowFloor>
+                            <Length>5537</Length>
+                            <Width>1970</Width>
+                            <Height>1790</Height>
+                            <Weight>1980</Weight>
+                        </VehicleType>
+                    </vehicleTypes>
+                    <vehicleModels>
+                        <VehicleModel version="1" id="AUTOSYS:VehicleModel:0">
+                            <Description>BUICK[4 dørs åpen]</Description>
+                        </VehicleModel>
+                    </vehicleModels>
+                    <vehicles>
+                        <Vehicle version="1" id="AUTOSYS:Vehicle:A-1">
+                            <ChassisNumber>13588900</ChassisNumber>
+                            <RegistrationNumber>A-1</RegistrationNumber>
+                            <RegistrationDate>2020-10-21</RegistrationDate>
+                            <TransportTypeRef ref="AUTOSYS:VehicleType:0"/>
+                            <VehicleModelRef ref="AUTOSYS:VehicleModel:0"/>
+                        </Vehicle>
+                    </vehicles>
+                    <deckPlans>
+                        <DeckPlan version="1" id="AUTOSYS:DeckPlan:0">
+                            <Name>Kabriolet (AE)</Name>
+                            <Description>BUICK 4 dørs åpen - Kabriolet (AE)</Description>
+                        </DeckPlan>
+                    </deckPlans>
+                </ResourceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>
