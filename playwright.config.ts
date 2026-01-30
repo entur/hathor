@@ -14,6 +14,12 @@ import { defineConfig, devices } from '@playwright/test';
 const isNoAuth = process.env.E2E_SUITE === 'no-auth';
 const testDir = isNoAuth ? './e2e-tests/no-auth' : './e2e-tests/auth';
 
+/**
+ * Registration number used by the Autosys import e2e test.
+ * Override: E2E_AUTOSYS_REG_NR=XX-123 npm run e2e:no-auth
+ */
+process.env.E2E_AUTOSYS_REG_NR ??= 'A-1';
+
 export default defineConfig({
   testDir,
   /* Run tests in files in parallel */
