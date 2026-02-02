@@ -37,8 +37,7 @@ export default function AutosysSingleConfirm({
             })}{' '}
             {resourceFrame.vehicleTypes?.VehicleType?.PassengerCapacity?.StandingCapacity &&
               t('import.result.standingCapacity', ', {{count}} standing places', {
-                count:
-                  resourceFrame.vehicleTypes?.VehicleType?.PassengerCapacity?.StandingCapacity,
+                count: resourceFrame.vehicleTypes?.VehicleType?.PassengerCapacity?.StandingCapacity,
               })}
           </Grid>
           <Grid size={6}>{t('import.result.fuelType', 'Fuel Type')}</Grid>

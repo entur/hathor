@@ -50,9 +50,10 @@ async function interceptAutosysQuery(page: import('@playwright/test').Page) {
         await route.fulfill({
           status: 503,
           contentType: 'text/plain',
-          body: `E2E_BACKEND is not "false" (real backend expected) but the request failed.\n`
-            + `Autosys URL from config: ${getAutosysUrl()}\n`
-            + `Is Sobek running? Set E2E_BACKEND=false to use fixtures instead.\n\n${err}`,
+          body:
+            `E2E_BACKEND is not "false" (real backend expected) but the request failed.\n` +
+            `Autosys URL from config: ${getAutosysUrl()}\n` +
+            `Is Sobek running? Set E2E_BACKEND=false to use fixtures instead.\n\n${err}`,
         });
         return;
       }
