@@ -25,6 +25,7 @@ export default function GenericDataViewPage<T, K extends string>({
     getFilterKey,
     getSortValue,
     filters,
+    floatingAction,
   } = viewConfig;
 
   const theme = useTheme();
@@ -157,6 +158,7 @@ export default function GenericDataViewPage<T, K extends string>({
           title={viewConfig.title}
           handleColumnEvent={viewConfig.handleColumnEvent}
         />
+        {floatingAction}
       </Box>
     </Box>
   );

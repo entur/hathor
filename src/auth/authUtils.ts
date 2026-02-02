@@ -34,7 +34,7 @@ export const useAuth = (): Auth => {
       if (!oidcAuth) return Promise.resolve();
       return oidcAuth.signoutRedirect({ post_logout_redirect_uri: returnTo });
     },
-    [oidcAuth],
+    [oidcAuth]
   );
 
   const login = useCallback(
@@ -42,7 +42,7 @@ export const useAuth = (): Auth => {
       if (!oidcAuth) return Promise.resolve();
       return oidcAuth.signinRedirect({ redirect_uri: redirectUri });
     },
-    [oidcAuth],
+    [oidcAuth]
   );
 
   return {

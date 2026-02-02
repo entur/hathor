@@ -48,9 +48,7 @@ export default function AutosysImportDialog({ open, onClose }: AutosysImportDial
 
     const parser = new XMLParser({ ignoreAttributes: false });
     const result = parser.parse(retXML);
-    setResourceFrame(
-      result.PublicationDelivery?.dataObjects?.CompositeFrame?.frames.ResourceFrame
-    );
+    setResourceFrame(result.PublicationDelivery?.dataObjects?.CompositeFrame?.frames.ResourceFrame);
   };
 
   const onConfirm = async () => {
@@ -62,6 +60,7 @@ export default function AutosysImportDialog({ open, onClose }: AutosysImportDial
   return (
     <Dialog open={open} onClose={resetAndClose} maxWidth="xs" fullWidth>
       <DialogTitle>{t('import.title', 'Import Vehicle')}</DialogTitle>
+
       {resourceFrame ? (
         <AutosysSingleConfirm
           operationalId={operationalId}

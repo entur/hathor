@@ -50,9 +50,10 @@ async function interceptAutosysQuery(page: import('@playwright/test').Page) {
         await route.fulfill({
           status: 503,
           contentType: 'text/plain',
-          body: `E2E_BACKEND is not "false" (real backend expected) but the request failed.\n`
-            + `Autosys URL from config: ${getAutosysUrl()}\n`
-            + `Is Sobek running? Set E2E_BACKEND=false to use fixtures instead.\n\n${err}`,
+          body:
+            `E2E_BACKEND is not "false" (real backend expected) but the request failed.\n` +
+            `Autosys URL from config: ${getAutosysUrl()}\n` +
+            `Is Sobek running? Set E2E_BACKEND=false to use fixtures instead.\n\n${err}`,
         });
         return;
       }
@@ -87,10 +88,14 @@ test.describe('Autosys import dialog', () => {
     await page.goto('/vehicle-type');
     await page.waitForLoadState('domcontentloaded');
 
-    // Open the import dialog
-    const importButton = page.getByTestId('import-vehicle-button');
-    await expect(importButton).toBeVisible();
-    await importButton.click();
+    // Open the speed-dial, then click single import
+    const speedDial = page.getByTestId('import-speed-dial');
+    await expect(speedDial).toBeVisible();
+    await speedDial.click();
+
+    const importAction = page.getByTestId('import-vehicle-button');
+    await expect(importAction).toBeVisible();
+    await importAction.click();
 
     // Fill in registration number and fetch
     const regInput = page.getByTestId('autosys-registration-number').locator('input');

@@ -32,8 +32,14 @@ test.describe('Authentication', () => {
 
     const url = page.url();
     const showsAuthUI =
-      (await page.getByText(LOAD_AUTH_TXT).isVisible().catch(() => false)) ||
-      (await page.getByText(REDIRECT_AUTH_TXT).isVisible().catch(() => false));
+      (await page
+        .getByText(LOAD_AUTH_TXT)
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .getByText(REDIRECT_AUTH_TXT)
+        .isVisible()
+        .catch(() => false));
 
     // When OIDC is active, user must be redirected or see an auth loading state
     expect(url.includes(OIDC_HOST) || showsAuthUI).toBe(true);
@@ -47,8 +53,14 @@ test.describe('Authentication', () => {
 
     const url = page.url();
     const showsAuthUI =
-      (await page.getByText(LOAD_AUTH_TXT).isVisible().catch(() => false)) ||
-      (await page.getByText(REDIRECT_AUTH_TXT).isVisible().catch(() => false));
+      (await page
+        .getByText(LOAD_AUTH_TXT)
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .getByText(REDIRECT_AUTH_TXT)
+        .isVisible()
+        .catch(() => false));
 
     // Must redirect to OIDC provider or show auth loading/redirect text
     expect(url.includes(OIDC_HOST) || showsAuthUI).toBe(true);
