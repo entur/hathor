@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { useTranslation } from 'react-i18next';
-import type { NeTExResourceFrame } from '../../data/vehicle-types/vehicleTypeTypes';
+import type { NeTExResourceFrame } from '../../../data/vehicle-types/vehicleTypeTypes';
 
 interface AutosysSingleConfirmProps {
   operationalId: string;

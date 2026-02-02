@@ -88,12 +88,12 @@ test.describe('Autosys import dialog', () => {
     await page.goto('/vehicle-type');
     await page.waitForLoadState('domcontentloaded');
 
-    // Open the speed-dial, then click single import
-    const speedDial = page.getByTestId('import-speed-dial');
+    // Hover the speed-dial to expand it, then click single import
+    const speedDial = page.getByLabel('Import actions');
     await expect(speedDial).toBeVisible();
-    await speedDial.click();
+    await speedDial.hover();
 
-    const importAction = page.getByTestId('import-vehicle-button');
+    const importAction = page.getByLabel('Import vehicle');
     await expect(importAction).toBeVisible();
     await importAction.click();
 
