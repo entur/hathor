@@ -1,4 +1,4 @@
-import { Box, IconButton, Badge, Button } from '@mui/material';
+import { Box, IconButton, Badge, Button, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { getIconUrl } from '../../utils/iconLoaderUtils.ts';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ interface HeaderActionsProps {
   onSettingsIconClick: () => void;
   onMenuIconClick: () => void;
   isAuthenticated: boolean;
+  authConfigured: boolean;
 }
 
 export default function HeaderActions({
@@ -21,6 +22,7 @@ export default function HeaderActions({
   onSettingsIconClick,
   onMenuIconClick,
   isAuthenticated,
+  authConfigured,
 }: HeaderActionsProps) {
   const { t } = useTranslation();
 
@@ -55,10 +57,18 @@ export default function HeaderActions({
             {renderHeaderIcon('user')}
           </Badge>
         </IconButton>
-      ) : (
+      ) : authConfigured ? (
         <Button variant="outlined" color="inherit" onClick={onUserIconClick}>
           {t('header.actions.login', 'Log in')}
         </Button>
+      ) : (
+        <Chip
+          label={t('header.actions.authDisabled', 'Auth off')}
+          variant="outlined"
+          size="small"
+          data-testid="auth-disabled-label"
+          sx={{ color: 'inherit', borderColor: 'rgba(255,255,255,0.5)' }}
+        />
       )}
 
       <IconButton

@@ -1,4 +1,5 @@
 import { request, gql } from 'graphql-request';
+import { authHeader, type AccessToken } from '../../../auth';
 
 const fetchVehicleTypesGQL = gql`
   query VehicleTypes {
@@ -26,8 +27,6 @@ const fetchVehicleTypesGQL = gql`
   }
 `;
 
-export const fetchVehicleTypesRequest = (applicationBaseUrl: string, token: string) => {
-  return request(applicationBaseUrl, fetchVehicleTypesGQL, undefined, {
-    Authorization: `Bearer ${token}`,
-  });
+export const fetchVehicleTypesRequest = (applicationBaseUrl: string, token: AccessToken) => {
+  return request(applicationBaseUrl, fetchVehicleTypesGQL, undefined, authHeader(token));
 };
