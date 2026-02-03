@@ -1,4 +1,4 @@
-import { vehicleTypeViewConfig } from '../data/vehicle-types/vehicleTypeViewConfig.tsx';
+import { vehicleTypeViewConfig } from '../data/vehicle-types/vehicleTypeViewConfig.ts';
 import GenericDataViewPage from './GenericDataViewPage.tsx';
 import type { VehicleType } from '../data/vehicle-types/vehicleTypeTypes.ts';
 import type { OrderBy } from '../data/vehicle-types/useVehicleTypes.ts';

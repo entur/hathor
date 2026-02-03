@@ -15,7 +15,7 @@ import Stepper from '@mui/material/Stepper';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../../../auth';
-import { useConfig } from '../../../contexts/ConfigContext';
+import { useConfig } from '../../../contexts/configContext';
 import {
   type RegNumbersStatus,
   regNumbersTextTransformer,

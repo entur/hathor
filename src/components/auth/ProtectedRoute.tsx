@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert } from '@mui/material';
 import { useAuth } from '../../auth';
-import { useConfig } from '../../contexts/ConfigContext.tsx';
+import { useConfig } from '../../contexts/configContext.ts';
 import LoginRedirect from '../../auth/LoginRedirect';
 
 interface ProtectedRouteProps {

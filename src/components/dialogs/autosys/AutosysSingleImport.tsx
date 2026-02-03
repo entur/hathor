@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useConfig } from '../../../contexts/ConfigContext';
+import { useConfig } from '../../../contexts/configContext';
 import {
   fetchVehicleFromAutosys,
   importVehicle,

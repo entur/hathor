@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ClientError } from 'graphql-request';
-import { useConfig } from '../../contexts/ConfigContext.tsx';
+import { useConfig } from '../../contexts/configContext.ts';
 import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
-import { fetchVehicleTypes } from './fetchVehicleTypes.tsx';
+import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 
