@@ -27,6 +27,8 @@ npm run e2e:no-auth      # Run no-auth test suite
 
 Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` on the whole project) followed by `npx lint-staged` (Prettier `--write` + ESLint `--fix` on staged files). The developer uses `prettierd` in nvim for format-on-save, which picks up the repo-root `.prettierrc` automatically.
 
+**Note:** `.prettierignore` must be kept in sync with `.gitignore` for generated/copied files (e.g. `public/config.json`, `public/theme-*.json`). Prettier does not respect `.gitignore` by default, so any gitignored file that Prettier would check needs an explicit entry in `.prettierignore` as well.
+
 ## Architecture
 
 ### Generic Data View Pattern

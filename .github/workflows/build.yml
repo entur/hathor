@@ -37,7 +37,8 @@ jobs:
         run: npm list
       - run: npm ci npm r--legacy-peer-deps
       - run: npm run check
-      # - run: npm run test -- run --coverage --coverage.reporter=lcov --reporter=vitest-sonar-reporter --outputFile.vitest-sonar-reporter=test-report.xml --reporter=default
+      - name: Unit tests with coverage
+        run: npm run test:coverage
       # - name: SonarQube Scan
       #   uses: sonarsource/sonarqube-scan-action@v5.3.2
       #   env:
