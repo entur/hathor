@@ -8,15 +8,60 @@ import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import LinearProgress from '@mui/material/LinearProgress';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { useAuth } from '../../../auth';
+import { useConfig } from '../../../contexts/ConfigContext';
 import {
   type RegNumbersStatus,
   regNumbersTextTransformer,
 } from '../../../data/vehicle-imports/regNumbersTextTransformer';
+import {
+  type AutosysAssembledResult,
+  type AutosysFetchResult,
+  assembleAutosysResults,
+} from '../../../data/vehicle-imports/assembleAutosysResults';
+import { fetchVehicleFromAutosys } from '../../../data/vehicle-imports/vehicleImportServices';
+
+const CONCURRENCY_LIMIT = 5;
+
+async function fetchAllWithConcurrency(
+  regNumbers: string[],
+  fetchFn: (rn: string) => Promise<string>,
+  concurrency: number,
+  onProgress: (completed: number) => void
+): Promise<AutosysFetchResult[]> {
+  const results: AutosysFetchResult[] = [];
+  let completed = 0;
+  let index = 0;
+
+  async function worker() {
+    while (index < regNumbers.length) {
+      const i = index++;
+      const regNumber = regNumbers[i];
+      try {
+        const xml = await fetchFn(regNumber);
+        results[i] = { regNumber, xml, error: null };
+      } catch (e) {
+        results[i] = {
+          regNumber,
+          xml: '',
+          error: e instanceof Error ? e.message : 'Unknown error',
+        };
+      }
+      completed++;
+      onProgress(completed);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, regNumbers.length) }, () => worker());
+  await Promise.all(workers);
+  return results;
+}
 
 interface AutosysMultiImportProps {
   onClose: () => void;
@@ -24,12 +69,20 @@ interface AutosysMultiImportProps {
 
 export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps) {
   const { t } = useTranslation();
+  const { applicationGetAutosysUrl } = useConfig();
+  const { getAccessToken } = useAuth();
+
   const [activeStep, setActiveStep] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [regNumbers, setRegNumbers] = useState<string[]>([]);
   const [status, setStatus] = useState<RegNumbersStatus | null>(null);
   const [newEntry, setNewEntry] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch progress state
+  const [fetching, setFetching] = useState(false);
+  const [fetchProgress, setFetchProgress] = useState({ completed: 0, total: 0 });
+  const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
 
   const steps = [
     t('import.multi.stepUpload', 'Upload file'),
@@ -97,6 +150,42 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
     e.target.value = '';
   };
 
+  const startFetch = async () => {
+    setFetching(true);
+    setFetchProgress({ completed: 0, total: regNumbers.length });
+
+    const token = await getAccessToken();
+    const results = await fetchAllWithConcurrency(
+      regNumbers,
+      rn => fetchVehicleFromAutosys(applicationGetAutosysUrl || '', rn, token),
+      CONCURRENCY_LIMIT,
+      completed => setFetchProgress({ completed, total: regNumbers.length })
+    );
+
+    const assembled = assembleAutosysResults(results);
+    setAssembledResult(assembled);
+    setFetching(false);
+    setActiveStep(2);
+  };
+
+  const handleNext = () => {
+    if (activeStep === 1) {
+      startFetch();
+    } else {
+      setActiveStep(s => s + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (activeStep === 2) {
+      setAssembledResult(null);
+    }
+    setActiveStep(s => s - 1);
+  };
+
+  const progressPercent =
+    fetchProgress.total > 0 ? Math.round((fetchProgress.completed / fetchProgress.total) * 100) : 0;
+
   return (
     <>
       <DialogTitle>{t('import.multi.title', 'Bulk Import Vehicles')}</DialogTitle>
@@ -155,61 +244,129 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
           )}
           {activeStep === 1 && (
             <>
-              {status && (
-                <Alert severity={status.warnLevel} sx={{ mb: 2 }}>
-                  {status.message}
-                </Alert>
-              )}
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  p: 1.5,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  minHeight: 80,
-                  maxHeight: 240,
-                  overflowY: 'auto',
-                  alignContent: 'flex-start',
-                }}
-                data-testid="multi-import-tags"
-              >
-                {regNumbers.map(rn => (
-                  <Chip
-                    key={rn}
-                    label={rn}
-                    onDelete={() => handleDeleteRegNumber(rn)}
-                    size="small"
+              {fetching ? (
+                <Box sx={{ textAlign: 'center', py: 3 }}>
+                  <Typography sx={{ mb: 2 }}>
+                    {t('import.multi.fetching', 'Fetching {{completed}} of {{total}}...', {
+                      completed: fetchProgress.completed,
+                      total: fetchProgress.total,
+                    })}
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={progressPercent}
+                    sx={{ height: 8, borderRadius: 1 }}
                   />
-                ))}
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
-                <TextField
-                  size="small"
-                  value={newEntry}
-                  onChange={e => setNewEntry(e.target.value)}
-                  onKeyDown={handleEntryKeyDown}
-                  placeholder={t('import.multi.addPlaceholder', 'Add registration number...')}
-                  fullWidth
-                  data-testid="multi-import-add-input"
-                />
-                <Button
-                  variant="outlined"
-                  onClick={handleAddEntry}
-                  disabled={!newEntry.trim()}
-                  data-testid="multi-import-add-button"
-                >
-                  {t('import.multi.add', 'Add')}
-                </Button>
-              </Box>
+                </Box>
+              ) : (
+                <>
+                  {status && (
+                    <Alert severity={status.warnLevel} sx={{ mb: 2 }}>
+                      {status.message}
+                    </Alert>
+                  )}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      p: 1.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      minHeight: 80,
+                      maxHeight: 240,
+                      overflowY: 'auto',
+                      alignContent: 'flex-start',
+                    }}
+                    data-testid="multi-import-tags"
+                  >
+                    {regNumbers.map(rn => (
+                      <Chip
+                        key={rn}
+                        label={rn}
+                        onDelete={() => handleDeleteRegNumber(rn)}
+                        size="small"
+                      />
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+                    <TextField
+                      size="small"
+                      value={newEntry}
+                      onChange={e => setNewEntry(e.target.value)}
+                      onKeyDown={handleEntryKeyDown}
+                      placeholder={t('import.multi.addPlaceholder', 'Add registration number...')}
+                      fullWidth
+                      data-testid="multi-import-add-input"
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={handleAddEntry}
+                      disabled={!newEntry.trim()}
+                      data-testid="multi-import-add-button"
+                    >
+                      {t('import.multi.add', 'Add')}
+                    </Button>
+                  </Box>
+                </>
+              )}
             </>
           )}
-          {activeStep === 2 && (
-            <Typography color="text.secondary">
-              {t('import.multi.confirmPlaceholder', 'Confirm and import will go here.')}
-            </Typography>
+          {activeStep === 2 && assembledResult && (
+            <>
+              <Alert
+                severity={assembledResult.summary.errors.length > 0 ? 'warning' : 'success'}
+                sx={{ mb: 2 }}
+              >
+                {t('import.multi.summaryFetched', 'Fetched {{success}} of {{total}} vehicles', {
+                  success: assembledResult.xmlList.length,
+                  total: assembledResult.xmlList.length + assembledResult.summary.errors.length,
+                })}
+              </Alert>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr',
+                  gap: 1,
+                  mb: 2,
+                }}
+              >
+                <Typography color="text.secondary">
+                  {t('import.multi.vehicles', 'Vehicles')}
+                </Typography>
+                <Typography>{assembledResult.summary.vehicleCount}</Typography>
+
+                <Typography color="text.secondary">
+                  {t('import.multi.vehicleTypes', 'Vehicle types')}
+                </Typography>
+                <Typography>{assembledResult.summary.vehicleTypeIds.size}</Typography>
+
+                <Typography color="text.secondary">
+                  {t('import.multi.deckPlans', 'Deck plans')}
+                </Typography>
+                <Typography>{assembledResult.summary.deckPlanIds.size}</Typography>
+
+                <Typography color="text.secondary">
+                  {t('import.multi.vehicleModels', 'Vehicle models')}
+                </Typography>
+                <Typography>{assembledResult.summary.vehicleModelIds.size}</Typography>
+              </Box>
+              {assembledResult.summary.errors.length > 0 && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                    {t('import.multi.errorCount', '{{count}} failed', {
+                      count: assembledResult.summary.errors.length,
+                    })}
+                  </Typography>
+                  {assembledResult.summary.errors.map(err => (
+                    <Typography key={err.regNumber} variant="body2">
+                      {err.regNumber}: {err.message}
+                    </Typography>
+                  ))}
+                </Alert>
+              )}
+            </>
           )}
         </Box>
       </DialogContent>
@@ -217,13 +374,17 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
         <Button onClick={onClose} variant="outlined">
           {t('close')}
         </Button>
-        <Button disabled={activeStep === 0} onClick={() => setActiveStep(s => s - 1)}>
+        <Button disabled={activeStep === 0 || fetching} onClick={handleBack}>
           {t('import.multi.back', 'Back')}
         </Button>
         <Button
           variant="contained"
-          onClick={() => setActiveStep(s => s + 1)}
-          disabled={activeStep === steps.length - 1}
+          onClick={handleNext}
+          disabled={
+            activeStep === steps.length - 1 ||
+            fetching ||
+            (activeStep === 1 && regNumbers.length === 0)
+          }
         >
           {activeStep === 0 ? t('import.multi.skip', 'Skip') : t('import.multi.next', 'Next')}
         </Button>
