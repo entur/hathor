@@ -157,8 +157,8 @@ export default function GenericDataViewPage<T, K extends string>({
           columns={columns}
           title={viewConfig.title}
           handleColumnEvent={viewConfig.handleColumnEvent}
+          floatingAction={floatingAction}
         />
-        {floatingAction}
       </Box>
     </Box>
   );

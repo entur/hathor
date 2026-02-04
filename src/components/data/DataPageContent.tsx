@@ -1,4 +1,4 @@
-import { useRef, type ComponentType } from 'react';
+import { useRef, type ComponentType, type ReactNode } from 'react';
 import { useContainerResponsiveView } from '../../hooks/useContainerResponsiveView';
 import {
   Box,
@@ -33,6 +33,7 @@ interface DataPageContentProps<T, K extends string> {
   columns: ColumnDefinition<T, K>[];
   title?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  floatingAction?: ReactNode;
 }
 
 export default function DataPageContent<
@@ -52,6 +53,7 @@ export default function DataPageContent<
   columns,
   title,
   handleColumnEvent,
+  floatingAction,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +86,7 @@ export default function DataPageContent<
         <Typography>{t('data.totalEntries', { count: totalCount })}</Typography>
       </Box>
 
-      <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
+      <TableContainer sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
         <Table stickyHeader>
           <DataTableHeader
             useCompactView={compact}
@@ -117,18 +119,23 @@ export default function DataPageContent<
         </Table>
       </TableContainer>
 
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
-        component="div"
-        count={totalCount}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={event => {
-          setRowsPerPage(parseInt(event.target.value, 10));
-          setPage(0);
-        }}
-      />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {floatingAction}
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100]}
+            component="div"
+            count={totalCount}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={event => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+          />
+        </Box>
+      </Box>
     </Box>
   );
 }

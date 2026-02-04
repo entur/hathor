@@ -1,49 +1,46 @@
 import { FileUpload, LibraryAdd } from '@mui/icons-material';
-import { Dialog, SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
+import { Dialog, Fab, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AutosysMultiImport from './AutosysMultiImport';
 import AutosysSingleImport from './AutosysSingleImport';
 
 export default function AutosysImportFloatingMenu() {
+  const [open, setOpen] = useState(false);
   const [singleOpen, setSingleOpen] = useState(false);
-  const [multiOpen, setMultiOpen] = useState(false);
   const { t } = useTranslation();
 
   return (
     <>
-      <SpeedDial
-        ariaLabel={t('vehicleType.actions.importMenu', 'Import actions')}
-        sx={{ position: 'absolute', bottom: 24, right: 24 }}
-        icon={<SpeedDialIcon />}
-        data-testid="import-speed-dial"
-      >
-        <SpeedDialAction
-          icon={<FileUpload />}
-          slotProps={{
-            tooltip: {
-              title: t('vehicleType.actions.import', 'Import vehicle'),
-            },
-          }}
-          onClick={() => setSingleOpen(true)}
-          data-testid="import-vehicle-button"
-        />
-        <SpeedDialAction
-          icon={<LibraryAdd />}
-          slotProps={{
-            tooltip: {
-              title: t('vehicleType.actions.importMulti', 'Bulk import'),
-            },
-          }}
-          onClick={() => setMultiOpen(true)}
+      <Tooltip title={t('vehicleType.actions.importMulti', 'Bulk import')}>
+        <Fab
+          size="small"
+          color="primary"
+          onClick={() => setOpen(true)}
           data-testid="import-vehicle-multi-button"
-        />
-      </SpeedDial>
+          aria-label={t('vehicleType.actions.importMulti', 'Bulk import')}
+        >
+          <LibraryAdd />
+        </Fab>
+      </Tooltip>
+      <Tooltip title={t('vehicleType.actions.importSingle', 'Import')}>
+        <Fab
+          sx={{ ml: 1 }}
+          size="small"
+          color="primary"
+          onClick={() => setSingleOpen(true)}
+          data-testid="import-vehicle-single-button"
+          aria-label={t('vehicleType.actions.importSingle', 'Import')}
+        >
+          <FileUpload />
+        </Fab>
+      </Tooltip>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <AutosysMultiImport onClose={() => setOpen(false)} />
+      </Dialog>
+      {/* Legacy for e2e-tests  */}
       <Dialog open={singleOpen} onClose={() => setSingleOpen(false)} maxWidth="xs" fullWidth>
         <AutosysSingleImport onClose={() => setSingleOpen(false)} />
-      </Dialog>
-      <Dialog open={multiOpen} onClose={() => setMultiOpen(false)} maxWidth="sm" fullWidth>
-        <AutosysMultiImport onClose={() => setMultiOpen(false)} />
       </Dialog>
     </>
   );

@@ -112,6 +112,8 @@ export interface PageContentComponentProps<T, K extends string> {
   title?: string;
   /** Callback fired when a column-level action is triggered (e.g. inline edit). */
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  /** Optional floating action (e.g. SpeedDial) rendered in the bottom bar beside pagination. */
+  floatingAction?: ReactNode;
 }
 
 /**
