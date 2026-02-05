@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
-import { fixturesDir, targetConfig, REG_NR, interceptAutosysQuery } from './autosys-helpers';
+import {
+  fixturesDir,
+  targetConfig,
+  REG_NR,
+  interceptAutosysQuery,
+  interceptVehicleTypesQuery,
+} from './autosys-helpers';
 
 test.describe('Autosys single-import dialog', () => {
   test.beforeAll(() => {
@@ -8,10 +14,13 @@ test.describe('Autosys single-import dialog', () => {
   });
 
   test(`query "${REG_NR}" returns confirm form with vehicle data`, async ({ page }) => {
-    await interceptAutosysQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+      await interceptAutosysQuery(page);
+    }
 
     await page.goto('/vehicle-type');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     // Click the single-import Fab button
     const importButton = page.getByTestId('import-vehicle-single-button');

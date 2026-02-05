@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
-import { fixturesDir, targetConfig, REG_NR, interceptAutosysQuery } from './autosys-helpers';
+import {
+  fixturesDir,
+  targetConfig,
+  REG_NR,
+  interceptAutosysQuery,
+  interceptVehicleTypesQuery,
+} from './autosys-helpers';
 
 test.describe('Autosys multi-import dialog', () => {
   test.beforeAll(() => {
@@ -8,10 +14,13 @@ test.describe('Autosys multi-import dialog', () => {
   });
 
   test(`skip upload, add "${REG_NR}", confirm shows 1/1/1/1`, async ({ page }) => {
-    await interceptAutosysQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+      await interceptAutosysQuery(page);
+    }
 
     await page.goto('/vehicle-type');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     // Open the multi-import dialog
     const multiButton = page.getByTestId('import-vehicle-multi-button');

@@ -1,38 +1,6 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-import { fixturesDir, targetConfig } from './autosys-helpers';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-/** Mock vehicle types loaded from fixture file */
-const MOCK_VEHICLE_TYPES = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'vehicle-types-mock.json'), 'utf-8')
-);
-
-/**
- * Intercept the GraphQL vehicleTypes query and return mock data.
- */
-async function interceptVehicleTypesQuery(page: import('@playwright/test').Page) {
-  await page.route('**/graphql', async route => {
-    const request = route.request();
-    const postData = request.postDataJSON();
-
-    // Check if this is a vehicleTypes query
-    if (postData?.query?.includes('vehicleTypes')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(MOCK_VEHICLE_TYPES),
-      });
-    } else {
-      // Let other GraphQL queries pass through (or fulfill with empty)
-      await route.continue();
-    }
-  });
-}
+import { fixturesDir, targetConfig, interceptVehicleTypesQuery } from './autosys-helpers';
 
 test.describe('Vehicle type URL filtering', () => {
   test.beforeAll(() => {
@@ -40,7 +8,9 @@ test.describe('Vehicle type URL filtering', () => {
   });
 
   test('without filter param shows all vehicle types', async ({ page }) => {
-    await interceptVehicleTypesQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+    }
 
     await page.goto('/vehicle-type');
     await page.waitForLoadState('networkidle');
@@ -64,7 +34,9 @@ test.describe('Vehicle type URL filtering', () => {
   });
 
   test('with single filter param shows only matching vehicle type', async ({ page }) => {
-    await interceptVehicleTypesQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+    }
 
     await page.goto('/vehicle-type?filter=NMR:VehicleType:2');
     await page.waitForLoadState('networkidle');
@@ -89,7 +61,9 @@ test.describe('Vehicle type URL filtering', () => {
   });
 
   test('with multiple filter params shows only matching vehicle types', async ({ page }) => {
-    await interceptVehicleTypesQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+    }
 
     const filterParam = encodeURIComponent('NMR:VehicleType:1,NMR:VehicleType:3');
     await page.goto(`/vehicle-type?filter=${filterParam}`);
@@ -116,7 +90,9 @@ test.describe('Vehicle type URL filtering', () => {
   });
 
   test('clicking filter chip delete button clears filters and URL', async ({ page }) => {
-    await interceptVehicleTypesQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+    }
 
     await page.goto('/vehicle-type?filter=NMR:VehicleType:1');
     await page.waitForLoadState('networkidle');
@@ -146,7 +122,9 @@ test.describe('Vehicle type URL filtering', () => {
   });
 
   test('with non-matching filter shows empty table', async ({ page }) => {
-    await interceptVehicleTypesQuery(page);
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+    }
 
     await page.goto('/vehicle-type?filter=NMR:VehicleType:999');
     await page.waitForLoadState('networkidle');
