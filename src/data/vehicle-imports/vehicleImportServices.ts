@@ -26,7 +26,7 @@ export const fetchVehicleFromAutosys = async (
  * Import a vehicle into Sobek by POSTing its NeTEx XML to the import endpoint.
  * Returns the response body on success.
  */
-export const importVehicle = async (
+export const importAsNetexToBackend = async (
   applicationImportBaseUrl: string,
   vehicleData: string,
   token: AccessToken

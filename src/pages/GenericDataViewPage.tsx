@@ -7,14 +7,16 @@ import { Sidebar } from '../components/sidebar/Sidebar.tsx';
 import { ToggleButton } from '../components/sidebar/ToggleButton.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
-import type { ViewConfig } from '../types/viewConfigTypes.ts';
+import type { ViewConfig, UrlFilterInfo } from '../types/viewConfigTypes.ts';
 
 interface GenericDataViewPageProps<T, K extends string> {
   viewConfig: ViewConfig<T, K>;
+  urlFilterInfo?: UrlFilterInfo;
 }
 
 export default function GenericDataViewPage<T, K extends string>({
   viewConfig,
+  urlFilterInfo,
 }: GenericDataViewPageProps<T, K>) {
   const {
     useData,
@@ -158,6 +160,7 @@ export default function GenericDataViewPage<T, K extends string>({
           title={viewConfig.title}
           handleColumnEvent={viewConfig.handleColumnEvent}
           floatingAction={floatingAction}
+          urlFilterInfo={urlFilterInfo}
         />
       </Box>
     </Box>

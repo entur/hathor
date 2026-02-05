@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useConfig } from '../../../contexts/configContext';
 import {
   fetchVehicleFromAutosys,
-  importVehicle,
+  importAsNetexToBackend,
 } from '../../../data/vehicle-imports/vehicleImportServices';
 import type { NeTExResourceFrame } from '../../../data/vehicle-types/vehicleTypeTypes';
 import { useState } from 'react';
@@ -51,7 +51,7 @@ export default function AutosysSingleImport({ onClose }: AutosysSingleImportProp
 
   const onConfirm = async () => {
     const token = await getAccessToken();
-    await importVehicle(applicationImportBaseUrl || '', neTExXML, token);
+    await importAsNetexToBackend(applicationImportBaseUrl || '', neTExXML, token);
     resetAndClose();
   };
 

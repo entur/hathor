@@ -1,0 +1,45 @@
+{
+  "data": {
+    "vehicleTypes": [
+      {
+        "id": "NMR:VehicleType:1",
+        "name": { "value": "Type Alpha" },
+        "length": 10,
+        "width": 2.5,
+        "height": 3,
+        "deckPlan": {
+          "id": "NMR:DeckPlan:1",
+          "description": "Single deck",
+          "name": { "value": "Plan A" }
+        },
+        "vehicles": [{ "id": "NMR:Vehicle:101", "registrationNumber": "AA-101", "version": 1 }]
+      },
+      {
+        "id": "NMR:VehicleType:2",
+        "name": { "value": "Type Beta" },
+        "length": 15,
+        "width": 2.8,
+        "height": 3.5,
+        "deckPlan": {
+          "id": "NMR:DeckPlan:2",
+          "description": "Double deck",
+          "name": { "value": "Plan B" }
+        },
+        "vehicles": [{ "id": "NMR:Vehicle:102", "registrationNumber": "BB-102", "version": 1 }]
+      },
+      {
+        "id": "NMR:VehicleType:3",
+        "name": { "value": "Type Gamma" },
+        "length": 20,
+        "width": 3,
+        "height": 4,
+        "deckPlan": {
+          "id": "NMR:DeckPlan:3",
+          "description": "Articulated",
+          "name": { "value": "Plan C" }
+        },
+        "vehicles": [{ "id": "NMR:Vehicle:103", "registrationNumber": "CC-103", "version": 1 }]
+      }
+    ]
+  }
+}

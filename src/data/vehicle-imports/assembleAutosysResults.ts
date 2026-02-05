@@ -1,12 +1,19 @@
 import { XMLParser } from 'fast-xml-parser';
 import { translateAutosysError } from './autosysErrorTranslator';
+import type { ParsedXml } from './types';
 
+/** Result of fetching a single vehicle from the Autosys registry.
+ * On success `xml` contains the raw NeTEx XML and `error` is null.
+ * On failure `xml` is empty and `error` holds the backend error message. */
 export interface AutosysFetchResult {
   regNumber: string;
   xml: string;
   error: string | null;
 }
 
+/** Deduplicated summary produced by {@link assembleAutosysResults}.
+ * Entity IDs are collected into Sets so shared types/plans across
+ * multiple vehicles are counted only once. */
 export interface AutosysAssembledSummary {
   vehicleCount: number;
   vehicleTypeIds: Set<string>;
@@ -15,9 +22,12 @@ export interface AutosysAssembledSummary {
   errors: { regNumber: string; message: string }[];
 }
 
+/** Combined output of {@link assembleAutosysResults}: a deduplicated
+ * summary of all fetched vehicles plus the successfully parsed XML
+ * objects ready for merging via {@link pubDeliveryFromListV1}. */
 export interface AutosysAssembledResult {
   summary: AutosysAssembledSummary;
-  xmlList: string[];
+  xmlList: ParsedXml[];
 }
 
 const parser = new XMLParser({ ignoreAttributes: false });
@@ -39,7 +49,7 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
   const deckPlanIds = new Set<string>();
   const vehicleModelIds = new Set<string>();
   const errors: { regNumber: string; message: string }[] = [];
-  const xmlList: string[] = [];
+  const xmlList: ParsedXml[] = [];
   let vehicleCount = 0;
 
   for (const result of results) {
@@ -86,7 +96,7 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
         if (vm['@_id']) vehicleModelIds.add(vm['@_id']);
       }
 
-      xmlList.push(result.xml);
+      xmlList.push(parsed);
     } catch (e) {
       errors.push({
         regNumber: result.regNumber,

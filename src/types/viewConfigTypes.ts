@@ -7,6 +7,19 @@ import type {
 } from '../components/search/searchTypes';
 
 /**
+ * Information about URL-based filters, typically used after bulk import
+ * to show only the imported items.
+ */
+export interface UrlFilterInfo {
+  /** Whether URL filters are currently active. */
+  hasUrlFilters: boolean;
+  /** Clears the URL filter params and resets search context filters. */
+  clearUrlFilters: () => void;
+  /** Number of items being filtered (for display purposes). */
+  filterCount: number;
+}
+
+/**
  * Return shape of a data-fetching hook used by {@link ViewConfig}.
  *
  * @typeParam T - The entity type displayed in the table.
@@ -114,6 +127,8 @@ export interface PageContentComponentProps<T, K extends string> {
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   /** Optional floating action (e.g. SpeedDial) rendered in the bottom bar beside pagination. */
   floatingAction?: ReactNode;
+  /** Optional URL filter info for displaying a filter indicator chip. */
+  urlFilterInfo?: UrlFilterInfo;
 }
 
 /**

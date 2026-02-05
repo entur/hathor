@@ -2,6 +2,7 @@ import { FileUpload, LibraryAdd } from '@mui/icons-material';
 import { Dialog, Fab, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import AutosysMultiImport from './AutosysMultiImport';
 import AutosysSingleImport from './AutosysSingleImport';
 
@@ -9,6 +10,15 @@ export default function AutosysImportFloatingMenu() {
   const [open, setOpen] = useState(false);
   const [singleOpen, setSingleOpen] = useState(false);
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const handleImportComplete = (vehicleTypeIds: string[]) => {
+    setOpen(false);
+    if (vehicleTypeIds.length > 0) {
+      const filterParam = vehicleTypeIds.join(',');
+      navigate(`/vehicle-type?filter=${encodeURIComponent(filterParam)}`, { replace: true });
+    }
+  };
 
   return (
     <>
@@ -36,7 +46,10 @@ export default function AutosysImportFloatingMenu() {
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <AutosysMultiImport onClose={() => setOpen(false)} />
+        <AutosysMultiImport
+          onClose={() => setOpen(false)}
+          onImportComplete={handleImportComplete}
+        />
       </Dialog>
       {/* Legacy for e2e-tests  */}
       <Dialog open={singleOpen} onClose={() => setSingleOpen(false)} maxWidth="xs" fullWidth>

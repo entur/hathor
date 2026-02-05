@@ -1,5 +1,6 @@
 import { type DragEvent, type KeyboardEvent, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { XMLBuilder } from 'fast-xml-parser';
 import { CloudUpload } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -25,7 +26,11 @@ import {
   type AutosysFetchResult,
   assembleAutosysResults,
 } from '../../../data/vehicle-imports/assembleAutosysResults';
-import { fetchVehicleFromAutosys } from '../../../data/vehicle-imports/vehicleImportServices';
+import { pubDeliveryFromListV2 } from '../../../data/vehicle-imports/pubDeliveryFromList';
+import {
+  fetchVehicleFromAutosys,
+  importAsNetexToBackend,
+} from '../../../data/vehicle-imports/vehicleImportServices';
 
 const CONCURRENCY_LIMIT = 5;
 
@@ -65,11 +70,12 @@ async function fetchAllWithConcurrency(
 
 interface AutosysMultiImportProps {
   onClose: () => void;
+  onImportComplete?: (vehicleTypeIds: string[]) => void;
 }
 
-export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps) {
+export default function AutosysMultiImport({ onClose, onImportComplete }: AutosysMultiImportProps) {
   const { t } = useTranslation();
-  const { applicationGetAutosysUrl } = useConfig();
+  const { applicationGetAutosysUrl, applicationImportBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -83,6 +89,8 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
   const [fetching, setFetching] = useState(false);
   const [fetchProgress, setFetchProgress] = useState({ completed: 0, total: 0 });
   const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const steps = [
     t('import.multi.stepUpload', 'Upload file'),
@@ -168,9 +176,36 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
     setActiveStep(2);
   };
 
+  const startSubmit = async () => {
+    if (!assembledResult) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const combined = pubDeliveryFromListV2(assembledResult.xmlList);
+      const builder = new XMLBuilder({
+        ignoreAttributes: false,
+        format: true,
+        suppressEmptyNode: true,
+      });
+      const xml = builder.build(combined);
+      const token = await getAccessToken();
+      await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
+      if (onImportComplete) {
+        onImportComplete(Array.from(assembledResult.summary.vehicleTypeIds));
+      }
+      onClose();
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Import failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleNext = () => {
     if (activeStep === 1) {
       startFetch();
+    } else if (activeStep === 2) {
+      startSubmit();
     } else {
       setActiveStep(s => s + 1);
     }
@@ -366,6 +401,11 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
                   ))}
                 </Alert>
               )}
+              {submitError && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  {submitError}
+                </Alert>
+              )}
             </>
           )}
         </Box>
@@ -374,19 +414,22 @@ export default function AutosysMultiImport({ onClose }: AutosysMultiImportProps)
         <Button onClick={onClose} variant="outlined">
           {t('close')}
         </Button>
-        <Button disabled={activeStep === 0 || fetching} onClick={handleBack}>
+        <Button disabled={activeStep === 0 || fetching || submitting} onClick={handleBack}>
           {t('import.multi.back', 'Back')}
         </Button>
         <Button
           variant="contained"
           onClick={handleNext}
           disabled={
-            activeStep === steps.length - 1 ||
             fetching ||
-            (activeStep === 1 && regNumbers.length === 0)
+            submitting ||
+            (activeStep === 1 && regNumbers.length === 0) ||
+            (activeStep === 2 && (!assembledResult || assembledResult.xmlList.length === 0))
           }
         >
-          {activeStep === 0 ? t('import.multi.skip', 'Skip') : t('import.multi.next', 'Next')}
+          {activeStep === 0 && t('import.multi.skip', 'Skip')}
+          {activeStep === 1 && t('import.multi.next', 'Next')}
+          {activeStep === 2 && t('import.multi.submit', 'Submit')}
         </Button>
       </DialogActions>
     </>

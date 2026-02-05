@@ -2,6 +2,7 @@ import { useRef, type ComponentType, type ReactNode } from 'react';
 import { useContainerResponsiveView } from '../../hooks/useContainerResponsiveView';
 import {
   Box,
+  Chip,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +16,7 @@ import DataTableRow from './DataTableRow.tsx';
 import { useTranslation } from 'react-i18next';
 import type { Order, ColumnDefinition } from './dataTableTypes.ts';
 import MobileDetailRow from './MobileDetailRow.tsx';
+import type { UrlFilterInfo } from '../../types/viewConfigTypes.ts';
 
 const COMPACT_VIEW_THRESHOLD = 700;
 
@@ -34,6 +36,7 @@ interface DataPageContentProps<T, K extends string> {
   title?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   floatingAction?: ReactNode;
+  urlFilterInfo?: UrlFilterInfo;
 }
 
 export default function DataPageContent<
@@ -54,6 +57,7 @@ export default function DataPageContent<
   title,
   handleColumnEvent,
   floatingAction,
+  urlFilterInfo,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,8 +86,19 @@ export default function DataPageContent<
           </Typography>
         </Box>
       )}
-      <Box px={2} pb={1}>
+      <Box px={2} pb={1} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography>{t('data.totalEntries', { count: totalCount })}</Typography>
+        {urlFilterInfo && urlFilterInfo.filterCount > 0 && (
+          <Chip
+            label={t('data.filteredCount', '{{count}} imported', {
+              count: urlFilterInfo.filterCount,
+            })}
+            onDelete={urlFilterInfo.clearUrlFilters}
+            color="primary"
+            size="small"
+            data-testid="url-filter-chip"
+          />
+        )}
       </Box>
 
       <TableContainer sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
