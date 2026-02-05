@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ClientError } from 'graphql-request';
+import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../contexts/configContext.ts';
 import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
 import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
@@ -20,42 +21,50 @@ export function useVehicleTypes() {
   const { applicationBaseUrl } = useConfig();
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
+  const [searchParams] = useSearchParams();
 
-  useEffect(() => {
+  // Track filter param to trigger refetch when it changes (e.g., after import)
+  const filterParam = searchParams.get('filter');
+
+  const doFetch = useCallback(async () => {
     if (!applicationBaseUrl) return;
-    async function fetchData() {
-      const token = await getAccessToken();
-      fetchVehicleTypes(applicationBaseUrl || '', token)
-        .then((ctx: VehicleTypeContext) => {
-          setData(ctx.vehicleTypes);
-        })
-        .catch((err: unknown) => {
-          if (err instanceof ClientError) {
-            const status = err.response.status;
-            switch (status) {
-              case 401:
-                setError('Not authenticated — please log in to access this data');
-                break;
-              case 403:
-                setError('Access denied — you do not have permission to view this data');
-                break;
-              default: {
-                const message = err.response.errors?.[0]?.message;
-                setError(message ?? `Server error (${status})`);
-              }
+    setLoading(true);
+    setError(null);
+    const token = await getAccessToken();
+    fetchVehicleTypes(applicationBaseUrl, token)
+      .then((ctx: VehicleTypeContext) => {
+        setData(ctx.vehicleTypes);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof ClientError) {
+          const status = err.response.status;
+          switch (status) {
+            case 401:
+              setError('Not authenticated — please log in to access this data');
+              break;
+            case 403:
+              setError('Access denied — you do not have permission to view this data');
+              break;
+            default: {
+              const message = err.response.errors?.[0]?.message;
+              setError(message ?? `Server error (${status})`);
             }
-          } else if (err instanceof TypeError) {
-            setError('Unable to reach server — check that the backend is running');
-          } else if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError('An unexpected error occurred');
           }
-        })
-        .finally(() => setLoading(false));
-    }
-    fetchData();
+        } else if (err instanceof TypeError) {
+          setError('Unable to reach server — check that the backend is running');
+        } else if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
+      })
+      .finally(() => setLoading(false));
   }, [applicationBaseUrl, getAccessToken]);
+
+  // Refetch when applicationBaseUrl changes or when filter param changes (after import)
+  useEffect(() => {
+    doFetch();
+  }, [doFetch, filterParam]);
 
   const handleRequestSort = (property: OrderBy) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -86,5 +95,6 @@ export function useVehicleTypes() {
     rowsPerPage,
     setPage,
     setRowsPerPage,
+    refetch: doFetch,
   };
 }

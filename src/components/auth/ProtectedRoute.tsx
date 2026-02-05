@@ -1,5 +1,4 @@
 import React from 'react';
-import { Alert } from '@mui/material';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
 import LoginRedirect from '../../auth/LoginRedirect';
@@ -13,14 +12,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   const { oidcConfig } = useConfig();
 
   if (!oidcConfig) {
-    return (
-      <>
-        <Alert severity="warning" data-testid="auth-not-configured-warning">
-          Auth not configured, assumed server is in TEST state; continue without auth
-        </Alert>
-        {element}
-      </>
-    );
+    return element;
   }
 
   if (isLoading) {

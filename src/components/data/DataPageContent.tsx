@@ -87,16 +87,19 @@ export default function DataPageContent<
         </Box>
       )}
       <Box px={2} pb={1} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography>{t('data.totalEntries', { count: totalCount })}</Typography>
+        <Typography data-testid="total-entries" data-count={totalCount}>
+          {t('data.totalEntries', { count: totalCount })}
+        </Typography>
         {urlFilterInfo && urlFilterInfo.filterCount > 0 && (
           <Chip
-            label={t('data.filteredCount', '{{count}} imported', {
+            label={t('data.filteredCount', '{{count}} via filtering', {
               count: urlFilterInfo.filterCount,
             })}
             onDelete={urlFilterInfo.clearUrlFilters}
             color="primary"
             size="small"
             data-testid="url-filter-chip"
+            data-filter-count={urlFilterInfo.filterCount}
           />
         )}
       </Box>
@@ -124,7 +127,7 @@ export default function DataPageContent<
               />
             ))}
             {data.length === 0 && !loading && (
-              <TableRow>
+              <TableRow data-testid="no-data-row">
                 <TableCell colSpan={colSpan} align="center">
                   {t('data.noResults', 'No data to display.')}
                 </TableCell>
@@ -147,6 +150,13 @@ export default function DataPageContent<
             onRowsPerPageChange={event => {
               setRowsPerPage(parseInt(event.target.value, 10));
               setPage(0);
+            }}
+            data-testid="table-pagination"
+            slotProps={{
+              displayedRows: {
+                'data-testid': 'pagination-displayed-rows',
+                'data-count': totalCount,
+              } as React.HTMLAttributes<HTMLParagraphElement>,
             }}
           />
         </Box>

@@ -12,13 +12,13 @@ interface UseUrlFiltersResult {
 
 /**
  * Bidirectional sync between URL query params and SearchContext.activeFilters.
- * - On mount: parses ?filter=ID1,ID2 and calls updateFilters()
+ * - On mount or URL change: parses ?filter=ID1,ID2 and calls updateFilters()
  * - Exposes clearUrlFilters() to remove the URL param and clear filters
  */
 export function useUrlFilters(): UseUrlFiltersResult {
   const [searchParams, setSearchParams] = useSearchParams();
   const { updateFilters, setActiveSearchContext, activeSearchContext } = useSearch();
-  const isInitializedRef = useRef(false);
+  const lastAppliedFilterRef = useRef<string | null>(null);
 
   // Parse filter IDs from URL
   const filterParam = searchParams.get(FILTER_PARAM);
@@ -32,19 +32,23 @@ export function useUrlFilters(): UseUrlFiltersResult {
   }, [filterIds.length, activeSearchContext, setActiveSearchContext]);
 
   // Second effect: apply filters after context is set to 'data'
-  // This runs after SearchContext's clearSearch effect has completed
+  // Re-applies when filterParam changes (e.g., after import navigation)
   useEffect(() => {
-    if (isInitializedRef.current) return;
+    // Skip if filter hasn't changed
+    if (filterParam === lastAppliedFilterRef.current) return;
 
     if (activeSearchContext === 'data' && filterIds.length > 0) {
       // Use setTimeout to ensure this runs after SearchContext's clearSearch effect
       const timeoutId = setTimeout(() => {
         updateFilters(filterIds);
-        isInitializedRef.current = true;
+        lastAppliedFilterRef.current = filterParam;
       }, 0);
       return () => clearTimeout(timeoutId);
+    } else if (!filterParam) {
+      // Clear filters when URL param is removed
+      lastAppliedFilterRef.current = null;
     }
-  }, [activeSearchContext, filterIds, updateFilters]);
+  }, [activeSearchContext, filterIds, filterParam, updateFilters]);
 
   const clearUrlFilters = useCallback(() => {
     updateFilters([]);
