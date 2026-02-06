@@ -3,8 +3,8 @@ import { Dialog, Fab, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import AutosysMultiImport from './AutosysMultiImport';
-import AutosysSingleImport from './AutosysSingleImport';
+import MultiImport from '../external-inputs/autosys/MultiImport';
+import SingleImport from '../external-inputs/autosys/SingleImport';
 
 export default function AutosysImportFloatingMenu() {
   const [open, setOpen] = useState(false);
@@ -46,14 +46,11 @@ export default function AutosysImportFloatingMenu() {
         </Fab>
       </Tooltip>
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <AutosysMultiImport
-          onClose={() => setOpen(false)}
-          onImportComplete={handleImportComplete}
-        />
+        <MultiImport onClose={() => setOpen(false)} onImportComplete={handleImportComplete} />
       </Dialog>
       {/* Legacy for e2e-tests  */}
       <Dialog open={singleOpen} onClose={() => setSingleOpen(false)} maxWidth="xs" fullWidth>
-        <AutosysSingleImport onClose={() => setSingleOpen(false)} />
+        <SingleImport onClose={() => setSingleOpen(false)} />
       </Dialog>
     </>
   );

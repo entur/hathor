@@ -8,15 +8,15 @@ import type { NeTExResourceFrame } from '../../../data/vehicle-types/vehicleType
 import { useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import { useAuth } from '../../../auth';
-import AutosysSingleQuery from './AutosysSingleQuery';
-import AutosysSingleConfirm from './AutosysSingleConfirm';
+import SingleImportQuery from './SingleImportQuery';
+import SingleImportConfirm from './SingleImportConfirm';
 import DialogTitle from '@mui/material/DialogTitle';
 
-interface AutosysSingleImportProps {
+interface SingleImportProps {
   onClose: () => void;
 }
 
-export default function AutosysSingleImport({ onClose }: AutosysSingleImportProps) {
+export default function SingleImport({ onClose }: SingleImportProps) {
   const { t } = useTranslation();
   const { applicationImportBaseUrl, applicationGetAutosysUrl } = useConfig();
   const { getAccessToken } = useAuth();
@@ -60,14 +60,14 @@ export default function AutosysSingleImport({ onClose }: AutosysSingleImportProp
       <DialogTitle>{t('import.title', 'Import Vehicle')}</DialogTitle>
 
       {resourceFrame ? (
-        <AutosysSingleConfirm
+        <SingleImportConfirm
           operationalId={operationalId}
           resourceFrame={resourceFrame}
           onConfirm={onConfirm}
           onClose={resetAndClose}
         />
       ) : (
-        <AutosysSingleQuery
+        <SingleImportQuery
           registrationNumber={registrationNumber}
           operationalId={operationalId}
           onRegistrationNumberChange={setRegistrationNumber}

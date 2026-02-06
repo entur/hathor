@@ -5,19 +5,19 @@ import DialogActions from '@mui/material/DialogActions';
 import { useTranslation } from 'react-i18next';
 import type { NeTExResourceFrame } from '../../../data/vehicle-types/vehicleTypeTypes';
 
-interface AutosysSingleConfirmProps {
+interface SingleImportConfirmProps {
   operationalId: string;
   resourceFrame: NeTExResourceFrame;
   onConfirm: () => void;
   onClose: () => void;
 }
 
-export default function AutosysSingleConfirm({
+export default function SingleImportConfirm({
   operationalId,
   resourceFrame,
   onConfirm,
   onClose,
-}: AutosysSingleConfirmProps) {
+}: SingleImportConfirmProps) {
   const { t } = useTranslation();
 
   return (

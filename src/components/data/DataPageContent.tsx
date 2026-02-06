@@ -92,7 +92,7 @@ export default function DataPageContent<
         </Typography>
         {urlFilterInfo && urlFilterInfo.filterCount > 0 && (
           <Chip
-            label={t('data.filteredCount', '{{count}} via filtering', {
+            label={t('data.filteredCount', 'Filtering on IDs', {
               count: urlFilterInfo.filterCount,
             })}
             onDelete={urlFilterInfo.clearUrlFilters}
