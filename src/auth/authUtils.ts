@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useAuth as useOidcAuth, type AuthContextProps } from 'react-oidc-context';
-import { useConfig } from '../contexts/ConfigContext.tsx';
+import { useConfig } from '../contexts/configContext.ts';
 
 export type AccessToken = string | null;
 

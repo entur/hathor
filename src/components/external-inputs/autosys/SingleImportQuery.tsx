@@ -4,7 +4,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { useTranslation } from 'react-i18next';
 
-interface AutosysSingleQueryProps {
+interface SingleImportQueryProps {
   registrationNumber: string;
   operationalId: string;
   onRegistrationNumberChange: (value: string) => void;
@@ -13,14 +13,14 @@ interface AutosysSingleQueryProps {
   onClose: () => void;
 }
 
-export default function AutosysSingleQuery({
+export default function SingleImportQuery({
   registrationNumber,
   operationalId,
   onRegistrationNumberChange,
   onOperationalIdChange,
   onFetch,
   onClose,
-}: AutosysSingleQueryProps) {
+}: SingleImportQueryProps) {
   const { t } = useTranslation();
 
   return (

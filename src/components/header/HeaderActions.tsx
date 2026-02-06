@@ -64,10 +64,9 @@ export default function HeaderActions({
       ) : (
         <Chip
           label={t('header.actions.authDisabled', 'Auth off')}
-          variant="outlined"
+          color="warning"
           size="small"
           data-testid="auth-disabled-label"
-          sx={{ color: 'inherit', borderColor: 'rgba(255,255,255,0.5)' }}
         />
       )}
 

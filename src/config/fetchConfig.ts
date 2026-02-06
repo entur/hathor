@@ -1,4 +1,4 @@
-import type { Config } from '../contexts/ConfigContext.tsx';
+import type { Config } from '../contexts/configContext.ts';
 
 let fetchedConfig: Config | undefined = undefined;
 

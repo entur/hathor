@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createTheme, type Theme } from '@mui/material/styles';
 import { createThemeFromConfig } from '../theme/createThemeFromConfig';
 import type { ThemeConfig } from '../theme/theme-config';
-import { useConfig } from '../contexts/ConfigContext.tsx';
+import { useConfig } from '../contexts/configContext.ts';
 
 export function useAppTheme(useCustomFeatures: boolean): {
   theme: Theme;
