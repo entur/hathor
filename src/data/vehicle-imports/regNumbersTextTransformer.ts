@@ -1,11 +1,14 @@
+/** Severity level for the status message returned after parsing. */
 export type WarnLevel = 'success' | 'info' | 'warning' | 'error';
 
+/** Summary of the parsing outcome (count, human-readable message, severity). */
 export interface RegNumbersStatus {
   uniqueCount: number;
   message: string;
   warnLevel: WarnLevel;
 }
 
+/** Deduplicated registration numbers together with a parsing status summary. */
 export interface RegNumbersResult {
   status: RegNumbersStatus;
   registrationNumbers: string[];

@@ -7,3 +7,9 @@
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ParsedXml = Record<string, any>;
+
+/** A single item to import — reg number with optional metadata from CSV columns */
+export interface ImportEntry {
+  regNumber: string;
+  operationalRef?: string;
+}

@@ -8,23 +8,68 @@ import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
+import type { ImportEntry } from '../../../data/vehicle-imports/types';
 
 interface MultiImportReviewInputProps {
-  regNumbers: string[];
+  entries: ImportEntry[];
   status: RegNumbersStatus | null;
   fetching: boolean;
   fetchProgress: { completed: number; total: number };
-  onDeleteRegNumber: (value: string) => void;
-  onAddRegNumber: (value: string) => void;
+  onDeleteEntry: (regNumber: string) => void;
+  onAddEntry: (entry: ImportEntry) => void;
+}
+
+/** Parse "AB1234:OP-001" into an ImportEntry. Colon separates reg from ref. */
+function parseEntryInput(raw: string): ImportEntry | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  const colonIdx = trimmed.indexOf(':');
+  if (colonIdx === -1) {
+    return { regNumber: trimmed };
+  }
+
+  const regNumber = trimmed.slice(0, colonIdx).trim();
+  const operationalRef = trimmed.slice(colonIdx + 1).trim() || undefined;
+  if (!regNumber) return null;
+
+  return { regNumber, operationalRef };
+}
+
+function EntryChipLabel({ entry }: { entry: ImportEntry }) {
+  if (!entry.operationalRef) {
+    return <span>{entry.regNumber}</span>;
+  }
+
+  return (
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+      <span>{entry.regNumber}</span>
+      <Box
+        component="span"
+        sx={{
+          bgcolor: 'secondary.main',
+          color: 'secondary.contrastText',
+          fontSize: '0.7rem',
+          fontWeight: 600,
+          px: 0.75,
+          py: 0.125,
+          borderRadius: 1,
+          lineHeight: 1.4,
+        }}
+      >
+        {entry.operationalRef}
+      </Box>
+    </Box>
+  );
 }
 
 export default function MultiImportReviewInput({
-  regNumbers,
+  entries,
   status,
   fetching,
   fetchProgress,
-  onDeleteRegNumber,
-  onAddRegNumber,
+  onDeleteEntry,
+  onAddEntry,
 }: MultiImportReviewInputProps) {
   const { t } = useTranslation();
   const [newEntry, setNewEntry] = useState('');
@@ -33,9 +78,9 @@ export default function MultiImportReviewInput({
     fetchProgress.total > 0 ? Math.round((fetchProgress.completed / fetchProgress.total) * 100) : 0;
 
   const handleAddEntry = () => {
-    const trimmed = newEntry.trim();
-    if (trimmed) {
-      onAddRegNumber(trimmed);
+    const parsed = parseEntryInput(newEntry);
+    if (parsed) {
+      onAddEntry(parsed);
     }
     setNewEntry('');
   };
@@ -88,8 +133,13 @@ export default function MultiImportReviewInput({
         }}
         data-testid="multi-import-tags"
       >
-        {regNumbers.map(rn => (
-          <Chip key={rn} label={rn} onDelete={() => onDeleteRegNumber(rn)} size="small" />
+        {entries.map(entry => (
+          <Chip
+            key={entry.regNumber}
+            label={<EntryChipLabel entry={entry} />}
+            onDelete={() => onDeleteEntry(entry.regNumber)}
+            size="small"
+          />
         ))}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
@@ -98,7 +148,7 @@ export default function MultiImportReviewInput({
           value={newEntry}
           onChange={e => setNewEntry(e.target.value)}
           onKeyDown={handleEntryKeyDown}
-          placeholder={t('import.multi.addPlaceholder', 'Add registration number...')}
+          placeholder={t('import.multi.addPlaceholder', 'AB1234 or AB1234:OP-001')}
           fullWidth
           data-testid="multi-import-add-input"
         />

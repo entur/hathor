@@ -3,24 +3,36 @@ import { useTranslation } from 'react-i18next';
 import { CloudUpload } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { regNumbersTextTransformer } from '../../../data/vehicle-imports/regNumbersTextTransformer';
+import {
+  type AnalyzerResult,
+  type TableMeta,
+  inputTextAnalyzer,
+} from '../../../data/vehicle-imports/inputTextAnalyzer';
 import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
 
 interface MultiImportFileInputProps {
   onParsed: (regNumbers: string[], status: RegNumbersStatus) => void;
+  onTableDetected: (tableMeta: TableMeta) => void;
 }
 
-export default function MultiImportFileInput({ onParsed }: MultiImportFileInputProps) {
+export default function MultiImportFileInput({
+  onParsed,
+  onTableDetected,
+}: MultiImportFileInputProps) {
   const { t } = useTranslation();
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileContent = useCallback(
     (text: string) => {
-      const result = regNumbersTextTransformer(text);
-      onParsed(result.registrationNumbers, result.status);
+      const result: AnalyzerResult = inputTextAnalyzer(text);
+      if (result.kind === 'table') {
+        onTableDetected(result);
+      } else {
+        onParsed(result.registrationNumbers, result.status);
+      }
     },
-    [onParsed]
+    [onParsed, onTableDetected]
   );
 
   const readFile = useCallback(
