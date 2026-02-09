@@ -1,3 +1,45 @@
+/** ResourceFrame as direct child of dataObjects (no CompositeFrame wrapper). */
+export function makeXmlFlat({
+  vehicleReg = 'AB1234',
+  vehicleTypeId = 'NMR:VehicleType:1',
+  deckPlanId = 'NMR:DeckPlan:1',
+  vehicleModelId = 'NMR:VehicleModel:1',
+  includeVehicleModel = true,
+}: {
+  vehicleReg?: string;
+  vehicleTypeId?: string;
+  deckPlanId?: string;
+  vehicleModelId?: string;
+  includeVehicleModel?: boolean;
+} = {}): string {
+  const vehicleModelBlock = includeVehicleModel
+    ? `<vehicleModels><VehicleModel id="${vehicleModelId}"><Name>Model X</Name></VehicleModel></vehicleModels>`
+    : '';
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery>
+  <dataObjects>
+    <ResourceFrame id="NMR:ResourceFrame:1">
+      <vehicleTypes>
+        <VehicleType id="${vehicleTypeId}">
+          <Name>Bus Type A</Name>
+        </VehicleType>
+      </vehicleTypes>
+      <deckPlans>
+        <DeckPlan id="${deckPlanId}">
+          <Name>Standard Layout</Name>
+        </DeckPlan>
+      </deckPlans>
+      ${vehicleModelBlock}
+      <vehicles>
+        <Vehicle id="NMR:Vehicle:1">
+          <RegistrationNumber>${vehicleReg}</RegistrationNumber>
+        </Vehicle>
+      </vehicles>
+    </ResourceFrame>
+  </dataObjects>
+</PublicationDelivery>`;
+}
+
 export function makeXml({
   vehicleReg = 'AB1234',
   vehicleTypeId = 'NMR:VehicleType:1',

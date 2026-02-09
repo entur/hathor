@@ -4,7 +4,7 @@ import type { AutosysFetchResult } from '../assembleAutosysResults';
 import type { ParsedXml } from '../types';
 import { pubDeliveryFromListV2 } from '../pubDeliveryFromList';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
-import { makeXml } from './__fixtures__/makeXml';
+import { makeXml, makeXmlFlat } from './__fixtures__/makeXml';
 
 describe('assembleAutosysResults', () => {
   it('parses a single successful XML', () => {
@@ -97,6 +97,21 @@ describe('assembleAutosysResults', () => {
     expect(summary.errors).toHaveLength(1);
     expect(summary.errors[0].message).toBe('No ResourceFrame found in response');
     expect(xmlList).toEqual([]);
+  });
+
+  it('parses XML with ResourceFrame directly under dataObjects (no CompositeFrame)', () => {
+    const results: AutosysFetchResult[] = [
+      { regNumber: 'AB1234', xml: makeXmlFlat(), error: null },
+    ];
+
+    const { summary, xmlList } = assembleAutosysResults(results);
+
+    expect(summary.vehicleCount).toBe(1);
+    expect(summary.vehicleTypeIds.size).toBe(1);
+    expect(summary.deckPlanIds.size).toBe(1);
+    expect(summary.vehicleModelIds.size).toBe(1);
+    expect(summary.errors).toEqual([]);
+    expect(xmlList).toHaveLength(1);
   });
 
   it('handles XML without optional vehicleModels section', () => {

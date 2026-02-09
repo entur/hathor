@@ -32,6 +32,12 @@ export interface AutosysAssembledResult {
 
 const parser = new XMLParser({ ignoreAttributes: false });
 
+/** Find ResourceFrame in parsed XML — supports both CompositeFrame-wrapped and flat layouts. */
+function findResourceFrame(parsed: ParsedXml): ParsedXml | undefined {
+  const dataObjects = parsed.PublicationDelivery?.dataObjects;
+  return dataObjects?.CompositeFrame?.frames?.ResourceFrame ?? dataObjects?.ResourceFrame;
+}
+
 /** Normalise to array — handles single-element vs array in parsed XML. */
 function toArray<T>(value: T | T[] | undefined): T[] {
   if (value === undefined || value === null) return [];
@@ -63,8 +69,7 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
 
     try {
       const parsed = parser.parse(result.xml);
-      const resourceFrame =
-        parsed.PublicationDelivery?.dataObjects?.CompositeFrame?.frames?.ResourceFrame;
+      const resourceFrame = findResourceFrame(parsed);
 
       if (!resourceFrame) {
         errors.push({
