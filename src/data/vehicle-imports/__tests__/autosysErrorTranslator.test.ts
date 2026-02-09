@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { translateAutosysError } from './autosysErrorTranslator';
+import { translateAutosysError } from '../autosysErrorTranslator';
 
 describe('translateAutosysError', () => {
   it('translates incomplete autosys data error', () => {

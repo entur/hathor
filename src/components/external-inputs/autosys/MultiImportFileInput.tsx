@@ -74,7 +74,7 @@ export default function MultiImportFileInput({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".csv,.txt"
+        accept=".csv,.txt,.tsv"
         hidden
         onChange={onFileChange}
         data-testid="multi-import-file-input"

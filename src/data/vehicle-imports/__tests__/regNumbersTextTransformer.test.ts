@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { regNumbersTextTransformer } from './regNumbersTextTransformer';
+import { regNumbersTextTransformer } from '../regNumbersTextTransformer';
 
 describe('regNumbersTextTransformer', () => {
   it('parses newline-separated registration numbers', () => {

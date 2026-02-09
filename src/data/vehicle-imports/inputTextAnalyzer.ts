@@ -59,7 +59,7 @@ export function inputTextAnalyzer(text: string): AnalyzerResult {
   // If >=2 columns AND the first row values look non-numeric → treat as CSV with headers
   if (rows.length >= 2 && colCount >= 2) {
     const firstRow = rows[0];
-    const headerish = firstRow.every(cell => looksLikeHeader(cell));
+    const headerish = firstRow.every(cell => !cell.trim() || looksLikeHeader(cell));
 
     if (headerish) {
       const parsed = Papa.parse<Record<string, string>>(text.trim(), {

@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { inputTextAnalyzer } from './inputTextAnalyzer';
+import { inputTextAnalyzer } from '../inputTextAnalyzer';
+
+const multiColCsv = readFileSync(new URL('./__fixtures__/multi-col.csv', import.meta.url), 'utf-8');
 
 describe('inputTextAnalyzer', () => {
   it('returns kind "list" for plain newline-separated values', () => {
@@ -86,6 +89,22 @@ describe('inputTextAnalyzer', () => {
     if (result.kind === 'table') {
       expect(result.headers).toEqual(['regNumber', 'operationalId']);
       expect(result.rows[0]).toEqual({ regNumber: 'AB123', operationalId: 'OP1' });
+    }
+  });
+
+  it('parses real multi-column fleet CSV from fixture', () => {
+    const result = inputTextAnalyzer(multiColCsv);
+    expect(result.kind).toBe('table');
+    if (result.kind === 'table') {
+      expect(result.headers).toContain('Int.nr');
+      expect(result.headers).toContain('Reg.nr');
+      expect(result.headers).toContain('Merke');
+      expect(result.headers).toContain('Type');
+      expect(result.headers).toContain('Chassis nr.');
+      expect(result.rowCount).toBe(10);
+      expect(result.rows[0]['Reg.nr']).toBe('AA11111');
+      expect(result.rows[0]['Merke']).toBe('Van Hool');
+      expect(result.rows[1]['Merke']).toBe('');
     }
   });
 });
