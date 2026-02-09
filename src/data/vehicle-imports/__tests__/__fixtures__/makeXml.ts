@@ -1,17 +1,21 @@
-/** ResourceFrame as direct child of dataObjects (no CompositeFrame wrapper). */
-export function makeXmlFlat({
-  vehicleReg = 'AB1234',
-  vehicleTypeId = 'NMR:VehicleType:1',
-  deckPlanId = 'NMR:DeckPlan:1',
-  vehicleModelId = 'NMR:VehicleModel:1',
-  includeVehicleModel = true,
-}: {
+interface MakeXmlOptions {
   vehicleReg?: string;
+  vehicleId?: string;
   vehicleTypeId?: string;
   deckPlanId?: string;
   vehicleModelId?: string;
   includeVehicleModel?: boolean;
-} = {}): string {
+}
+
+/** ResourceFrame as direct child of dataObjects (no CompositeFrame wrapper). */
+export function makeXmlFlat({
+  vehicleReg = 'AB1234',
+  vehicleId = 'NMR:Vehicle:1',
+  vehicleTypeId = 'NMR:VehicleType:1',
+  deckPlanId = 'NMR:DeckPlan:1',
+  vehicleModelId = 'NMR:VehicleModel:1',
+  includeVehicleModel = true,
+}: MakeXmlOptions = {}): string {
   const vehicleModelBlock = includeVehicleModel
     ? `<vehicleModels><VehicleModel id="${vehicleModelId}"><Name>Model X</Name></VehicleModel></vehicleModels>`
     : '';
@@ -31,7 +35,7 @@ export function makeXmlFlat({
       </deckPlans>
       ${vehicleModelBlock}
       <vehicles>
-        <Vehicle id="NMR:Vehicle:1">
+        <Vehicle id="${vehicleId}">
           <RegistrationNumber>${vehicleReg}</RegistrationNumber>
         </Vehicle>
       </vehicles>
@@ -42,17 +46,12 @@ export function makeXmlFlat({
 
 export function makeXml({
   vehicleReg = 'AB1234',
+  vehicleId = 'NMR:Vehicle:1',
   vehicleTypeId = 'NMR:VehicleType:1',
   deckPlanId = 'NMR:DeckPlan:1',
   vehicleModelId = 'NMR:VehicleModel:1',
   includeVehicleModel = true,
-}: {
-  vehicleReg?: string;
-  vehicleTypeId?: string;
-  deckPlanId?: string;
-  vehicleModelId?: string;
-  includeVehicleModel?: boolean;
-} = {}): string {
+}: MakeXmlOptions = {}): string {
   const vehicleModelBlock = includeVehicleModel
     ? `<vehicleModels><VehicleModel id="${vehicleModelId}"><Name>Model X</Name></VehicleModel></vehicleModels>`
     : '';
@@ -88,7 +87,7 @@ export function makeXml({
           </deckPlans>
           ${vehicleModelBlock}
           <vehicles>
-            <Vehicle id="NMR:Vehicle:1">
+            <Vehicle id="${vehicleId}">
               <RegistrationNumber>${vehicleReg}</RegistrationNumber>
             </Vehicle>
           </vehicles>

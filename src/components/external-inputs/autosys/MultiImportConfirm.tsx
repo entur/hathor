@@ -22,8 +22,8 @@ export default function MultiImportConfirm({
         sx={{ mb: 2 }}
       >
         {t('import.multi.summaryFetched', 'Fetched {{success}} of {{total}} vehicles', {
-          success: assembledResult.xmlList.length,
-          total: assembledResult.xmlList.length + assembledResult.summary.errors.length,
+          success: assembledResult.summary.successCount,
+          total: assembledResult.summary.successCount + assembledResult.summary.errors.length,
         })}
       </Alert>
       <Box

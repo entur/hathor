@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { XMLBuilder } from 'fast-xml-parser';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -18,7 +17,6 @@ import {
   type AutosysFetchResult,
   assembleAutosysResults,
 } from '../../../data/vehicle-imports/assembleAutosysResults';
-import { pubDeliveryFromListV2 } from '../../../data/vehicle-imports/pubDeliveryFromList';
 import type { ImportEntry } from '../../../data/vehicle-imports/types';
 import {
   fetchVehicleFromAutosys,
@@ -207,17 +205,11 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   };
 
   const startSubmit = async () => {
-    if (!assembledResult) return;
+    if (!assembledResult?.postPayload) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const combined = pubDeliveryFromListV2(assembledResult.xmlList);
-      const builder = new XMLBuilder({
-        ignoreAttributes: false,
-        format: true,
-        suppressEmptyNode: true,
-      });
-      const xml = builder.build(combined);
+      const xml = assembledResult?.postPayload;
       const token = await getAccessToken();
       await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
       if (onImportComplete) {
@@ -263,7 +255,8 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     fetching ||
     submitting ||
     (currentStepName === 'Review' && entries.length === 0) ||
-    (currentStepName === 'Confirm' && (!assembledResult || assembledResult.xmlList.length === 0));
+    (currentStepName === 'Confirm' &&
+      (!assembledResult || assembledResult.summary.successCount === 0));
 
   const nextLabel = (() => {
     switch (currentStepName) {

@@ -1,6 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import { translateAutosysError } from './autosysErrorTranslator';
 import type { ParsedXml } from './types';
+import { findResourceFrame, mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
 
 /** Result of fetching a single vehicle from the Autosys registry.
  * On success `xml` contains the raw NeTEx XML and `error` is null.
@@ -19,30 +20,18 @@ export interface AutosysAssembledSummary {
   vehicleTypeIds: Set<string>;
   deckPlanIds: Set<string>;
   vehicleModelIds: Set<string>;
+  successCount: number;
   errors: { regNumber: string; message: string }[];
 }
 
 /** Combined output of {@link assembleAutosysResults}: a deduplicated
- * summary of all fetched vehicles plus the successfully parsed XML
- * objects ready for merging via {@link pubDeliveryFromListV1}. */
+ * summary, and the combined netex-payload  */
 export interface AutosysAssembledResult {
   summary: AutosysAssembledSummary;
-  xmlList: ParsedXml[];
+  postPayload?: string;
 }
 
 const parser = new XMLParser({ ignoreAttributes: false });
-
-/** Find ResourceFrame in parsed XML — supports both CompositeFrame-wrapped and flat layouts. */
-function findResourceFrame(parsed: ParsedXml): ParsedXml | undefined {
-  const dataObjects = parsed.PublicationDelivery?.dataObjects;
-  return dataObjects?.CompositeFrame?.frames?.ResourceFrame ?? dataObjects?.ResourceFrame;
-}
-
-/** Normalise to array — handles single-element vs array in parsed XML. */
-function toArray<T>(value: T | T[] | undefined): T[] {
-  if (value === undefined || value === null) return [];
-  return Array.isArray(value) ? value : [value];
-}
 
 /**
  * Parse an array of Autosys fetch results, extract the NeTEx ResourceFrame
@@ -51,12 +40,9 @@ function toArray<T>(value: T | T[] | undefined): T[] {
  * Failed fetches are collected as translated errors.
  */
 export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAssembledResult {
-  const vehicleTypeIds = new Set<string>();
-  const deckPlanIds = new Set<string>();
-  const vehicleModelIds = new Set<string>();
   const errors: { regNumber: string; message: string }[] = [];
-  const xmlList: ParsedXml[] = [];
-  let vehicleCount = 0;
+  const frames: ParsedXml[] = [];
+  let firstXml: ParsedXml | undefined = undefined;
 
   for (const result of results) {
     if (result.error) {
@@ -79,29 +65,12 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
         continue;
       }
 
-      // Vehicles
-      const vehicles = toArray(resourceFrame.vehicles?.Vehicle);
-      vehicleCount += vehicles.length;
+      frames.push(resourceFrame);
 
-      // VehicleTypes
-      const vehicleTypes = toArray(resourceFrame.vehicleTypes?.VehicleType);
-      for (const vt of vehicleTypes) {
-        if (vt['@_id']) vehicleTypeIds.add(vt['@_id']);
+      // Use the first successfully parsed XML as the envelope template
+      if (!firstXml) {
+        firstXml = parsed;
       }
-
-      // DeckPlans
-      const deckPlans = toArray(resourceFrame.deckPlans?.DeckPlan);
-      for (const dp of deckPlans) {
-        if (dp['@_id']) deckPlanIds.add(dp['@_id']);
-      }
-
-      // VehicleModels
-      const vehicleModels = toArray(resourceFrame.vehicleModels?.VehicleModel);
-      for (const vm of vehicleModels) {
-        if (vm['@_id']) vehicleModelIds.add(vm['@_id']);
-      }
-
-      xmlList.push(parsed);
     } catch (e) {
       errors.push({
         regNumber: result.regNumber,
@@ -110,14 +79,17 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
     }
   }
 
+  const merged = mergeResourceFrames(frames);
+
   return {
     summary: {
-      vehicleCount,
-      vehicleTypeIds,
-      deckPlanIds,
-      vehicleModelIds,
+      vehicleCount: merged.vehicles.length,
+      vehicleTypeIds: new Set(merged.vehicleTypes.map(vt => vt['@_id'])),
+      deckPlanIds: new Set(merged.deckPlans.map(dp => dp['@_id'])),
+      vehicleModelIds: new Set(merged.vehicleModels.map(vm => vm['@_id'])),
+      successCount: frames.length,
       errors,
     },
-    xmlList,
+    postPayload: pubDeliverySingleRcFrame(firstXml, merged),
   };
 }
