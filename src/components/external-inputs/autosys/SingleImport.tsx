@@ -1,3 +1,6 @@
+// UNUSED — SingleImport is deactivated because it sends the raw Autosys XML
+// to the backend without injecting OperationalNumber. Use MultiImport instead.
+
 import { useTranslation } from 'react-i18next';
 import { useConfig } from '../../../contexts/configContext';
 import {

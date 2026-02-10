@@ -1,14 +1,12 @@
-import { FileUpload, LibraryAdd } from '@mui/icons-material';
+import { LibraryAdd } from '@mui/icons-material';
 import { Dialog, Fab, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import MultiImport from '../external-inputs/autosys/MultiImport';
-import SingleImport from '../external-inputs/autosys/SingleImport';
 
 export default function AutosysImportFloatingMenu() {
   const [open, setOpen] = useState(false);
-  const [singleOpen, setSingleOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -33,24 +31,8 @@ export default function AutosysImportFloatingMenu() {
           <LibraryAdd />
         </Fab>
       </Tooltip>
-      <Tooltip title={t('vehicleType.actions.importSingle', 'Import')}>
-        <Fab
-          sx={{ ml: 1 }}
-          size="small"
-          color="primary"
-          onClick={() => setSingleOpen(true)}
-          data-testid="import-vehicle-single-button"
-          aria-label={t('vehicleType.actions.importSingle', 'Import')}
-        >
-          <FileUpload />
-        </Fab>
-      </Tooltip>
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <MultiImport onClose={() => setOpen(false)} onImportComplete={handleImportComplete} />
-      </Dialog>
-      {/* Legacy for e2e-tests  */}
-      <Dialog open={singleOpen} onClose={() => setSingleOpen(false)} maxWidth="xs" fullWidth>
-        <SingleImport onClose={() => setSingleOpen(false)} />
       </Dialog>
     </>
   );
