@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { parseEntryInput } from '../../../data/vehicle-imports/parseEntryInput';
 import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
 import type { ImportEntry } from '../../../data/vehicle-imports/types';
 
@@ -19,31 +20,14 @@ interface MultiImportReviewInputProps {
   onAddEntry: (entry: ImportEntry) => void;
 }
 
-/** Parse "AB1234:OP-001" into an ImportEntry. Colon separates reg from ref. */
-function parseEntryInput(raw: string): ImportEntry | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-
-  const colonIdx = trimmed.indexOf(':');
-  if (colonIdx === -1) {
-    return { regNumber: trimmed };
-  }
-
-  const regNumber = trimmed.slice(0, colonIdx).trim();
-  const operationalRef = trimmed.slice(colonIdx + 1).trim() || undefined;
-  if (!regNumber) return null;
-
-  return { regNumber, operationalRef };
-}
-
 function EntryChipLabel({ entry }: { entry: ImportEntry }) {
   if (!entry.operationalRef) {
-    return <span>{entry.regNumber}</span>;
+    return <span>{entry.queryRegNumber}</span>;
   }
 
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-      <span>{entry.regNumber}</span>
+      <span>{entry.queryRegNumber}</span>
       <Box
         component="span"
         sx={{
@@ -135,9 +119,9 @@ export default function MultiImportReviewInput({
       >
         {entries.map(entry => (
           <Chip
-            key={entry.regNumber}
+            key={entry.queryRegNumber}
             label={<EntryChipLabel entry={entry} />}
-            onDelete={() => onDeleteEntry(entry.regNumber)}
+            onDelete={() => onDeleteEntry(entry.queryRegNumber)}
             size="small"
           />
         ))}

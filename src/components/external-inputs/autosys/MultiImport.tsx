@@ -10,58 +10,28 @@ import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
-import type { TableMeta } from '../../../data/vehicle-imports/inputTextAnalyzer';
-import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
 import {
   type AutosysAssembledResult,
-  type AutosysFetchResult,
   assembleAutosysResults,
 } from '../../../data/vehicle-imports/assembleAutosysResults';
+import { fetchAllWithConcurrency } from '../../../data/vehicle-imports/fetchAllWithConcurrency';
+import type { TableMeta } from '../../../data/vehicle-imports/inputTextAnalyzer';
+import {
+  type RegNumbersStatus,
+  deduplicateEntries,
+} from '../../../data/vehicle-imports/regNumbersTextTransformer';
 import type { ImportEntry } from '../../../data/vehicle-imports/types';
 import {
   fetchVehicleFromAutosys,
   importAsNetexToBackend,
 } from '../../../data/vehicle-imports/vehicleImportServices';
+import { mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
 
 const CONCURRENCY_LIMIT = 5;
-
-async function fetchAllWithConcurrency(
-  regNumbers: string[],
-  fetchFn: (rn: string) => Promise<string>,
-  concurrency: number,
-  onProgress: (completed: number) => void
-): Promise<AutosysFetchResult[]> {
-  const results: AutosysFetchResult[] = [];
-  let completed = 0;
-  let index = 0;
-
-  async function worker() {
-    while (index < regNumbers.length) {
-      const i = index++;
-      const regNumber = regNumbers[i];
-      try {
-        const xml = await fetchFn(regNumber);
-        results[i] = { regNumber, xml, error: null };
-      } catch (e) {
-        results[i] = {
-          regNumber,
-          xml: '',
-          error: e instanceof Error ? e.message : 'Unknown error',
-        };
-      }
-      completed++;
-      onProgress(completed);
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(concurrency, regNumbers.length) }, () => worker());
-  await Promise.all(workers);
-  return results;
-}
 
 /** Steps when a CSV table is detected (includes column mapping) */
 const TABLE_STEPS = ['Upload file', 'Map columns', 'Review', 'Confirm'] as const;
@@ -113,7 +83,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const handleParsed = (parsed: string[], parsedStatus: RegNumbersStatus) => {
     setTableMeta(null);
-    setEntries(parsed.map(rn => ({ regNumber: rn })));
+    setEntries(parsed.map(rn => ({ queryRegNumber: rn })));
     setStatus(parsedStatus);
     setActiveStep(1); // goes to Review (list flow)
   };
@@ -134,51 +104,26 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     const { regNumberCol, operationalRefCol } = columnMappingRef.current;
     const mapped: ImportEntry[] = tableMeta.rows
       .map(row => ({
-        regNumber: (row[regNumberCol] ?? '').trim(),
+        queryRegNumber: (row[regNumberCol] ?? '').trim(),
         operationalRef: operationalRefCol
           ? (row[operationalRefCol] ?? '').trim() || undefined
           : undefined,
       }))
-      .filter(e => e.regNumber);
+      .filter(e => e.queryRegNumber);
 
-    // Deduplicate by regNumber
-    const seen = new Set<string>();
-    const deduped: ImportEntry[] = [];
-    for (const e of mapped) {
-      if (!seen.has(e.regNumber)) {
-        seen.add(e.regNumber);
-        deduped.push(e);
-      }
-    }
-
-    const duplicateCount = mapped.length - deduped.length;
-    const uniqueCount = deduped.length;
-
-    let message: string;
-    let warnLevel: 'success' | 'warning' | 'error';
-    if (uniqueCount === 0) {
-      message = 'No registration numbers found';
-      warnLevel = 'error';
-    } else if (duplicateCount > 0) {
-      message = `${uniqueCount} unique registration numbers (${duplicateCount} duplicate(s) removed)`;
-      warnLevel = 'warning';
-    } else {
-      message = `${uniqueCount} registration numbers`;
-      warnLevel = 'success';
-    }
-
-    setEntries(deduped);
-    setStatus({ uniqueCount, message, warnLevel });
+    const result = deduplicateEntries(mapped);
+    setEntries(result.entries);
+    setStatus(result.status);
   };
 
   // --- Review step callbacks ---
 
   const handleDeleteEntry = (regNumber: string) => {
-    setEntries(prev => prev.filter(e => e.regNumber !== regNumber));
+    setEntries(prev => prev.filter(e => e.queryRegNumber !== regNumber));
   };
 
   const handleAddEntry = (entry: ImportEntry) => {
-    if (!entries.some(e => e.regNumber === entry.regNumber)) {
+    if (!entries.some(e => e.queryRegNumber === entry.queryRegNumber)) {
       setEntries(prev => [...prev, entry]);
     }
   };
@@ -186,7 +131,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   // --- Fetch + submit ---
 
   const startFetch = async () => {
-    const regNumbers = entries.map(e => e.regNumber);
+    const regNumbers = entries.map(e => e.queryRegNumber);
     setFetching(true);
     setFetchProgress({ completed: 0, total: regNumbers.length });
 
@@ -198,7 +143,9 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       completed => setFetchProgress({ completed, total: regNumbers.length })
     );
 
-    const assembled = assembleAutosysResults(results);
+    const assembled = assembleAutosysResults(results, frames =>
+      mergeResourceFrames(frames, entries)
+    );
     setAssembledResult(assembled);
     setFetching(false);
     setActiveStep(prev => prev + 1); // advance to Confirm

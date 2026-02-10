@@ -5,7 +5,9 @@ import { makeXml, makeXmlFlat } from './__fixtures__/makeXml';
 
 describe('assembleAutosysResults', () => {
   it('parses a single successful XML', () => {
-    const results: AutosysFetchResult[] = [{ regNumber: 'AB1234', xml: makeXml(), error: null }];
+    const results: AutosysFetchResult[] = [
+      { queryRegNumber: 'AB1234', xml: makeXml(), error: null },
+    ];
 
     const { summary, postPayload } = assembleAutosysResults(results);
 
@@ -25,9 +27,9 @@ describe('assembleAutosysResults', () => {
 
   it('deduplicates shared VehicleType, DeckPlan, and VehicleModel ids', () => {
     const results: AutosysFetchResult[] = [
-      { regNumber: 'AB1234', xml: makeXml({ vehicleReg: 'AB1234' }), error: null },
+      { queryRegNumber: 'AB1234', xml: makeXml({ vehicleReg: 'AB1234' }), error: null },
       {
-        regNumber: 'CD5678',
+        queryRegNumber: 'CD5678',
         xml: makeXml({
           vehicleReg: 'CD5678',
           vehicleTypeId: 'NMR:VehicleType:1',
@@ -37,7 +39,7 @@ describe('assembleAutosysResults', () => {
         error: null,
       },
       {
-        regNumber: 'EF9012',
+        queryRegNumber: 'EF9012',
         xml: makeXml({
           vehicleReg: 'EF9012',
           vehicleTypeId: 'NMR:VehicleType:2',
@@ -61,9 +63,9 @@ describe('assembleAutosysResults', () => {
 
   it('collects errors for failed fetches and still processes successes', () => {
     const results: AutosysFetchResult[] = [
-      { regNumber: 'AB1234', xml: makeXml({ vehicleReg: 'AB1234' }), error: null },
-      { regNumber: 'FAIL1', xml: '', error: 'Network error' },
-      { regNumber: 'FAIL2', xml: '', error: '404 Not Found' },
+      { queryRegNumber: 'AB1234', xml: makeXml({ vehicleReg: 'AB1234' }), error: null },
+      { queryRegNumber: 'FAIL1', xml: '', error: 'Network error' },
+      { queryRegNumber: 'FAIL2', xml: '', error: '404 Not Found' },
     ];
 
     const { summary, postPayload } = assembleAutosysResults(results);
@@ -71,8 +73,8 @@ describe('assembleAutosysResults', () => {
     expect(summary.vehicleCount).toBe(1);
     expect(summary.vehicleTypeIds.size).toBe(1);
     expect(summary.errors).toHaveLength(2);
-    expect(summary.errors[0]).toEqual({ regNumber: 'FAIL1', message: 'Network error' });
-    expect(summary.errors[1]).toEqual({ regNumber: 'FAIL2', message: '404 Not Found' });
+    expect(summary.errors[0]).toEqual({ queryRegNumber: 'FAIL1', message: 'Network error' });
+    expect(summary.errors[1]).toEqual({ queryRegNumber: 'FAIL2', message: '404 Not Found' });
     expect(summary.successCount).toBe(1);
     expect(postPayload).toContain('PublicationDelivery');
   });
@@ -91,7 +93,7 @@ describe('assembleAutosysResults', () => {
 
   it('reports error when XML has no ResourceFrame', () => {
     const badXml = `<?xml version="1.0"?><PublicationDelivery><dataObjects></dataObjects></PublicationDelivery>`;
-    const results: AutosysFetchResult[] = [{ regNumber: 'AB1234', xml: badXml, error: null }];
+    const results: AutosysFetchResult[] = [{ queryRegNumber: 'AB1234', xml: badXml, error: null }];
 
     const { summary, postPayload } = assembleAutosysResults(results);
 
@@ -104,7 +106,7 @@ describe('assembleAutosysResults', () => {
 
   it('parses XML with ResourceFrame directly under dataObjects (no CompositeFrame)', () => {
     const results: AutosysFetchResult[] = [
-      { regNumber: 'AB1234', xml: makeXmlFlat(), error: null },
+      { queryRegNumber: 'AB1234', xml: makeXmlFlat(), error: null },
     ];
 
     const { summary, postPayload } = assembleAutosysResults(results);
@@ -121,7 +123,7 @@ describe('assembleAutosysResults', () => {
   it('handles XML without optional vehicleModels section', () => {
     const results: AutosysFetchResult[] = [
       {
-        regNumber: 'AB1234',
+        queryRegNumber: 'AB1234',
         xml: makeXml({ includeVehicleModel: false }),
         error: null,
       },
@@ -139,13 +141,13 @@ describe('assembleAutosysResults', () => {
   it('translates known autosys error responses', () => {
     const results: AutosysFetchResult[] = [
       {
-        regNumber: 'AA1111',
+        queryRegNumber: 'AA1111',
         xml: '',
         error:
           'Cannot invoke "org.entur.autosys.model.KjoretoyData.getKjoretoyId()" because the return value is null',
       },
       {
-        regNumber: 'BB2222',
+        queryRegNumber: 'BB2222',
         xml: '',
         error: '400 Bad Request: "{"feilmelding":"UGYLDIG_FORMAT_UNR_ELLER_KJENNEMERKE"}"',
       },
@@ -155,24 +157,24 @@ describe('assembleAutosysResults', () => {
 
     expect(summary.errors).toHaveLength(2);
     expect(summary.errors[0]).toEqual({
-      regNumber: 'AA1111',
+      queryRegNumber: 'AA1111',
       message: 'Incomplete vehicle data in Autosys',
     });
     expect(summary.errors[1]).toEqual({
-      regNumber: 'BB2222',
+      queryRegNumber: 'BB2222',
       message: 'Invalid format or unknown registration number',
     });
   });
 
   it('reports error for malformed XML', () => {
     const results: AutosysFetchResult[] = [
-      { regNumber: 'AB1234', xml: 'not xml at all <<<>>>', error: null },
+      { queryRegNumber: 'AB1234', xml: 'not xml at all <<<>>>', error: null },
     ];
 
     const { summary, postPayload } = assembleAutosysResults(results);
 
     expect(summary.errors).toHaveLength(1);
-    expect(summary.errors[0].regNumber).toBe('AB1234');
+    expect(summary.errors[0].queryRegNumber).toBe('AB1234');
     expect(postPayload).toBeUndefined();
   });
 });

@@ -8,8 +8,11 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ParsedXml = Record<string, any>;
 
+// container for RegNo+xml
+export type FramesByQueryRegNumber = Record<string, ParsedXml>;
+
 /** A single item to import — reg number with optional metadata from CSV columns */
 export interface ImportEntry {
-  regNumber: string;
+  queryRegNumber: string;
   operationalRef?: string;
 }
