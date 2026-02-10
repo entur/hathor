@@ -1,13 +1,14 @@
 import { XMLParser } from 'fast-xml-parser';
 import { translateAutosysError } from './autosysErrorTranslator';
-import type { ParsedXml } from './types';
+import type { ParsedXml, FramesByQueryRegNumber } from './types';
+import type { MergedEntities } from './xmlUtils';
 import { findResourceFrame, mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
 
 /** Result of fetching a single vehicle from the Autosys registry.
  * On success `xml` contains the raw NeTEx XML and `error` is null.
  * On failure `xml` is empty and `error` holds the backend error message. */
 export interface AutosysFetchResult {
-  regNumber: string;
+  queryRegNumber: string;
   xml: string;
   error: string | null;
 }
@@ -21,7 +22,7 @@ export interface AutosysAssembledSummary {
   deckPlanIds: Set<string>;
   vehicleModelIds: Set<string>;
   successCount: number;
-  errors: { regNumber: string; message: string }[];
+  errors: { queryRegNumber: string; message: string }[];
 }
 
 /** Combined output of {@link assembleAutosysResults}: a deduplicated
@@ -39,15 +40,18 @@ const parser = new XMLParser({ ignoreAttributes: false });
  * VehicleType, DeckPlan, and VehicleModel IDs along with a vehicle count.
  * Failed fetches are collected as translated errors.
  */
-export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAssembledResult {
-  const errors: { regNumber: string; message: string }[] = [];
-  const frames: ParsedXml[] = [];
+export function assembleAutosysResults(
+  results: AutosysFetchResult[],
+  mergeFn: (frames: FramesByQueryRegNumber) => MergedEntities = mergeResourceFrames
+): AutosysAssembledResult {
+  const errors: { queryRegNumber: string; message: string }[] = [];
+  const inFrames: FramesByQueryRegNumber = {};
   let firstXml: ParsedXml | undefined = undefined;
 
   for (const result of results) {
     if (result.error) {
       errors.push({
-        regNumber: result.regNumber,
+        queryRegNumber: result.queryRegNumber,
         message: translateAutosysError(result.error),
       });
       continue;
@@ -59,13 +63,13 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
 
       if (!resourceFrame) {
         errors.push({
-          regNumber: result.regNumber,
+          queryRegNumber: result.queryRegNumber,
           message: 'No ResourceFrame found in response',
         });
         continue;
       }
 
-      frames.push(resourceFrame);
+      inFrames[result.queryRegNumber] = resourceFrame;
 
       // Use the first successfully parsed XML as the envelope template
       if (!firstXml) {
@@ -73,13 +77,14 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
       }
     } catch (e) {
       errors.push({
-        regNumber: result.regNumber,
+        queryRegNumber: result.queryRegNumber,
         message: e instanceof Error ? e.message : 'Failed to parse XML',
       });
     }
   }
 
-  const merged = mergeResourceFrames(frames);
+  const merged = mergeFn(inFrames);
+  const frameCount = Object.keys(inFrames).length;
 
   return {
     summary: {
@@ -87,7 +92,7 @@ export function assembleAutosysResults(results: AutosysFetchResult[]): AutosysAs
       vehicleTypeIds: new Set(merged.vehicleTypes.map(vt => vt['@_id'])),
       deckPlanIds: new Set(merged.deckPlans.map(dp => dp['@_id'])),
       vehicleModelIds: new Set(merged.vehicleModels.map(vm => vm['@_id'])),
-      successCount: frames.length,
+      successCount: frameCount,
       errors,
     },
     postPayload: pubDeliverySingleRcFrame(firstXml, merged),

@@ -18,6 +18,7 @@ import {
   assembleAutosysResults,
 } from '../../../data/vehicle-imports/assembleAutosysResults';
 import type { ImportEntry } from '../../../data/vehicle-imports/types';
+import { mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
 import {
   fetchVehicleFromAutosys,
   importAsNetexToBackend,
@@ -30,7 +31,7 @@ import MultiImportReviewInput from './MultiImportReviewInput';
 const CONCURRENCY_LIMIT = 5;
 
 async function fetchAllWithConcurrency(
-  regNumbers: string[],
+  queryRegNumbers: string[],
   fetchFn: (rn: string) => Promise<string>,
   concurrency: number,
   onProgress: (completed: number) => void
@@ -40,15 +41,15 @@ async function fetchAllWithConcurrency(
   let index = 0;
 
   async function worker() {
-    while (index < regNumbers.length) {
+    while (index < queryRegNumbers.length) {
       const i = index++;
-      const regNumber = regNumbers[i];
+      const queryRegNumber = queryRegNumbers[i];
       try {
-        const xml = await fetchFn(regNumber);
-        results[i] = { regNumber, xml, error: null };
+        const xml = await fetchFn(queryRegNumber);
+        results[i] = { queryRegNumber, xml, error: null };
       } catch (e) {
         results[i] = {
-          regNumber,
+          queryRegNumber,
           xml: '',
           error: e instanceof Error ? e.message : 'Unknown error',
         };
@@ -58,7 +59,9 @@ async function fetchAllWithConcurrency(
     }
   }
 
-  const workers = Array.from({ length: Math.min(concurrency, regNumbers.length) }, () => worker());
+  const workers = Array.from({ length: Math.min(concurrency, queryRegNumbers.length) }, () =>
+    worker()
+  );
   await Promise.all(workers);
   return results;
 }
@@ -113,7 +116,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const handleParsed = (parsed: string[], parsedStatus: RegNumbersStatus) => {
     setTableMeta(null);
-    setEntries(parsed.map(rn => ({ regNumber: rn })));
+    setEntries(parsed.map(rn => ({ queryRegNumber: rn })));
     setStatus(parsedStatus);
     setActiveStep(1); // goes to Review (list flow)
   };
@@ -134,19 +137,19 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     const { regNumberCol, operationalRefCol } = columnMappingRef.current;
     const mapped: ImportEntry[] = tableMeta.rows
       .map(row => ({
-        regNumber: (row[regNumberCol] ?? '').trim(),
+        queryRegNumber: (row[regNumberCol] ?? '').trim(),
         operationalRef: operationalRefCol
           ? (row[operationalRefCol] ?? '').trim() || undefined
           : undefined,
       }))
-      .filter(e => e.regNumber);
+      .filter(e => e.queryRegNumber);
 
     // Deduplicate by regNumber
     const seen = new Set<string>();
     const deduped: ImportEntry[] = [];
     for (const e of mapped) {
-      if (!seen.has(e.regNumber)) {
-        seen.add(e.regNumber);
+      if (!seen.has(e.queryRegNumber)) {
+        seen.add(e.queryRegNumber);
         deduped.push(e);
       }
     }
@@ -174,11 +177,11 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   // --- Review step callbacks ---
 
   const handleDeleteEntry = (regNumber: string) => {
-    setEntries(prev => prev.filter(e => e.regNumber !== regNumber));
+    setEntries(prev => prev.filter(e => e.queryRegNumber !== regNumber));
   };
 
   const handleAddEntry = (entry: ImportEntry) => {
-    if (!entries.some(e => e.regNumber === entry.regNumber)) {
+    if (!entries.some(e => e.queryRegNumber === entry.queryRegNumber)) {
       setEntries(prev => [...prev, entry]);
     }
   };
@@ -186,7 +189,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   // --- Fetch + submit ---
 
   const startFetch = async () => {
-    const regNumbers = entries.map(e => e.regNumber);
+    const regNumbers = entries.map(e => e.queryRegNumber);
     setFetching(true);
     setFetchProgress({ completed: 0, total: regNumbers.length });
 
@@ -198,7 +201,9 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       completed => setFetchProgress({ completed, total: regNumbers.length })
     );
 
-    const assembled = assembleAutosysResults(results);
+    const assembled = assembleAutosysResults(results, frames =>
+      mergeResourceFrames(frames, entries)
+    );
     setAssembledResult(assembled);
     setFetching(false);
     setActiveStep(prev => prev + 1); // advance to Confirm

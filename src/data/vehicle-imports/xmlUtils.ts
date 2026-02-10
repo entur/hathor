@@ -1,4 +1,4 @@
-import type { ParsedXml } from './types';
+import type { ImportEntry, ParsedXml, UniqueParsedXmlSet } from './types';
 import { XMLBuilder } from 'fast-xml-parser';
 
 /** Find ResourceFrame in parsed XML — supports both CompositeFrame-wrapped and flat layouts. */
@@ -25,6 +25,15 @@ function uniqueById(frames: ParsedXml[], section: string, element: string): Pars
   return [...seen.values()];
 }
 
+/** Build a regNumber → operationalRef lookup from entries that have an operationalRef. */
+function opRefByRegNumber(entries: ImportEntry[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const e of entries) {
+    if (e.operationalRef) map.set(e.queryRegNumber, e.operationalRef);
+  }
+  return map;
+}
+
 /** Merged entity collections from one or more ResourceFrames, deduplicated by @_id. */
 export interface MergedEntities {
   vehicleTypes: ParsedXml[];
@@ -33,14 +42,35 @@ export interface MergedEntities {
   vehicles: ParsedXml[];
 }
 
-/** Merge entities from multiple ResourceFrames, deduplicating by @_id. */
-export function mergeResourceFrames(frames: ParsedXml[]): MergedEntities {
-  return {
+/** Merge entities from multiple ResourceFrames, deduplicating by @_id.
+ *  When `entries` is provided, injects `OperationalNumber` into vehicles
+ *  whose regNumber key in `framesByReg` matches an entry with an `operationalRef`. */
+export function mergeResourceFrames(
+  framesByReg: UniqueParsedXmlSet,
+  entries: ImportEntry[] = []
+): MergedEntities {
+  const frames = Object.values(framesByReg);
+  const merged: MergedEntities = {
     vehicleTypes: uniqueById(frames, 'vehicleTypes', 'VehicleType'),
     deckPlans: uniqueById(frames, 'deckPlans', 'DeckPlan'),
     vehicleModels: uniqueById(frames, 'vehicleModels', 'VehicleModel'),
     vehicles: uniqueById(frames, 'vehicles', 'Vehicle'),
   };
+
+  const opRefs = opRefByRegNumber(entries);
+  if (opRefs.size > 0) {
+    // Match via the shared key: regNumber in framesByReg → vehicle in that frame
+    for (const [regNumber, rf] of Object.entries(framesByReg)) {
+      const opRef = opRefs.get(regNumber);
+      if (!opRef) continue;
+      for (const v of toArray(rf.vehicles?.Vehicle)) {
+        const existing = merged.vehicles.find(mv => mv['@_id'] === v['@_id']);
+        if (existing) existing.OperationalNumber = opRef;
+      }
+    }
+  }
+
+  return merged;
 }
 
 /** Clone a PublicationDelivery blueprint and inject merged entities into its ResourceFrame. */

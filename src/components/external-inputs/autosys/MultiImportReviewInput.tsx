@@ -26,24 +26,24 @@ function parseEntryInput(raw: string): ImportEntry | null {
 
   const colonIdx = trimmed.indexOf(':');
   if (colonIdx === -1) {
-    return { regNumber: trimmed };
+    return { queryRegNumber: trimmed };
   }
 
-  const regNumber = trimmed.slice(0, colonIdx).trim();
+  const queryRegNumber = trimmed.slice(0, colonIdx).trim();
   const operationalRef = trimmed.slice(colonIdx + 1).trim() || undefined;
-  if (!regNumber) return null;
+  if (!queryRegNumber) return null;
 
-  return { regNumber, operationalRef };
+  return { queryRegNumber, operationalRef };
 }
 
 function EntryChipLabel({ entry }: { entry: ImportEntry }) {
   if (!entry.operationalRef) {
-    return <span>{entry.regNumber}</span>;
+    return <span>{entry.queryRegNumber}</span>;
   }
 
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-      <span>{entry.regNumber}</span>
+      <span>{entry.queryRegNumber}</span>
       <Box
         component="span"
         sx={{
@@ -135,9 +135,9 @@ export default function MultiImportReviewInput({
       >
         {entries.map(entry => (
           <Chip
-            key={entry.regNumber}
+            key={entry.queryRegNumber}
             label={<EntryChipLabel entry={entry} />}
-            onDelete={() => onDeleteEntry(entry.regNumber)}
+            onDelete={() => onDeleteEntry(entry.queryRegNumber)}
             size="small"
           />
         ))}

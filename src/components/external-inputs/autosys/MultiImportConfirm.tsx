@@ -58,8 +58,8 @@ export default function MultiImportConfirm({
             })}
           </Typography>
           {assembledResult.summary.errors.map(err => (
-            <Typography key={err.regNumber} variant="body2">
-              {err.regNumber}: {err.message}
+            <Typography key={err.queryRegNumber} variant="body2">
+              {err.queryRegNumber}: {err.message}
             </Typography>
           ))}
         </Alert>
