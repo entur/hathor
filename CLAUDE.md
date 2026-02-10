@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
 
+## Key Documentation
+
+- **`README.md`** — brief project overview, tech stack, quick start, scripts.
+- **`DEV_GUIDE.md`** — the main developer guide: theming, custom icons, TypeScript theme extensions, and a step-by-step tutorial for adding new data table pages. This is where customization and extension documentation lives. Keep it up to date when the architecture or patterns change.
+
 ## Commands
 
 ```bash
@@ -39,7 +44,7 @@ The core architectural pattern is a reusable data table system:
 2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
 3. **Page component** (e.g. `src/pages/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
 
-To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. The README has a detailed tutorial.
+To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. See `DEV_GUIDE.md` for the detailed tutorial.
 
 ### State Management
 
