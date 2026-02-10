@@ -1,4 +1,4 @@
-# TODO: operationalID / operationalRef not passed to backend
+# TODO: operationalID as '<OperationalNumber>' not passed to backend
 
 ## Summary
 
@@ -25,4 +25,4 @@ The `operationalID`/`operationalRef` value is collected in both the single-impor
 
 ## Resolution options
 
-1. **Implement it** — inject `operationalRef` into the NeTEx XML `<Vehicle>` elements before submission (requires understanding the correct NeTEx element/attribute to use and backend support in Sobek).
+1. **Implement it** — inject `OperationalNumber` into the NeTEx XML `<Vehicle>` elements before submission 
