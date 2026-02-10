@@ -10,61 +10,28 @@ import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
-import type { TableMeta } from '../../../data/vehicle-imports/inputTextAnalyzer';
-import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
 import {
   type AutosysAssembledResult,
-  type AutosysFetchResult,
   assembleAutosysResults,
 } from '../../../data/vehicle-imports/assembleAutosysResults';
+import { fetchAllWithConcurrency } from '../../../data/vehicle-imports/fetchAllWithConcurrency';
+import type { TableMeta } from '../../../data/vehicle-imports/inputTextAnalyzer';
+import {
+  type RegNumbersStatus,
+  deduplicateEntries,
+} from '../../../data/vehicle-imports/regNumbersTextTransformer';
 import type { ImportEntry } from '../../../data/vehicle-imports/types';
-import { mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
 import {
   fetchVehicleFromAutosys,
   importAsNetexToBackend,
 } from '../../../data/vehicle-imports/vehicleImportServices';
+import { mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
 
 const CONCURRENCY_LIMIT = 5;
-
-async function fetchAllWithConcurrency(
-  queryRegNumbers: string[],
-  fetchFn: (rn: string) => Promise<string>,
-  concurrency: number,
-  onProgress: (completed: number) => void
-): Promise<AutosysFetchResult[]> {
-  const results: AutosysFetchResult[] = [];
-  let completed = 0;
-  let index = 0;
-
-  async function worker() {
-    while (index < queryRegNumbers.length) {
-      const i = index++;
-      const queryRegNumber = queryRegNumbers[i];
-      try {
-        const xml = await fetchFn(queryRegNumber);
-        results[i] = { queryRegNumber, xml, error: null };
-      } catch (e) {
-        results[i] = {
-          queryRegNumber,
-          xml: '',
-          error: e instanceof Error ? e.message : 'Unknown error',
-        };
-      }
-      completed++;
-      onProgress(completed);
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(concurrency, queryRegNumbers.length) }, () =>
-    worker()
-  );
-  await Promise.all(workers);
-  return results;
-}
 
 /** Steps when a CSV table is detected (includes column mapping) */
 const TABLE_STEPS = ['Upload file', 'Map columns', 'Review', 'Confirm'] as const;
@@ -144,34 +111,9 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       }))
       .filter(e => e.queryRegNumber);
 
-    // Deduplicate by regNumber
-    const seen = new Set<string>();
-    const deduped: ImportEntry[] = [];
-    for (const e of mapped) {
-      if (!seen.has(e.queryRegNumber)) {
-        seen.add(e.queryRegNumber);
-        deduped.push(e);
-      }
-    }
-
-    const duplicateCount = mapped.length - deduped.length;
-    const uniqueCount = deduped.length;
-
-    let message: string;
-    let warnLevel: 'success' | 'warning' | 'error';
-    if (uniqueCount === 0) {
-      message = 'No registration numbers found';
-      warnLevel = 'error';
-    } else if (duplicateCount > 0) {
-      message = `${uniqueCount} unique registration numbers (${duplicateCount} duplicate(s) removed)`;
-      warnLevel = 'warning';
-    } else {
-      message = `${uniqueCount} registration numbers`;
-      warnLevel = 'success';
-    }
-
-    setEntries(deduped);
-    setStatus({ uniqueCount, message, warnLevel });
+    const result = deduplicateEntries(mapped);
+    setEntries(result.entries);
+    setStatus(result.status);
   };
 
   // --- Review step callbacks ---

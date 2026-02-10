@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { parseEntryInput } from '../../../data/vehicle-imports/parseEntryInput';
 import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
 import type { ImportEntry } from '../../../data/vehicle-imports/types';
 
@@ -17,23 +18,6 @@ interface MultiImportReviewInputProps {
   fetchProgress: { completed: number; total: number };
   onDeleteEntry: (regNumber: string) => void;
   onAddEntry: (entry: ImportEntry) => void;
-}
-
-/** Parse "AB1234:OP-001" into an ImportEntry. Colon separates reg from ref. */
-function parseEntryInput(raw: string): ImportEntry | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-
-  const colonIdx = trimmed.indexOf(':');
-  if (colonIdx === -1) {
-    return { queryRegNumber: trimmed };
-  }
-
-  const queryRegNumber = trimmed.slice(0, colonIdx).trim();
-  const operationalRef = trimmed.slice(colonIdx + 1).trim() || undefined;
-  if (!queryRegNumber) return null;
-
-  return { queryRegNumber, operationalRef };
 }
 
 function EntryChipLabel({ entry }: { entry: ImportEntry }) {
