@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import { fetchConfig } from './config/fetchConfig.ts';
-import { ConfigContext } from './contexts/ConfigContext.tsx';
+import { ConfigContext } from './contexts/configContext.ts';
 import { AuthProvider } from './auth';
 import { CustomizationProvider } from './contexts/CustomizationContext.tsx';
 

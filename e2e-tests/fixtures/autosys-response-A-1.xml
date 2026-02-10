@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:ns2="http://www.opengis.net/gml/3.2" xmlns:ns3="http://www.siri.org.uk/siri" version="1.12:NO-NeTEx-vehicle:1.4">
-    <PublicationTimestamp>2026-01-30T15:45:49.163</PublicationTimestamp>
+    <PublicationTimestamp>?</PublicationTimestamp>
     <ParticipantRef>NMR</ParticipantRef>
     <dataObjects>
-        <CompositeFrame modification="new" version="1" status="active" id="NMR:CompositeFrame:1074224112">
+        <CompositeFrame modification="new" version="1" status="active" id="?">
             <Description/>
             <FrameDefaults>
                 <DefaultLocale>
@@ -12,7 +12,7 @@
                 </DefaultLocale>
             </FrameDefaults>
             <frames>
-                <ResourceFrame modification="new" version="1" status="active" id="NMR:ResourceFrame:577423032">
+                <ResourceFrame modification="new" version="1" status="active" id="?">
                     <vehicleTypes>
                         <VehicleType version="1" id="AUTOSYS:VehicleType:0">
                             <keyList>

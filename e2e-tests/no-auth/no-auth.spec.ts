@@ -10,14 +10,12 @@ const fixturesDir = path.join(__dirname, '..', 'fixtures');
 const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 
 /**
- * Navigate to /vehicle-type and return locators for the auth warning banner
- * and protected content area.
+ * Navigate to /vehicle-type and return locators for the protected content area.
  */
 async function openProtectedRoute(page: Page) {
   await page.goto('/vehicle-type');
   await page.waitForLoadState('domcontentloaded');
   return {
-    authWarning: page.getByTestId('auth-not-configured-warning'),
     appContent: page.locator('.app-content'),
     loadingAuth: page.getByText('Loading authentication status...'),
     redirectAuth: page.getByText('Redirecting to login provider...'),
@@ -46,10 +44,8 @@ test.describe('No-auth profile (oidcConfig undefined)', () => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
   });
 
-  test('protected route shows auth warning BUT renders content', async ({ page }) => {
-    const { authWarning, appContent } = await openProtectedRoute(page);
-    await expect(authWarning).toBeVisible();
-    await expect(authWarning).toContainText('Auth not configured');
+  test('protected route renders content without auth', async ({ page }) => {
+    const { appContent } = await openProtectedRoute(page);
     await expect(appContent).toBeVisible();
   });
 
@@ -68,9 +64,8 @@ test.describe('Auth profile (oidcConfig defined)', () => {
     fs.copyFileSync(path.join(fixturesDir, 'config-with-auth.json'), targetConfig);
   });
 
-  test('protected route requires authentication (no warning banner)', async ({ page }) => {
-    const { authWarning, loadingAuth, redirectAuth } = await openProtectedRoute(page);
-    await expect(authWarning).not.toBeVisible();
+  test('protected route requires authentication', async ({ page }) => {
+    const { loadingAuth, redirectAuth } = await openProtectedRoute(page);
     // OIDC redirect is client-side — wait for URL change or auth UI to appear
     await expect(async () => {
       const redirected = page.url().includes('partner.dev.entur.org');

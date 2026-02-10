@@ -35,3 +35,4 @@ public/theme-*.json
 /playwright/.cache/
 /playwright/.auth/
 build/
+coverage

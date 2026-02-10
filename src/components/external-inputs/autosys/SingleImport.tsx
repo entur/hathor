@@ -1,24 +1,22 @@
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import { useTranslation } from 'react-i18next';
-import { useConfig } from '../../contexts/ConfigContext';
+import { useConfig } from '../../../contexts/configContext';
 import {
   fetchVehicleFromAutosys,
-  importVehicle,
-} from '../../data/vehicle-imports/vehicleImportServices';
-import type { NeTExResourceFrame } from '../../data/vehicle-types/vehicleTypeTypes';
+  importAsNetexToBackend,
+} from '../../../data/vehicle-imports/vehicleImportServices';
+import type { NeTExResourceFrame } from '../../../data/vehicle-types/vehicleTypeTypes';
 import { useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
-import { useAuth } from '../../auth';
-import AutosysSingleQuery from './AutosysSingleQuery';
-import AutosysSingleConfirm from './AutosysSingleConfirm';
+import { useAuth } from '../../../auth';
+import SingleImportQuery from './SingleImportQuery';
+import SingleImportConfirm from './SingleImportConfirm';
+import DialogTitle from '@mui/material/DialogTitle';
 
-interface AutosysImportDialogProps {
-  open: boolean;
+interface SingleImportProps {
   onClose: () => void;
 }
 
-export default function AutosysImportDialog({ open, onClose }: AutosysImportDialogProps) {
+export default function SingleImport({ onClose }: SingleImportProps) {
   const { t } = useTranslation();
   const { applicationImportBaseUrl, applicationGetAutosysUrl } = useConfig();
   const { getAccessToken } = useAuth();
@@ -53,22 +51,23 @@ export default function AutosysImportDialog({ open, onClose }: AutosysImportDial
 
   const onConfirm = async () => {
     const token = await getAccessToken();
-    await importVehicle(applicationImportBaseUrl || '', neTExXML, token);
+    await importAsNetexToBackend(applicationImportBaseUrl || '', neTExXML, token);
     resetAndClose();
   };
 
   return (
-    <Dialog open={open} onClose={resetAndClose} maxWidth="xs" fullWidth>
+    <>
       <DialogTitle>{t('import.title', 'Import Vehicle')}</DialogTitle>
+
       {resourceFrame ? (
-        <AutosysSingleConfirm
+        <SingleImportConfirm
           operationalId={operationalId}
           resourceFrame={resourceFrame}
           onConfirm={onConfirm}
           onClose={resetAndClose}
         />
       ) : (
-        <AutosysSingleQuery
+        <SingleImportQuery
           registrationNumber={registrationNumber}
           operationalId={operationalId}
           onRegistrationNumberChange={setRegistrationNumber}
@@ -77,6 +76,6 @@ export default function AutosysImportDialog({ open, onClose }: AutosysImportDial
           onClose={resetAndClose}
         />
       )}
-    </Dialog>
+    </>
   );
 }

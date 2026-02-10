@@ -1,7 +1,8 @@
-import { useRef, type ComponentType } from 'react';
+import { useRef, type ComponentType, type ReactNode } from 'react';
 import { useContainerResponsiveView } from '../../hooks/useContainerResponsiveView';
 import {
   Box,
+  Chip,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +16,7 @@ import DataTableRow from './DataTableRow.tsx';
 import { useTranslation } from 'react-i18next';
 import type { Order, ColumnDefinition } from './dataTableTypes.ts';
 import MobileDetailRow from './MobileDetailRow.tsx';
+import type { UrlFilterInfo } from '../../types/viewConfigTypes.ts';
 
 const COMPACT_VIEW_THRESHOLD = 700;
 
@@ -33,6 +35,8 @@ interface DataPageContentProps<T, K extends string> {
   columns: ColumnDefinition<T, K>[];
   title?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  floatingAction?: ReactNode;
+  urlFilterInfo?: UrlFilterInfo;
 }
 
 export default function DataPageContent<
@@ -52,6 +56,8 @@ export default function DataPageContent<
   columns,
   title,
   handleColumnEvent,
+  floatingAction,
+  urlFilterInfo,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,11 +86,25 @@ export default function DataPageContent<
           </Typography>
         </Box>
       )}
-      <Box px={2} pb={1}>
-        <Typography>{t('data.totalEntries', { count: totalCount })}</Typography>
+      <Box px={2} pb={1} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography data-testid="total-entries" data-count={totalCount}>
+          {t('data.totalEntries', { count: totalCount })}
+        </Typography>
+        {urlFilterInfo && urlFilterInfo.filterCount > 0 && (
+          <Chip
+            label={t('data.filteredCount', 'Filtering on IDs', {
+              count: urlFilterInfo.filterCount,
+            })}
+            onDelete={urlFilterInfo.clearUrlFilters}
+            color="primary"
+            size="small"
+            data-testid="url-filter-chip"
+            data-filter-count={urlFilterInfo.filterCount}
+          />
+        )}
       </Box>
 
-      <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
+      <TableContainer sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
         <Table stickyHeader>
           <DataTableHeader
             useCompactView={compact}
@@ -107,7 +127,7 @@ export default function DataPageContent<
               />
             ))}
             {data.length === 0 && !loading && (
-              <TableRow>
+              <TableRow data-testid="no-data-row">
                 <TableCell colSpan={colSpan} align="center">
                   {t('data.noResults', 'No data to display.')}
                 </TableCell>
@@ -117,18 +137,30 @@ export default function DataPageContent<
         </Table>
       </TableContainer>
 
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
-        component="div"
-        count={totalCount}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(_, newPage) => setPage(newPage)}
-        onRowsPerPageChange={event => {
-          setRowsPerPage(parseInt(event.target.value, 10));
-          setPage(0);
-        }}
-      />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {floatingAction}
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100]}
+            component="div"
+            count={totalCount}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={event => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            data-testid="table-pagination"
+            slotProps={{
+              displayedRows: {
+                'data-testid': 'pagination-displayed-rows',
+                'data-count': totalCount,
+              } as React.HTMLAttributes<HTMLParagraphElement>,
+            }}
+          />
+        </Box>
+      </Box>
     </Box>
   );
 }

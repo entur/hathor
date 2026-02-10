@@ -8,7 +8,7 @@
   "applicationEnv": "development",
   "claimsNamespace": "https://ror.entur.io/role_assignments",
   "preferredNameNamespace": "https://ror.entur.io/preferred_name",
-  "oidcConfig": {
+  "oidcConfig-disabled": {
     "authority": "https://partner.dev.entur.org",
     "client_id": "0gQVx7xpSkg7lJDYuewMSr1sXKr7OJ3z",
     "extraQueryParams": {

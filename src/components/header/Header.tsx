@@ -4,7 +4,7 @@ import Menu from '../Menu.tsx';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
-import { useConfig } from '../../contexts/ConfigContext.tsx';
+import { useConfig } from '../../contexts/configContext.ts';
 // import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
 import DesktopSearchBar from '../search/DesktopSearchBar.tsx';

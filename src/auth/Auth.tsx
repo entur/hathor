@@ -1,5 +1,5 @@
 import { AuthProvider as OidcAuthProvider } from 'react-oidc-context';
-import { useConfig } from '../contexts/ConfigContext.tsx';
+import { useConfig } from '../contexts/configContext.ts';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { oidcConfig } = useConfig();
