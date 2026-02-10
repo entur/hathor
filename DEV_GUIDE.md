@@ -1,3 +1,5 @@
+<!-- Copied from the Inanna project README -->
+
 # Hathor Developer Guide
 
 A guide to customizing and extending Hathor — theming, icons, TypeScript theme extensions, and adding new data table pages.
