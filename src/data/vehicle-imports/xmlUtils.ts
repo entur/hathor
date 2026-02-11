@@ -1,4 +1,4 @@
-import type { ImportEntry, ParsedXml, UniqueParsedXmlSet } from './types';
+import type { FramesByQueryRegNumber, ImportEntry, ParsedXml } from './types';
 import { XMLBuilder } from 'fast-xml-parser';
 
 /** Find ResourceFrame in parsed XML — supports both CompositeFrame-wrapped and flat layouts. */
@@ -46,7 +46,7 @@ export interface MergedEntities {
  *  When `entries` is provided, injects `OperationalNumber` into vehicles
  *  whose regNumber key in `framesByReg` matches an entry with an `operationalRef`. */
 export function mergeResourceFrames(
-  framesByReg: UniqueParsedXmlSet,
+  framesByReg: FramesByQueryRegNumber,
   entries: ImportEntry[] = []
 ): MergedEntities {
   const frames = Object.values(framesByReg);

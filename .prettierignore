@@ -12,6 +12,9 @@ coverage
 public/config.json
 public/theme-*.json
 
+# Ignore vendored/generated bundles
+public/deckplan-editor
+
 # Ignore other files
 .github
 .husky
