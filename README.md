@@ -32,4 +32,4 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 
 ## Customization
 
-See [DEV_GUIDE.md] for theming, custom icons, and adding new data table pages.
+See [DEV_GUIDE.md](DEV_GUIDE.md) for theming, custom icons, and adding new data table pages.
