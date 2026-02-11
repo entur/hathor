@@ -13,6 +13,9 @@ public/config.json
 public/theme-*.json
 public/deckplan-editor/
 
+# Ignore vendored/generated bundles
+public/deckplan-editor
+
 # Ignore other files
 .github
 .husky
