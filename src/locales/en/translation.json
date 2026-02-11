@@ -51,6 +51,9 @@
   "home.features.vehicletypes.headline": "Vehicle Types",
   "home.features.vehicletypes.description": "A list of vehicle types used in public transport.",
 
+  "home.features.deckplaneditor.headline": "Deck Plan Editor",
+  "home.features.deckplaneditor.description": "Visual editor for vehicle deck plans. Load, edit, and export NeTEx deck plan layouts.",
+
   "map.layers.title": "Map Layers",
   "map.layers.circles": "Circles",
   "map.layers.icons": "Icons",

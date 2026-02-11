@@ -138,6 +138,16 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 3. Run `npm run e2e:auth` then `npm run e2e:no-auth`
 4. Upload HTML report as artifact (30-day retention)
 
+## Deckplan Editor Integration
+
+The `deckplan-editor` project (`../deckplan-editor`) now ships a `<deckplan-editor>` web component (custom element) built with Vue 3 + Konva. It can be embedded in Hathor without any Vue dependency — just load the UMD or ES bundle.
+
+- **Build**: `npm run build-wc` in the deckplan-editor repo produces `netex-deckplan-editor.es.js` and `netex-deckplan-editor.umd.js`
+- **Usage**: `<deckplan-editor></deckplan-editor>` — communication via HTML attributes/properties (in) and CustomEvents (out)
+- **Details**: See `../deckplan-editor/hathor-interop.md` for the full interop design
+
+**TODO**: Integration test — verify the web component loads and renders inside Hathor's React shell.
+
 ## Legacy Cleanup TODO
 
 Remaining Tiamat/stop-place traces and dead code from the fork that still need attention:
@@ -150,7 +160,7 @@ Remaining Tiamat/stop-place traces and dead code from the fork that still need a
 - **Stub component** — `WorkAreaContent.tsx` accepts `onSave`/`onCancel`/`onDetailsOpen` props but ignores them; `handleSave()` is empty.
 - **Non-functional filters** — `vehicleTypeViewConfig.tsx:84-93` defines filters with stop-place categories (Train, Bus, Tram, etc.) but filtering is never wired up.
 - **Misplaced hook** — `useDataViewSearch.ts` is in global `src/hooks/` but only used by VehicleType; belongs in `src/data/vehicle-types/`.
-- **Typo** — `vehicleImportServices.tsx:33`: `"Error impor vehicle data"` (missing "t").
+- **Dead SingleImport files** — `SingleImport.tsx`, `SingleImportQuery.tsx`, `SingleImportConfirm.tsx` are marked UNUSED and the button removed from `AutosysImportFloatingMenu.tsx`. Can be deleted once confirmed unnecessary.
 
 ## Key Files
 

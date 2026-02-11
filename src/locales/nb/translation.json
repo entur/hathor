@@ -51,6 +51,9 @@
   "home.features.vehicletypes.headline": "Kjøretøytyper",
   "home.features.vehicletypes.description": "En liste over kjøretøytyper som brukes i kollektivtransport.",
 
+  "home.features.deckplaneditor.headline": "Dekkplaneditor",
+  "home.features.deckplaneditor.description": "Visuell editor for dekkplaner til kjøretøy. Last inn, rediger og eksporter NeTEx-dekkplaner.",
+
   "map.layers.title": "Kartlag",
   "map.layers.circles": "Sirkler",
   "map.layers.icons": "Ikoner",

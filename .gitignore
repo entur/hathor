@@ -27,6 +27,7 @@ tsconfig.tsbuildinfo
 
 public/config-*.json
 public/theme-*.json
+public/deckplan-editor/
 
 # Playwright
 /test-results/

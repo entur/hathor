@@ -11,6 +11,7 @@ coverage
 # Ignore generated config/theme files
 public/config.json
 public/theme-*.json
+public/deckplan-editor/
 
 # Ignore other files
 .github

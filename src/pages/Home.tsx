@@ -1,7 +1,7 @@
 import { Container, Box, Typography, Paper, useTheme, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { EmojiTransportation } from '@mui/icons-material';
+import { EmojiTransportation, ViewInAr } from '@mui/icons-material';
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -13,6 +13,12 @@ export default function HomePage() {
       headlineKey: 'home.features.vehicletypes.headline',
       descriptionKey: 'home.features.vehicletypes.description',
       path: '/vehicle-type',
+    },
+    {
+      icon: <ViewInAr fontSize="large" color="primary" />,
+      headlineKey: 'home.features.deckplaneditor.headline',
+      descriptionKey: 'home.features.deckplaneditor.description',
+      path: '/deckplan-editor',
     },
   ];
 
