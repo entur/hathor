@@ -550,30 +550,19 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             </TextField>
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-deckPlanRef"
-            >
-              DeckPlanRef
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-deckPlanRef"
-              type="text"
+            <TextField
+              label="DeckPlanRef"
+              size="small"
+              fullWidth
               value={value.deckPlanRef ?? ''}
               onChange={e => onChange({ ...value, deckPlanRef: e.target.value })}
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-euroClass">
-              EuroClass
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-euroClass"
-              type="text"
+            <TextField
+              label="EuroClass"
+              size="small"
+              fullWidth
               value={value.euroClass ?? ''}
               onChange={e => onChange({ ...value, euroClass: e.target.value })}
             />
@@ -651,17 +640,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-maximumRange"
-            >
-              MaximumRange
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-maximumRange"
+            <TextField
+              label="MaximumRange"
+              size="small"
+              fullWidth
               type="number"
               value={value.maximumRange != null ? String(value.maximumRange) : ''}
               onChange={e => {
@@ -671,17 +653,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-maximumVelocity"
-            >
-              MaximumVelocity
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-maximumVelocity"
+            <TextField
+              label="MaximumVelocity"
+              size="small"
+              fullWidth
               type="number"
               value={value.maximumVelocity != null ? String(value.maximumVelocity) : ''}
               onChange={e => {
@@ -781,54 +756,37 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
         </Typography>
         <Stack spacing={1}>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-id">
-              Id
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-id"
-              type="text"
+            <TextField
+              label="Id"
+              size="small"
+              fullWidth
               value={value.id ?? ''}
               onChange={e => onChange({ ...value, id: e.target.value })}
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-includedIn">
-              IncludedIn
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-includedIn"
-              type="text"
+            <TextField
+              label="IncludedIn"
+              size="small"
+              fullWidth
               value={value.includedIn ?? ''}
               onChange={e => onChange({ ...value, includedIn: e.target.value })}
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-classifiedAsRef"
-            >
-              ClassifiedAsRef
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-classifiedAsRef"
-              type="text"
+            <TextField
+              label="ClassifiedAsRef"
+              size="small"
+              fullWidth
               value={value.classifiedAsRef ?? ''}
               onChange={e => onChange({ ...value, classifiedAsRef: e.target.value })}
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-facilities">
-              Facilities
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-facilities"
-              type="text"
+            <TextField
+              label="Facilities"
+              size="small"
+              fullWidth
               value={value.facilities ?? ''}
               onChange={e => onChange({ ...value, facilities: e.target.value })}
             />
@@ -898,17 +856,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             </Box>
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-hoistOperatingRadius"
-            >
-              HoistOperatingRadius
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-hoistOperatingRadius"
+            <TextField
+              label="HoistOperatingRadius"
+              size="small"
+              fullWidth
               type="number"
               value={value.hoistOperatingRadius != null ? String(value.hoistOperatingRadius) : ''}
               onChange={e => {
@@ -918,17 +869,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-boardingHeight"
-            >
-              BoardingHeight
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-boardingHeight"
+            <TextField
+              label="BoardingHeight"
+              size="small"
+              fullWidth
               type="number"
               value={value.boardingHeight != null ? String(value.boardingHeight) : ''}
               onChange={e => {
@@ -938,17 +882,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-gapToPlatform"
-            >
-              GapToPlatform
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-gapToPlatform"
+            <TextField
+              label="GapToPlatform"
+              size="small"
+              fullWidth
               type="number"
               value={value.gapToPlatform != null ? String(value.gapToPlatform) : ''}
               onChange={e => {
@@ -958,12 +895,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-length">
-              Length
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-length"
+            <TextField
+              label="Length"
+              size="small"
+              fullWidth
               type="number"
               value={value.length != null ? String(value.length) : ''}
               onChange={e => {
@@ -973,12 +908,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-width">
-              Width
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-width"
+            <TextField
+              label="Width"
+              size="small"
+              fullWidth
               type="number"
               value={value.width != null ? String(value.width) : ''}
               onChange={e => {
@@ -988,12 +921,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-height">
-              Height
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-height"
+            <TextField
+              label="Height"
+              size="small"
+              fullWidth
               type="number"
               value={value.height != null ? String(value.height) : ''}
               onChange={e => {
@@ -1003,12 +934,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-weight">
-              Weight
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-weight"
+            <TextField
+              label="Weight"
+              size="small"
+              fullWidth
               type="number"
               value={value.weight != null ? String(value.weight) : ''}
               onChange={e => {
@@ -1018,17 +947,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-firstAxleHeight"
-            >
-              FirstAxleHeight
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-firstAxleHeight"
+            <TextField
+              label="FirstAxleHeight"
+              size="small"
+              fullWidth
               type="number"
               value={value.firstAxleHeight != null ? String(value.firstAxleHeight) : ''}
               onChange={e => {
@@ -1038,13 +960,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-canCarry">
-              CanCarry
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-canCarry"
-              type="text"
+            <TextField
+              label="CanCarry"
+              size="small"
+              fullWidth
               value={value.canCarry ?? ''}
               onChange={e => onChange({ ...value, canCarry: e.target.value })}
             />
@@ -1061,18 +980,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             </div>
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-satisfiesFacilityRequirements"
-            >
-              SatisfiesFacilityRequirements
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-satisfiesFacilityRequirements"
-              type="text"
+            <TextField
+              label="SatisfiesFacilityRequirements"
+              size="small"
+              fullWidth
               value={value.satisfiesFacilityRequirements ?? ''}
               onChange={e => onChange({ ...value, satisfiesFacilityRequirements: e.target.value })}
             />
@@ -1161,35 +1072,19 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             </div>
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-brandingRef"
-            >
-              BrandingRef
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-brandingRef"
-              type="text"
+            <TextField
+              label="BrandingRef"
+              size="small"
+              fullWidth
               value={value.brandingRef ?? ''}
               onChange={e => onChange({ ...value, brandingRef: e.target.value })}
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-responsibilitySetRef"
-            >
-              ResponsibilitySetRef
-            </Typography>
-            <input
-              className="vte-input"
-              id="vte-responsibilitySetRef"
-              type="text"
+            <TextField
+              label="ResponsibilitySetRef"
+              size="small"
+              fullWidth
               value={value.responsibilitySetRef ?? ''}
               onChange={e => onChange({ ...value, responsibilitySetRef: e.target.value })}
             />
