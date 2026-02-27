@@ -11,20 +11,6 @@
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
 }
 
-.vte-select {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  background: white;
-}
-
-.vte-select:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-}
-
 .vte-checkbox {
   width: 16px;
   height: 16px;
@@ -65,10 +51,6 @@
   min-width: 120px;
   padding: 4px 6px;
   font-size: 0.8rem;
-}
-
-.vte-select--sub {
-  min-width: 120px;
 }
 
 .vte-btn-add,

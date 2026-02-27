@@ -148,8 +148,11 @@ function PassengerCapacityStructureRow({
 }): React.JSX.Element {
   return (
     <div className="vte-sub-fields">
-      <select
-        className="vte-select vte-select--sub"
+      <TextField
+        select
+        size="small"
+        SelectProps={{ native: true }}
+        sx={{ minWidth: 120 }}
         value={item.fareClass ?? ''}
         onChange={e =>
           onChange({
@@ -169,7 +172,7 @@ function PassengerCapacityStructureRow({
           })
         }
       >
-        <option value="">—</option>
+        <option value=""></option>
         <option value="unknown">unknown</option>
         <option value="firstClass">firstClass</option>
         <option value="secondClass">secondClass</option>
@@ -181,7 +184,7 @@ function PassengerCapacityStructureRow({
         <option value="turista">turista</option>
         <option value="economyClass">economyClass</option>
         <option value="any">any</option>
-      </select>
+      </TextField>
       <input
         className="vte-input vte-input--sub"
         type="number"
@@ -507,17 +510,12 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             </div>
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-transportMode"
-            >
-              TransportMode
-            </Typography>
-            <select
-              className="vte-select"
-              id="vte-transportMode"
+            <TextField
+              label="TransportMode"
+              select
+              size="small"
+              fullWidth
+              SelectProps={{ native: true }}
               value={value.transportMode ?? ''}
               onChange={e =>
                 onChange({
@@ -527,7 +525,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 })
               }
             >
-              <option value="">—</option>
+              <option value=""></option>
               <option value="all">all</option>
               <option value="unknown">unknown</option>
               <option value="bus">bus</option>
@@ -549,7 +547,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
               <option value="selfDrive">selfDrive</option>
               <option value="anyMode">anyMode</option>
               <option value="other">other</option>
-            </select>
+            </TextField>
           </Box>
           <Box>
             <Typography
@@ -621,17 +619,12 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography
-              component="label"
-              variant="body2"
-              fontWeight={500}
-              htmlFor="vte-propulsionType"
-            >
-              PropulsionType
-            </Typography>
-            <select
-              className="vte-select"
-              id="vte-propulsionType"
+            <TextField
+              label="PropulsionType"
+              select
+              size="small"
+              fullWidth
+              SelectProps={{ native: true }}
               value={value.propulsionType ?? ''}
               onChange={e =>
                 onChange({
@@ -640,14 +633,14 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 })
               }
             >
-              <option value="">—</option>
+              <option value=""></option>
               <option value="other">other</option>
               <option value="combustion">combustion</option>
               <option value="electric">electric</option>
               <option value="electricAssist">electricAssist</option>
               <option value="hybrid">hybrid</option>
               <option value="human">human</option>
-            </select>
+            </TextField>
           </Box>
           <Box>
             <EnumMultiSelect
@@ -698,12 +691,12 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
             />
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-fuelType">
-              FuelType
-            </Typography>
-            <select
-              className="vte-select"
-              id="vte-fuelType"
+            <TextField
+              label="FuelType"
+              select
+              size="small"
+              fullWidth
+              SelectProps={{ native: true }}
               value={value.fuelType ?? ''}
               onChange={e =>
                 onChange({
@@ -712,7 +705,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 })
               }
             >
-              <option value="">—</option>
+              <option value=""></option>
               <option value="other">other</option>
               <option value="battery">battery</option>
               <option value="biodiesel">biodiesel</option>
@@ -731,15 +724,15 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
               <option value="petrolLeaded">petrolLeaded</option>
               <option value="petrolUnleaded">petrolUnleaded</option>
               <option value="none">none</option>
-            </select>
+            </TextField>
           </Box>
           <Box>
-            <Typography component="label" variant="body2" fontWeight={500} htmlFor="vte-typeOfFuel">
-              TypeOfFuel
-            </Typography>
-            <select
-              className="vte-select"
-              id="vte-typeOfFuel"
+            <TextField
+              label="TypeOfFuel"
+              select
+              size="small"
+              fullWidth
+              SelectProps={{ native: true }}
               value={value.typeOfFuel ?? ''}
               onChange={e =>
                 onChange({
@@ -748,7 +741,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 })
               }
             >
-              <option value="">—</option>
+              <option value=""></option>
               <option value="other">other</option>
               <option value="battery">battery</option>
               <option value="biodiesel">biodiesel</option>
@@ -767,7 +760,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
               <option value="petrolLeaded">petrolLeaded</option>
               <option value="petrolUnleaded">petrolUnleaded</option>
               <option value="none">none</option>
-            </select>
+            </TextField>
           </Box>
           <Box>
             <Typography component="label" variant="body2" fontWeight={500}>
