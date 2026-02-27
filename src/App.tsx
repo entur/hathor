@@ -9,6 +9,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
+import VehicleTypeCompletePage from './pages/VehicleTypeCompletePage.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -34,6 +35,10 @@ export default function App() {
                   <Route
                     path="/vehicle-type"
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
+                  />
+                  <Route
+                    path="/vt-complete-edit"
+                    element={<ProtectedRoute element={<VehicleTypeCompletePage />} />}
                   />
                 </Routes>
               </Box>

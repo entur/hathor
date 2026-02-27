@@ -35,6 +35,7 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 const menuItems = [
   { textKey: 'home', path: '/', iconKey: 'home' },
   { textKey: 'Vehicle Types', path: '/vehicle-type', iconKey: 'data' },
+  { textKey: 'VT Complete Editor', path: '/vt-complete-edit', iconKey: 'data' },
 ];
 
 interface SideMenuProps {
