@@ -1,0 +1,95 @@
+.vte-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.vte-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.vte-select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: white;
+}
+
+.vte-select:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.vte-checkbox {
+  width: 16px;
+  height: 16px;
+}
+
+.vte-sub-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.vte-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vte-sub-index {
+  font-size: 0.75rem;
+  color: #999;
+  min-width: 20px;
+  text-align: center;
+}
+
+.vte-sub-fields {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.vte-input--sub {
+  flex: 1;
+  min-width: 120px;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+}
+
+.vte-select--sub {
+  min-width: 120px;
+}
+
+.vte-btn-add,
+.vte-btn-remove {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.vte-btn-add:hover {
+  background: #f0f0f0;
+}
+
+.vte-btn-remove {
+  color: #d32f2f;
+  border-color: #d32f2f;
+}
+
+.vte-btn-remove:hover {
+  background: #fce4ec;
+}

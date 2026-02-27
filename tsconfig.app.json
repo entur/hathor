@@ -32,6 +32,6 @@
       "@entur/my_vehicletype-editor": ["./packages/my_vehicletype-editor/src/index.ts"]
     }
   },
-  "include": ["src", "src/**/*.json"],
+  "include": ["src", "src/**/*.json", "packages/*/src"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
