@@ -8,8 +8,8 @@ import type {
   KeyValueStructure,
   AllPublicTransportModesEnumeration,
   PropulsionTypeEnumeration,
-  FuelTypeEnumeration,
 } from './generated/types.js';
+import { TRANSPORT_MODES, PROPULSION_TYPES, FUEL_TYPES, FARE_CLASSES } from './generated/types.js';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -17,36 +17,6 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import './Editor.css';
-
-const PROPULSION_TYPE_OPTIONS: readonly PropulsionTypeEnumeration[] = [
-  'other',
-  'combustion',
-  'electric',
-  'electricAssist',
-  'hybrid',
-  'human',
-];
-
-const FUEL_TYPE_OPTIONS: readonly FuelTypeEnumeration[] = [
-  'other',
-  'battery',
-  'biodiesel',
-  'diesel',
-  'dieselBatteryHybrid',
-  'electricContact',
-  'electricity',
-  'ethanol',
-  'hydrogen',
-  'liquidGas',
-  'tpg',
-  'methane',
-  'naturalGas',
-  'petrol',
-  'petrolBatteryHybrid',
-  'petrolLeaded',
-  'petrolUnleaded',
-  'none',
-];
 
 function EnumMultiSelect<T extends string>({
   options,
@@ -157,33 +127,16 @@ function PassengerCapacityStructureRow({
         onChange={e =>
           onChange({
             ...item,
-            fareClass: (e.target.value || undefined) as
-              | 'unknown'
-              | 'firstClass'
-              | 'secondClass'
-              | 'thirdClass'
-              | 'preferente'
-              | 'premiumClass'
-              | 'businessClass'
-              | 'standardClass'
-              | 'turista'
-              | 'economyClass'
-              | 'any',
+            fareClass: (e.target.value || undefined) as (typeof FARE_CLASSES)[number],
           })
         }
       >
         <option value=""></option>
-        <option value="unknown">unknown</option>
-        <option value="firstClass">firstClass</option>
-        <option value="secondClass">secondClass</option>
-        <option value="thirdClass">thirdClass</option>
-        <option value="preferente">preferente</option>
-        <option value="premiumClass">premiumClass</option>
-        <option value="businessClass">businessClass</option>
-        <option value="standardClass">standardClass</option>
-        <option value="turista">turista</option>
-        <option value="economyClass">economyClass</option>
-        <option value="any">any</option>
+        {FARE_CLASSES.map(v => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
       </TextField>
       <input
         className="vte-input vte-input--sub"
@@ -526,27 +479,11 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
               }
             >
               <option value=""></option>
-              <option value="all">all</option>
-              <option value="unknown">unknown</option>
-              <option value="bus">bus</option>
-              <option value="trolleyBus">trolleyBus</option>
-              <option value="tram">tram</option>
-              <option value="coach">coach</option>
-              <option value="rail">rail</option>
-              <option value="intercityRail">intercityRail</option>
-              <option value="urbanRail">urbanRail</option>
-              <option value="metro">metro</option>
-              <option value="air">air</option>
-              <option value="water">water</option>
-              <option value="cableway">cableway</option>
-              <option value="funicular">funicular</option>
-              <option value="snowAndIce">snowAndIce</option>
-              <option value="taxi">taxi</option>
-              <option value="ferry">ferry</option>
-              <option value="lift">lift</option>
-              <option value="selfDrive">selfDrive</option>
-              <option value="anyMode">anyMode</option>
-              <option value="other">other</option>
+              {TRANSPORT_MODES.map(v => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
             </TextField>
           </Box>
           <Box>
@@ -602,7 +539,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
           <Box>
             <EnumMultiSelect
               label="PropulsionTypes"
-              options={PROPULSION_TYPE_OPTIONS}
+              options={PROPULSION_TYPES}
               value={value.propulsionTypes}
               onChange={selected => onChange({ ...value, propulsionTypes: selected })}
             />
@@ -623,18 +560,17 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
               }
             >
               <option value=""></option>
-              <option value="other">other</option>
-              <option value="combustion">combustion</option>
-              <option value="electric">electric</option>
-              <option value="electricAssist">electricAssist</option>
-              <option value="hybrid">hybrid</option>
-              <option value="human">human</option>
+              {PROPULSION_TYPES.map(v => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
             </TextField>
           </Box>
           <Box>
             <EnumMultiSelect
               label="FuelTypes"
-              options={FUEL_TYPE_OPTIONS}
+              options={FUEL_TYPES}
               value={value.fuelTypes}
               onChange={selected => onChange({ ...value, fuelTypes: selected })}
             />
@@ -664,78 +600,6 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 onChange({ ...value, maximumVelocity: n });
               }}
             />
-          </Box>
-          <Box>
-            <TextField
-              label="FuelType"
-              select
-              size="small"
-              fullWidth
-              SelectProps={{ native: true }}
-              value={value.fuelType ?? ''}
-              onChange={e =>
-                onChange({
-                  ...value,
-                  fuelType: (e.target.value || undefined) as FuelTypeEnumeration,
-                })
-              }
-            >
-              <option value=""></option>
-              <option value="other">other</option>
-              <option value="battery">battery</option>
-              <option value="biodiesel">biodiesel</option>
-              <option value="diesel">diesel</option>
-              <option value="dieselBatteryHybrid">dieselBatteryHybrid</option>
-              <option value="electricContact">electricContact</option>
-              <option value="electricity">electricity</option>
-              <option value="ethanol">ethanol</option>
-              <option value="hydrogen">hydrogen</option>
-              <option value="liquidGas">liquidGas</option>
-              <option value="tpg">tpg</option>
-              <option value="methane">methane</option>
-              <option value="naturalGas">naturalGas</option>
-              <option value="petrol">petrol</option>
-              <option value="petrolBatteryHybrid">petrolBatteryHybrid</option>
-              <option value="petrolLeaded">petrolLeaded</option>
-              <option value="petrolUnleaded">petrolUnleaded</option>
-              <option value="none">none</option>
-            </TextField>
-          </Box>
-          <Box>
-            <TextField
-              label="TypeOfFuel"
-              select
-              size="small"
-              fullWidth
-              SelectProps={{ native: true }}
-              value={value.typeOfFuel ?? ''}
-              onChange={e =>
-                onChange({
-                  ...value,
-                  typeOfFuel: (e.target.value || undefined) as FuelTypeEnumeration,
-                })
-              }
-            >
-              <option value=""></option>
-              <option value="other">other</option>
-              <option value="battery">battery</option>
-              <option value="biodiesel">biodiesel</option>
-              <option value="diesel">diesel</option>
-              <option value="dieselBatteryHybrid">dieselBatteryHybrid</option>
-              <option value="electricContact">electricContact</option>
-              <option value="electricity">electricity</option>
-              <option value="ethanol">ethanol</option>
-              <option value="hydrogen">hydrogen</option>
-              <option value="liquidGas">liquidGas</option>
-              <option value="tpg">tpg</option>
-              <option value="methane">methane</option>
-              <option value="naturalGas">naturalGas</option>
-              <option value="petrol">petrol</option>
-              <option value="petrolBatteryHybrid">petrolBatteryHybrid</option>
-              <option value="petrolLeaded">petrolLeaded</option>
-              <option value="petrolUnleaded">petrolUnleaded</option>
-              <option value="none">none</option>
-            </TextField>
           </Box>
           <Box>
             <Typography component="label" variant="body2" fontWeight={500}>

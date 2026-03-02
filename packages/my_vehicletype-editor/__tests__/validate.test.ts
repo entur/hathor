@@ -154,33 +154,7 @@ describe('validate', () => {
   it('rejects invalid union value for propulsionType', () => {
     const result = validate({ propulsionType: 'invalid_xyz' as never });
     expect(result.errors).toContain(
-      'propulsionType must be one of: other, combustion, electric, electricAssist, hybrid, human'
-    );
-  });
-
-  it('accepts valid union value for fuelType', () => {
-    const result = validate({ fuelType: 'other' });
-    const fuelTypeErrors = result.errors.filter(e => e.includes('fuelType'));
-    expect(fuelTypeErrors).toEqual([]);
-  });
-
-  it('rejects invalid union value for fuelType', () => {
-    const result = validate({ fuelType: 'invalid_xyz' as never });
-    expect(result.errors).toContain(
-      'fuelType must be one of: other, battery, biodiesel, diesel, dieselBatteryHybrid, electricContact, electricity, ethanol, hydrogen, liquidGas, tpg, methane, naturalGas, petrol, petrolBatteryHybrid, petrolLeaded, petrolUnleaded, none'
-    );
-  });
-
-  it('accepts valid union value for typeOfFuel', () => {
-    const result = validate({ typeOfFuel: 'other' });
-    const typeOfFuelErrors = result.errors.filter(e => e.includes('typeOfFuel'));
-    expect(typeOfFuelErrors).toEqual([]);
-  });
-
-  it('rejects invalid union value for typeOfFuel', () => {
-    const result = validate({ typeOfFuel: 'invalid_xyz' as never });
-    expect(result.errors).toContain(
-      'typeOfFuel must be one of: other, battery, biodiesel, diesel, dieselBatteryHybrid, electricContact, electricity, ethanol, hydrogen, liquidGas, tpg, methane, naturalGas, petrol, petrolBatteryHybrid, petrolLeaded, petrolUnleaded, none'
+      'propulsionType must be one of: combustion, electric, electricAssist, hybrid, human, other'
     );
   });
 

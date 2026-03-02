@@ -6,6 +6,7 @@ import type {
   VehicleManoeuvringRequirements_STUB,
   KeyValueStructure,
 } from './generated/types.js';
+import { TRANSPORT_MODES, PROPULSION_TYPES, FUEL_TYPES, FARE_CLASSES } from './generated/types.js';
 
 function normalizeKeyValueStructure(src: Record<string, unknown>): Partial<KeyValueStructure> {
   const key = (() => {
@@ -130,20 +131,9 @@ function normalizePassengerCapacityStructure(
     const rawVal = src['FareClass'] ?? src['fareClass'];
     if (rawVal == null) return undefined;
     const s = String(rawVal);
-    const allowed = [
-      'unknown',
-      'firstClass',
-      'secondClass',
-      'thirdClass',
-      'preferente',
-      'premiumClass',
-      'businessClass',
-      'standardClass',
-      'turista',
-      'economyClass',
-      'any',
-    ] as const;
-    return (allowed as readonly string[]).includes(s) ? (s as (typeof allowed)[number]) : undefined;
+    return (FARE_CLASSES as readonly string[]).includes(s)
+      ? (s as (typeof FARE_CLASSES)[number])
+      : undefined;
   })();
   const totalCapacity = (() => {
     const rawVal = src['TotalCapacity'] ?? src['totalCapacity'];
@@ -368,30 +358,9 @@ export function normalize(src: Record<string, unknown>): Partial<My_VehicleType>
     const rawVal = src['TransportMode'] ?? src['transportMode'];
     if (rawVal == null) return undefined;
     const s = String(rawVal);
-    const allowed = [
-      'all',
-      'unknown',
-      'bus',
-      'trolleyBus',
-      'tram',
-      'coach',
-      'rail',
-      'intercityRail',
-      'urbanRail',
-      'metro',
-      'air',
-      'water',
-      'cableway',
-      'funicular',
-      'snowAndIce',
-      'taxi',
-      'ferry',
-      'lift',
-      'selfDrive',
-      'anyMode',
-      'other',
-    ] as const;
-    return (allowed as readonly string[]).includes(s) ? (s as (typeof allowed)[number]) : undefined;
+    return (TRANSPORT_MODES as readonly string[]).includes(s)
+      ? (s as (typeof TRANSPORT_MODES)[number])
+      : undefined;
   })();
   const deckPlanRef = (() => {
     const rawVal = src['DeckPlanRef'] ?? src['deckPlanRef'];
@@ -435,59 +404,27 @@ export function normalize(src: Record<string, unknown>): Partial<My_VehicleType>
     const rawVal = src['PropulsionTypes'] ?? src['propulsionTypes'];
     if (rawVal == null) return undefined;
     const arr = Array.isArray(rawVal) ? rawVal : [rawVal];
-    const allowed = [
-      'other',
-      'combustion',
-      'electric',
-      'electricAssist',
-      'hybrid',
-      'human',
-    ] as const;
     return arr
       .map(v => String(v))
-      .filter(s => (allowed as readonly string[]).includes(s)) as (typeof allowed)[number][];
+      .filter(s =>
+        (PROPULSION_TYPES as readonly string[]).includes(s)
+      ) as (typeof PROPULSION_TYPES)[number][];
   })();
   const propulsionType = (() => {
     const rawVal = src['PropulsionType'] ?? src['propulsionType'];
     if (rawVal == null) return undefined;
     const s = String(rawVal);
-    const allowed = [
-      'other',
-      'combustion',
-      'electric',
-      'electricAssist',
-      'hybrid',
-      'human',
-    ] as const;
-    return (allowed as readonly string[]).includes(s) ? (s as (typeof allowed)[number]) : undefined;
+    return (PROPULSION_TYPES as readonly string[]).includes(s)
+      ? (s as (typeof PROPULSION_TYPES)[number])
+      : undefined;
   })();
   const fuelTypes = (() => {
     const rawVal = src['FuelTypes'] ?? src['fuelTypes'];
     if (rawVal == null) return undefined;
     const arr = Array.isArray(rawVal) ? rawVal : [rawVal];
-    const allowed = [
-      'other',
-      'battery',
-      'biodiesel',
-      'diesel',
-      'dieselBatteryHybrid',
-      'electricContact',
-      'electricity',
-      'ethanol',
-      'hydrogen',
-      'liquidGas',
-      'tpg',
-      'methane',
-      'naturalGas',
-      'petrol',
-      'petrolBatteryHybrid',
-      'petrolLeaded',
-      'petrolUnleaded',
-      'none',
-    ] as const;
     return arr
       .map(v => String(v))
-      .filter(s => (allowed as readonly string[]).includes(s)) as (typeof allowed)[number][];
+      .filter(s => (FUEL_TYPES as readonly string[]).includes(s)) as (typeof FUEL_TYPES)[number][];
   })();
   const maximumRange = (() => {
     const rawVal = src['MaximumRange'] ?? src['maximumRange'];
@@ -518,58 +455,6 @@ export function normalize(src: Record<string, unknown>): Partial<My_VehicleType>
       if (!Number.isNaN(n)) return n;
     }
     return raw as number;
-  })();
-  const fuelType = (() => {
-    const rawVal = src['FuelType'] ?? src['fuelType'];
-    if (rawVal == null) return undefined;
-    const s = String(rawVal);
-    const allowed = [
-      'other',
-      'battery',
-      'biodiesel',
-      'diesel',
-      'dieselBatteryHybrid',
-      'electricContact',
-      'electricity',
-      'ethanol',
-      'hydrogen',
-      'liquidGas',
-      'tpg',
-      'methane',
-      'naturalGas',
-      'petrol',
-      'petrolBatteryHybrid',
-      'petrolLeaded',
-      'petrolUnleaded',
-      'none',
-    ] as const;
-    return (allowed as readonly string[]).includes(s) ? (s as (typeof allowed)[number]) : undefined;
-  })();
-  const typeOfFuel = (() => {
-    const rawVal = src['TypeOfFuel'] ?? src['typeOfFuel'];
-    if (rawVal == null) return undefined;
-    const s = String(rawVal);
-    const allowed = [
-      'other',
-      'battery',
-      'biodiesel',
-      'diesel',
-      'dieselBatteryHybrid',
-      'electricContact',
-      'electricity',
-      'ethanol',
-      'hydrogen',
-      'liquidGas',
-      'tpg',
-      'methane',
-      'naturalGas',
-      'petrol',
-      'petrolBatteryHybrid',
-      'petrolLeaded',
-      'petrolUnleaded',
-      'none',
-    ] as const;
-    return (allowed as readonly string[]).includes(s) ? (s as (typeof allowed)[number]) : undefined;
   })();
   const passengerCapacity = (() => {
     const rawVal = src['PassengerCapacity'] ?? src['passengerCapacity'];
@@ -861,8 +746,6 @@ export function normalize(src: Record<string, unknown>): Partial<My_VehicleType>
     ...(fuelTypes !== undefined ? { fuelTypes } : {}),
     ...(maximumRange !== undefined ? { maximumRange } : {}),
     ...(maximumVelocity !== undefined ? { maximumVelocity } : {}),
-    ...(fuelType !== undefined ? { fuelType } : {}),
-    ...(typeOfFuel !== undefined ? { typeOfFuel } : {}),
     ...(passengerCapacity !== undefined ? { passengerCapacity } : {}),
     ...(id !== undefined ? { id } : {}),
     ...(includedIn !== undefined ? { includedIn } : {}),

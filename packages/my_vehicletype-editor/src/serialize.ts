@@ -92,8 +92,6 @@ export function serialize(obj: Partial<My_VehicleType>): string {
   if (obj.fuelTypes !== undefined) xmlObj['FuelTypes'] = obj.fuelTypes;
   if (obj.maximumRange !== undefined) xmlObj['MaximumRange'] = obj.maximumRange;
   if (obj.maximumVelocity !== undefined) xmlObj['MaximumVelocity'] = obj.maximumVelocity;
-  if (obj.fuelType !== undefined) xmlObj['FuelType'] = obj.fuelType;
-  if (obj.typeOfFuel !== undefined) xmlObj['TypeOfFuel'] = obj.typeOfFuel;
   if (obj.passengerCapacity !== undefined)
     xmlObj['PassengerCapacity'] = serializePassengerCapacityStructure(obj.passengerCapacity);
   if (obj.id !== undefined) xmlObj['Id'] = obj.id;

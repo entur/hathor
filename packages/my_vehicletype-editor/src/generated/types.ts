@@ -1,59 +1,78 @@
-// Auto-generated from entity file — do not edit manually
+// Auto-generated from entity file initialy,
+//  is now modifed to improve JSX/TSX interop as state
+
 export type SimpleRef = string;
-export type AllPublicTransportModesEnumeration =
-  | 'all'
-  | 'unknown'
-  | 'bus'
-  | 'trolleyBus'
-  | 'tram'
-  | 'coach'
-  | 'rail'
-  | 'intercityRail'
-  | 'urbanRail'
-  | 'metro'
-  | 'air'
-  | 'water'
-  | 'cableway'
-  | 'funicular'
-  | 'snowAndIce'
-  | 'taxi'
-  | 'ferry'
-  | 'lift'
-  | 'selfDrive'
-  | 'anyMode'
-  | 'other';
-export type PropulsionTypeEnumeration =
-  | 'combustion'
-  | 'electric'
-  | 'electricAssist'
-  | 'hybrid'
-  | 'human'
-  | 'other'
-  | 'combustion'
-  | 'electric'
-  | 'electricAssist'
-  | 'hybrid'
-  | 'human'
-  | 'other';
-export type FuelTypeEnumeration =
-  | 'battery'
-  | 'biodiesel'
-  | 'diesel'
-  | 'dieselBatteryHybrid'
-  | 'electricContact'
-  | 'electricity'
-  | 'ethanol'
-  | 'hydrogen'
-  | 'liquidGas'
-  | 'tpg'
-  | 'methane'
-  | 'naturalGas'
-  | 'petrol'
-  | 'petrolBatteryHybrid'
-  | 'petrolLeaded'
-  | 'petrolUnleaded'
-  | 'none'
-  | 'other';
+
+export const TRANSPORT_MODES = [
+  'all',
+  'unknown',
+  'bus',
+  'trolleyBus',
+  'tram',
+  'coach',
+  'rail',
+  'intercityRail',
+  'urbanRail',
+  'metro',
+  'air',
+  'water',
+  'cableway',
+  'funicular',
+  'snowAndIce',
+  'taxi',
+  'ferry',
+  'lift',
+  'selfDrive',
+  'anyMode',
+  'other',
+] as const;
+export type AllPublicTransportModesEnumeration = (typeof TRANSPORT_MODES)[number];
+
+export const PROPULSION_TYPES = [
+  'combustion',
+  'electric',
+  'electricAssist',
+  'hybrid',
+  'human',
+  'other',
+] as const;
+export type PropulsionTypeEnumeration = (typeof PROPULSION_TYPES)[number];
+
+export const FUEL_TYPES = [
+  'battery',
+  'biodiesel',
+  'diesel',
+  'dieselBatteryHybrid',
+  'electricContact',
+  'electricity',
+  'ethanol',
+  'hydrogen',
+  'liquidGas',
+  'tpg',
+  'methane',
+  'naturalGas',
+  'petrol',
+  'petrolBatteryHybrid',
+  'petrolLeaded',
+  'petrolUnleaded',
+  'none',
+  'other',
+] as const;
+export type FuelTypeEnumeration = (typeof FUEL_TYPES)[number];
+
+export const FARE_CLASSES = [
+  'unknown',
+  'firstClass',
+  'secondClass',
+  'thirdClass',
+  'preferente',
+  'premiumClass',
+  'businessClass',
+  'standardClass',
+  'turista',
+  'economyClass',
+  'any',
+] as const;
 
 export interface My_VehicleType {
   // ── type ──
@@ -71,8 +90,8 @@ export interface My_VehicleType {
   fuelTypes?: FuelTypeEnumeration[];
   maximumRange?: number;
   maximumVelocity?: number;
-  fuelType?: FuelTypeEnumeration;
-  typeOfFuel?: FuelTypeEnumeration;
+  //fuelType?: FuelTypeEnumeration; deprecated
+  //typeOfFuel?: FuelTypeEnumeration; deprecated
   passengerCapacity?: PassengerCapacityStructure;
 
   // ── core ──
@@ -121,18 +140,7 @@ export interface TextType {
 }
 
 export interface PassengerCapacityStructure {
-  fareClass?:
-    | 'unknown'
-    | 'firstClass'
-    | 'secondClass'
-    | 'thirdClass'
-    | 'preferente'
-    | 'premiumClass'
-    | 'businessClass'
-    | 'standardClass'
-    | 'turista'
-    | 'economyClass'
-    | 'any';
+  fareClass?: (typeof FARE_CLASSES)[number];
   totalCapacity?: number;
   seatingCapacity?: number;
   standingCapacity?: number;
