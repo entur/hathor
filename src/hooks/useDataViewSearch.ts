@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import { useSearch } from '../components/search';
 import type { SearchContextViewType, SearchResultItem } from '../components/search/searchTypes';
-import type { VehicleType } from '../data/vehicle-types/vehicleTypeTypes';
+import type { Name } from '../data/vehicle-types/vehicleTypeTypes';
 
-export function useDataViewSearch(
-  allFetchedStopPlaces: VehicleType[] | null,
+export function useDataViewSearch<T extends { id: string; name: Name }>(
+  allFetchedStopPlaces: T[] | null,
   stopPlacesLoading: boolean
 ) {
   const { setActiveSearchContext, registerSearchFunction } = useSearch();

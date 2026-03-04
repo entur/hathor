@@ -9,6 +9,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
+import DeckPlanView from './pages/DeckPlanView.jsx';
+import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -34,6 +36,14 @@ export default function App() {
                   <Route
                     path="/vehicle-type"
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
+                  />
+                  <Route
+                    path="/deck-plans/*"
+                    element={<ProtectedRoute element={<DeckPlanView />} />}
+                  />
+                  <Route
+                    path="/deck-plans/:id"
+                    element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                   />
                 </Routes>
               </Box>
