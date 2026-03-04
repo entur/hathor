@@ -6,13 +6,13 @@ import { FARE_CLASSES, FUEL_TYPES, PROPULSION_TYPES, TRANSPORT_MODES } from './t
 
 const textTypeSchema: FieldDescriptor[] = [
   { kind: 'string', camel: 'value', xml: 'Value' },
-  { kind: 'string', camel: 'lang', xml: 'Lang' },
-  { kind: 'string', camel: 'textIdType', xml: 'TextIdType' },
+  { kind: 'string', camel: 'lang', xml: 'Lang', isAttribute: true },
+  { kind: 'string', camel: 'textIdType', xml: 'TextIdType', isAttribute: true },
 ];
 
 const privateCodeStructureSchema: FieldDescriptor[] = [
   { kind: 'string', camel: 'value', xml: 'Value' },
-  { kind: 'string', camel: 'type', xml: 'Type' },
+  { kind: 'string', camel: 'type', xml: 'Type', isAttribute: true },
 ];
 
 const passengerCapacityStructureSchema: FieldDescriptor[] = [
@@ -37,7 +37,7 @@ const vehicleManoeuvringRequirements_STUBSchema: FieldDescriptor[] = [
 const keyValueStructureSchema: FieldDescriptor[] = [
   { kind: 'string', camel: 'key', xml: 'Key' },
   { kind: 'string', camel: 'value', xml: 'Value' },
-  { kind: 'string', camel: 'typeOfKey', xml: 'TypeOfKey' },
+  { kind: 'string', camel: 'typeOfKey', xml: 'TypeOfKey', isAttribute: true },
 ];
 
 export const vehicleTypeSchema: FieldDescriptor[] = [
@@ -46,7 +46,7 @@ export const vehicleTypeSchema: FieldDescriptor[] = [
   { kind: 'array', camel: 'description', xml: 'Description', schema: textTypeSchema },
   { kind: 'object', camel: 'privateCode', xml: 'PrivateCode', schema: privateCodeStructureSchema },
   { kind: 'enum', camel: 'transportMode', xml: 'TransportMode', allowed: TRANSPORT_MODES },
-  { kind: 'string', camel: 'deckPlanRef', xml: 'DeckPlanRef' },
+  { kind: 'string', camel: 'deckPlanRef', xml: 'DeckPlanRef', isRef: true, refTarget: 'DeckPlan' },
   { kind: 'string', camel: 'euroClass', xml: 'EuroClass' },
   { kind: 'boolean', camel: 'reversingDirection', xml: 'ReversingDirection' },
   { kind: 'boolean', camel: 'selfPropelled', xml: 'SelfPropelled' },
@@ -61,10 +61,16 @@ export const vehicleTypeSchema: FieldDescriptor[] = [
     xml: 'PassengerCapacity',
     schema: passengerCapacityStructureSchema,
   },
-  { kind: 'string', camel: 'id', xml: 'Id' },
-  { kind: 'string', camel: 'includedIn', xml: 'IncludedIn' },
-  { kind: 'string', camel: 'classifiedAsRef', xml: 'ClassifiedAsRef' },
-  { kind: 'string', camel: 'facilities', xml: 'Facilities' },
+  { kind: 'string', camel: 'id', xml: 'Id', isAttribute: true },
+  { kind: 'string', camel: 'includedIn', xml: 'IncludedIn', isRef: true, refTarget: 'VehicleType' },
+  {
+    kind: 'string',
+    camel: 'classifiedAsRef',
+    xml: 'ClassifiedAsRef',
+    isRef: true,
+    refTarget: 'TypeOfVehicleType',
+  },
+  { kind: 'string', camel: 'facilities', xml: 'Facilities', isRef: true },
   { kind: 'boolean', camel: 'monitored', xml: 'Monitored' },
   { kind: 'boolean', camel: 'lowFloor', xml: 'LowFloor' },
   { kind: 'boolean', camel: 'hasLiftOrRamp', xml: 'HasLiftOrRamp' },
@@ -77,16 +83,28 @@ export const vehicleTypeSchema: FieldDescriptor[] = [
   { kind: 'number', camel: 'height', xml: 'Height' },
   { kind: 'number', camel: 'weight', xml: 'Weight' },
   { kind: 'number', camel: 'firstAxleHeight', xml: 'FirstAxleHeight' },
-  { kind: 'string', camel: 'canCarry', xml: 'CanCarry' },
+  { kind: 'string', camel: 'canCarry', xml: 'CanCarry', isRef: true },
   {
     kind: 'object',
     camel: 'canManoeuvre',
     xml: 'CanManoeuvre',
     schema: vehicleManoeuvringRequirements_STUBSchema,
   },
-  { kind: 'string', camel: 'satisfiesFacilityRequirements', xml: 'SatisfiesFacilityRequirements' },
+  {
+    kind: 'string',
+    camel: 'satisfiesFacilityRequirements',
+    xml: 'SatisfiesFacilityRequirements',
+    isRef: true,
+  },
   { kind: 'array', camel: 'keyList', xml: 'KeyList', schema: keyValueStructureSchema },
   { kind: 'array', camel: 'privateCodes', xml: 'PrivateCodes', schema: privateCodeStructureSchema },
-  { kind: 'string', camel: 'brandingRef', xml: 'BrandingRef' },
-  { kind: 'string', camel: 'responsibilitySetRef', xml: 'ResponsibilitySetRef' },
+  { kind: 'string', camel: 'brandingRef', xml: 'BrandingRef', isRef: true, refTarget: 'Branding' },
+  {
+    kind: 'string',
+    camel: 'responsibilitySetRef',
+    xml: 'ResponsibilitySetRef',
+    isAttribute: true,
+    isRef: true,
+    refTarget: 'ResponsibilitySet',
+  },
 ];

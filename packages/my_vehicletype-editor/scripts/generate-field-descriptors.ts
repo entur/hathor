@@ -42,7 +42,13 @@ function capitalize(s: string): string {
 function resolveFieldKind(
   prop: PropertySignature,
   project: Project
-): { kind: string; allowed?: string; subInterface?: InterfaceDeclaration } {
+): {
+  kind: string;
+  allowed?: string;
+  subInterface?: InterfaceDeclaration;
+  isRef?: boolean;
+  refTarget?: string;
+} {
   const typeNode = prop.getTypeNode();
   if (!typeNode) {
     // Fall back to type checker
@@ -92,7 +98,16 @@ function resolveFieldKind(
       return { kind: 'enum', allowed: enumConst };
     }
 
-    // Check if it resolves to string (e.g. SimpleRef)
+    // Check if it's SimpleRef or Ref<T> (both resolve to string at runtime)
+    if (typeText === 'SimpleRef') {
+      return { kind: 'string', isRef: true };
+    }
+    const refMatch = typeText.match(/^Ref(?:<'([^']+)'>)?$/);
+    if (refMatch) {
+      return { kind: 'string', isRef: true, refTarget: refMatch[1] };
+    }
+
+    // Check if it resolves to string
     const type = prop.getType();
     if (type.isString()) {
       return { kind: 'string' };
@@ -162,6 +177,9 @@ interface FieldEntry {
   xml: string;
   allowed?: string;
   schemaRef?: string;
+  isAttribute?: boolean;
+  isRef?: boolean;
+  refTarget?: string;
 }
 
 interface SubSchema {
@@ -195,6 +213,15 @@ function processInterface(
     if (resolved.allowed) {
       entry.allowed = resolved.allowed;
     }
+    if (resolved.isRef) entry.isRef = true;
+    if (resolved.refTarget) entry.refTarget = resolved.refTarget;
+
+    const isAttribute = prop
+      .getJsDocs()
+      .some(doc => doc.getTags().some(tag => tag.getTagName() === 'xmlAttribute'));
+    if (isAttribute) {
+      entry.isAttribute = true;
+    }
 
     if (resolved.subInterface) {
       const subName = resolved.subInterface.getName();
@@ -223,6 +250,15 @@ function formatFieldEntry(entry: FieldEntry, indent: string): string {
     `xml: '${entry.xml}'`,
   ];
 
+  if (entry.isAttribute) {
+    parts.push(`isAttribute: true`);
+  }
+  if (entry.isRef) {
+    parts.push(`isRef: true`);
+  }
+  if (entry.refTarget) {
+    parts.push(`refTarget: '${entry.refTarget}'`);
+  }
   if (entry.allowed) {
     parts.push(`allowed: ${entry.allowed}`);
   }

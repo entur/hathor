@@ -2,6 +2,9 @@
 //  is now modifed to improve JSX/TSX interop as state
 
 export type SimpleRef = string;
+// _T is read by codegen AST, not at runtime
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type Ref<_T extends string = string> = string;
 
 export const TRANSPORT_MODES = [
   'all',
@@ -81,7 +84,7 @@ export interface VehicleType {
   description?: TextType[];
   privateCode?: PrivateCodeStructure;
   transportMode?: AllPublicTransportModesEnumeration;
-  deckPlanRef?: SimpleRef;
+  deckPlanRef?: Ref<'DeckPlan'>;
   euroClass?: string;
   reversingDirection?: boolean;
   selfPropelled?: boolean;
@@ -95,9 +98,10 @@ export interface VehicleType {
   passengerCapacity?: PassengerCapacityStructure;
 
   // ── core ──
+  /** @xmlAttribute */
   id?: string;
-  includedIn?: SimpleRef;
-  classifiedAsRef?: SimpleRef;
+  includedIn?: Ref<'VehicleType'>;
+  classifiedAsRef?: Ref<'TypeOfVehicleType'>;
   facilities?: SimpleRef;
   monitored?: boolean;
   lowFloor?: boolean;
@@ -118,24 +122,29 @@ export interface VehicleType {
   // ── extra ──
   keyList?: KeyValueStructure[];
   privateCodes?: PrivateCodeStructure[];
-  brandingRef?: SimpleRef;
-  responsibilitySetRef?: SimpleRef;
+  brandingRef?: Ref<'Branding'>;
+  /** @xmlAttribute */
+  responsibilitySetRef?: Ref<'ResponsibilitySet'>;
 }
 
 export interface KeyValueStructure {
   key?: string;
   value?: string;
+  /** @xmlAttribute */
   typeOfKey?: string;
 }
 
 export interface PrivateCodeStructure {
   value?: string;
+  /** @xmlAttribute */
   type?: string;
 }
 
 export interface TextType {
   value?: string;
+  /** @xmlAttribute */
   lang?: string;
+  /** @xmlAttribute */
   textIdType?: string;
 }
 

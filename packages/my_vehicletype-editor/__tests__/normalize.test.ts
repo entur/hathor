@@ -276,4 +276,16 @@ describe('normalize', () => {
     const result = normalize({});
     expect(result).toEqual({});
   });
+
+  // ── @_-prefixed attribute fields (fast-xml-parser output) ──
+
+  it('maps @_id → id (XML attribute prefix)', () => {
+    const result = normalize({ '@_id': 'attr-value' });
+    expect(result.id).toBe('attr-value');
+  });
+
+  it('maps @_responsibilitySetRef → responsibilitySetRef (XML attribute prefix)', () => {
+    const result = normalize({ '@_responsibilitySetRef': 'attr-value' });
+    expect(result.responsibilitySetRef).toBe('attr-value');
+  });
 });

@@ -14,9 +14,10 @@ describe('serialize', () => {
     expect(xml).toContain('<EuroClass>test</EuroClass>');
   });
 
-  it('serializes id as <Id>', () => {
+  it('serializes id as XML attribute', () => {
     const xml = serialize({ id: 'test' });
-    expect(xml).toContain('<Id>test</Id>');
+    expect(xml).toContain('id="test"');
+    expect(xml).not.toContain('<Id>');
   });
 
   it('serializes includedIn as <IncludedIn>', () => {
@@ -49,9 +50,10 @@ describe('serialize', () => {
     expect(xml).toContain('<BrandingRef>test</BrandingRef>');
   });
 
-  it('serializes responsibilitySetRef as <ResponsibilitySetRef>', () => {
+  it('serializes responsibilitySetRef as XML attribute', () => {
     const xml = serialize({ responsibilitySetRef: 'test' });
-    expect(xml).toContain('<ResponsibilitySetRef>test</ResponsibilitySetRef>');
+    expect(xml).toContain('responsibilitySetRef="test"');
+    expect(xml).not.toContain('<ResponsibilitySetRef>');
   });
 
   it('serializes boolean reversingDirection as string', () => {
@@ -111,7 +113,7 @@ describe('serialize', () => {
 
   it('wraps output in <VehicleType>', () => {
     const xml = serialize({ id: 'test' });
-    expect(xml).toContain('<VehicleType>');
+    expect(xml).toContain('<VehicleType');
     expect(xml).toContain('</VehicleType>');
   });
 
@@ -145,7 +147,7 @@ describe('serialize', () => {
       responsibilitySetRef: 'roundtrip',
     };
     const xml = serialize(original);
-    const parser = new XMLParser();
+    const parser = new XMLParser({ ignoreAttributes: false });
     const parsed = parser.parse(xml);
     const restored = normalize(parsed.VehicleType);
     expect(restored).toMatchObject(original);

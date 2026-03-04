@@ -6,6 +6,7 @@ import { serializeFields } from './fieldSchema.js';
 const builder = new XMLBuilder({
   format: true,
   indentBy: '  ',
+  ignoreAttributes: false,
 });
 
 /**

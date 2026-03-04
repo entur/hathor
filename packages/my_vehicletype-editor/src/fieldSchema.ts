@@ -1,11 +1,18 @@
 // ── Field descriptor types ──
 
 export type FieldDescriptor =
-  | { kind: 'string'; camel: string; xml: string }
-  | { kind: 'number'; camel: string; xml: string }
-  | { kind: 'boolean'; camel: string; xml: string }
-  | { kind: 'enum'; camel: string; xml: string; allowed: readonly string[] }
-  | { kind: 'enum[]'; camel: string; xml: string; allowed: readonly string[] }
+  | {
+      kind: 'string';
+      camel: string;
+      xml: string;
+      isAttribute?: true;
+      isRef?: true;
+      refTarget?: string;
+    }
+  | { kind: 'number'; camel: string; xml: string; isAttribute?: true }
+  | { kind: 'boolean'; camel: string; xml: string; isAttribute?: true }
+  | { kind: 'enum'; camel: string; xml: string; allowed: readonly string[]; isAttribute?: true }
+  | { kind: 'enum[]'; camel: string; xml: string; allowed: readonly string[]; isAttribute?: true }
   | { kind: 'object'; camel: string; xml: string; schema: FieldDescriptor[] }
   | { kind: 'array'; camel: string; xml: string; schema: FieldDescriptor[] };
 
@@ -30,12 +37,16 @@ export function serializeFields(
       case 'string':
       case 'number':
       case 'enum':
-      case 'enum[]':
-        out[field.xml] = val;
+      case 'enum[]': {
+        const key = field.isAttribute ? `@_${field.camel}` : field.xml;
+        out[key] = val;
         break;
-      case 'boolean':
-        out[field.xml] = String(val);
+      }
+      case 'boolean': {
+        const key = field.isAttribute ? `@_${field.camel}` : field.xml;
+        out[key] = String(val);
         break;
+      }
       case 'object':
         out[field.xml] = serializeFields(val as Record<string, unknown>, field.schema);
         break;
@@ -55,7 +66,10 @@ export function normalizeFields(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const field of schema) {
-    const rawVal = src[field.xml] ?? src[field.camel];
+    const rawVal =
+      field.kind !== 'object' && field.kind !== 'array' && field.isAttribute
+        ? (src[`@_${field.camel}`] ?? src[field.xml] ?? src[field.camel])
+        : (src[field.xml] ?? src[field.camel]);
     if (rawVal == null) continue;
     switch (field.kind) {
       case 'string': {
