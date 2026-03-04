@@ -9,7 +9,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
-import DeckPlanView from './pages/DeckPlanView.jsx';
+import DeckPlanView from './pages/DeckPlanView.tsx';
 import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
 import VehicleTypeCompletePage from './pages/VehicleTypeCompletePage.tsx';
 
