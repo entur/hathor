@@ -23,7 +23,8 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start dev server |
+| `npm run dev` | Start dev server (uses dev API) |
+| `npm run local` | Start dev server (uses local Sobek at `127.0.0.1:37999`) |
 | `npm run build` | Type-check and build (`build/`) |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier auto-format |
