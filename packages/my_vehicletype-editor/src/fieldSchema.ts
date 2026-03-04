@@ -87,28 +87,30 @@ export function normalizeFields(
         break;
       }
       case 'boolean': {
-        if (typeof rawVal === 'boolean') {
-          out[field.camel] = rawVal;
-        } else if (rawVal === 'true' || rawVal === '1') {
+        const raw = unwrap(rawVal);
+        if (typeof raw === 'boolean') {
+          out[field.camel] = raw;
+        } else if (raw === 'true' || raw === '1') {
           out[field.camel] = true;
-        } else if (rawVal === 'false' || rawVal === '0') {
+        } else if (raw === 'false' || raw === '0') {
           out[field.camel] = false;
         } else {
-          out[field.camel] = Boolean(rawVal);
+          out[field.camel] = Boolean(raw);
         }
         break;
       }
       case 'enum': {
-        const s = String(rawVal);
+        const s = String(unwrap(rawVal));
         if ((field.allowed as readonly string[]).includes(s)) {
           out[field.camel] = s;
         }
         break;
       }
       case 'enum[]': {
-        const arr = Array.isArray(rawVal) ? rawVal : [rawVal];
+        const raw = unwrap(rawVal);
+        const arr = Array.isArray(raw) ? raw : [raw];
         out[field.camel] = arr
-          .map(v => String(v))
+          .map(v => String(unwrap(v)))
           .filter(s => (field.allowed as readonly string[]).includes(s));
         break;
       }
