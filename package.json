@@ -6,9 +6,11 @@
   "scripts": {
     "predev": "run-p --race copy:theme copy:config",
     "dev": "vite",
+    "prelocal": "run-p --race copy:theme copy:config-local",
+    "local": "vite",
     "build": "tsc -b && vite build",
     "copy:theme": "ncp .github/environments/theme-localhost.json public/theme-dev.json",
-    "copy:config-offline": "ncp .github/environments/config-localhost.json public/config.json",
+    "copy:config-local": "ncp .github/environments/config-localhost.json public/config.json",
     "copy:config": "ncp .github/environments/config-dev.json public/config.json",
     "lint": "eslint .",
     "check": "prettier . --check",
