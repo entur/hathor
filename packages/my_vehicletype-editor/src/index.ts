@@ -1,7 +1,7 @@
 export { Editor } from './Editor.js';
 export type { EditorProps } from './Editor.js';
 export type {
-  My_VehicleType,
+  VehicleType,
   SimpleRef,
   TextType,
   PrivateCodeStructure,

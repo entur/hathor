@@ -1,5 +1,5 @@
 // Auto-generated from entity file — do not edit manually
-import type { My_VehicleType } from './types.js';
+import type { VehicleType } from './types.js';
 import { TRANSPORT_MODES, PROPULSION_TYPES } from './types.js';
 
 export interface ValidationResult {
@@ -7,7 +7,7 @@ export interface ValidationResult {
   errors: string[];
 }
 
-export function validate(obj: Partial<My_VehicleType>): ValidationResult {
+export function validate(obj: Partial<VehicleType>): ValidationResult {
   const errors: string[] = [];
   if (obj.name != null && !Array.isArray(obj.name)) errors.push('name must be an array');
   if (obj.shortName != null && !Array.isArray(obj.shortName))

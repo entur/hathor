@@ -74,7 +74,7 @@ export const FARE_CLASSES = [
   'any',
 ] as const;
 
-export interface My_VehicleType {
+export interface VehicleType {
   // ── type ──
   name?: TextType[];
   shortName?: TextType[];

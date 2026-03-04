@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import type React from 'react';
 import type {
-  My_VehicleType,
+  VehicleType,
   TextType,
   PrivateCodeStructure,
   PassengerCapacityStructure,
@@ -48,8 +48,8 @@ function EnumMultiSelect<T extends string>({
 }
 
 export interface EditorProps {
-  value: Partial<My_VehicleType>;
-  onChange: (next: Partial<My_VehicleType>) => void;
+  value: Partial<VehicleType>;
+  onChange: (next: Partial<VehicleType>) => void;
 }
 
 function TextTypeRow({

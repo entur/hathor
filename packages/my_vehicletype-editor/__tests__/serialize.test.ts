@@ -109,10 +109,10 @@ describe('serialize', () => {
     expect(xml).toContain('<PrivateCodes>');
   });
 
-  it('wraps output in <My_VehicleType>', () => {
+  it('wraps output in <VehicleType>', () => {
     const xml = serialize({ id: 'test' });
-    expect(xml).toContain('<My_VehicleType>');
-    expect(xml).toContain('</My_VehicleType>');
+    expect(xml).toContain('<VehicleType>');
+    expect(xml).toContain('</VehicleType>');
   });
 
   it('roundtrips primitives through normalize', () => {
@@ -147,7 +147,7 @@ describe('serialize', () => {
     const xml = serialize(original);
     const parser = new XMLParser();
     const parsed = parser.parse(xml);
-    const restored = normalize(parsed.My_VehicleType);
+    const restored = normalize(parsed.VehicleType);
     expect(restored).toMatchObject(original);
   });
 });
