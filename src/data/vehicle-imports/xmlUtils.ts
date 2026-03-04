@@ -102,3 +102,26 @@ export function pubDeliverySingleRcFrame(
   const xmlContent = builder.build(blueprintClone);
   return xmlContent;
 }
+
+/** Wrap a VehicleType XML fragment in a minimal PublicationDelivery envelope. */
+// TODO: improve this static solution
+export function wrapInPublicationDelivery(vehicleTypeXml: string): string {
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">',
+    `  <PublicationTimestamp>${new Date().toISOString()}</PublicationTimestamp>`,
+    '  <dataObjects>',
+    '    <ResourceFrame id="RF:1" version="1">',
+    '      <FrameDefaults>',
+    '        <DefaultLocale>',
+    '          <TimeZone>Europe/Oslo</TimeZone>',
+    '        </DefaultLocale>',
+    '      </FrameDefaults>',
+    '      <vehicleTypes>',
+    vehicleTypeXml,
+    '      </vehicleTypes>',
+    '    </ResourceFrame>',
+    '  </dataObjects>',
+    '</PublicationDelivery>',
+  ].join('\n');
+}
