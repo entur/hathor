@@ -7,11 +7,14 @@ import DataPageContent from '../../components/data/DataPageContent.tsx';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Defines the columns for the DeckPlan data table.
  */
-const DeckPlanColumns: ColumnDefinition<DeckPlan, OrderBy>[] = [
+const getDeckPlanColumns = (
+  navigate: ReturnType<typeof useNavigate>
+): ColumnDefinition<DeckPlan, OrderBy>[] => [
   {
     id: 'id',
     headerLabel: 'ID',
@@ -30,7 +33,8 @@ const DeckPlanColumns: ColumnDefinition<DeckPlan, OrderBy>[] = [
     id: 'edit',
     headerLabel: 'Edit',
     isSortable: false,
-    renderCell: item => createElement(Link, { href: `/deck-plans/${item.id}` }, 'Edit'),
+    renderCell: item =>
+      createElement(Link, { onClick: () => navigate(`/deck-plans/${item.id}`) }, 'Edit'),
     display: 'always',
   },
 ];
@@ -65,14 +69,15 @@ const DeckPlanFilters: FilterDefinition[] = [
   { id: 'harbourPort', labelKey: 'types.harbour', defaultLabel: 'Harbour' },
   { id: 'liftStation', labelKey: 'types.lift', defaultLabel: 'Lift' },
 ];
-export const deckPlanViewConfig = {
+
+export const getDeckPlanViewConfig = (navigate: ReturnType<typeof useNavigate>) => ({
   useData: useDeckPlans,
   useSearchRegistration: useDataViewSearch<DeckPlan>,
   useTableLogic: useDataViewTableLogic,
   PageContentComponent: DataPageContent,
-  columns: DeckPlanColumns,
+  columns: getDeckPlanColumns(navigate),
   getFilterKey: getDeckPlanFilterKey,
   getSortValue: getDeckPlanSortValue,
   filters: DeckPlanFilters,
   title: 'Deck Plans',
-};
+});

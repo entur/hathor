@@ -19,13 +19,14 @@ const DeckPlanDetailsView = () => {
 
   const save = async () => {
     try {
+      setLoading(true);
+      setError(null);
       if (!applicationImportBaseUrl) return;
       const token = await getAccessToken();
       await saveDeckPlanAsNetexToBackend(applicationImportBaseUrl, data, token);
-      alert('Deck plan saved successfully!');
       navigate('/deck-plans');
     } catch (err) {
-      alert(`Error saving deck plan: ${(err as Error).message}`);
+      setError(err as Error);
     } finally {
       setLoading(false);
     }
