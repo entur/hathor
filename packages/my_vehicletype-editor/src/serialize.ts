@@ -1,6 +1,7 @@
 import { XMLBuilder } from 'fast-xml-parser';
 import type { VehicleType } from './generated/types.js';
-import { serializeFields, vehicleTypeSchema } from './fieldSchema.js';
+import { vehicleTypeSchema } from './generated/fieldDescriptors.js';
+import { serializeFields } from './fieldSchema.js';
 
 const builder = new XMLBuilder({
   format: true,

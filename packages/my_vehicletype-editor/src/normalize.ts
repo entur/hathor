@@ -1,5 +1,6 @@
 import type { VehicleType } from './generated/types.js';
-import { normalizeFields, vehicleTypeSchema } from './fieldSchema.js';
+import { vehicleTypeSchema } from './generated/fieldDescriptors.js';
+import { normalizeFields } from './fieldSchema.js';
 
 /**
  * Normalize parsed XML (PascalCase keys, possible {value} wrappers)

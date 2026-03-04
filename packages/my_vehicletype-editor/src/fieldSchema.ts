@@ -1,8 +1,6 @@
-import { TRANSPORT_MODES, PROPULSION_TYPES, FUEL_TYPES, FARE_CLASSES } from './generated/types.js';
-
 // ── Field descriptor types ──
 
-type FieldDescriptor =
+export type FieldDescriptor =
   | { kind: 'string'; camel: string; xml: string }
   | { kind: 'number'; camel: string; xml: string }
   | { kind: 'boolean'; camel: string; xml: string }
@@ -10,101 +8,6 @@ type FieldDescriptor =
   | { kind: 'enum[]'; camel: string; xml: string; allowed: readonly string[] }
   | { kind: 'object'; camel: string; xml: string; schema: FieldDescriptor[] }
   | { kind: 'array'; camel: string; xml: string; schema: FieldDescriptor[] };
-
-// ── Sub-schemas ──
-
-const textTypeSchema: FieldDescriptor[] = [
-  { kind: 'string', camel: 'value', xml: 'Value' },
-  { kind: 'string', camel: 'lang', xml: 'Lang' },
-  { kind: 'string', camel: 'textIdType', xml: 'TextIdType' },
-];
-
-const privateCodeSchema: FieldDescriptor[] = [
-  { kind: 'string', camel: 'value', xml: 'Value' },
-  { kind: 'string', camel: 'type', xml: 'Type' },
-];
-
-const keyValueSchema: FieldDescriptor[] = [
-  { kind: 'string', camel: 'key', xml: 'Key' },
-  { kind: 'string', camel: 'value', xml: 'Value' },
-  { kind: 'string', camel: 'typeOfKey', xml: 'TypeOfKey' },
-];
-
-const passengerCapacitySchema: FieldDescriptor[] = [
-  { kind: 'enum', camel: 'fareClass', xml: 'FareClass', allowed: FARE_CLASSES },
-  { kind: 'number', camel: 'totalCapacity', xml: 'TotalCapacity' },
-  { kind: 'number', camel: 'seatingCapacity', xml: 'SeatingCapacity' },
-  { kind: 'number', camel: 'standingCapacity', xml: 'StandingCapacity' },
-  { kind: 'number', camel: 'specialPlaceCapacity', xml: 'SpecialPlaceCapacity' },
-  { kind: 'number', camel: 'pushchairCapacity', xml: 'PushchairCapacity' },
-  { kind: 'number', camel: 'wheelchairPlaceCapacity', xml: 'WheelchairPlaceCapacity' },
-  { kind: 'number', camel: 'pramPlaceCapacity', xml: 'PramPlaceCapacity' },
-  { kind: 'number', camel: 'bicycleRackCapacity', xml: 'BicycleRackCapacity' },
-];
-
-const manoeuvringSchema: FieldDescriptor[] = [
-  { kind: 'boolean', camel: 'reversible', xml: 'Reversible' },
-  { kind: 'number', camel: 'minimumTurningCircle', xml: 'MinimumTurningCircle' },
-  { kind: 'number', camel: 'minimumOvertakingWidth', xml: 'MinimumOvertakingWidth' },
-  { kind: 'number', camel: 'minimumLength', xml: 'MinimumLength' },
-];
-
-// ── Main schema ──
-
-export const vehicleTypeSchema: FieldDescriptor[] = [
-  { kind: 'array', camel: 'name', xml: 'Name', schema: textTypeSchema },
-  { kind: 'array', camel: 'shortName', xml: 'ShortName', schema: textTypeSchema },
-  { kind: 'array', camel: 'description', xml: 'Description', schema: textTypeSchema },
-  { kind: 'object', camel: 'privateCode', xml: 'PrivateCode', schema: privateCodeSchema },
-  { kind: 'enum', camel: 'transportMode', xml: 'TransportMode', allowed: TRANSPORT_MODES },
-  { kind: 'string', camel: 'deckPlanRef', xml: 'DeckPlanRef' },
-  { kind: 'string', camel: 'euroClass', xml: 'EuroClass' },
-  { kind: 'boolean', camel: 'reversingDirection', xml: 'ReversingDirection' },
-  { kind: 'boolean', camel: 'selfPropelled', xml: 'SelfPropelled' },
-  {
-    kind: 'enum[]',
-    camel: 'propulsionTypes',
-    xml: 'PropulsionTypes',
-    allowed: PROPULSION_TYPES,
-  },
-  { kind: 'enum', camel: 'propulsionType', xml: 'PropulsionType', allowed: PROPULSION_TYPES },
-  { kind: 'enum[]', camel: 'fuelTypes', xml: 'FuelTypes', allowed: FUEL_TYPES },
-  { kind: 'number', camel: 'maximumRange', xml: 'MaximumRange' },
-  { kind: 'number', camel: 'maximumVelocity', xml: 'MaximumVelocity' },
-  {
-    kind: 'object',
-    camel: 'passengerCapacity',
-    xml: 'PassengerCapacity',
-    schema: passengerCapacitySchema,
-  },
-  { kind: 'string', camel: 'id', xml: 'Id' },
-  { kind: 'string', camel: 'includedIn', xml: 'IncludedIn' },
-  { kind: 'string', camel: 'classifiedAsRef', xml: 'ClassifiedAsRef' },
-  { kind: 'string', camel: 'facilities', xml: 'Facilities' },
-  { kind: 'boolean', camel: 'monitored', xml: 'Monitored' },
-  { kind: 'boolean', camel: 'lowFloor', xml: 'LowFloor' },
-  { kind: 'boolean', camel: 'hasLiftOrRamp', xml: 'HasLiftOrRamp' },
-  { kind: 'boolean', camel: 'hasHoist', xml: 'HasHoist' },
-  { kind: 'number', camel: 'hoistOperatingRadius', xml: 'HoistOperatingRadius' },
-  { kind: 'number', camel: 'boardingHeight', xml: 'BoardingHeight' },
-  { kind: 'number', camel: 'gapToPlatform', xml: 'GapToPlatform' },
-  { kind: 'number', camel: 'length', xml: 'Length' },
-  { kind: 'number', camel: 'width', xml: 'Width' },
-  { kind: 'number', camel: 'height', xml: 'Height' },
-  { kind: 'number', camel: 'weight', xml: 'Weight' },
-  { kind: 'number', camel: 'firstAxleHeight', xml: 'FirstAxleHeight' },
-  { kind: 'string', camel: 'canCarry', xml: 'CanCarry' },
-  { kind: 'object', camel: 'canManoeuvre', xml: 'CanManoeuvre', schema: manoeuvringSchema },
-  {
-    kind: 'string',
-    camel: 'satisfiesFacilityRequirements',
-    xml: 'SatisfiesFacilityRequirements',
-  },
-  { kind: 'array', camel: 'keyList', xml: 'KeyList', schema: keyValueSchema },
-  { kind: 'array', camel: 'privateCodes', xml: 'PrivateCodes', schema: privateCodeSchema },
-  { kind: 'string', camel: 'brandingRef', xml: 'BrandingRef' },
-  { kind: 'string', camel: 'responsibilitySetRef', xml: 'ResponsibilitySetRef' },
-];
 
 // ── Generic helpers ──
 

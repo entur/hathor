@@ -64,14 +64,38 @@ vehicleTypeSchema
 └── (30+ string/number/boolean leaf fields)
 ```
 
-## Future improvement: auto-generate fieldSchema with ts-macro
+## Auto-generated fieldDescriptors via ts-morph
 
-The `vehicleTypeSchema` array and its sub-schemas are currently hand-written. Since they mirror the TypeScript types in `generated/types.ts` 1:1, the schema could be **auto-generated** from those types using [ts-macro](https://github.com/nicepkg/ts-macro) (compile-time TypeScript macros).
+The `vehicleTypeSchema` array and its sub-schemas are **auto-generated** from `generated/types.ts` by a ts-morph codegen script.
 
-A macro could:
+### How it works
 
-1. Walk the `VehicleType` interface at compile time
-2. Read the `xml` tag name from a naming convention or JSDoc annotation
-3. Emit the `FieldDescriptor[]` array as generated code
+`scripts/generate-field-descriptors.ts` uses ts-morph to walk the `VehicleType` interface at the AST level. For each property it:
 
-This would eliminate the last piece of duplication — the schema itself — making `generated/types.ts` the single source of truth for field names, types, and XML mappings.
+1. Resolves the TS type to a `FieldDescriptor` kind (`string`, `number`, `boolean`, `enum`, `enum[]`, `object`, `array`)
+2. Derives the XML tag from the camelCase property name (capitalize first letter → PascalCase)
+3. Maps enum type aliases back to their source `as const` arrays (e.g. `AllPublicTransportModesEnumeration` → `TRANSPORT_MODES`)
+4. Recursively processes sub-interfaces (e.g. `PassengerCapacityStructure`, `TextType`)
+
+The output is `src/generated/fieldDescriptors.ts` — a static `.ts` file that can be git-tracked, reviewed, and tested normally. Zero runtime cost.
+
+### Commands
+
+```bash
+npm run codegen         # regenerate fieldDescriptors.ts
+npm run codegen:check   # exit 1 if the generated file is stale
+```
+
+### Architecture
+
+```
+src/generated/types.ts          ← single source of truth (interfaces + const arrays)
+        ↓  (ts-morph AST walk)
+scripts/generate-field-descriptors.ts
+        ↓  (writes)
+src/generated/fieldDescriptors.ts  ← schema data (vehicleTypeSchema + sub-schemas)
+        ↓  (imported by)
+src/normalize.ts + src/serialize.ts
+        ↓  (use generic walkers from)
+src/fieldSchema.ts              ← FieldDescriptor type + normalizeFields/serializeFields
+```
