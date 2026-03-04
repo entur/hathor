@@ -11,6 +11,7 @@ import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx'
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
 import DeckPlanView from './pages/DeckPlanView.jsx';
 import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
+import VehicleTypeCompletePage from './pages/VehicleTypeCompletePage.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -44,6 +45,8 @@ export default function App() {
                   <Route
                     path="/deck-plans/:id"
                     element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
+                    path="/vt-complete-edit"
+                    element={<ProtectedRoute element={<VehicleTypeCompletePage />} />}
                   />
                 </Routes>
               </Box>

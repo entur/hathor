@@ -36,6 +36,7 @@ const menuItems = [
   { textKey: 'home', path: '/', iconKey: 'home' },
   { textKey: 'Vehicle Types', path: '/vehicle-type', iconKey: 'data' },
   { textKey: 'Deck Plans', path: '/deck-plans', iconKey: 'data' },
+  { textKey: 'VT Complete Editor', path: '/vt-complete-edit', iconKey: 'data' },
 ];
 
 interface SideMenuProps {

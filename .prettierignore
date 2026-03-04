@@ -20,5 +20,6 @@ public/deckplan-editor
 .husky
 .vscode
 *.lock
+pnpm-lock.yaml
 *.log
 *.md
