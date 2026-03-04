@@ -45,6 +45,8 @@ export default function App() {
                   <Route
                     path="/deck-plans/:id"
                     element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
+                  />
+                  <Route
                     path="/vt-complete-edit"
                     element={<ProtectedRoute element={<VehicleTypeCompletePage />} />}
                   />

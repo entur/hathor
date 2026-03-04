@@ -74,8 +74,8 @@ export function useDeckPlans() {
   };
 
   const sorted = [...data].sort((a, b) => {
-    const v1 = orderBy === 'name' ? a.name?.value?.toLowerCase() : a.id.toLowerCase();
-    const v2 = orderBy === 'name' ? b.name?.value?.toLowerCase() : b.id.toLowerCase();
+    const v1 = orderBy === 'name' ? a.name?.value?.toLowerCase() || '' : a.id.toLowerCase();
+    const v2 = orderBy === 'name' ? b.name?.value?.toLowerCase() || '' : b.id.toLowerCase();
     if (v1 < v2) return order === 'asc' ? -1 : 1;
     if (v1 > v2) return order === 'asc' ? 1 : -1;
     return 0;
