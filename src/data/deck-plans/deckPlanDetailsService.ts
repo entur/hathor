@@ -23,7 +23,7 @@ export const fetchDeckPlanDetails = async (
 };
 
 /**
- * Import a vehicle into Sobek by POSTing its NeTEx XML to the import endpoint.
+ * Import a deck plan into Sobek by POSTing its NeTEx XML to the import endpoint.
  * Returns the response body on success.
  */
 export const saveDeckPlanAsNetexToBackend = async (
