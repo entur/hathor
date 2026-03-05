@@ -9,6 +9,7 @@ import {
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
   Dialog,
   DialogTitle,
@@ -17,7 +18,13 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { EmojiTransportation, ViewInAr, AddCircleOutline } from '@mui/icons-material';
+import {
+  EmojiTransportation,
+  ViewInAr,
+  AddCircleOutline,
+  DirectionsBus,
+  Train,
+} from '@mui/icons-material';
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -135,16 +142,25 @@ export default function HomePage() {
         <List disablePadding>
           <ListItem disablePadding>
             <ListItemButton component={Link} to="/vehicle-type/new">
+              <ListItemIcon>
+                <DirectionsBus fontSize="small" />
+              </ListItemIcon>
               <ListItemText primary={t('home.createNew.vehicleType', 'Vehicle Type')} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton onClick={() => setComingOpen(true)}>
+              <ListItemIcon>
+                <Train fontSize="small" />
+              </ListItemIcon>
               <ListItemText primary={t('home.createNew.train', 'Train')} />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
             <ListItemButton onClick={() => setComingOpen(true)}>
+              <ListItemIcon>
+                <ViewInAr fontSize="small" />
+              </ListItemIcon>
               <ListItemText primary={t('home.createNew.deckPlan', 'Deck Plan')} />
             </ListItemButton>
           </ListItem>
