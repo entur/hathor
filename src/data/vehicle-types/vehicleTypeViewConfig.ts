@@ -68,7 +68,7 @@ const getVehicleTypeFilterKey = (item: VehicleType): string => {
 const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string | number => {
   switch (key) {
     case 'name':
-      return item.name.value;
+      return item.name?.value || '';
     case 'id':
       return item.id;
     case 'length':

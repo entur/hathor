@@ -9,6 +9,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
+import DeckPlanView from './pages/DeckPlanView.tsx';
+import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
 import VehicleTypeCompletePage from './pages/VehicleTypeCompletePage.tsx';
 
 export default function App() {
@@ -35,6 +37,14 @@ export default function App() {
                   <Route
                     path="/vehicle-type"
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
+                  />
+                  <Route
+                    path="/deck-plans"
+                    element={<ProtectedRoute element={<DeckPlanView />} />}
+                  />
+                  <Route
+                    path="/deck-plans/:id"
+                    element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                   />
                   <Route
                     path="/vt-complete-edit"
