@@ -10,7 +10,7 @@ export const fetchDeckPlanDetails = async (
   id: string,
   token: AccessToken
 ): Promise<string> => {
-  const response = await fetch(`${applicationNeTExBaseUrl}/deckplans/${id}`, {
+  const response = await fetch(`${applicationNeTExBaseUrl}/deckplans/${encodeURIComponent(id)}`, {
     method: 'GET',
     headers: authHeader(token),
   });

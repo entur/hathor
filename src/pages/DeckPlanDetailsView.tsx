@@ -1,36 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, CircularProgress, TextareaAutosize } from '@mui/material';
+import { TextareaAutosize } from '@mui/material';
+import LoadingPage from '../components/common/LoadingPage';
+import ErrorPage from '../components/common/ErrorPage';
 import { useAuth } from '../auth';
 import { useConfig } from '../contexts/configContext';
 import {
   fetchDeckPlanDetails,
   saveDeckPlanAsNetexToBackend,
 } from '../data/deck-plans/deckPlanDetailsService';
+import GenericDetailsPage from './GenericDetailsPage';
 
 const DeckPlanDetailsView = () => {
   const { id } = useParams();
   const [data, setData] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null as Error | null);
+  const [fetchError, setFetchError] = useState<Error | null>(null);
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl } = useConfig();
   const navigate = useNavigate();
-
-  const save = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      if (!applicationImportBaseUrl) return;
-      const token = await getAccessToken();
-      await saveDeckPlanAsNetexToBackend(applicationImportBaseUrl, data, token);
-      navigate('/deck-plans');
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +32,7 @@ const DeckPlanDetailsView = () => {
         const data = await fetchDeckPlanDetails(applicationImportBaseUrl, id, token);
         setData(data);
       } catch (error) {
-        setError(error as Error);
+        setFetchError(error as Error);
       } finally {
         setLoading(false);
       }
@@ -54,18 +42,26 @@ const DeckPlanDetailsView = () => {
   }, [id, applicationImportBaseUrl, getAccessToken]);
 
   if (loading) {
-    return <CircularProgress />;
+    return <LoadingPage />;
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
+  if (fetchError) {
+    return <ErrorPage message={fetchError.message} />;
   }
+
+  const handleSave = async () => {
+    if (!applicationImportBaseUrl) throw new Error('Import base URL not configured');
+    const token = await getAccessToken();
+    await saveDeckPlanAsNetexToBackend(applicationImportBaseUrl, data, token);
+    navigate('/deck-plan');
+  };
 
   return (
-    <div>
-      <Button variant="contained" color="primary" onClick={() => save()}>
-        Save Deck Plan
-      </Button>
+    <GenericDetailsPage
+      title="Deck Plan"
+      onSave={handleSave}
+      saveDisabled={!applicationImportBaseUrl}
+    >
       <TextareaAutosize
         aria-label="deck plan data"
         value={data}
@@ -82,7 +78,7 @@ const DeckPlanDetailsView = () => {
           fontFamily: 'Arial, sans-serif',
         }}
       />
-    </div>
+    </GenericDetailsPage>
   );
 };
 

@@ -1,5 +1,5 @@
 import { createElement } from 'react';
-import Link from '@mui/material/Link';
+import Button from '@mui/material/Button';
 import { useDeckPlans, type OrderBy } from './useDeckPlans';
 import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
@@ -34,7 +34,11 @@ const getDeckPlanColumns = (
     headerLabel: 'Edit',
     isSortable: false,
     renderCell: item =>
-      createElement(Link, { onClick: () => navigate(`/deck-plans/${item.id}`) }, 'Edit'),
+      createElement(
+        Button,
+        { variant: 'text', onClick: () => navigate(`/deck-plan/${encodeURIComponent(item.id)}`) },
+        'Edit'
+      ),
     display: 'always',
   },
 ];
