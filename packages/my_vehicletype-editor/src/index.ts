@@ -1,5 +1,7 @@
 export { Editor } from './Editor.js';
 export type { EditorProps } from './Editor.js';
+export { SimpleEditor } from './SimpleEditor.js';
+export type { SimpleEditorProps } from './SimpleEditor.js';
 export type {
   VehicleType,
   SimpleRef,

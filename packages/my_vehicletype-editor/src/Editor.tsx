@@ -20,6 +20,7 @@ import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { serialize } from './serialize.js';
+import { SimpleEditor } from './SimpleEditor.js';
 import './Editor.css';
 
 function EnumMultiSelect<T extends string>({
@@ -342,9 +343,11 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
     <>
       <Tabs value={tab} onChange={(_, v) => setTab(v)}>
         <Tab label="Edit" />
-        <Tab label="Preview" />
+        <Tab label="Full complexity" />
+        <Tab label="XML Preview" />
       </Tabs>
-      {tab === 1 && (
+      {tab === 0 && <SimpleEditor value={value} onChange={onChange} />}
+      {tab === 2 && (
         <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1, overflow: 'auto' }}>
           <pre
             style={{
@@ -359,7 +362,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
           </pre>
         </Box>
       )}
-      {tab === 0 && (
+      {tab === 1 && (
         <Stack spacing={1.5}>
           <Paper variant="outlined" component="fieldset" sx={{ p: '12px 16px', m: 0 }}>
             <Typography component="legend" variant="overline" sx={{ px: 0.75 }}>
