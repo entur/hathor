@@ -1,12 +1,13 @@
 // Auto-generated from entity file — do not edit manually
-import type { My_VehicleType } from './types.js';
+import type { VehicleType } from './types.js';
+import { TRANSPORT_MODES, PROPULSION_TYPES } from './types.js';
 
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
 }
 
-export function validate(obj: Partial<My_VehicleType>): ValidationResult {
+export function validate(obj: Partial<VehicleType>): ValidationResult {
   const errors: string[] = [];
   if (obj.name != null && !Array.isArray(obj.name)) errors.push('name must be an array');
   if (obj.shortName != null && !Array.isArray(obj.shortName))
@@ -17,33 +18,9 @@ export function validate(obj: Partial<My_VehicleType>): ValidationResult {
     errors.push('privateCode must be an object');
   if (
     obj.transportMode != null &&
-    ![
-      'all',
-      'unknown',
-      'bus',
-      'trolleyBus',
-      'tram',
-      'coach',
-      'rail',
-      'intercityRail',
-      'urbanRail',
-      'metro',
-      'air',
-      'water',
-      'cableway',
-      'funicular',
-      'snowAndIce',
-      'taxi',
-      'ferry',
-      'lift',
-      'selfDrive',
-      'anyMode',
-      'other',
-    ].includes(obj.transportMode)
+    !(TRANSPORT_MODES as readonly string[]).includes(obj.transportMode)
   )
-    errors.push(
-      'transportMode must be one of: all, unknown, bus, trolleyBus, tram, coach, rail, intercityRail, urbanRail, metro, air, water, cableway, funicular, snowAndIce, taxi, ferry, lift, selfDrive, anyMode, other'
-    );
+    errors.push(`transportMode must be one of: ${TRANSPORT_MODES.join(', ')}`);
   if (obj.deckPlanRef != null && typeof obj.deckPlanRef !== 'string')
     errors.push('deckPlanRef must be a string');
   if (obj.euroClass != null && typeof obj.euroClass !== 'string')
@@ -56,71 +33,15 @@ export function validate(obj: Partial<My_VehicleType>): ValidationResult {
     errors.push('propulsionTypes must be an array');
   if (
     obj.propulsionType != null &&
-    !['other', 'combustion', 'electric', 'electricAssist', 'hybrid', 'human'].includes(
-      obj.propulsionType
-    )
+    !(PROPULSION_TYPES as readonly string[]).includes(obj.propulsionType)
   )
-    errors.push(
-      'propulsionType must be one of: other, combustion, electric, electricAssist, hybrid, human'
-    );
+    errors.push(`propulsionType must be one of: ${PROPULSION_TYPES.join(', ')}`);
   if (obj.fuelTypes != null && !Array.isArray(obj.fuelTypes))
     errors.push('fuelTypes must be an array');
   if (obj.maximumRange != null && typeof obj.maximumRange !== 'number')
     errors.push('maximumRange must be a number');
   if (obj.maximumVelocity != null && typeof obj.maximumVelocity !== 'number')
     errors.push('maximumVelocity must be a number');
-  if (
-    obj.fuelType != null &&
-    ![
-      'other',
-      'battery',
-      'biodiesel',
-      'diesel',
-      'dieselBatteryHybrid',
-      'electricContact',
-      'electricity',
-      'ethanol',
-      'hydrogen',
-      'liquidGas',
-      'tpg',
-      'methane',
-      'naturalGas',
-      'petrol',
-      'petrolBatteryHybrid',
-      'petrolLeaded',
-      'petrolUnleaded',
-      'none',
-    ].includes(obj.fuelType)
-  )
-    errors.push(
-      'fuelType must be one of: other, battery, biodiesel, diesel, dieselBatteryHybrid, electricContact, electricity, ethanol, hydrogen, liquidGas, tpg, methane, naturalGas, petrol, petrolBatteryHybrid, petrolLeaded, petrolUnleaded, none'
-    );
-  if (
-    obj.typeOfFuel != null &&
-    ![
-      'other',
-      'battery',
-      'biodiesel',
-      'diesel',
-      'dieselBatteryHybrid',
-      'electricContact',
-      'electricity',
-      'ethanol',
-      'hydrogen',
-      'liquidGas',
-      'tpg',
-      'methane',
-      'naturalGas',
-      'petrol',
-      'petrolBatteryHybrid',
-      'petrolLeaded',
-      'petrolUnleaded',
-      'none',
-    ].includes(obj.typeOfFuel)
-  )
-    errors.push(
-      'typeOfFuel must be one of: other, battery, biodiesel, diesel, dieselBatteryHybrid, electricContact, electricity, ethanol, hydrogen, liquidGas, tpg, methane, naturalGas, petrol, petrolBatteryHybrid, petrolLeaded, petrolUnleaded, none'
-    );
   if (obj.passengerCapacity != null && typeof obj.passengerCapacity !== 'object')
     errors.push('passengerCapacity must be an object');
   if (obj.id != null && typeof obj.id !== 'string') errors.push('id must be a string');

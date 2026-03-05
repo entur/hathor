@@ -1,68 +1,90 @@
-// Auto-generated from entity file — do not edit manually
-export type SimpleRef = string;
-export type AllPublicTransportModesEnumeration =
-  | 'all'
-  | 'unknown'
-  | 'bus'
-  | 'trolleyBus'
-  | 'tram'
-  | 'coach'
-  | 'rail'
-  | 'intercityRail'
-  | 'urbanRail'
-  | 'metro'
-  | 'air'
-  | 'water'
-  | 'cableway'
-  | 'funicular'
-  | 'snowAndIce'
-  | 'taxi'
-  | 'ferry'
-  | 'lift'
-  | 'selfDrive'
-  | 'anyMode'
-  | 'other';
-export type PropulsionTypeEnumeration =
-  | 'combustion'
-  | 'electric'
-  | 'electricAssist'
-  | 'hybrid'
-  | 'human'
-  | 'other'
-  | 'combustion'
-  | 'electric'
-  | 'electricAssist'
-  | 'hybrid'
-  | 'human'
-  | 'other';
-export type FuelTypeEnumeration =
-  | 'battery'
-  | 'biodiesel'
-  | 'diesel'
-  | 'dieselBatteryHybrid'
-  | 'electricContact'
-  | 'electricity'
-  | 'ethanol'
-  | 'hydrogen'
-  | 'liquidGas'
-  | 'tpg'
-  | 'methane'
-  | 'naturalGas'
-  | 'petrol'
-  | 'petrolBatteryHybrid'
-  | 'petrolLeaded'
-  | 'petrolUnleaded'
-  | 'none'
-  | 'other';
+// Auto-generated from entity file initialy,
+//  is now modifed to improve JSX/TSX interop as state
 
-export interface My_VehicleType {
+export type SimpleRef = string;
+// _T is read by codegen AST, not at runtime
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type Ref<_T extends string = string> = string;
+
+export const TRANSPORT_MODES = [
+  'all',
+  'unknown',
+  'bus',
+  'trolleyBus',
+  'tram',
+  'coach',
+  'rail',
+  'intercityRail',
+  'urbanRail',
+  'metro',
+  'air',
+  'water',
+  'cableway',
+  'funicular',
+  'snowAndIce',
+  'taxi',
+  'ferry',
+  'lift',
+  'selfDrive',
+  'anyMode',
+  'other',
+] as const;
+export type AllPublicTransportModesEnumeration = (typeof TRANSPORT_MODES)[number];
+
+export const PROPULSION_TYPES = [
+  'combustion',
+  'electric',
+  'electricAssist',
+  'hybrid',
+  'human',
+  'other',
+] as const;
+export type PropulsionTypeEnumeration = (typeof PROPULSION_TYPES)[number];
+
+export const FUEL_TYPES = [
+  'battery',
+  'biodiesel',
+  'diesel',
+  'dieselBatteryHybrid',
+  'electricContact',
+  'electricity',
+  'ethanol',
+  'hydrogen',
+  'liquidGas',
+  'tpg',
+  'methane',
+  'naturalGas',
+  'petrol',
+  'petrolBatteryHybrid',
+  'petrolLeaded',
+  'petrolUnleaded',
+  'none',
+  'other',
+] as const;
+export type FuelTypeEnumeration = (typeof FUEL_TYPES)[number];
+
+export const FARE_CLASSES = [
+  'unknown',
+  'firstClass',
+  'secondClass',
+  'thirdClass',
+  'preferente',
+  'premiumClass',
+  'businessClass',
+  'standardClass',
+  'turista',
+  'economyClass',
+  'any',
+] as const;
+
+export interface VehicleType {
   // ── type ──
   name?: TextType[];
   shortName?: TextType[];
   description?: TextType[];
   privateCode?: PrivateCodeStructure;
   transportMode?: AllPublicTransportModesEnumeration;
-  deckPlanRef?: SimpleRef;
+  deckPlanRef?: Ref<'DeckPlan'>;
   euroClass?: string;
   reversingDirection?: boolean;
   selfPropelled?: boolean;
@@ -71,14 +93,15 @@ export interface My_VehicleType {
   fuelTypes?: FuelTypeEnumeration[];
   maximumRange?: number;
   maximumVelocity?: number;
-  fuelType?: FuelTypeEnumeration;
-  typeOfFuel?: FuelTypeEnumeration;
+  //fuelType?: FuelTypeEnumeration; deprecated
+  //typeOfFuel?: FuelTypeEnumeration; deprecated
   passengerCapacity?: PassengerCapacityStructure;
 
   // ── core ──
+  /** @xmlAttribute */
   id?: string;
-  includedIn?: SimpleRef;
-  classifiedAsRef?: SimpleRef;
+  includedIn?: Ref<'VehicleType'>;
+  classifiedAsRef?: Ref<'TypeOfVehicleType'>;
   facilities?: SimpleRef;
   monitored?: boolean;
   lowFloor?: boolean;
@@ -99,40 +122,34 @@ export interface My_VehicleType {
   // ── extra ──
   keyList?: KeyValueStructure[];
   privateCodes?: PrivateCodeStructure[];
-  brandingRef?: SimpleRef;
-  responsibilitySetRef?: SimpleRef;
+  brandingRef?: Ref<'Branding'>;
+  /** @xmlAttribute */
+  responsibilitySetRef?: Ref<'ResponsibilitySet'>;
 }
 
 export interface KeyValueStructure {
   key?: string;
   value?: string;
+  /** @xmlAttribute */
   typeOfKey?: string;
 }
 
 export interface PrivateCodeStructure {
   value?: string;
+  /** @xmlAttribute */
   type?: string;
 }
 
 export interface TextType {
   value?: string;
+  /** @xmlAttribute */
   lang?: string;
+  /** @xmlAttribute */
   textIdType?: string;
 }
 
 export interface PassengerCapacityStructure {
-  fareClass?:
-    | 'unknown'
-    | 'firstClass'
-    | 'secondClass'
-    | 'thirdClass'
-    | 'preferente'
-    | 'premiumClass'
-    | 'businessClass'
-    | 'standardClass'
-    | 'turista'
-    | 'economyClass'
-    | 'any';
+  fareClass?: (typeof FARE_CLASSES)[number];
   totalCapacity?: number;
   seatingCapacity?: number;
   standingCapacity?: number;

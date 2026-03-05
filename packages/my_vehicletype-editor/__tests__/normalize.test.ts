@@ -212,26 +212,6 @@ describe('normalize', () => {
     expect(result.propulsionType).toBeUndefined();
   });
 
-  it('normalizes valid union value for fuelType', () => {
-    const result = normalize({ FuelType: 'other' });
-    expect(result.fuelType).toBe('other');
-  });
-
-  it('rejects invalid union value for fuelType', () => {
-    const result = normalize({ FuelType: 'invalid_value_xyz' });
-    expect(result.fuelType).toBeUndefined();
-  });
-
-  it('normalizes valid union value for typeOfFuel', () => {
-    const result = normalize({ TypeOfFuel: 'other' });
-    expect(result.typeOfFuel).toBe('other');
-  });
-
-  it('rejects invalid union value for typeOfFuel', () => {
-    const result = normalize({ TypeOfFuel: 'invalid_value_xyz' });
-    expect(result.typeOfFuel).toBeUndefined();
-  });
-
   it('normalizes name array', () => {
     const result = normalize({ Name: [{ Value: 'test' }] });
     expect(result.name).toHaveLength(1);
@@ -295,5 +275,17 @@ describe('normalize', () => {
   it('returns empty object for empty input', () => {
     const result = normalize({});
     expect(result).toEqual({});
+  });
+
+  // ── @_-prefixed attribute fields (fast-xml-parser output) ──
+
+  it('maps @_id → id (XML attribute prefix)', () => {
+    const result = normalize({ '@_id': 'attr-value' });
+    expect(result.id).toBe('attr-value');
+  });
+
+  it('maps @_responsibilitySetRef → responsibilitySetRef (XML attribute prefix)', () => {
+    const result = normalize({ '@_responsibilitySetRef': 'attr-value' });
+    expect(result.responsibilitySetRef).toBe('attr-value');
   });
 });

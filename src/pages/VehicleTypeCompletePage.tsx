@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Container, Paper, Typography, Box, Button } from '@mui/material';
 import { Editor, validate } from '@entur/my_vehicletype-editor';
-import type { My_VehicleType } from '@entur/my_vehicletype-editor';
+import type { VehicleType } from '@entur/my_vehicletype-editor';
 
 export default function VehicleTypeCompletePage() {
-  const [value, setValue] = useState<Partial<My_VehicleType>>({});
+  const [value, setValue] = useState<Partial<VehicleType>>({});
   const [errors, setErrors] = useState<string[]>([]);
 
   const handleValidate = () => {
@@ -15,7 +15,7 @@ export default function VehicleTypeCompletePage() {
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
-        VT Complete Editor
+        Edit VehicleType (beta)
       </Typography>
       <Paper sx={{ p: 3, mb: 2 }}>
         <Editor value={value} onChange={setValue} />
