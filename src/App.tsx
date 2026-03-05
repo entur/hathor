@@ -47,7 +47,7 @@ export default function App() {
                     element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                   />
                   <Route
-                    path="/vechile-type/new"
+                    path="/vehicle-type/new"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
                 </Routes>
