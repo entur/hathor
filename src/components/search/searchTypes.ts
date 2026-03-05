@@ -3,7 +3,7 @@ export type StopPlaceTypeFilter = string;
 
 export interface SearchResultItem {
   id: string;
-  name: string;
+  name?: string;
   type: SearchContextViewType;
   coordinates?: [number, number];
   originalData?: unknown;

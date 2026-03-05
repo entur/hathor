@@ -50,6 +50,8 @@
 
   "home.features.vehicletypes.headline": "Kjøretøytyper",
   "home.features.vehicletypes.description": "En liste over kjøretøytyper som brukes i kollektivtransport.",
+  "home.features.deckplans.headline": "Setekart",
+  "home.features.deckplans.description": "En liste over setekart for kjøretøy som brukes i kollektivtransport.",
 
   "map.layers.title": "Kartlag",
   "map.layers.circles": "Sirkler",

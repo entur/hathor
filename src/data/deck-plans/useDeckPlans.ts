@@ -2,15 +2,16 @@ import { useEffect, useState, useCallback } from 'react';
 import { ClientError } from 'graphql-request';
 import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../contexts/configContext.ts';
-import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
-import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
+import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
+import type { DeckPlanContext } from './deckPlanTypes.ts';
+import { fetchDeckPlans } from './fetchDeckPlans.ts';
 
-export type OrderBy = 'name' | 'id' | 'length' | 'height' | 'width' | 'deckPlanName';
+export type OrderBy = 'name' | 'id';
 
-export function useVehicleTypes() {
-  const [data, setData] = useState<VehicleType[]>([]);
+export function useDeckPlans() {
+  const [data, setData] = useState<DeckPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [order, setOrder] = useState<Order>('asc');
@@ -31,9 +32,9 @@ export function useVehicleTypes() {
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    fetchVehicleTypes(applicationBaseUrl, token)
-      .then((ctx: VehicleTypeContext) => {
-        setData(ctx.vehicleTypes);
+    fetchDeckPlans(applicationBaseUrl, token)
+      .then((ctx: DeckPlanContext) => {
+        setData(ctx.deckPlans);
       })
       .catch((err: unknown) => {
         if (err instanceof ClientError) {
