@@ -17,7 +17,7 @@ export type Vehicle = {
 export type VehicleType = {
   id: string;
   version: number;
-  name: Name;
+  name?: Name;
   deckPlan?: DeckPlan;
   length: number;
   width: number;

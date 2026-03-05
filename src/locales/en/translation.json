@@ -50,6 +50,8 @@
 
   "home.features.vehicletypes.headline": "Vehicle Types",
   "home.features.vehicletypes.description": "A list of vehicle types used in public transport.",
+  "home.features.deckplans.headline": "Deck Plans",
+  "home.features.deckplans.description": "A list of deck plans for vehicles used in public transport.",
 
   "map.layers.title": "Map Layers",
   "map.layers.circles": "Circles",
