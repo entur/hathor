@@ -2,6 +2,10 @@ export { Editor } from './Editor.js';
 export type { EditorProps } from './Editor.js';
 export { SimpleEditor } from './SimpleEditor.js';
 export type { SimpleEditorProps } from './SimpleEditor.js';
+export { FullEditor } from './FullEditor.js';
+export type { FullEditorProps } from './FullEditor.js';
+export { XmlPreview } from './XmlPreview.js';
+export type { XmlPreviewProps } from './XmlPreview.js';
 export type {
   VehicleType,
   SimpleRef,
