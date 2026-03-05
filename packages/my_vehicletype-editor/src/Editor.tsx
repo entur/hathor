@@ -64,23 +64,23 @@ function TextTypeRow({
       <input
         className="vte-input vte-input--sub"
         type="text"
-        placeholder="value"
-        value={item.value ?? ''}
-        onChange={e => onChange({ ...item, value: e.target.value })}
+        placeholder="Value"
+        value={item.Value ?? ''}
+        onChange={e => onChange({ ...item, Value: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
         type="text"
         placeholder="lang"
-        value={item.lang ?? ''}
-        onChange={e => onChange({ ...item, lang: e.target.value })}
+        value={item.$lang ?? ''}
+        onChange={e => onChange({ ...item, $lang: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
         type="text"
         placeholder="textIdType"
-        value={item.textIdType ?? ''}
-        onChange={e => onChange({ ...item, textIdType: e.target.value })}
+        value={item.$textIdType ?? ''}
+        onChange={e => onChange({ ...item, $textIdType: e.target.value })}
       />
     </div>
   );
@@ -98,16 +98,16 @@ function PrivateCodeStructureRow({
       <input
         className="vte-input vte-input--sub"
         type="text"
-        placeholder="value"
-        value={item.value ?? ''}
-        onChange={e => onChange({ ...item, value: e.target.value })}
+        placeholder="Value"
+        value={item.Value ?? ''}
+        onChange={e => onChange({ ...item, Value: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
         type="text"
         placeholder="type"
-        value={item.type ?? ''}
-        onChange={e => onChange({ ...item, type: e.target.value })}
+        value={item.$type ?? ''}
+        onChange={e => onChange({ ...item, $type: e.target.value })}
       />
     </div>
   );
@@ -127,11 +127,11 @@ function PassengerCapacityStructureRow({
         size="small"
         SelectProps={{ native: true }}
         sx={{ minWidth: 120 }}
-        value={item.fareClass ?? ''}
+        value={item.FareClass ?? ''}
         onChange={e =>
           onChange({
             ...item,
-            fareClass: (e.target.value || undefined) as (typeof FARE_CLASSES)[number],
+            FareClass: (e.target.value || undefined) as (typeof FARE_CLASSES)[number],
           })
         }
       >
@@ -145,96 +145,96 @@ function PassengerCapacityStructureRow({
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="totalCapacity"
-        value={item.totalCapacity != null ? String(item.totalCapacity) : ''}
+        placeholder="TotalCapacity"
+        value={item.TotalCapacity != null ? String(item.TotalCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            totalCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            TotalCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="seatingCapacity"
-        value={item.seatingCapacity != null ? String(item.seatingCapacity) : ''}
+        placeholder="SeatingCapacity"
+        value={item.SeatingCapacity != null ? String(item.SeatingCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            seatingCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            SeatingCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="standingCapacity"
-        value={item.standingCapacity != null ? String(item.standingCapacity) : ''}
+        placeholder="StandingCapacity"
+        value={item.StandingCapacity != null ? String(item.StandingCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            standingCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            StandingCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="specialPlaceCapacity"
-        value={item.specialPlaceCapacity != null ? String(item.specialPlaceCapacity) : ''}
+        placeholder="SpecialPlaceCapacity"
+        value={item.SpecialPlaceCapacity != null ? String(item.SpecialPlaceCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            specialPlaceCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            SpecialPlaceCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="pushchairCapacity"
-        value={item.pushchairCapacity != null ? String(item.pushchairCapacity) : ''}
+        placeholder="PushchairCapacity"
+        value={item.PushchairCapacity != null ? String(item.PushchairCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            pushchairCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            PushchairCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="wheelchairPlaceCapacity"
-        value={item.wheelchairPlaceCapacity != null ? String(item.wheelchairPlaceCapacity) : ''}
+        placeholder="WheelchairPlaceCapacity"
+        value={item.WheelchairPlaceCapacity != null ? String(item.WheelchairPlaceCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            wheelchairPlaceCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            WheelchairPlaceCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="pramPlaceCapacity"
-        value={item.pramPlaceCapacity != null ? String(item.pramPlaceCapacity) : ''}
+        placeholder="PramPlaceCapacity"
+        value={item.PramPlaceCapacity != null ? String(item.PramPlaceCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            pramPlaceCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            PramPlaceCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="bicycleRackCapacity"
-        value={item.bicycleRackCapacity != null ? String(item.bicycleRackCapacity) : ''}
+        placeholder="BicycleRackCapacity"
+        value={item.BicycleRackCapacity != null ? String(item.BicycleRackCapacity) : ''}
         onChange={e =>
           onChange({
             ...item,
-            bicycleRackCapacity: e.target.value === '' ? undefined : Number(e.target.value),
+            BicycleRackCapacity: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
@@ -255,44 +255,44 @@ function VehicleManoeuvringRequirements_STUBRow({
         <input
           className="vte-checkbox"
           type="checkbox"
-          checked={!!item.reversible}
-          onChange={e => onChange({ ...item, reversible: e.target.checked })}
+          checked={!!item.Reversible}
+          onChange={e => onChange({ ...item, Reversible: e.target.checked })}
         />
-        reversible
+        Reversible
       </label>
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="minimumTurningCircle"
-        value={item.minimumTurningCircle != null ? String(item.minimumTurningCircle) : ''}
+        placeholder="MinimumTurningCircle"
+        value={item.MinimumTurningCircle != null ? String(item.MinimumTurningCircle) : ''}
         onChange={e =>
           onChange({
             ...item,
-            minimumTurningCircle: e.target.value === '' ? undefined : Number(e.target.value),
+            MinimumTurningCircle: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="minimumOvertakingWidth"
-        value={item.minimumOvertakingWidth != null ? String(item.minimumOvertakingWidth) : ''}
+        placeholder="MinimumOvertakingWidth"
+        value={item.MinimumOvertakingWidth != null ? String(item.MinimumOvertakingWidth) : ''}
         onChange={e =>
           onChange({
             ...item,
-            minimumOvertakingWidth: e.target.value === '' ? undefined : Number(e.target.value),
+            MinimumOvertakingWidth: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
       <input
         className="vte-input vte-input--sub"
         type="number"
-        placeholder="minimumLength"
-        value={item.minimumLength != null ? String(item.minimumLength) : ''}
+        placeholder="MinimumLength"
+        value={item.MinimumLength != null ? String(item.MinimumLength) : ''}
         onChange={e =>
           onChange({
             ...item,
-            minimumLength: e.target.value === '' ? undefined : Number(e.target.value),
+            MinimumLength: e.target.value === '' ? undefined : Number(e.target.value),
           })
         }
       />
@@ -312,23 +312,23 @@ function KeyValueStructureRow({
       <input
         className="vte-input vte-input--sub"
         type="text"
-        placeholder="key"
-        value={item.key ?? ''}
-        onChange={e => onChange({ ...item, key: e.target.value })}
+        placeholder="Key"
+        value={item.Key ?? ''}
+        onChange={e => onChange({ ...item, Key: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
         type="text"
-        placeholder="value"
-        value={item.value ?? ''}
-        onChange={e => onChange({ ...item, value: e.target.value })}
+        placeholder="Value"
+        value={item.Value ?? ''}
+        onChange={e => onChange({ ...item, Value: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
         type="text"
         placeholder="typeOfKey"
-        value={item.typeOfKey ?? ''}
-        onChange={e => onChange({ ...item, typeOfKey: e.target.value })}
+        value={item.$typeOfKey ?? ''}
+        onChange={e => onChange({ ...item, $typeOfKey: e.target.value })}
       />
     </div>
   );
@@ -371,23 +371,23 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   Name
                 </Typography>
                 <div className="vte-sub-table">
-                  {(value.name ?? []).map((item, idx) => (
+                  {(value.Name ?? []).map((item, idx) => (
                     <div key={idx} className="vte-sub-row">
                       <span className="vte-sub-index">{idx + 1}</span>
                       <TextTypeRow
                         item={item}
                         onChange={next => {
-                          const arr = [...(value.name ?? [])];
+                          const arr = [...(value.Name ?? [])];
                           arr[idx] = next;
-                          onChange({ ...value, name: arr });
+                          onChange({ ...value, Name: arr });
                         }}
                       />
                       <button
                         type="button"
                         className="vte-btn-remove"
                         onClick={() => {
-                          const arr = (value.name ?? []).filter((_, i) => i !== idx);
-                          onChange({ ...value, name: arr });
+                          const arr = (value.Name ?? []).filter((_, i) => i !== idx);
+                          onChange({ ...value, Name: arr });
                         }}
                       >
                         Remove
@@ -397,7 +397,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <button
                     type="button"
                     className="vte-btn-add"
-                    onClick={() => onChange({ ...value, name: [...(value.name ?? []), {}] })}
+                    onClick={() => onChange({ ...value, Name: [...(value.Name ?? []), {}] })}
                   >
                     + Add TextType
                   </button>
@@ -408,23 +408,23 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   ShortName
                 </Typography>
                 <div className="vte-sub-table">
-                  {(value.shortName ?? []).map((item, idx) => (
+                  {(value.ShortName ?? []).map((item, idx) => (
                     <div key={idx} className="vte-sub-row">
                       <span className="vte-sub-index">{idx + 1}</span>
                       <TextTypeRow
                         item={item}
                         onChange={next => {
-                          const arr = [...(value.shortName ?? [])];
+                          const arr = [...(value.ShortName ?? [])];
                           arr[idx] = next;
-                          onChange({ ...value, shortName: arr });
+                          onChange({ ...value, ShortName: arr });
                         }}
                       />
                       <button
                         type="button"
                         className="vte-btn-remove"
                         onClick={() => {
-                          const arr = (value.shortName ?? []).filter((_, i) => i !== idx);
-                          onChange({ ...value, shortName: arr });
+                          const arr = (value.ShortName ?? []).filter((_, i) => i !== idx);
+                          onChange({ ...value, ShortName: arr });
                         }}
                       >
                         Remove
@@ -435,7 +435,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                     type="button"
                     className="vte-btn-add"
                     onClick={() =>
-                      onChange({ ...value, shortName: [...(value.shortName ?? []), {}] })
+                      onChange({ ...value, ShortName: [...(value.ShortName ?? []), {}] })
                     }
                   >
                     + Add TextType
@@ -447,23 +447,23 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   Description
                 </Typography>
                 <div className="vte-sub-table">
-                  {(value.description ?? []).map((item, idx) => (
+                  {(value.Description ?? []).map((item, idx) => (
                     <div key={idx} className="vte-sub-row">
                       <span className="vte-sub-index">{idx + 1}</span>
                       <TextTypeRow
                         item={item}
                         onChange={next => {
-                          const arr = [...(value.description ?? [])];
+                          const arr = [...(value.Description ?? [])];
                           arr[idx] = next;
-                          onChange({ ...value, description: arr });
+                          onChange({ ...value, Description: arr });
                         }}
                       />
                       <button
                         type="button"
                         className="vte-btn-remove"
                         onClick={() => {
-                          const arr = (value.description ?? []).filter((_, i) => i !== idx);
-                          onChange({ ...value, description: arr });
+                          const arr = (value.Description ?? []).filter((_, i) => i !== idx);
+                          onChange({ ...value, Description: arr });
                         }}
                       >
                         Remove
@@ -474,7 +474,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                     type="button"
                     className="vte-btn-add"
                     onClick={() =>
-                      onChange({ ...value, description: [...(value.description ?? []), {}] })
+                      onChange({ ...value, Description: [...(value.Description ?? []), {}] })
                     }
                   >
                     + Add TextType
@@ -487,8 +487,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 </Typography>
                 <div className="vte-sub-table">
                   <PrivateCodeStructureRow
-                    item={value.privateCode ?? {}}
-                    onChange={next => onChange({ ...value, privateCode: next })}
+                    item={value.PrivateCode ?? {}}
+                    onChange={next => onChange({ ...value, PrivateCode: next })}
                   />
                 </div>
               </Box>
@@ -499,11 +499,11 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   SelectProps={{ native: true }}
-                  value={value.transportMode ?? ''}
+                  value={value.TransportMode ?? ''}
                   onChange={e =>
                     onChange({
                       ...value,
-                      transportMode: (e.target.value ||
+                      TransportMode: (e.target.value ||
                         undefined) as AllPublicTransportModesEnumeration,
                     })
                   }
@@ -521,8 +521,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="DeckPlanRef"
                   size="small"
                   fullWidth
-                  value={value.deckPlanRef ?? ''}
-                  onChange={e => onChange({ ...value, deckPlanRef: e.target.value })}
+                  value={value.DeckPlanRef ?? ''}
+                  onChange={e => onChange({ ...value, DeckPlanRef: e.target.value })}
                 />
               </Box>
               <Box>
@@ -530,8 +530,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="EuroClass"
                   size="small"
                   fullWidth
-                  value={value.euroClass ?? ''}
-                  onChange={e => onChange({ ...value, euroClass: e.target.value })}
+                  value={value.EuroClass ?? ''}
+                  onChange={e => onChange({ ...value, EuroClass: e.target.value })}
                 />
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -542,8 +542,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <input
                     className="vte-checkbox"
                     type="checkbox"
-                    checked={!!value.reversingDirection}
-                    onChange={e => onChange({ ...value, reversingDirection: e.target.checked })}
+                    checked={!!value.ReversingDirection}
+                    onChange={e => onChange({ ...value, ReversingDirection: e.target.checked })}
                   />
                   <Typography variant="body2" fontWeight={500} component="span">
                     ReversingDirection
@@ -558,8 +558,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <input
                     className="vte-checkbox"
                     type="checkbox"
-                    checked={!!value.selfPropelled}
-                    onChange={e => onChange({ ...value, selfPropelled: e.target.checked })}
+                    checked={!!value.SelfPropelled}
+                    onChange={e => onChange({ ...value, SelfPropelled: e.target.checked })}
                   />
                   <Typography variant="body2" fontWeight={500} component="span">
                     SelfPropelled
@@ -570,8 +570,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 <EnumMultiSelect
                   label="PropulsionTypes"
                   options={PROPULSION_TYPES}
-                  value={value.propulsionTypes}
-                  onChange={selected => onChange({ ...value, propulsionTypes: selected })}
+                  value={value.PropulsionTypes}
+                  onChange={selected => onChange({ ...value, PropulsionTypes: selected })}
                 />
               </Box>
               <Box>
@@ -581,11 +581,11 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   SelectProps={{ native: true }}
-                  value={value.propulsionType ?? ''}
+                  value={value.PropulsionType ?? ''}
                   onChange={e =>
                     onChange({
                       ...value,
-                      propulsionType: (e.target.value || undefined) as PropulsionTypeEnumeration,
+                      PropulsionType: (e.target.value || undefined) as PropulsionTypeEnumeration,
                     })
                   }
                 >
@@ -601,8 +601,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 <EnumMultiSelect
                   label="FuelTypes"
                   options={FUEL_TYPES}
-                  value={value.fuelTypes}
-                  onChange={selected => onChange({ ...value, fuelTypes: selected })}
+                  value={value.FuelTypes}
+                  onChange={selected => onChange({ ...value, FuelTypes: selected })}
                 />
               </Box>
               <Box>
@@ -611,10 +611,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.maximumRange != null ? String(value.maximumRange) : ''}
+                  value={value.MaximumRange != null ? String(value.MaximumRange) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, maximumRange: n });
+                    onChange({ ...value, MaximumRange: n });
                   }}
                 />
               </Box>
@@ -624,10 +624,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.maximumVelocity != null ? String(value.maximumVelocity) : ''}
+                  value={value.MaximumVelocity != null ? String(value.MaximumVelocity) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, maximumVelocity: n });
+                    onChange({ ...value, MaximumVelocity: n });
                   }}
                 />
               </Box>
@@ -637,8 +637,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 </Typography>
                 <div className="vte-sub-table">
                   <PassengerCapacityStructureRow
-                    item={value.passengerCapacity ?? {}}
-                    onChange={next => onChange({ ...value, passengerCapacity: next })}
+                    item={value.PassengerCapacity ?? {}}
+                    onChange={next => onChange({ ...value, PassengerCapacity: next })}
                   />
                 </div>
               </Box>
@@ -654,8 +654,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="Id"
                   size="small"
                   fullWidth
-                  value={value.id ?? ''}
-                  onChange={e => onChange({ ...value, id: e.target.value })}
+                  value={value.$id ?? ''}
+                  onChange={e => onChange({ ...value, $id: e.target.value })}
                 />
               </Box>
               <Box>
@@ -663,8 +663,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="IncludedIn"
                   size="small"
                   fullWidth
-                  value={value.includedIn ?? ''}
-                  onChange={e => onChange({ ...value, includedIn: e.target.value })}
+                  value={value.IncludedIn ?? ''}
+                  onChange={e => onChange({ ...value, IncludedIn: e.target.value })}
                 />
               </Box>
               <Box>
@@ -672,8 +672,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="ClassifiedAsRef"
                   size="small"
                   fullWidth
-                  value={value.classifiedAsRef ?? ''}
-                  onChange={e => onChange({ ...value, classifiedAsRef: e.target.value })}
+                  value={value.ClassifiedAsRef ?? ''}
+                  onChange={e => onChange({ ...value, ClassifiedAsRef: e.target.value })}
                 />
               </Box>
               <Box>
@@ -681,8 +681,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="Facilities"
                   size="small"
                   fullWidth
-                  value={value.facilities ?? ''}
-                  onChange={e => onChange({ ...value, facilities: e.target.value })}
+                  value={value.Facilities ?? ''}
+                  onChange={e => onChange({ ...value, Facilities: e.target.value })}
                 />
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -693,8 +693,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <input
                     className="vte-checkbox"
                     type="checkbox"
-                    checked={!!value.monitored}
-                    onChange={e => onChange({ ...value, monitored: e.target.checked })}
+                    checked={!!value.Monitored}
+                    onChange={e => onChange({ ...value, Monitored: e.target.checked })}
                   />
                   <Typography variant="body2" fontWeight={500} component="span">
                     Monitored
@@ -709,8 +709,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <input
                     className="vte-checkbox"
                     type="checkbox"
-                    checked={!!value.lowFloor}
-                    onChange={e => onChange({ ...value, lowFloor: e.target.checked })}
+                    checked={!!value.LowFloor}
+                    onChange={e => onChange({ ...value, LowFloor: e.target.checked })}
                   />
                   <Typography variant="body2" fontWeight={500} component="span">
                     LowFloor
@@ -725,8 +725,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <input
                     className="vte-checkbox"
                     type="checkbox"
-                    checked={!!value.hasLiftOrRamp}
-                    onChange={e => onChange({ ...value, hasLiftOrRamp: e.target.checked })}
+                    checked={!!value.HasLiftOrRamp}
+                    onChange={e => onChange({ ...value, HasLiftOrRamp: e.target.checked })}
                   />
                   <Typography variant="body2" fontWeight={500} component="span">
                     HasLiftOrRamp
@@ -741,8 +741,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <input
                     className="vte-checkbox"
                     type="checkbox"
-                    checked={!!value.hasHoist}
-                    onChange={e => onChange({ ...value, hasHoist: e.target.checked })}
+                    checked={!!value.HasHoist}
+                    onChange={e => onChange({ ...value, HasHoist: e.target.checked })}
                   />
                   <Typography variant="body2" fontWeight={500} component="span">
                     HasHoist
@@ -756,11 +756,11 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   fullWidth
                   type="number"
                   value={
-                    value.hoistOperatingRadius != null ? String(value.hoistOperatingRadius) : ''
+                    value.HoistOperatingRadius != null ? String(value.HoistOperatingRadius) : ''
                   }
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, hoistOperatingRadius: n });
+                    onChange({ ...value, HoistOperatingRadius: n });
                   }}
                 />
               </Box>
@@ -770,10 +770,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.boardingHeight != null ? String(value.boardingHeight) : ''}
+                  value={value.BoardingHeight != null ? String(value.BoardingHeight) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, boardingHeight: n });
+                    onChange({ ...value, BoardingHeight: n });
                   }}
                 />
               </Box>
@@ -783,10 +783,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.gapToPlatform != null ? String(value.gapToPlatform) : ''}
+                  value={value.GapToPlatform != null ? String(value.GapToPlatform) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, gapToPlatform: n });
+                    onChange({ ...value, GapToPlatform: n });
                   }}
                 />
               </Box>
@@ -796,10 +796,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.length != null ? String(value.length) : ''}
+                  value={value.Length != null ? String(value.Length) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, length: n });
+                    onChange({ ...value, Length: n });
                   }}
                 />
               </Box>
@@ -809,10 +809,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.width != null ? String(value.width) : ''}
+                  value={value.Width != null ? String(value.Width) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, width: n });
+                    onChange({ ...value, Width: n });
                   }}
                 />
               </Box>
@@ -822,10 +822,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.height != null ? String(value.height) : ''}
+                  value={value.Height != null ? String(value.Height) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, height: n });
+                    onChange({ ...value, Height: n });
                   }}
                 />
               </Box>
@@ -835,10 +835,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.weight != null ? String(value.weight) : ''}
+                  value={value.Weight != null ? String(value.Weight) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, weight: n });
+                    onChange({ ...value, Weight: n });
                   }}
                 />
               </Box>
@@ -848,10 +848,10 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   size="small"
                   fullWidth
                   type="number"
-                  value={value.firstAxleHeight != null ? String(value.firstAxleHeight) : ''}
+                  value={value.FirstAxleHeight != null ? String(value.FirstAxleHeight) : ''}
                   onChange={e => {
                     const n = e.target.value === '' ? undefined : Number(e.target.value);
-                    onChange({ ...value, firstAxleHeight: n });
+                    onChange({ ...value, FirstAxleHeight: n });
                   }}
                 />
               </Box>
@@ -860,8 +860,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="CanCarry"
                   size="small"
                   fullWidth
-                  value={value.canCarry ?? ''}
-                  onChange={e => onChange({ ...value, canCarry: e.target.value })}
+                  value={value.CanCarry ?? ''}
+                  onChange={e => onChange({ ...value, CanCarry: e.target.value })}
                 />
               </Box>
               <Box>
@@ -870,8 +870,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                 </Typography>
                 <div className="vte-sub-table">
                   <VehicleManoeuvringRequirements_STUBRow
-                    item={value.canManoeuvre ?? {}}
-                    onChange={next => onChange({ ...value, canManoeuvre: next })}
+                    item={value.CanManoeuvre ?? {}}
+                    onChange={next => onChange({ ...value, CanManoeuvre: next })}
                   />
                 </div>
               </Box>
@@ -880,9 +880,9 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="SatisfiesFacilityRequirements"
                   size="small"
                   fullWidth
-                  value={value.satisfiesFacilityRequirements ?? ''}
+                  value={value.SatisfiesFacilityRequirements ?? ''}
                   onChange={e =>
-                    onChange({ ...value, satisfiesFacilityRequirements: e.target.value })
+                    onChange({ ...value, SatisfiesFacilityRequirements: e.target.value })
                   }
                 />
               </Box>
@@ -898,23 +898,23 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   KeyList
                 </Typography>
                 <div className="vte-sub-table">
-                  {(value.keyList ?? []).map((item, idx) => (
+                  {(value.KeyList ?? []).map((item, idx) => (
                     <div key={idx} className="vte-sub-row">
                       <span className="vte-sub-index">{idx + 1}</span>
                       <KeyValueStructureRow
                         item={item}
                         onChange={next => {
-                          const arr = [...(value.keyList ?? [])];
+                          const arr = [...(value.KeyList ?? [])];
                           arr[idx] = next;
-                          onChange({ ...value, keyList: arr });
+                          onChange({ ...value, KeyList: arr });
                         }}
                       />
                       <button
                         type="button"
                         className="vte-btn-remove"
                         onClick={() => {
-                          const arr = (value.keyList ?? []).filter((_, i) => i !== idx);
-                          onChange({ ...value, keyList: arr });
+                          const arr = (value.KeyList ?? []).filter((_, i) => i !== idx);
+                          onChange({ ...value, KeyList: arr });
                         }}
                       >
                         Remove
@@ -924,7 +924,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   <button
                     type="button"
                     className="vte-btn-add"
-                    onClick={() => onChange({ ...value, keyList: [...(value.keyList ?? []), {}] })}
+                    onClick={() => onChange({ ...value, KeyList: [...(value.KeyList ?? []), {}] })}
                   >
                     + Add KeyValueStructure
                   </button>
@@ -935,23 +935,23 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   PrivateCodes
                 </Typography>
                 <div className="vte-sub-table">
-                  {(value.privateCodes ?? []).map((item, idx) => (
+                  {(value.PrivateCodes ?? []).map((item, idx) => (
                     <div key={idx} className="vte-sub-row">
                       <span className="vte-sub-index">{idx + 1}</span>
                       <PrivateCodeStructureRow
                         item={item}
                         onChange={next => {
-                          const arr = [...(value.privateCodes ?? [])];
+                          const arr = [...(value.PrivateCodes ?? [])];
                           arr[idx] = next;
-                          onChange({ ...value, privateCodes: arr });
+                          onChange({ ...value, PrivateCodes: arr });
                         }}
                       />
                       <button
                         type="button"
                         className="vte-btn-remove"
                         onClick={() => {
-                          const arr = (value.privateCodes ?? []).filter((_, i) => i !== idx);
-                          onChange({ ...value, privateCodes: arr });
+                          const arr = (value.PrivateCodes ?? []).filter((_, i) => i !== idx);
+                          onChange({ ...value, PrivateCodes: arr });
                         }}
                       >
                         Remove
@@ -962,7 +962,7 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                     type="button"
                     className="vte-btn-add"
                     onClick={() =>
-                      onChange({ ...value, privateCodes: [...(value.privateCodes ?? []), {}] })
+                      onChange({ ...value, PrivateCodes: [...(value.PrivateCodes ?? []), {}] })
                     }
                   >
                     + Add PrivateCodeStructure
@@ -974,8 +974,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="BrandingRef"
                   size="small"
                   fullWidth
-                  value={value.brandingRef ?? ''}
-                  onChange={e => onChange({ ...value, brandingRef: e.target.value })}
+                  value={value.BrandingRef ?? ''}
+                  onChange={e => onChange({ ...value, BrandingRef: e.target.value })}
                 />
               </Box>
               <Box>
@@ -983,8 +983,8 @@ export function Editor({ value, onChange }: EditorProps): React.JSX.Element {
                   label="ResponsibilitySetRef"
                   size="small"
                   fullWidth
-                  value={value.responsibilitySetRef ?? ''}
-                  onChange={e => onChange({ ...value, responsibilitySetRef: e.target.value })}
+                  value={value.$responsibilitySetRef ?? ''}
+                  onChange={e => onChange({ ...value, $responsibilitySetRef: e.target.value })}
                 />
               </Box>
             </Stack>

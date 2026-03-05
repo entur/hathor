@@ -2,274 +2,222 @@ import { describe, it, expect } from 'vitest';
 import { normalize } from '../src/normalize.js';
 
 describe('normalize', () => {
-  it('maps PascalCase DeckPlanRef → deckPlanRef', () => {
+  // ── String fields pass through PascalCase ──
+
+  it('passes through DeckPlanRef', () => {
     const result = normalize({ DeckPlanRef: 'hello' });
-    expect(result.deckPlanRef).toBe('hello');
+    expect(result.DeckPlanRef).toBe('hello');
   });
 
-  it('maps PascalCase EuroClass → euroClass', () => {
+  it('passes through EuroClass', () => {
     const result = normalize({ EuroClass: 'hello' });
-    expect(result.euroClass).toBe('hello');
+    expect(result.EuroClass).toBe('hello');
   });
 
-  it('maps PascalCase Id → id', () => {
-    const result = normalize({ Id: 'hello' });
-    expect(result.id).toBe('hello');
-  });
-
-  it('maps PascalCase IncludedIn → includedIn', () => {
+  it('passes through IncludedIn', () => {
     const result = normalize({ IncludedIn: 'hello' });
-    expect(result.includedIn).toBe('hello');
+    expect(result.IncludedIn).toBe('hello');
   });
 
-  it('maps PascalCase ClassifiedAsRef → classifiedAsRef', () => {
+  it('passes through ClassifiedAsRef', () => {
     const result = normalize({ ClassifiedAsRef: 'hello' });
-    expect(result.classifiedAsRef).toBe('hello');
+    expect(result.ClassifiedAsRef).toBe('hello');
   });
 
-  it('maps PascalCase Facilities → facilities', () => {
+  it('passes through Facilities', () => {
     const result = normalize({ Facilities: 'hello' });
-    expect(result.facilities).toBe('hello');
+    expect(result.Facilities).toBe('hello');
   });
 
-  it('maps PascalCase CanCarry → canCarry', () => {
+  it('passes through CanCarry', () => {
     const result = normalize({ CanCarry: 'hello' });
-    expect(result.canCarry).toBe('hello');
+    expect(result.CanCarry).toBe('hello');
   });
 
-  it('maps PascalCase SatisfiesFacilityRequirements → satisfiesFacilityRequirements', () => {
+  it('passes through SatisfiesFacilityRequirements', () => {
     const result = normalize({ SatisfiesFacilityRequirements: 'hello' });
-    expect(result.satisfiesFacilityRequirements).toBe('hello');
+    expect(result.SatisfiesFacilityRequirements).toBe('hello');
   });
 
-  it('maps PascalCase BrandingRef → brandingRef', () => {
+  it('passes through BrandingRef', () => {
     const result = normalize({ BrandingRef: 'hello' });
-    expect(result.brandingRef).toBe('hello');
+    expect(result.BrandingRef).toBe('hello');
   });
 
-  it('maps PascalCase ResponsibilitySetRef → responsibilitySetRef', () => {
-    const result = normalize({ ResponsibilitySetRef: 'hello' });
-    expect(result.responsibilitySetRef).toBe('hello');
-  });
+  // ── Boolean coercion ──
 
-  it('passes through camelCase deckPlanRef', () => {
-    const result = normalize({ deckPlanRef: 'world' });
-    expect(result.deckPlanRef).toBe('world');
-  });
-
-  it('passes through camelCase euroClass', () => {
-    const result = normalize({ euroClass: 'world' });
-    expect(result.euroClass).toBe('world');
-  });
-
-  it('passes through camelCase id', () => {
-    const result = normalize({ id: 'world' });
-    expect(result.id).toBe('world');
-  });
-
-  it('passes through camelCase includedIn', () => {
-    const result = normalize({ includedIn: 'world' });
-    expect(result.includedIn).toBe('world');
-  });
-
-  it('passes through camelCase classifiedAsRef', () => {
-    const result = normalize({ classifiedAsRef: 'world' });
-    expect(result.classifiedAsRef).toBe('world');
-  });
-
-  it('passes through camelCase facilities', () => {
-    const result = normalize({ facilities: 'world' });
-    expect(result.facilities).toBe('world');
-  });
-
-  it('passes through camelCase canCarry', () => {
-    const result = normalize({ canCarry: 'world' });
-    expect(result.canCarry).toBe('world');
-  });
-
-  it('passes through camelCase satisfiesFacilityRequirements', () => {
-    const result = normalize({ satisfiesFacilityRequirements: 'world' });
-    expect(result.satisfiesFacilityRequirements).toBe('world');
-  });
-
-  it('passes through camelCase brandingRef', () => {
-    const result = normalize({ brandingRef: 'world' });
-    expect(result.brandingRef).toBe('world');
-  });
-
-  it('passes through camelCase responsibilitySetRef', () => {
-    const result = normalize({ responsibilitySetRef: 'world' });
-    expect(result.responsibilitySetRef).toBe('world');
-  });
-
-  it('coerces string "true" to boolean for reversingDirection', () => {
+  it('coerces string "true" to boolean for ReversingDirection', () => {
     const result = normalize({ ReversingDirection: 'true' });
-    expect(result.reversingDirection).toBe(true);
+    expect(result.ReversingDirection).toBe(true);
   });
 
-  it('coerces string "false" to boolean for reversingDirection', () => {
+  it('coerces string "false" to boolean for ReversingDirection', () => {
     const result = normalize({ ReversingDirection: 'false' });
-    expect(result.reversingDirection).toBe(false);
+    expect(result.ReversingDirection).toBe(false);
   });
 
-  it('passes through boolean reversingDirection', () => {
-    const result = normalize({ reversingDirection: true });
-    expect(result.reversingDirection).toBe(true);
+  it('passes through boolean ReversingDirection', () => {
+    const result = normalize({ ReversingDirection: true });
+    expect(result.ReversingDirection).toBe(true);
   });
 
-  it('coerces string "true" to boolean for selfPropelled', () => {
+  it('coerces string "true" to boolean for SelfPropelled', () => {
     const result = normalize({ SelfPropelled: 'true' });
-    expect(result.selfPropelled).toBe(true);
+    expect(result.SelfPropelled).toBe(true);
   });
 
-  it('coerces string "false" to boolean for selfPropelled', () => {
+  it('coerces string "false" to boolean for SelfPropelled', () => {
     const result = normalize({ SelfPropelled: 'false' });
-    expect(result.selfPropelled).toBe(false);
+    expect(result.SelfPropelled).toBe(false);
   });
 
-  it('passes through boolean selfPropelled', () => {
-    const result = normalize({ selfPropelled: true });
-    expect(result.selfPropelled).toBe(true);
+  it('passes through boolean SelfPropelled', () => {
+    const result = normalize({ SelfPropelled: true });
+    expect(result.SelfPropelled).toBe(true);
   });
 
-  it('coerces string "true" to boolean for monitored', () => {
+  it('coerces string "true" to boolean for Monitored', () => {
     const result = normalize({ Monitored: 'true' });
-    expect(result.monitored).toBe(true);
+    expect(result.Monitored).toBe(true);
   });
 
-  it('coerces string "false" to boolean for monitored', () => {
+  it('coerces string "false" to boolean for Monitored', () => {
     const result = normalize({ Monitored: 'false' });
-    expect(result.monitored).toBe(false);
+    expect(result.Monitored).toBe(false);
   });
 
-  it('passes through boolean monitored', () => {
-    const result = normalize({ monitored: true });
-    expect(result.monitored).toBe(true);
+  it('passes through boolean Monitored', () => {
+    const result = normalize({ Monitored: true });
+    expect(result.Monitored).toBe(true);
   });
 
-  it('coerces string "true" to boolean for lowFloor', () => {
+  it('coerces string "true" to boolean for LowFloor', () => {
     const result = normalize({ LowFloor: 'true' });
-    expect(result.lowFloor).toBe(true);
+    expect(result.LowFloor).toBe(true);
   });
 
-  it('coerces string "false" to boolean for lowFloor', () => {
+  it('coerces string "false" to boolean for LowFloor', () => {
     const result = normalize({ LowFloor: 'false' });
-    expect(result.lowFloor).toBe(false);
+    expect(result.LowFloor).toBe(false);
   });
 
-  it('passes through boolean lowFloor', () => {
-    const result = normalize({ lowFloor: true });
-    expect(result.lowFloor).toBe(true);
+  it('passes through boolean LowFloor', () => {
+    const result = normalize({ LowFloor: true });
+    expect(result.LowFloor).toBe(true);
   });
 
-  it('coerces string "true" to boolean for hasLiftOrRamp', () => {
+  it('coerces string "true" to boolean for HasLiftOrRamp', () => {
     const result = normalize({ HasLiftOrRamp: 'true' });
-    expect(result.hasLiftOrRamp).toBe(true);
+    expect(result.HasLiftOrRamp).toBe(true);
   });
 
-  it('coerces string "false" to boolean for hasLiftOrRamp', () => {
+  it('coerces string "false" to boolean for HasLiftOrRamp', () => {
     const result = normalize({ HasLiftOrRamp: 'false' });
-    expect(result.hasLiftOrRamp).toBe(false);
+    expect(result.HasLiftOrRamp).toBe(false);
   });
 
-  it('passes through boolean hasLiftOrRamp', () => {
-    const result = normalize({ hasLiftOrRamp: true });
-    expect(result.hasLiftOrRamp).toBe(true);
+  it('passes through boolean HasLiftOrRamp', () => {
+    const result = normalize({ HasLiftOrRamp: true });
+    expect(result.HasLiftOrRamp).toBe(true);
   });
 
-  it('coerces string "true" to boolean for hasHoist', () => {
+  it('coerces string "true" to boolean for HasHoist', () => {
     const result = normalize({ HasHoist: 'true' });
-    expect(result.hasHoist).toBe(true);
+    expect(result.HasHoist).toBe(true);
   });
 
-  it('coerces string "false" to boolean for hasHoist', () => {
+  it('coerces string "false" to boolean for HasHoist', () => {
     const result = normalize({ HasHoist: 'false' });
-    expect(result.hasHoist).toBe(false);
+    expect(result.HasHoist).toBe(false);
   });
 
-  it('passes through boolean hasHoist', () => {
-    const result = normalize({ hasHoist: true });
-    expect(result.hasHoist).toBe(true);
+  it('passes through boolean HasHoist', () => {
+    const result = normalize({ HasHoist: true });
+    expect(result.HasHoist).toBe(true);
   });
 
-  it('normalizes valid union value for transportMode', () => {
+  // ── Enum coercion ──
+
+  it('normalizes valid union value for TransportMode', () => {
     const result = normalize({ TransportMode: 'all' });
-    expect(result.transportMode).toBe('all');
+    expect(result.TransportMode).toBe('all');
   });
 
-  it('rejects invalid union value for transportMode', () => {
+  it('rejects invalid union value for TransportMode', () => {
     const result = normalize({ TransportMode: 'invalid_value_xyz' });
-    expect(result.transportMode).toBeUndefined();
+    expect(result.TransportMode).toBeUndefined();
   });
 
-  it('normalizes valid union value for propulsionType', () => {
+  it('normalizes valid union value for PropulsionType', () => {
     const result = normalize({ PropulsionType: 'other' });
-    expect(result.propulsionType).toBe('other');
+    expect(result.PropulsionType).toBe('other');
   });
 
-  it('rejects invalid union value for propulsionType', () => {
+  it('rejects invalid union value for PropulsionType', () => {
     const result = normalize({ PropulsionType: 'invalid_value_xyz' });
-    expect(result.propulsionType).toBeUndefined();
+    expect(result.PropulsionType).toBeUndefined();
   });
 
-  it('normalizes name array', () => {
+  // ── Array fields ──
+
+  it('normalizes Name array', () => {
     const result = normalize({ Name: [{ Value: 'test' }] });
-    expect(result.name).toHaveLength(1);
-    expect(result.name![0].value).toBe('test');
+    expect(result.Name).toHaveLength(1);
+    expect(result.Name![0].Value).toBe('test');
   });
 
-  it('wraps single name object in array', () => {
+  it('wraps single Name object in array', () => {
     const result = normalize({ Name: { Value: 'solo' } });
-    expect(result.name).toHaveLength(1);
-    expect(result.name![0].value).toBe('solo');
+    expect(result.Name).toHaveLength(1);
+    expect(result.Name![0].Value).toBe('solo');
   });
 
-  it('normalizes shortName array', () => {
+  it('normalizes ShortName array', () => {
     const result = normalize({ ShortName: [{ Value: 'test' }] });
-    expect(result.shortName).toHaveLength(1);
-    expect(result.shortName![0].value).toBe('test');
+    expect(result.ShortName).toHaveLength(1);
+    expect(result.ShortName![0].Value).toBe('test');
   });
 
-  it('wraps single shortName object in array', () => {
+  it('wraps single ShortName object in array', () => {
     const result = normalize({ ShortName: { Value: 'solo' } });
-    expect(result.shortName).toHaveLength(1);
-    expect(result.shortName![0].value).toBe('solo');
+    expect(result.ShortName).toHaveLength(1);
+    expect(result.ShortName![0].Value).toBe('solo');
   });
 
-  it('normalizes description array', () => {
+  it('normalizes Description array', () => {
     const result = normalize({ Description: [{ Value: 'test' }] });
-    expect(result.description).toHaveLength(1);
-    expect(result.description![0].value).toBe('test');
+    expect(result.Description).toHaveLength(1);
+    expect(result.Description![0].Value).toBe('test');
   });
 
-  it('wraps single description object in array', () => {
+  it('wraps single Description object in array', () => {
     const result = normalize({ Description: { Value: 'solo' } });
-    expect(result.description).toHaveLength(1);
-    expect(result.description![0].value).toBe('solo');
+    expect(result.Description).toHaveLength(1);
+    expect(result.Description![0].Value).toBe('solo');
   });
 
-  it('normalizes keyList array', () => {
+  it('normalizes KeyList array', () => {
     const result = normalize({ KeyList: [{ Key: 'test' }] });
-    expect(result.keyList).toHaveLength(1);
-    expect(result.keyList![0].key).toBe('test');
+    expect(result.KeyList).toHaveLength(1);
+    expect(result.KeyList![0].Key).toBe('test');
   });
 
-  it('wraps single keyList object in array', () => {
+  it('wraps single KeyList object in array', () => {
     const result = normalize({ KeyList: { Key: 'solo' } });
-    expect(result.keyList).toHaveLength(1);
-    expect(result.keyList![0].key).toBe('solo');
+    expect(result.KeyList).toHaveLength(1);
+    expect(result.KeyList![0].Key).toBe('solo');
   });
 
-  it('normalizes privateCodes array', () => {
+  it('normalizes PrivateCodes array', () => {
     const result = normalize({ PrivateCodes: [{ Value: 'test' }] });
-    expect(result.privateCodes).toHaveLength(1);
-    expect(result.privateCodes![0].value).toBe('test');
+    expect(result.PrivateCodes).toHaveLength(1);
+    expect(result.PrivateCodes![0].Value).toBe('test');
   });
 
-  it('wraps single privateCodes object in array', () => {
+  it('wraps single PrivateCodes object in array', () => {
     const result = normalize({ PrivateCodes: { Value: 'solo' } });
-    expect(result.privateCodes).toHaveLength(1);
-    expect(result.privateCodes![0].value).toBe('solo');
+    expect(result.PrivateCodes).toHaveLength(1);
+    expect(result.PrivateCodes![0].Value).toBe('solo');
   });
 
   it('returns empty object for empty input', () => {
@@ -279,13 +227,13 @@ describe('normalize', () => {
 
   // ── @_-prefixed attribute fields (fast-xml-parser output) ──
 
-  it('maps @_id → id (XML attribute prefix)', () => {
+  it('maps @_id → $id (XML attribute prefix)', () => {
     const result = normalize({ '@_id': 'attr-value' });
-    expect(result.id).toBe('attr-value');
+    expect(result.$id).toBe('attr-value');
   });
 
-  it('maps @_responsibilitySetRef → responsibilitySetRef (XML attribute prefix)', () => {
+  it('maps @_responsibilitySetRef → $responsibilitySetRef (XML attribute prefix)', () => {
     const result = normalize({ '@_responsibilitySetRef': 'attr-value' });
-    expect(result.responsibilitySetRef).toBe('attr-value');
+    expect(result.$responsibilitySetRef).toBe('attr-value');
   });
 });

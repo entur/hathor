@@ -1,5 +1,6 @@
-// Auto-generated from entity file initialy,
-//  is now modifed to improve JSX/TSX interop as state
+// Field naming convention:
+//   Elements: PascalCase matching XML tag name (e.g. Name, TransportMode)
+//   Attributes: $ + camelCase XML attribute name (e.g. $id, $lang)
 
 export type SimpleRef = string;
 // _T is read by codegen AST, not at runtime
@@ -79,90 +80,151 @@ export const FARE_CLASSES = [
 
 export interface VehicleType {
   // ── type ──
-  name?: TextType[];
-  shortName?: TextType[];
-  description?: TextType[];
-  privateCode?: PrivateCodeStructure;
-  transportMode?: AllPublicTransportModesEnumeration;
-  deckPlanRef?: Ref<'DeckPlan'>;
-  euroClass?: string;
-  reversingDirection?: boolean;
-  selfPropelled?: boolean;
-  propulsionTypes?: PropulsionTypeEnumeration[];
-  propulsionType?: PropulsionTypeEnumeration;
-  fuelTypes?: FuelTypeEnumeration[];
-  maximumRange?: number;
-  maximumVelocity?: number;
-  //fuelType?: FuelTypeEnumeration; deprecated
-  //typeOfFuel?: FuelTypeEnumeration; deprecated
-  passengerCapacity?: PassengerCapacityStructure;
+  Name?: TextType[];
+  ShortName?: TextType[];
+  Description?: TextType[];
+  PrivateCode?: PrivateCodeStructure;
+  TransportMode?: AllPublicTransportModesEnumeration;
+  DeckPlanRef?: Ref<'DeckPlan'>;
+  EuroClass?: string;
+  ReversingDirection?: boolean;
+  SelfPropelled?: boolean;
+  PropulsionTypes?: PropulsionTypeEnumeration[];
+  PropulsionType?: PropulsionTypeEnumeration;
+  FuelTypes?: FuelTypeEnumeration[];
+  MaximumRange?: number;
+  MaximumVelocity?: number;
+  PassengerCapacity?: PassengerCapacityStructure;
 
   // ── core ──
-  /** @xmlAttribute */
-  id?: string;
-  includedIn?: Ref<'VehicleType'>;
-  classifiedAsRef?: Ref<'TypeOfVehicleType'>;
-  facilities?: SimpleRef;
-  monitored?: boolean;
-  lowFloor?: boolean;
-  hasLiftOrRamp?: boolean;
-  hasHoist?: boolean;
-  hoistOperatingRadius?: number;
-  boardingHeight?: number;
-  gapToPlatform?: number;
-  length?: number;
-  width?: number;
-  height?: number;
-  weight?: number;
-  firstAxleHeight?: number;
-  canCarry?: SimpleRef;
-  canManoeuvre?: VehicleManoeuvringRequirements_STUB;
-  satisfiesFacilityRequirements?: SimpleRef;
+  $id?: string;
+  IncludedIn?: Ref<'VehicleType'>;
+  ClassifiedAsRef?: Ref<'TypeOfVehicleType'>;
+  Facilities?: SimpleRef;
+  Monitored?: boolean;
+  LowFloor?: boolean;
+  HasLiftOrRamp?: boolean;
+  HasHoist?: boolean;
+  HoistOperatingRadius?: number;
+  BoardingHeight?: number;
+  GapToPlatform?: number;
+  Length?: number;
+  Width?: number;
+  Height?: number;
+  Weight?: number;
+  FirstAxleHeight?: number;
+  CanCarry?: SimpleRef;
+  CanManoeuvre?: VehicleManoeuvringRequirements_STUB;
+  SatisfiesFacilityRequirements?: SimpleRef;
 
   // ── extra ──
-  keyList?: KeyValueStructure[];
-  privateCodes?: PrivateCodeStructure[];
-  brandingRef?: Ref<'Branding'>;
-  /** @xmlAttribute */
-  responsibilitySetRef?: Ref<'ResponsibilitySet'>;
+  KeyList?: KeyValueStructure[];
+  PrivateCodes?: PrivateCodeStructure[];
+  BrandingRef?: Ref<'Branding'>;
+  $responsibilitySetRef?: Ref<'ResponsibilitySet'>;
 }
 
 export interface KeyValueStructure {
-  key?: string;
-  value?: string;
-  /** @xmlAttribute */
-  typeOfKey?: string;
+  Key?: string;
+  Value?: string;
+  $typeOfKey?: string;
 }
 
 export interface PrivateCodeStructure {
-  value?: string;
-  /** @xmlAttribute */
-  type?: string;
+  Value?: string;
+  $type?: string;
 }
 
 export interface TextType {
-  value?: string;
-  /** @xmlAttribute */
-  lang?: string;
-  /** @xmlAttribute */
-  textIdType?: string;
+  Value?: string;
+  $lang?: string;
+  $textIdType?: string;
 }
 
 export interface PassengerCapacityStructure {
-  fareClass?: (typeof FARE_CLASSES)[number];
-  totalCapacity?: number;
-  seatingCapacity?: number;
-  standingCapacity?: number;
-  specialPlaceCapacity?: number;
-  pushchairCapacity?: number;
-  wheelchairPlaceCapacity?: number;
-  pramPlaceCapacity?: number;
-  bicycleRackCapacity?: number;
+  FareClass?: (typeof FARE_CLASSES)[number];
+  TotalCapacity?: number;
+  SeatingCapacity?: number;
+  StandingCapacity?: number;
+  SpecialPlaceCapacity?: number;
+  PushchairCapacity?: number;
+  WheelchairPlaceCapacity?: number;
+  PramPlaceCapacity?: number;
+  BicycleRackCapacity?: number;
 }
 
 export interface VehicleManoeuvringRequirements_STUB {
-  reversible?: boolean;
-  minimumTurningCircle?: number;
-  minimumOvertakingWidth?: number;
-  minimumLength?: number;
+  Reversible?: boolean;
+  MinimumTurningCircle?: number;
+  MinimumOvertakingWidth?: number;
+  MinimumLength?: number;
 }
+
+// ── Type hints for normalize coercion ──
+
+export type TypeHints = {
+  booleans?: ReadonlySet<string>;
+  numbers?: ReadonlySet<string>;
+  enums?: Readonly<Record<string, readonly string[]>>;
+  arrays?: ReadonlySet<string>;
+  nested?: Readonly<Record<string, TypeHints>>;
+};
+
+export const PASSENGER_CAPACITY_HINTS: TypeHints = {
+  numbers: new Set([
+    'TotalCapacity',
+    'SeatingCapacity',
+    'StandingCapacity',
+    'SpecialPlaceCapacity',
+    'PushchairCapacity',
+    'WheelchairPlaceCapacity',
+    'PramPlaceCapacity',
+    'BicycleRackCapacity',
+  ]),
+  enums: { FareClass: FARE_CLASSES },
+};
+
+export const MANOEUVRE_HINTS: TypeHints = {
+  booleans: new Set(['Reversible']),
+  numbers: new Set(['MinimumTurningCircle', 'MinimumOvertakingWidth', 'MinimumLength']),
+};
+
+export const VEHICLE_TYPE_HINTS: TypeHints = {
+  arrays: new Set([
+    'Name',
+    'ShortName',
+    'Description',
+    'KeyList',
+    'PrivateCodes',
+    'PropulsionTypes',
+    'FuelTypes',
+  ]),
+  booleans: new Set([
+    'ReversingDirection',
+    'SelfPropelled',
+    'Monitored',
+    'LowFloor',
+    'HasLiftOrRamp',
+    'HasHoist',
+  ]),
+  numbers: new Set([
+    'MaximumRange',
+    'MaximumVelocity',
+    'HoistOperatingRadius',
+    'BoardingHeight',
+    'GapToPlatform',
+    'Length',
+    'Width',
+    'Height',
+    'Weight',
+    'FirstAxleHeight',
+  ]),
+  enums: {
+    TransportMode: TRANSPORT_MODES,
+    PropulsionType: PROPULSION_TYPES,
+  },
+  nested: {
+    PassengerCapacity: PASSENGER_CAPACITY_HINTS,
+    CanManoeuvre: MANOEUVRE_HINTS,
+  },
+};
