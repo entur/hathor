@@ -3,7 +3,12 @@ import type { VehicleType, KeyValueStructure } from './generated/types.js';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
-const FIXED_KEYS = ['key1', 'key2', 'key3', 'key4'] as const;
+const FIXED_KEYS = [
+  'FormDragCoeff',
+  'RollResistanceCoeff',
+  'MaximumEngineEffectKW',
+  'HybridCategory',
+] as const;
 
 export interface EnvironmentalExtrasProps {
   value: Partial<VehicleType>;
