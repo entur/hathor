@@ -38,8 +38,13 @@ function normalizeValue(src: Record<string, unknown>, hints: TypeHints): Record<
       const nestedHints = hints.nested?.[key];
       const isArray = hints.arrays?.has(key);
       if (nestedHints && typeof rawVal === 'object') {
-        const items = Array.isArray(rawVal) ? rawVal : [rawVal];
-        out[key] = items.map(item => normalizeValue(item as Record<string, unknown>, nestedHints));
+        if (Array.isArray(rawVal)) {
+          out[key] = rawVal.map(item =>
+            normalizeValue(item as Record<string, unknown>, nestedHints)
+          );
+        } else {
+          out[key] = normalizeValue(rawVal as Record<string, unknown>, nestedHints);
+        }
       } else if (isArray) {
         const items = Array.isArray(rawVal) ? rawVal : [rawVal];
         out[key] = items.map(item =>

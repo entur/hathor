@@ -20,10 +20,14 @@ export default function VehicleTypeDetails() {
     setErrors(result.errors);
     if (result.errors.length > 0) throw new Error('Validation failed');
 
+    if (!applicationImportBaseUrl) {
+      throw new Error('Application import base URL is not configured');
+    }
+
     const fragment = serialize(value);
     const xml = wrapInPublicationDelivery(fragment);
     const token = await getAccessToken();
-    await importAsNetexToBackend(applicationImportBaseUrl!, xml, token);
+    await importAsNetexToBackend(applicationImportBaseUrl, xml, token);
   };
 
   const isEmpty = Object.keys(value).length === 0;

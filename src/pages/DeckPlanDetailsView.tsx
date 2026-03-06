@@ -24,6 +24,7 @@ const DeckPlanDetailsView = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        setFetchError(null);
         if (!id) return;
         if (!applicationImportBaseUrl) return;
 
