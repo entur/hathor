@@ -4,147 +4,147 @@ import { normalize } from '../src/normalize.js';
 import { XMLParser } from 'fast-xml-parser';
 
 describe('serialize', () => {
-  it('serializes deckPlanRef as <DeckPlanRef>', () => {
-    const xml = serialize({ deckPlanRef: 'test' });
+  it('serializes DeckPlanRef as <DeckPlanRef>', () => {
+    const xml = serialize({ DeckPlanRef: 'test' });
     expect(xml).toContain('<DeckPlanRef>test</DeckPlanRef>');
   });
 
-  it('serializes euroClass as <EuroClass>', () => {
-    const xml = serialize({ euroClass: 'test' });
+  it('serializes EuroClass as <EuroClass>', () => {
+    const xml = serialize({ EuroClass: 'test' });
     expect(xml).toContain('<EuroClass>test</EuroClass>');
   });
 
-  it('serializes id as XML attribute', () => {
-    const xml = serialize({ id: 'test' });
+  it('serializes $id as XML attribute', () => {
+    const xml = serialize({ $id: 'test' });
     expect(xml).toContain('id="test"');
     expect(xml).not.toContain('<Id>');
   });
 
-  it('serializes includedIn as <IncludedIn>', () => {
-    const xml = serialize({ includedIn: 'test' });
+  it('serializes IncludedIn as <IncludedIn>', () => {
+    const xml = serialize({ IncludedIn: 'test' });
     expect(xml).toContain('<IncludedIn>test</IncludedIn>');
   });
 
-  it('serializes classifiedAsRef as <ClassifiedAsRef>', () => {
-    const xml = serialize({ classifiedAsRef: 'test' });
+  it('serializes ClassifiedAsRef as <ClassifiedAsRef>', () => {
+    const xml = serialize({ ClassifiedAsRef: 'test' });
     expect(xml).toContain('<ClassifiedAsRef>test</ClassifiedAsRef>');
   });
 
-  it('serializes facilities as <Facilities>', () => {
-    const xml = serialize({ facilities: 'test' });
+  it('serializes Facilities as <Facilities>', () => {
+    const xml = serialize({ Facilities: 'test' });
     expect(xml).toContain('<Facilities>test</Facilities>');
   });
 
-  it('serializes canCarry as <CanCarry>', () => {
-    const xml = serialize({ canCarry: 'test' });
+  it('serializes CanCarry as <CanCarry>', () => {
+    const xml = serialize({ CanCarry: 'test' });
     expect(xml).toContain('<CanCarry>test</CanCarry>');
   });
 
-  it('serializes satisfiesFacilityRequirements as <SatisfiesFacilityRequirements>', () => {
-    const xml = serialize({ satisfiesFacilityRequirements: 'test' });
+  it('serializes SatisfiesFacilityRequirements as <SatisfiesFacilityRequirements>', () => {
+    const xml = serialize({ SatisfiesFacilityRequirements: 'test' });
     expect(xml).toContain('<SatisfiesFacilityRequirements>test</SatisfiesFacilityRequirements>');
   });
 
-  it('serializes brandingRef as <BrandingRef>', () => {
-    const xml = serialize({ brandingRef: 'test' });
+  it('serializes BrandingRef as <BrandingRef>', () => {
+    const xml = serialize({ BrandingRef: 'test' });
     expect(xml).toContain('<BrandingRef>test</BrandingRef>');
   });
 
-  it('serializes responsibilitySetRef as XML attribute', () => {
-    const xml = serialize({ responsibilitySetRef: 'test' });
+  it('serializes $responsibilitySetRef as XML attribute', () => {
+    const xml = serialize({ $responsibilitySetRef: 'test' });
     expect(xml).toContain('responsibilitySetRef="test"');
     expect(xml).not.toContain('<ResponsibilitySetRef>');
   });
 
-  it('serializes boolean reversingDirection as string', () => {
-    const xml = serialize({ reversingDirection: true });
+  it('serializes boolean ReversingDirection as string', () => {
+    const xml = serialize({ ReversingDirection: true });
     expect(xml).toContain('<ReversingDirection>true</ReversingDirection>');
   });
 
-  it('serializes boolean selfPropelled as string', () => {
-    const xml = serialize({ selfPropelled: true });
+  it('serializes boolean SelfPropelled as string', () => {
+    const xml = serialize({ SelfPropelled: true });
     expect(xml).toContain('<SelfPropelled>true</SelfPropelled>');
   });
 
-  it('serializes boolean monitored as string', () => {
-    const xml = serialize({ monitored: true });
+  it('serializes boolean Monitored as string', () => {
+    const xml = serialize({ Monitored: true });
     expect(xml).toContain('<Monitored>true</Monitored>');
   });
 
-  it('serializes boolean lowFloor as string', () => {
-    const xml = serialize({ lowFloor: true });
+  it('serializes boolean LowFloor as string', () => {
+    const xml = serialize({ LowFloor: true });
     expect(xml).toContain('<LowFloor>true</LowFloor>');
   });
 
-  it('serializes boolean hasLiftOrRamp as string', () => {
-    const xml = serialize({ hasLiftOrRamp: true });
+  it('serializes boolean HasLiftOrRamp as string', () => {
+    const xml = serialize({ HasLiftOrRamp: true });
     expect(xml).toContain('<HasLiftOrRamp>true</HasLiftOrRamp>');
   });
 
-  it('serializes boolean hasHoist as string', () => {
-    const xml = serialize({ hasHoist: true });
+  it('serializes boolean HasHoist as string', () => {
+    const xml = serialize({ HasHoist: true });
     expect(xml).toContain('<HasHoist>true</HasHoist>');
   });
 
-  it('serializes name ref-array', () => {
-    const xml = serialize({ name: [{ value: 'a' }] });
+  it('serializes Name ref-array', () => {
+    const xml = serialize({ Name: [{ Value: 'a' }] });
     expect(xml).toContain('<Name>');
   });
 
-  it('serializes shortName ref-array', () => {
-    const xml = serialize({ shortName: [{ value: 'a' }] });
+  it('serializes ShortName ref-array', () => {
+    const xml = serialize({ ShortName: [{ Value: 'a' }] });
     expect(xml).toContain('<ShortName>');
   });
 
-  it('serializes description ref-array', () => {
-    const xml = serialize({ description: [{ value: 'a' }] });
+  it('serializes Description ref-array', () => {
+    const xml = serialize({ Description: [{ Value: 'a' }] });
     expect(xml).toContain('<Description>');
   });
 
-  it('serializes keyList ref-array', () => {
-    const xml = serialize({ keyList: [{ value: 'a' }] });
+  it('serializes KeyList ref-array', () => {
+    const xml = serialize({ KeyList: [{ Value: 'a' }] });
     expect(xml).toContain('<KeyList>');
   });
 
-  it('serializes privateCodes ref-array', () => {
-    const xml = serialize({ privateCodes: [{ value: 'a' }] });
+  it('serializes PrivateCodes ref-array', () => {
+    const xml = serialize({ PrivateCodes: [{ Value: 'a' }] });
     expect(xml).toContain('<PrivateCodes>');
   });
 
   it('wraps output in <VehicleType>', () => {
-    const xml = serialize({ id: 'test' });
+    const xml = serialize({ $id: 'test' });
     expect(xml).toContain('<VehicleType');
     expect(xml).toContain('</VehicleType>');
   });
 
   it('roundtrips primitives through normalize', () => {
     const original = {
-      deckPlanRef: 'roundtrip',
-      euroClass: 'roundtrip',
-      reversingDirection: true,
-      selfPropelled: true,
-      maximumRange: 42,
-      maximumVelocity: 42,
-      id: 'roundtrip',
-      includedIn: 'roundtrip',
-      classifiedAsRef: 'roundtrip',
-      facilities: 'roundtrip',
-      monitored: true,
-      lowFloor: true,
-      hasLiftOrRamp: true,
-      hasHoist: true,
-      hoistOperatingRadius: 42,
-      boardingHeight: 42,
-      gapToPlatform: 42,
-      length: 42,
-      width: 42,
-      height: 42,
-      weight: 42,
-      firstAxleHeight: 42,
-      canCarry: 'roundtrip',
-      satisfiesFacilityRequirements: 'roundtrip',
-      brandingRef: 'roundtrip',
-      responsibilitySetRef: 'roundtrip',
+      DeckPlanRef: 'roundtrip',
+      EuroClass: 'roundtrip',
+      ReversingDirection: true,
+      SelfPropelled: true,
+      MaximumRange: 42,
+      MaximumVelocity: 42,
+      $id: 'roundtrip',
+      IncludedIn: 'roundtrip',
+      ClassifiedAsRef: 'roundtrip',
+      Facilities: 'roundtrip',
+      Monitored: true,
+      LowFloor: true,
+      HasLiftOrRamp: true,
+      HasHoist: true,
+      HoistOperatingRadius: 42,
+      BoardingHeight: 42,
+      GapToPlatform: 42,
+      Length: 42,
+      Width: 42,
+      Height: 42,
+      Weight: 42,
+      FirstAxleHeight: 42,
+      CanCarry: 'roundtrip',
+      SatisfiesFacilityRequirements: 'roundtrip',
+      BrandingRef: 'roundtrip',
+      $responsibilitySetRef: 'roundtrip',
     };
     const xml = serialize(original);
     const parser = new XMLParser({ ignoreAttributes: false });

@@ -9,9 +9,9 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
+import VehicleTypeDetails from './pages/VehicleTypeDetails.tsx';
 import DeckPlanView from './pages/DeckPlanView.tsx';
 import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
-import VehicleTypeCompletePage from './pages/VehicleTypeCompletePage.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -39,16 +39,16 @@ export default function App() {
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
                   />
                   <Route
-                    path="/deck-plans"
+                    path="/deck-plan"
                     element={<ProtectedRoute element={<DeckPlanView />} />}
                   />
                   <Route
-                    path="/deck-plans/:id"
+                    path="/deck-plan/:id"
                     element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                   />
                   <Route
-                    path="/vt-complete-edit"
-                    element={<ProtectedRoute element={<VehicleTypeCompletePage />} />}
+                    path="/vehicle-type/new"
+                    element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
                 </Routes>
               </Box>

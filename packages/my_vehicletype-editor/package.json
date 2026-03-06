@@ -8,9 +8,7 @@
   },
   "scripts": {
     "build": "vite build",
-    "test": "vitest run",
-    "codegen": "tsx scripts/generate-field-descriptors.ts",
-    "codegen:check": "tsx scripts/generate-field-descriptors.ts --check"
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@emotion/react": "^11.0.0",
@@ -23,7 +21,6 @@
     "fast-xml-parser": "^5.3.0"
   },
   "devDependencies": {
-    "ts-morph": "^27.0.2",
     "tsx": "^4.21.0"
   }
 }

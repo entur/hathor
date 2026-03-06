@@ -1,11 +1,35 @@
-import { Container, Box, Typography, Paper, useTheme, Grid } from '@mui/material';
+import { useState } from 'react';
+import {
+  Container,
+  Box,
+  Typography,
+  Paper,
+  useTheme,
+  Grid,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Button,
+} from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { EmojiTransportation, ViewInAr } from '@mui/icons-material';
+import {
+  EmojiTransportation,
+  ViewInAr,
+  AddCircleOutline,
+  DirectionsBus,
+  Train,
+} from '@mui/icons-material';
 
 export default function HomePage() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [comingOpen, setComingOpen] = useState(false);
 
   const features = [
     {
@@ -18,7 +42,7 @@ export default function HomePage() {
       icon: <ViewInAr fontSize="large" color="primary" />,
       headlineKey: 'home.features.deckplans.headline',
       descriptionKey: 'home.features.deckplans.description',
-      path: '/deck-plans',
+      path: '/deck-plan',
     },
   ];
 
@@ -100,6 +124,55 @@ export default function HomePage() {
           })}
         </Grid>
       </Box>
+
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          maxWidth: 400,
+          mx: 'auto',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <AddCircleOutline fontSize="large" color="primary" sx={{ mr: 1 }} />
+          <Typography variant="h6" component="h3" sx={{ fontWeight: 'medium' }}>
+            {t('home.createNew.title', 'Create new')}
+          </Typography>
+        </Box>
+        <List disablePadding>
+          <ListItem disablePadding>
+            <ListItemButton component={Link} to="/vehicle-type/new">
+              <ListItemIcon>
+                <DirectionsBus fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={t('home.createNew.vehicleType', 'Vehicle Type')} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setComingOpen(true)}>
+              <ListItemIcon>
+                <Train fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={t('home.createNew.train', 'Train')} />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => setComingOpen(true)}>
+              <ListItemIcon>
+                <ViewInAr fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={t('home.createNew.deckPlan', 'Deck Plan')} />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Paper>
+
+      <Dialog open={comingOpen} onClose={() => setComingOpen(false)}>
+        <DialogTitle>{t('home.createNew.comingSoon', 'Coming soon')}</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setComingOpen(false)}>{t('close', 'Close')}</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

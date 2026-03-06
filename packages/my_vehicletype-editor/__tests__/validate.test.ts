@@ -2,190 +2,190 @@ import { describe, it, expect } from 'vitest';
 import { validate } from '../src/generated/validate.js';
 
 describe('validate', () => {
-  it('fails when deckPlanRef has wrong type (number)', () => {
-    const result = validate({ deckPlanRef: 123 as never });
-    expect(result.errors).toContain('deckPlanRef must be a string');
+  it('fails when DeckPlanRef has wrong type (number)', () => {
+    const result = validate({ DeckPlanRef: 123 as never });
+    expect(result.errors).toContain('DeckPlanRef must be a string');
   });
 
-  it('fails when euroClass has wrong type (number)', () => {
-    const result = validate({ euroClass: 123 as never });
-    expect(result.errors).toContain('euroClass must be a string');
+  it('fails when EuroClass has wrong type (number)', () => {
+    const result = validate({ EuroClass: 123 as never });
+    expect(result.errors).toContain('EuroClass must be a string');
   });
 
-  it('fails when reversingDirection has wrong type (string)', () => {
-    const result = validate({ reversingDirection: 'not-a-bool' as never });
-    expect(result.errors).toContain('reversingDirection must be a boolean');
+  it('fails when ReversingDirection has wrong type (string)', () => {
+    const result = validate({ ReversingDirection: 'not-a-bool' as never });
+    expect(result.errors).toContain('ReversingDirection must be a boolean');
   });
 
-  it('fails when selfPropelled has wrong type (string)', () => {
-    const result = validate({ selfPropelled: 'not-a-bool' as never });
-    expect(result.errors).toContain('selfPropelled must be a boolean');
+  it('fails when SelfPropelled has wrong type (string)', () => {
+    const result = validate({ SelfPropelled: 'not-a-bool' as never });
+    expect(result.errors).toContain('SelfPropelled must be a boolean');
   });
 
-  it('fails when maximumRange has wrong type (string)', () => {
-    const result = validate({ maximumRange: 'not-a-number' as never });
-    expect(result.errors).toContain('maximumRange must be a number');
+  it('fails when MaximumRange has wrong type (string)', () => {
+    const result = validate({ MaximumRange: 'not-a-number' as never });
+    expect(result.errors).toContain('MaximumRange must be a number');
   });
 
-  it('fails when maximumVelocity has wrong type (string)', () => {
-    const result = validate({ maximumVelocity: 'not-a-number' as never });
-    expect(result.errors).toContain('maximumVelocity must be a number');
+  it('fails when MaximumVelocity has wrong type (string)', () => {
+    const result = validate({ MaximumVelocity: 'not-a-number' as never });
+    expect(result.errors).toContain('MaximumVelocity must be a number');
   });
 
-  it('fails when id has wrong type (number)', () => {
-    const result = validate({ id: 123 as never });
-    expect(result.errors).toContain('id must be a string');
+  it('fails when $id has wrong type (number)', () => {
+    const result = validate({ $id: 123 as never });
+    expect(result.errors).toContain('$id must be a string');
   });
 
-  it('fails when includedIn has wrong type (number)', () => {
-    const result = validate({ includedIn: 123 as never });
-    expect(result.errors).toContain('includedIn must be a string');
+  it('fails when IncludedIn has wrong type (number)', () => {
+    const result = validate({ IncludedIn: 123 as never });
+    expect(result.errors).toContain('IncludedIn must be a string');
   });
 
-  it('fails when classifiedAsRef has wrong type (number)', () => {
-    const result = validate({ classifiedAsRef: 123 as never });
-    expect(result.errors).toContain('classifiedAsRef must be a string');
+  it('fails when ClassifiedAsRef has wrong type (number)', () => {
+    const result = validate({ ClassifiedAsRef: 123 as never });
+    expect(result.errors).toContain('ClassifiedAsRef must be a string');
   });
 
-  it('fails when facilities has wrong type (number)', () => {
-    const result = validate({ facilities: 123 as never });
-    expect(result.errors).toContain('facilities must be a string');
+  it('fails when Facilities has wrong type (number)', () => {
+    const result = validate({ Facilities: 123 as never });
+    expect(result.errors).toContain('Facilities must be a string');
   });
 
-  it('fails when monitored has wrong type (string)', () => {
-    const result = validate({ monitored: 'not-a-bool' as never });
-    expect(result.errors).toContain('monitored must be a boolean');
+  it('fails when Monitored has wrong type (string)', () => {
+    const result = validate({ Monitored: 'not-a-bool' as never });
+    expect(result.errors).toContain('Monitored must be a boolean');
   });
 
-  it('fails when lowFloor has wrong type (string)', () => {
-    const result = validate({ lowFloor: 'not-a-bool' as never });
-    expect(result.errors).toContain('lowFloor must be a boolean');
+  it('fails when LowFloor has wrong type (string)', () => {
+    const result = validate({ LowFloor: 'not-a-bool' as never });
+    expect(result.errors).toContain('LowFloor must be a boolean');
   });
 
-  it('fails when hasLiftOrRamp has wrong type (string)', () => {
-    const result = validate({ hasLiftOrRamp: 'not-a-bool' as never });
-    expect(result.errors).toContain('hasLiftOrRamp must be a boolean');
+  it('fails when HasLiftOrRamp has wrong type (string)', () => {
+    const result = validate({ HasLiftOrRamp: 'not-a-bool' as never });
+    expect(result.errors).toContain('HasLiftOrRamp must be a boolean');
   });
 
-  it('fails when hasHoist has wrong type (string)', () => {
-    const result = validate({ hasHoist: 'not-a-bool' as never });
-    expect(result.errors).toContain('hasHoist must be a boolean');
+  it('fails when HasHoist has wrong type (string)', () => {
+    const result = validate({ HasHoist: 'not-a-bool' as never });
+    expect(result.errors).toContain('HasHoist must be a boolean');
   });
 
-  it('fails when hoistOperatingRadius has wrong type (string)', () => {
-    const result = validate({ hoistOperatingRadius: 'not-a-number' as never });
-    expect(result.errors).toContain('hoistOperatingRadius must be a number');
+  it('fails when HoistOperatingRadius has wrong type (string)', () => {
+    const result = validate({ HoistOperatingRadius: 'not-a-number' as never });
+    expect(result.errors).toContain('HoistOperatingRadius must be a number');
   });
 
-  it('fails when boardingHeight has wrong type (string)', () => {
-    const result = validate({ boardingHeight: 'not-a-number' as never });
-    expect(result.errors).toContain('boardingHeight must be a number');
+  it('fails when BoardingHeight has wrong type (string)', () => {
+    const result = validate({ BoardingHeight: 'not-a-number' as never });
+    expect(result.errors).toContain('BoardingHeight must be a number');
   });
 
-  it('fails when gapToPlatform has wrong type (string)', () => {
-    const result = validate({ gapToPlatform: 'not-a-number' as never });
-    expect(result.errors).toContain('gapToPlatform must be a number');
+  it('fails when GapToPlatform has wrong type (string)', () => {
+    const result = validate({ GapToPlatform: 'not-a-number' as never });
+    expect(result.errors).toContain('GapToPlatform must be a number');
   });
 
-  it('fails when length has wrong type (string)', () => {
-    const result = validate({ length: 'not-a-number' as never });
-    expect(result.errors).toContain('length must be a number');
+  it('fails when Length has wrong type (string)', () => {
+    const result = validate({ Length: 'not-a-number' as never });
+    expect(result.errors).toContain('Length must be a number');
   });
 
-  it('fails when width has wrong type (string)', () => {
-    const result = validate({ width: 'not-a-number' as never });
-    expect(result.errors).toContain('width must be a number');
+  it('fails when Width has wrong type (string)', () => {
+    const result = validate({ Width: 'not-a-number' as never });
+    expect(result.errors).toContain('Width must be a number');
   });
 
-  it('fails when height has wrong type (string)', () => {
-    const result = validate({ height: 'not-a-number' as never });
-    expect(result.errors).toContain('height must be a number');
+  it('fails when Height has wrong type (string)', () => {
+    const result = validate({ Height: 'not-a-number' as never });
+    expect(result.errors).toContain('Height must be a number');
   });
 
-  it('fails when weight has wrong type (string)', () => {
-    const result = validate({ weight: 'not-a-number' as never });
-    expect(result.errors).toContain('weight must be a number');
+  it('fails when Weight has wrong type (string)', () => {
+    const result = validate({ Weight: 'not-a-number' as never });
+    expect(result.errors).toContain('Weight must be a number');
   });
 
-  it('fails when firstAxleHeight has wrong type (string)', () => {
-    const result = validate({ firstAxleHeight: 'not-a-number' as never });
-    expect(result.errors).toContain('firstAxleHeight must be a number');
+  it('fails when FirstAxleHeight has wrong type (string)', () => {
+    const result = validate({ FirstAxleHeight: 'not-a-number' as never });
+    expect(result.errors).toContain('FirstAxleHeight must be a number');
   });
 
-  it('fails when canCarry has wrong type (number)', () => {
-    const result = validate({ canCarry: 123 as never });
-    expect(result.errors).toContain('canCarry must be a string');
+  it('fails when CanCarry has wrong type (number)', () => {
+    const result = validate({ CanCarry: 123 as never });
+    expect(result.errors).toContain('CanCarry must be a string');
   });
 
-  it('fails when satisfiesFacilityRequirements has wrong type (number)', () => {
-    const result = validate({ satisfiesFacilityRequirements: 123 as never });
-    expect(result.errors).toContain('satisfiesFacilityRequirements must be a string');
+  it('fails when SatisfiesFacilityRequirements has wrong type (number)', () => {
+    const result = validate({ SatisfiesFacilityRequirements: 123 as never });
+    expect(result.errors).toContain('SatisfiesFacilityRequirements must be a string');
   });
 
-  it('fails when brandingRef has wrong type (number)', () => {
-    const result = validate({ brandingRef: 123 as never });
-    expect(result.errors).toContain('brandingRef must be a string');
+  it('fails when BrandingRef has wrong type (number)', () => {
+    const result = validate({ BrandingRef: 123 as never });
+    expect(result.errors).toContain('BrandingRef must be a string');
   });
 
-  it('fails when responsibilitySetRef has wrong type (number)', () => {
-    const result = validate({ responsibilitySetRef: 123 as never });
-    expect(result.errors).toContain('responsibilitySetRef must be a string');
+  it('fails when $responsibilitySetRef has wrong type (number)', () => {
+    const result = validate({ $responsibilitySetRef: 123 as never });
+    expect(result.errors).toContain('$responsibilitySetRef must be a string');
   });
 
-  it('accepts valid union value for transportMode', () => {
-    const result = validate({ transportMode: 'all' });
-    const transportModeErrors = result.errors.filter(e => e.includes('transportMode'));
+  it('accepts valid union value for TransportMode', () => {
+    const result = validate({ TransportMode: 'all' });
+    const transportModeErrors = result.errors.filter(e => e.includes('TransportMode'));
     expect(transportModeErrors).toEqual([]);
   });
 
-  it('rejects invalid union value for transportMode', () => {
-    const result = validate({ transportMode: 'invalid_xyz' as never });
+  it('rejects invalid union value for TransportMode', () => {
+    const result = validate({ TransportMode: 'invalid_xyz' as never });
     expect(result.errors).toContain(
-      'transportMode must be one of: all, unknown, bus, trolleyBus, tram, coach, rail, intercityRail, urbanRail, metro, air, water, cableway, funicular, snowAndIce, taxi, ferry, lift, selfDrive, anyMode, other'
+      'TransportMode must be one of: all, unknown, bus, trolleyBus, tram, coach, rail, intercityRail, urbanRail, metro, air, water, cableway, funicular, snowAndIce, taxi, ferry, lift, selfDrive, anyMode, other'
     );
   });
 
-  it('accepts valid union value for propulsionType', () => {
-    const result = validate({ propulsionType: 'other' });
-    const propulsionTypeErrors = result.errors.filter(e => e.includes('propulsionType'));
+  it('accepts valid union value for PropulsionType', () => {
+    const result = validate({ PropulsionType: 'other' });
+    const propulsionTypeErrors = result.errors.filter(e => e.includes('PropulsionType'));
     expect(propulsionTypeErrors).toEqual([]);
   });
 
-  it('rejects invalid union value for propulsionType', () => {
-    const result = validate({ propulsionType: 'invalid_xyz' as never });
+  it('rejects invalid union value for PropulsionType', () => {
+    const result = validate({ PropulsionType: 'invalid_xyz' as never });
     expect(result.errors).toContain(
-      'propulsionType must be one of: combustion, electric, electricAssist, hybrid, human, other'
+      'PropulsionType must be one of: combustion, electric, electricAssist, hybrid, human, other'
     );
   });
 
   it('passes with all valid primitive fields', () => {
     const result = validate({
-      deckPlanRef: 'valid',
-      euroClass: 'valid',
-      reversingDirection: true,
-      selfPropelled: true,
-      maximumRange: 42,
-      maximumVelocity: 42,
-      id: 'valid',
-      includedIn: 'valid',
-      classifiedAsRef: 'valid',
-      facilities: 'valid',
-      monitored: true,
-      lowFloor: true,
-      hasLiftOrRamp: true,
-      hasHoist: true,
-      hoistOperatingRadius: 42,
-      boardingHeight: 42,
-      gapToPlatform: 42,
-      length: 42,
-      width: 42,
-      height: 42,
-      weight: 42,
-      firstAxleHeight: 42,
-      canCarry: 'valid',
-      satisfiesFacilityRequirements: 'valid',
-      brandingRef: 'valid',
-      responsibilitySetRef: 'valid',
+      DeckPlanRef: 'valid',
+      EuroClass: 'valid',
+      ReversingDirection: true,
+      SelfPropelled: true,
+      MaximumRange: 42,
+      MaximumVelocity: 42,
+      $id: 'valid',
+      IncludedIn: 'valid',
+      ClassifiedAsRef: 'valid',
+      Facilities: 'valid',
+      Monitored: true,
+      LowFloor: true,
+      HasLiftOrRamp: true,
+      HasHoist: true,
+      HoistOperatingRadius: 42,
+      BoardingHeight: 42,
+      GapToPlatform: 42,
+      Length: 42,
+      Width: 42,
+      Height: 42,
+      Weight: 42,
+      FirstAxleHeight: 42,
+      CanCarry: 'valid',
+      SatisfiesFacilityRequirements: 'valid',
+      BrandingRef: 'valid',
+      $responsibilitySetRef: 'valid',
     });
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
