@@ -7,6 +7,10 @@ const builder = new XMLBuilder({
   ignoreAttributes: false,
 });
 
+// function toXMLShape(stem:Record<string,unknown):Record<string,unknown>
+//    -- see ../netex-typescript-model (json.schema knowledge version), xsd ordering etc
+//    -- make an inlined "hardcoded" unwrapping for "stem"
+
 function serializeValue(obj: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(obj)) {
@@ -30,7 +34,7 @@ function serializeValue(obj: Record<string, unknown>): Record<string, unknown> {
   return out;
 }
 
-export function serialize(obj: Partial<VehicleType>): string {
-  const xmlObj = serializeValue(obj as Record<string, unknown>);
+export function serialize(xmlShape: Partial<VehicleType>): string {
+  const xmlObj = serializeValue(xmlShape as Record<string, unknown>);
   return builder.build({ VehicleType: xmlObj }) as string;
 }
