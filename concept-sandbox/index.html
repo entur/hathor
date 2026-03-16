@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hathor – Concept Sandbox</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <style>
       /* ── Reset & base ─────────────────────────────────── */
       *,
@@ -175,8 +176,14 @@
       /* ── Main content ─────────────────────────────────── */
       main {
         flex: 1;
+        overflow: hidden;
+        padding: 0;
+      }
+
+      #main-content {
+        width: 100%;
+        height: 100%;
         overflow-y: auto;
-        padding: 32px 40px;
       }
 
       .card {
@@ -186,6 +193,7 @@
         padding: 28px 32px;
         box-shadow: var(--shadow-sm);
         max-width: 720px;
+        margin: 32px 40px;
       }
 
       .card h1 {
@@ -290,8 +298,8 @@
         aside {
           display: none;
         }
-        main {
-          padding: 20px 16px;
+        .card {
+          margin: 20px 16px;
         }
       }
     </style>
@@ -316,12 +324,12 @@
           <li>
             <button
               class="selected"
-              hx-get="partials/welcome.html"
+              hx-get="partials/definitions.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
               onclick="selectNav(this)"
             >
-              <span class="icon">&#9670;</span> Welcome
+              <span class="icon">&#9638;</span> Definitions
             </button>
           </li>
           <li>
@@ -350,36 +358,12 @@
 
       <!-- ── Main content ───────────────────────────────── -->
       <main>
-        <div id="main-content">
-          <div class="card">
-            <h1>Hello, World!</h1>
-            <p>
-              Welcome to the <strong>Hathor Concept Sandbox</strong> — a lightweight prototyping
-              space powered by <code>htmx</code>. Use the sidebar to navigate between views, or
-              click the button below to fetch content dynamically.
-            </p>
-            <div class="btn-group">
-              <button
-                class="btn btn-primary"
-                hx-get="partials/greeting.html"
-                hx-target="#response-area"
-                hx-swap="innerHTML"
-              >
-                Fetch Greeting
-                <span class="htmx-indicator">⏳</span>
-              </button>
-              <button
-                class="btn btn-outline"
-                hx-get="partials/timestamp.html"
-                hx-target="#response-area"
-                hx-swap="innerHTML"
-              >
-                Get Timestamp
-              </button>
-            </div>
-            <div id="response-area"></div>
-          </div>
-        </div>
+        <div
+          id="main-content"
+          hx-get="partials/definitions.html"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+        ></div>
       </main>
     </div>
 
