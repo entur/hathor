@@ -2,7 +2,7 @@ name: Deploy Concept Sandbox to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, ui-sandboxing]
     paths:
       - 'concept-sandbox/**'
       - '.github/workflows/pages.yml'
