@@ -138,6 +138,27 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 3. Run `npm run e2e:auth` then `npm run e2e:no-auth`
 4. Upload HTML report as artifact (30-day retention)
 
+## Concept Sandbox
+
+A standalone HTML/D3 prototype at `concept-sandbox/` deployed via GitHub Pages. Visualizes NeTEx domain concepts (Organisations, StakeholderRoles, VehicleTypes, Vehicles) as draggable SVG boxes on a grid of ResourceFrame cells.
+
+### Key Design Decisions
+
+- **No separate Org boxes** — PTA/PTO boxes _are_ the Organisations; each pairs with a StakeholderRole via proximity edges.
+- **Pair-based layout** — each cell packs boxes as Org→Role pairs (shared jitter, horizontal alignment). Array order matters: `[PTA, PTA-role, PTO, ownership, VehicleType?]`.
+- **Percentage-based sizing** — all box dimensions, gaps, padding, fonts, and thresholds are ratios of cell width/height (recomputed on resize). Constants: `BOX_W_R`, `BOX_H_R`, `ORG_R`, `ROLE_R`, `GAP_R`, `PAD_R`.
+- **Two edge systems** — green hardcoded edges (VehicleType→Vehicle) and orange dynamic proximity edges (Organisation→StakeholderRole, recalculated on drag).
+- **`widthOf` lookup** — maps box IDs to pixel widths (ORG_W, ROLE_W, or BOX_W); repopulated in `computePositions()` since dimensions change on resize.
+- **Empty cells** — use `<?>` zone label with no frameBoxes entries.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `concept-sandbox/index.html` | htmx shell with 3-pane layout |
+| `concept-sandbox/partials/definitions.html` | D3 SVG visualization (all logic in `<script>`) |
+| `concept-sandbox/README.md` | Sandbox overview |
+
 ## Legacy Cleanup TODO
 
 Remaining Tiamat/stop-place traces and dead code from the fork that still need attention:
