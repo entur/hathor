@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hathor – Concept Sandbox</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+      /* ── Reset & base ─────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --clr-bg: #f4f5f7;
+        --clr-surface: #ffffff;
+        --clr-primary: #181c3b;
+        --clr-accent: #4e6cf2;
+        --clr-accent-fg: #ffffff;
+        --clr-text: #1e1e2e;
+        --clr-text-dim: #6b7280;
+        --clr-border: #e2e5ea;
+        --header-h: 56px;
+        --side-w: 260px;
+        --radius: 8px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --transition: 0.2s ease;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      body {
+        height: 100%;
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        color: var(--clr-text);
+        background: var(--clr-bg);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── Header ───────────────────────────────────────── */
+      header {
+        height: var(--header-h);
+        background: var(--clr-primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        gap: 16px;
+        box-shadow: var(--shadow-md);
+        z-index: 10;
+        flex-shrink: 0;
+      }
+
+      header .logo {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      header .logo span {
+        color: var(--clr-accent);
+      }
+
+      header nav {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+
+      header nav button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: var(--radius);
+        font-size: 13px;
+        cursor: pointer;
+        transition:
+          background var(--transition),
+          border-color var(--transition);
+      }
+
+      header nav button:hover,
+      header nav button.active {
+        background: var(--clr-accent);
+        border-color: var(--clr-accent);
+      }
+
+      /* ── Layout beneath header ────────────────────────── */
+      .layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* ── Side pane ────────────────────────────────────── */
+      aside {
+        width: var(--side-w);
+        background: var(--clr-surface);
+        border-right: 1px solid var(--clr-border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        overflow-y: auto;
+      }
+
+      aside h2 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--clr-text-dim);
+        padding: 20px 20px 8px;
+      }
+
+      aside ul {
+        list-style: none;
+        padding: 0 8px;
+      }
+
+      aside li button {
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        font-size: 14px;
+        color: var(--clr-text);
+        cursor: pointer;
+        transition: background var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      aside li button:hover {
+        background: var(--clr-bg);
+      }
+
+      aside li button.selected {
+        background: rgba(78, 108, 242, 0.1);
+        color: var(--clr-accent);
+        font-weight: 600;
+      }
+
+      aside li button .icon {
+        width: 20px;
+        text-align: center;
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      aside .side-footer {
+        margin-top: auto;
+        padding: 16px 20px;
+        font-size: 12px;
+        color: var(--clr-text-dim);
+        border-top: 1px solid var(--clr-border);
+      }
+
+      /* ── Main content ─────────────────────────────────── */
+      main {
+        flex: 1;
+        overflow-y: auto;
+        padding: 32px 40px;
+      }
+
+      .card {
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius);
+        padding: 28px 32px;
+        box-shadow: var(--shadow-sm);
+        max-width: 720px;
+      }
+
+      .card h1 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .card p {
+        color: var(--clr-text-dim);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background var(--transition),
+          transform var(--transition);
+      }
+
+      .btn-primary {
+        background: var(--clr-accent);
+        color: var(--clr-accent-fg);
+      }
+
+      .btn-primary:hover {
+        background: #3d59d9;
+        transform: translateY(-1px);
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: var(--clr-accent);
+        border: 1px solid var(--clr-accent);
+      }
+
+      .btn-outline:hover {
+        background: rgba(78, 108, 242, 0.08);
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      /* ── HTMX response area ───────────────────────────── */
+      #response-area {
+        margin-top: 24px;
+        min-height: 24px;
+      }
+
+      .response-card {
+        background: #f0f4ff;
+        border: 1px solid #d0d9f7;
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        font-size: 14px;
+        color: var(--clr-text);
+        animation: fadeIn 0.3s ease;
+      }
+
+      .response-card code {
+        background: rgba(78, 108, 242, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ── htmx loading indicator ───────────────────────── */
+      .htmx-indicator {
+        display: none;
+        margin-left: 8px;
+      }
+      .htmx-request .htmx-indicator,
+      .htmx-request.htmx-indicator {
+        display: inline-block;
+      }
+
+      /* ── Responsive ───────────────────────────────────── */
+      @media (max-width: 768px) {
+        aside {
+          display: none;
+        }
+        main {
+          padding: 20px 16px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ── Header ───────────────────────────────────────── -->
+    <header>
+      <div class="logo">Hathor <span>Sandbox</span></div>
+      <nav>
+        <button class="active">Dashboard</button>
+        <button>Concepts</button>
+        <button>Settings</button>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <!-- ── Side pane ──────────────────────────────────── -->
+      <aside>
+        <h2>Navigation</h2>
+        <ul>
+          <li>
+            <button
+              class="selected"
+              hx-get="/concept-sandbox/partials/welcome.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#9670;</span> Welcome
+            </button>
+          </li>
+          <li>
+            <button
+              hx-get="/concept-sandbox/partials/about.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#9733;</span> About
+            </button>
+          </li>
+          <li>
+            <button
+              hx-get="/concept-sandbox/partials/stack.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#9881;</span> Tech Stack
+            </button>
+          </li>
+        </ul>
+        <div class="side-footer">Concept Sandbox v0.1</div>
+      </aside>
+
+      <!-- ── Main content ───────────────────────────────── -->
+      <main>
+        <div id="main-content">
+          <div class="card">
+            <h1>Hello, World!</h1>
+            <p>
+              Welcome to the <strong>Hathor Concept Sandbox</strong> — a lightweight prototyping
+              space powered by <code>htmx</code>. Use the sidebar to navigate between views, or
+              click the button below to fetch content dynamically.
+            </p>
+            <div class="btn-group">
+              <button
+                class="btn btn-primary"
+                hx-get="/concept-sandbox/partials/greeting.html"
+                hx-target="#response-area"
+                hx-swap="innerHTML"
+              >
+                Fetch Greeting
+                <span class="htmx-indicator">⏳</span>
+              </button>
+              <button
+                class="btn btn-outline"
+                hx-get="/concept-sandbox/partials/timestamp.html"
+                hx-target="#response-area"
+                hx-swap="innerHTML"
+              >
+                Get Timestamp
+              </button>
+            </div>
+            <div id="response-area"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      function selectNav(el) {
+        document.querySelectorAll('aside li button').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<div class="card">
+  <h1>Hello, World!</h1>
+  <p>
+    Welcome to the <strong>Hathor Concept Sandbox</strong> — a lightweight prototyping space powered
+    by <code>htmx</code>. Use the sidebar to navigate between views, or click the button below to
+    fetch content dynamically.
+  </p>
+  <div class="btn-group">
+    <button
+      class="btn btn-primary"
+      hx-get="/concept-sandbox/partials/greeting.html"
+      hx-target="#response-area"
+      hx-swap="innerHTML"
+    >
+      Fetch Greeting
+    </button>
+    <button
+      class="btn btn-outline"
+      hx-get="/concept-sandbox/partials/timestamp.html"
+      hx-target="#response-area"
+      hx-swap="innerHTML"
+    >
+      Get Timestamp
+    </button>
+  </div>
+  <div id="response-area"></div>
+</div>
