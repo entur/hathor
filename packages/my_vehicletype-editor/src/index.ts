@@ -32,3 +32,4 @@ export { validate } from './generated/validate.js';
 export type { ValidationResult } from './generated/validate.js';
 export { normalize } from './normalize.js';
 export { serialize } from './serialize.js';
+export { toXmlShape } from './generated/type_helpers.js';
