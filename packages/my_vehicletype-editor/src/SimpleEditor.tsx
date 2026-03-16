@@ -32,7 +32,12 @@ export interface SimpleEditorProps {
 
 const EURO_CLASSES = ['', 'Euro5', 'Euro6'] as const;
 
-// TextType[] flattening helpers
+// Inline helpers that convert between display strings and the VehicleType
+// structure on every keystroke. There is no separate "simple" data shape —
+// the state is always Partial<VehicleType>. These just bridge the gap
+// between a single text field and the underlying NeTEx type:
+//   textVal / textSet  — TextType[]  ↔ single string (first item, lang=nb)
+//   numVal / parseNum  — number      ↔ input string
 const textVal = (arr?: TextType[]) => arr?.[0]?.Value ?? '';
 const textSet = (text: string): TextType[] | undefined =>
   text ? [{ Value: text, $lang: 'nb' }] : undefined;
@@ -40,6 +45,15 @@ const textSet = (text: string): TextType[] | undefined =>
 const numVal = (n: number | undefined) => (n != null ? String(n) : '');
 const parseNum = (s: string) => (s === '' ? undefined : Number(s));
 
+/**
+ * Friendly form editor over {@link VehicleType}.
+ *
+ * Reads from and writes directly to `Partial<VehicleType>` — there is no
+ * intermediate "simplified" shape. Each onChange handler converts its input
+ * value into the full NeTEx structure inline (e.g. a Name text field calls
+ * `textSet` which rebuilds `TextType[]`). The complex type flows out on
+ * every keystroke, so no `simplifiedToStem` transform is needed downstream.
+ */
 export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.Element {
   const { containerRef, topFraction, isResizing, onMouseDown } = useResizablePane(0.65);
   const [bottomTab, setBottomTab] = useState(0);
