@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
+import type { SxProps, Theme } from '@mui/material';
 
 interface ColumnDefinitionBase<T> {
   headerLabel: string;
   renderCell: (item: T, handleColumnEvent: (event: string, item: T) => void) => ReactNode;
   align?: 'left' | 'center' | 'right';
   display?: 'always' | 'desktop-only';
+  sx?: SxProps<Theme>;
 }
 
 interface SortableColumn<T, K extends string> extends ColumnDefinitionBase<T> {
