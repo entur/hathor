@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="106.82338mm"
+   height="112.30436mm"
+   viewBox="0 0 106.82338 112.30436"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="MNR-gap-filler.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showguides="false"
+     inkscape:zoom="1.3523148"
+     inkscape:cx="268.79836"
+     inkscape:cy="239.95892"
+     inkscape:window-width="1592"
+     inkscape:window-height="847"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-21.521732,-64.565212)">
+    <ellipse
+       style="fill:#00ffff;fill-opacity:0.500936;stroke-width:0.264583"
+       id="path1"
+       cx="58.108692"
+       cy="101.93478"
+       rx="36.58696"
+       ry="37.369564" />
+    <ellipse
+       style="fill:#00ff00;fill-opacity:0.28178;stroke-width:0.264583"
+       id="path2"
+       cx="63.391304"
+       cy="140.86957"
+       rx="39.130436"
+       ry="36" />
+    <ellipse
+       style="fill:#ffdd55;fill-opacity:0.28178;stroke-width:0.264583"
+       id="path2-3"
+       cx="89.214676"
+       cy="117.38868"
+       rx="39.130436"
+       ry="36" />
+    <text
+       xml:space="preserve"
+       style="font-size:14.3931px;writing-mode:lr-tb;direction:ltr;fill:#1a1a1a;fill-opacity:1;stroke-width:1.19942"
+       x="58.063141"
+       y="122.42928"
+       id="text2"
+       transform="scale(0.97882517,1.0216329)"><tspan
+         sodipodi:role="line"
+         id="tspan2"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Hack Nerd Font';-inkscape-font-specification:'Hack Nerd Font';fill:#1a1a1a;fill-opacity:1;stroke-width:1.19942"
+         x="58.063141"
+         y="122.42928">NMR</tspan></text>
+    <path
+       id="path3"
+       style="fill:none;fill-opacity:1;stroke:#ff2a2a;stroke-width:4.165;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none"
+       d="m 64.917969,101.24023 c -4.878178,0.3382 -9.907876,0.63404 -14.447005,2.615 -1.272807,0.78592 -1.660258,2.3312 -1.857683,3.66235 -0.72392,6.95874 -1.218865,14.03437 0.09637,20.9675 0.897726,4.92245 2.962458,9.94245 7.030587,13.07351 1.054224,0.99492 2.509362,1.44929 3.945313,1.32227 2.908457,-0.35264 5.783259,-0.98954 8.627915,-1.69 6.512933,-1.64935 13.012884,-4.53108 17.748189,-9.47692 3.26916,-3.42205 5.765015,-7.47383 8.580596,-11.25658 0.736035,-1.03144 1.75959,-2.04238 1.625331,-3.42142 -0.03043,-1.70141 -1.11724,-3.18161 -2.464192,-4.13029 -4.488086,-4.11233 -9.616522,-7.44848 -15.383464,-9.51893 -4.257257,-1.5173 -8.93529,-2.24229 -13.501953,-2.14649 z" />
+    <text
+       xml:space="preserve"
+       style="font-size:9.925px;writing-mode:lr-tb;direction:ltr;fill:#008000;fill-opacity:1;stroke:none;stroke-width:0.937795;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none"
+       x="89.455299"
+       y="135.0872"
+       id="text3"
+       transform="rotate(18.561795)"><tspan
+         sodipodi:role="line"
+         id="tspan3"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#008000;stroke:none;stroke-width:0.937795;stroke-dasharray:none"
+         x="89.455299"
+         y="135.0872">Miljø</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:9.925px;writing-mode:lr-tb;direction:ltr;fill:#000080;fill-opacity:1;stroke:none;stroke-width:0.937795;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none"
+       x="-23.453949"
+       y="104.47359"
+       id="text3-1"
+       transform="rotate(-28.247756)"
+       inkscape:transform-center-x="-7.2391305"><tspan
+         sodipodi:role="line"
+         id="tspan3-0"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#000080;stroke:none;stroke-width:0.937795;stroke-dasharray:none"
+         x="-23.453949"
+         y="104.47359">OTP/NPlan</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.97596px;writing-mode:lr-tb;direction:ltr;fill:#008000;fill-opacity:1;stroke:none;stroke-width:0.470169;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none"
+       x="129.03766"
+       y="-49.934624"
+       id="text3-1-4"
+       transform="rotate(63.114737)"
+       inkscape:transform-center-x="0.091798053"
+       inkscape:transform-center-y="3.6385778"><tspan
+         sodipodi:role="line"
+         id="tspan3-0-4"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#008000;stroke:none;stroke-width:0.470169;stroke-dasharray:none"
+         x="129.03766"
+         y="-49.934624">Organisations/</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono';fill:#008000;stroke:none;stroke-width:0.470169;stroke-dasharray:none"
+         x="129.03766"
+         y="-43.589729"
+         id="tspan4">Agreements?</tspan></text>
+  </g>
+</svg>
