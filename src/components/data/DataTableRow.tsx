@@ -51,7 +51,7 @@ export default function DataTableRow<T, K extends string>({
           </TableCell>
         )}
         {columns.map(col => (
-          <TableCell key={col.id} align={col.align}>
+          <TableCell key={col.id} align={col.align} sx={col.sx}>
             {col.renderCell(
               item,
               (event, item) => handleColumnEvent && handleColumnEvent(event, col, item)

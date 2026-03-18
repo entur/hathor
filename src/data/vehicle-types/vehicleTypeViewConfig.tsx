@@ -2,6 +2,7 @@ import { useVehicleTypes } from './useVehicleTypes.ts';
 import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../components/data/DataPageContent.tsx';
+import VehicleListCell from './cells/VehicleListCell.tsx';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { OrderBy } from './useVehicleTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
@@ -50,7 +51,8 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'vehicles',
     headerLabel: 'Vehicles',
     isSortable: false,
-    renderCell: item => item.vehicles?.map(vehicle => vehicle.registrationNumber).join(', ') || '',
+    renderCell: item => <VehicleListCell vehicles={item.vehicles ?? []} />,
+    sx: { maxWidth: '25%' },
     display: 'always',
   },
 ];
