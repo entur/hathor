@@ -38,9 +38,9 @@ export const useAuth = (): Auth => {
   );
 
   const login = useCallback(
-    (redirectUri?: string) => {
+    (returnPath?: string) => {
       if (!oidcAuth) return Promise.resolve();
-      return oidcAuth.signinRedirect({ redirect_uri: redirectUri });
+      return oidcAuth.signinRedirect({ state: { returnPath } });
     },
     [oidcAuth]
   );

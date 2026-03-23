@@ -11,8 +11,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <OidcAuthProvider
       {...oidcConfig}
-      onSigninCallback={() => {
-        window.history.replaceState({}, document.title, window.location.pathname);
+      onSigninCallback={user => {
+        const returnPath = (user?.state as { returnPath?: string })?.returnPath;
+        window.history.replaceState({}, document.title, returnPath || window.location.pathname);
       }}
       redirect_uri={oidcConfig.redirect_uri || window.location.origin + import.meta.env.BASE_URL}
     >
