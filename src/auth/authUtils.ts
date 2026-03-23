@@ -17,7 +17,7 @@ export interface Auth {
   roleAssignments?: string[] | null;
   getAccessToken: () => Promise<AccessToken>;
   logout: ({ returnTo }: { returnTo?: string }) => Promise<void>;
-  login: (redirectUri?: string) => Promise<void>;
+  login: (returnPath?: string) => Promise<void>;
 }
 
 export const useAuth = (): Auth => {
