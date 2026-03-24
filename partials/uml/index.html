@@ -1,19 +1,23 @@
 <style>
   .uml-grid {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.5rem;
   }
   .uml-grid > .card:first-child {
-    flex: 0 0 calc(60vw - 0.75rem - var(--side-w));
+    flex: 0 0 calc(76vw - 0.25rem - var(--side-w));
   }
   .uml-grid > .card:last-child {
-    flex: 0 0 calc(40vw - 0.75rem);
+    flex: 0 0 calc(24vw - 0.25rem);
   }
   .uml-grid > .card {
     margin: 0;
     min-width: 0;
     display: flex;
     flex-direction: column;
+  }
+  .notes-area {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.4rem;
   }
   .notes-area,
   .dsl-area {
@@ -127,7 +131,7 @@
     },
   });
 
-  const res = await fetch('partials/uml/dsl.html');
+  const res = await fetch('partials/uml/dsl.html?t=' + Date.now());
   if (!res.ok) throw new Error(`dsl.html: ${res.status}`);
   const html = await res.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');

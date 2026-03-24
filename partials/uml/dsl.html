@@ -21,13 +21,20 @@
   </p>
   <textarea class="dsl-standalone">
 classDiagram
-    class Type {
+    class AbstractType {
+        +TypeKind typeKind
         +String name
         +String shortName
         +PropulsionType propulsionTypes
         +FuelType fuelTypes
         +String euroClass
         +Boolean selfPropelled
+        +Boolean lowFloor
+        +Boolean hasLiftOrRamp
+        +String hybridCategory
+    }
+
+    class Type {
         +Distance maximumRange
         +Speed maximumVelocity
         +PassengerCapacity passengerCapacity
@@ -35,13 +42,29 @@ classDiagram
         +Length width
         +Length height
         +Weight weight
-        +Boolean lowFloor
-        +Boolean hasLiftOrRamp
         +Boolean monitored
         +String formDragCoeff
         +String rollResistanceCoeff
         +String maximumEngineEffectKW
-        +String hybridCategory
+    }
+
+    class PlannedType {
+        +Length mediumLength
+        +Length mediumWidth
+        +Length mediumHeight
+        +Weight mediumWeight
+        +Number mediumPassengerCapacity
+        +Distance mediumMaximumRange
+        +Speed mediumMaximumVelocity
+        +Number mediumMaximumEngineEffectKW
+        +Number mediumFormDragCoeff
+        +Number mediumRollResistanceCoeff
+    }
+
+    class TypeKind {
+        &lt;&lt;enumeration&gt;&gt;
+        Type
+        PlannedType
     }
 
     class TransportMode {
@@ -50,17 +73,42 @@ classDiagram
         +Component components
     }
 
-    class PhysicalVehicle {
+    class ModeKind {
+        &lt;&lt;enumeration&gt;&gt;
+        Bus
+        Train
+        CompoundTrain
+        PoweredTrain
+        UnpoweredTrain
+        Ferry
+    }
+
+    class Component {
+        +String label
+        +int order
+        +Orientation operationalOrientation
+        +TrainElementType elementTypeRef
+    }
+
+    class Vehicle {
         +String name
         +String shortName
         +Date buildDate
         +String chassisNumber
         +String registrationNumber
         +String operationalNumber
+        +Boolean monitored
+    }
+
+    class VehicleModel {
+        +String name
         +String manufacturer
         +Length range
         +WattHours fullCharge
-        +Boolean monitored
+    }
+
+    class DeckPlan {
+        +String name
     }
 
     class DeckLevel {
@@ -74,10 +122,6 @@ classDiagram
         +SpotRow spotRows
         +SpotColumn spotColumns
         +DeckLevel deckLevelRef
-    }
-
-    class DeckPlan {
-        +String name
     }
 
     class PassengerSpace {
@@ -99,14 +143,6 @@ classDiagram
         +SpotColumn spotColumnRef
     }
 
-    class LuggageSpot {
-        +String label
-        +Number x
-        +Number y
-        +Number width
-        +Number length
-    }
-
     class PassengerEntrance {
         +String name
         +VehicleSide vehicleSide
@@ -116,79 +152,46 @@ classDiagram
         +int sequenceFromFront
     }
 
-    class PlannedType {
-        +String name
-        +String shortName
-        +LengthRange length
-        +LengthRange width
-        +LengthRange height
-        +WeightRange weight
-        +NumberRange passengerCapacity
-        +DistanceRange maximumRange
-        +SpeedRange maximumVelocity
-        +NumberRange maximumEngineEffectKW
-        +PropulsionType propulsionTypes
-        +FuelType fuelTypes
-        +String euroClass
-        +String hybridCategory
-        +Boolean lowFloor
-        +Boolean selfPropelled
-        +Boolean hasLiftOrRamp
-        +NumberRange formDragCoeff
-        +NumberRange rollResistanceCoeff
-    }
-
-    class TypeRef {
-        +TBD kind
-        +String typeId
-    }
-
-    class Component {
+    class LuggageSpot {
         +String label
-        +int order
-        +Orientation operationalOrientation
-        +TrainElementType elementTypeRef
+        +Number x
+        +Number y
+        +Number width
+        +Number length
     }
 
-    class ModeKind {
-        &lt;&lt;enumeration&gt;&gt;
-        Bus
-        Train
-        CompoundTrain
-        PoweredTrain
-        UnpoweredTrain
-        Ferry
-    }
-
-    Type --> TransportMode : modeRef
-    Type --> DeckPlan : deckPlanRef
+    AbstractType &lt;|-- Type
+    AbstractType &lt;|-- PlannedType
+    AbstractType --> TransportMode : modeRef
+    AbstractType --> TypeKind : typeKind
+    AbstractType --> DeckPlan : deckPlanRef
+    Vehicle --> AbstractType : typeRef
+    Vehicle --> VehicleModel : vehicleModelRef
     DeckPlan *-- Deck : decks
     DeckPlan *-- DeckLevel : deckLevels
     Deck --> DeckLevel : deckLevelRef
-    PhysicalVehicle --> Type : typeRef
     Deck *-- PassengerSpace : deckspaces
     PassengerSpace *-- PassengerSpot : passengerSpots
     PassengerSpace *-- PassengerEntrance : deckEntrances
     PassengerSpace *-- LuggageSpot : luggageSpots
-    PlannedType *-- TypeRef : typeRefs
-    TypeRef --> Type : typeId
-    PlannedType --> TransportMode : modeRef
     TransportMode *-- Component : components
     TransportMode --> ModeKind : kind
 
-    style Type fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style AbstractType fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
+    style Type fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
+    style TypeKind fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
     style TransportMode fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
     style ModeKind fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
     style Component fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
-    style PhysicalVehicle fill:#d4f0de,stroke:#2d8a4e,stroke-width:2px,color:#1e1e2e
+    style Vehicle fill:#d4f0de,stroke:#2d8a4e,stroke-width:2px,color:#1e1e2e
+    style VehicleModel fill:#d4f0de,stroke:#2d8a4e,stroke-width:2px,color:#1e1e2e
+    style DeckPlan fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
+    style DeckLevel fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style Deck fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style PassengerSpace fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style PassengerSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
     style PassengerEntrance fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
-    style DeckPlan fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
-    style DeckLevel fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style LuggageSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
     style PlannedType fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
-    style TypeRef fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
   </textarea>
 </div>
