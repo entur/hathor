@@ -8,21 +8,19 @@
 </p>
 <textarea class="notes-area">
 
-## 1. VehicleModel merged into PhysicalVehicle
-Vehicle + VehicleModel flattened into one entity. Eliminates the
-VehicleModelRef indirection. PhysicalVehicle carries both instance
-props (chassisNumber, buildDate) and model props (manufacturer,
-range, fullCharge).
+## 1. Vehicle + VehicleModel (NeTEx-normalised)
+Vehicle holds instance props (chassisNumber, buildDate,
+operationalNumber, registrationNumber, monitored).
+VehicleModel holds model props (manufacturer, range, fullCharge).
+Vehicle references VehicleModel via vehicleModelRef.
 
-  TOOD: Split back to netex normalized form; Vechicle+VehicleModel kept
-
-## 2. VehicleType-inheritance inverted via extended use of TransportMode
+## 2. AbstractType -> Type | PlannedType via inheritance
 NeTEx: Train/CompoundTrain/PoweredTrain/UnpoweredTrain inherit
 VehicleType_VersionStructure.
-Simplified: Type HAS-A modeRef to TransportMode. TransportMode uses
-a kind discriminator (ModeKind enum) instead of inheritance.
-
-  TODO: rename to AbstractType->Type ( see no.5/PlannedType for more )
+Simplified: AbstractType is the shared base with a typeKind
+discriminator (TypeKind enum). AbstractType HAS-A modeRef to
+TransportMode. TransportMode uses a kind discriminator (ModeKind
+enum) instead of NeTEx inheritance.
 
 ## 3. TransportMode subsumes NeTEx TransportMode enum
 NeTEx TransportMode enum and train-specific grouping merged into one
@@ -36,19 +34,20 @@ Deck and DeckLevel arrays. Each Deck references a DeckLevel.
 Deck hierarchy preserved at full depth from the
 NeTEx-Deckplan-Editor: Deck > PassengerSpace > Spot/Entrance.
 
-## 5. PlannedType combines refs + ranges
-PlannedTypeByRefs indirection removed. PlannedType directly holds
-both typeRefs (concrete Type references) and range constraints
-(length, width, height, weight, capacity, etc. as [min, max]).
-Potential future CEN NeTEx PR candidate.
-
-  TODO: Introduce a AbstractType with prop typeKind -> Type|PlannedType
-      PlannedType and Type delegates to AbstractType is shared props, Type stays true to Netex VehicleType. PlannedType gets the xxxxRange counterPart props, but simplified to using prefix "medium" and dropping "Range" suffix.
+## 5. PlannedType inherits AbstractType, medium-prefixed scalars
+PlannedType extends AbstractType for shared props (name, shortName,
+propulsionTypes, fuelTypes, euroClass, selfPropelled, lowFloor,
+hasLiftOrRamp, hybridCategory). Range props simplified: XxxRange
+types replaced with scalar equivalents prefixed "medium" (e.g.
+LengthRange length -> Length mediumLength). PlannedType references
+Type directly via typeRefs. Potential future CEN NeTEx PR candidate.
 
 ## 6. Environmental KVs promoted
 hathor's VehicleType KeyList extras (formDragCoeff,
 rollResistanceCoeff, maximumEngineEffectKW, hybridCategory)
-promoted to first-class props on Type+PlannedType (medium prefixed in PlannedType)
+promoted to first-class props on Type (exact values) and
+PlannedType (medium-prefixed scalars). hybridCategory is shared
+via AbstractType.
 
 ## 7. Omnipresent inheritance excluded
 EntityStructure, EntityInVersionStructure, DataManagedObjectStructure
