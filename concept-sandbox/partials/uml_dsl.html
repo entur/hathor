@@ -63,10 +63,17 @@ classDiagram
         +Boolean monitored
     }
 
+    class DeckLevel {
+        +String label
+    }
+
     class Deck {
         +String name
         +Number width
         +Number length
+        +SpotRow spotRows
+        +SpotColumn spotColumns
+        +DeckLevel deckLevelRef
     }
 
     class PassengerSpace {
@@ -84,6 +91,16 @@ classDiagram
         +Boolean isByWindow
         +Boolean isByAisle
         +Boolean hasPower
+        +SpotRow spotRowRef
+        +SpotColumn spotColumnRef
+    }
+
+    class LuggageSpot {
+        +String label
+        +Number x
+        +Number y
+        +Number width
+        +Number length
     }
 
     class PassengerEntrance {
@@ -92,6 +109,7 @@ classDiagram
         +Number width
         +Number x
         +Number y
+        +int sequenceFromFront
     }
 
     class PlannedType {
@@ -110,6 +128,10 @@ classDiagram
         +String euroClass
         +String hybridCategory
         +Boolean lowFloor
+        +Boolean selfPropelled
+        +Boolean hasLiftOrRamp
+        +NumberRange formDragCoeff
+        +NumberRange rollResistanceCoeff
     }
 
     class TypeRef {
@@ -135,15 +157,31 @@ classDiagram
     }
 
     Type --> TransportMode : modeRef
+    Type *-- DeckLevel : deckLevels
     Type *-- Deck : deckPlanRef
     PhysicalVehicle --> Type : typeRef
     Deck *-- PassengerSpace : deckspaces
     PassengerSpace *-- PassengerSpot : passengerSpots
     PassengerSpace *-- PassengerEntrance : deckEntrances
+    PassengerSpace *-- LuggageSpot : luggageSpots
     PlannedType *-- TypeRef : typeRefs
     TypeRef --> Type : typeId
     PlannedType --> TransportMode : modeRef
     TransportMode *-- Component : components
     TransportMode --> ModeKind : kind
+
+    style Type fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style TransportMode fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style ModeKind fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style Component fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style PhysicalVehicle fill:#d4f0de,stroke:#2d8a4e,stroke-width:2px,color:#1e1e2e
+    style Deck fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
+    style PassengerSpace fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
+    style PassengerSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
+    style PassengerEntrance fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
+    style DeckLevel fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
+    style LuggageSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
+    style PlannedType fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
+    style TypeRef fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
   </textarea>
 </div>
