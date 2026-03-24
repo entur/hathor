@@ -10,7 +10,9 @@
     display: flex;
     flex-direction: column;
   }
-  .notes-area {
+  .notes-area,
+  .dsl-area {
+    min-height: calc(100vh - 200px);
     width: 100%;
     flex: 1;
     resize: vertical;
@@ -22,6 +24,43 @@
     border-radius: var(--radius);
     background: var(--clr-surface);
     color: var(--clr-text);
+  }
+  .mermaid svg {
+    border-radius: var(--radius);
+  }
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--clr-border);
+  }
+  .tab-bar button {
+    padding: 0.4rem 1.2rem;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--clr-text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+  .tab-bar button.active {
+    color: var(--clr-accent);
+    border-bottom-color: var(--clr-accent);
+    font-weight: 600;
+  }
+  .tab-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+  }
+  .tab-panel.active {
+    display: flex;
+    flex: 1;
   }
   @media (max-width: 960px) {
     .uml-grid {
@@ -36,12 +75,15 @@
 <div class="uml-grid">
   <div class="card" style="overflow-x: auto">
     <h2>Simplified Vehicle Domain Model</h2>
-    <p style="color: var(--clr-text-dim); margin-bottom: 1.5rem">
-      NeTEx-informed but decoupled &mdash; omnipresent inheritance removed, VehicleModel merged into
-      PhysicalVehicle, VehicleType inverted via TypeGroup.
-    </p>
+    <p style="color: var(--clr-text-dim); margin-bottom: 0.5rem">NeTEx-informed but decoupled.</p>
 
-    <pre class="mermaid">
+    <div class="tab-bar">
+      <button class="active" onclick="switchTab(this, 'tab-uml')">UML</button>
+      <button onclick="switchTab(this, 'tab-dsl')">DSL</button>
+    </div>
+
+    <div id="tab-uml" class="tab-panel active">
+      <pre class="mermaid">
 classDiagram
     class Type {
         +String name
@@ -66,8 +108,8 @@ classDiagram
         +String hybridCategory
     }
 
-    class TypeGroup {
-        +TypeKind kind
+    class TransportMode {
+        +ModeKind kind
         +TrainSize trainSize
         +Component components
     }
@@ -117,6 +159,8 @@ classDiagram
     }
 
     class PlannedType {
+        +String name
+        +String shortName
         +LengthRange length
         +LengthRange width
         +LengthRange height
@@ -132,6 +176,11 @@ classDiagram
         +Boolean lowFloor
     }
 
+    class TypeRef {
+        +TBD kind
+        +String typeId
+    }
+
     class Component {
         +String label
         +int order
@@ -139,7 +188,7 @@ classDiagram
         +TrainElementType elementTypeRef
     }
 
-    class TypeKind {
+    class ModeKind {
         &lt;&lt;enumeration&gt;&gt;
         Bus
         Train
@@ -149,22 +198,43 @@ classDiagram
         Ferry
     }
 
-    Type --> TypeGroup : groupingRef
+    Type --> TransportMode : modeRef
     Type *-- Deck : deckPlanRef
     PhysicalVehicle --> Type : typeRef
     Deck *-- PassengerSpace : deckspaces
     PassengerSpace *-- PassengerSpot : passengerSpots
     PassengerSpace *-- PassengerEntrance : deckEntrances
-    PlannedType --> "0..*" Type : typeRefs
-    TypeGroup *-- Component : components
-    TypeGroup --> TypeKind : kind
-    </pre>
+    PlannedType *-- TypeRef : typeRefs
+    TypeRef --> Type : typeId
+
+    PlannedType --> TransportMode : modeRef
+    TransportMode *-- Component : components
+    TransportMode --> ModeKind : kind
+
+    style Type fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style TransportMode fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style ModeKind fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style Component fill:#dce3fd,stroke:#4e6cf2,stroke-width:2px,color:#1e1e2e
+    style PhysicalVehicle fill:#d4f0de,stroke:#2d8a4e,stroke-width:2px,color:#1e1e2e
+    style Deck fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
+    style PassengerSpace fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
+    style PassengerSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
+    style PassengerEntrance fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
+    style PlannedType fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
+    style TypeRef fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
+      </pre>
+    </div>
+
+    <div id="tab-dsl" class="tab-panel">
+      <textarea id="dsl-editor" class="dsl-area"></textarea>
+    </div>
   </div>
 
   <div class="card">
     <h2>Key Decisions</h2>
     <textarea class="notes-area">
-# Key Decisions
+Omnipresent inheritance removed, VehicleModel merged into
+PhysicalVehicle, VehicleType inverted via TransportMode.
 
 ## 1. VehicleModel merged into PhysicalVehicle
 Vehicle + VehicleModel flattened into one entity. Eliminates the
@@ -172,17 +242,17 @@ VehicleModelRef indirection. PhysicalVehicle carries both instance
 props (chassisNumber, buildDate) and model props (manufacturer,
 range, fullCharge).
 
-## 2. VehicleType inverted via TypeGroup
+## 2. VehicleType inverted via TransportMode
 NeTEx: Train/CompoundTrain/PoweredTrain/UnpoweredTrain inherit
 VehicleType_VersionStructure.
-Simplified: Type HAS-A groupingRef to TypeGroup. TypeGroup uses
-a kind discriminator (TypeKind enum) instead of inheritance.
+Simplified: Type HAS-A modeRef to TransportMode. TransportMode uses
+a kind discriminator (ModeKind enum) instead of inheritance.
 
-## 3. TypeGroup subsumes TransportMode
+## 3. TransportMode subsumes TransportMode
 TransportMode enum and train-specific grouping merged into one
-entity. TypeKind covers Bus, Train, CompoundTrain, PoweredTrain,
+entity. ModeKind covers Bus, Train, CompoundTrain, PoweredTrain,
 UnpoweredTrain, Ferry. Train-specific props (trainSize, components)
-are optional on TypeGroup.
+are optional on TransportMode.
 
 ## 4. DeckPlan dropped
 DeckPlan entity removed. Type directly composes Deck array via
@@ -208,8 +278,49 @@ from all entities per OMNIPRESENT_DEFS.
   </div>
 </div>
 
+<script>
+  async function switchTab(btn, panelId) {
+    btn
+      .closest('.card')
+      .querySelectorAll('.tab-bar button')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn
+      .closest('.card')
+      .querySelectorAll('.tab-panel')
+      .forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+
+    if (panelId === 'tab-uml') {
+      const src = document.getElementById('dsl-editor').value;
+      const el = document.querySelector('.mermaid');
+      el.removeAttribute('data-processed');
+      el.innerHTML = src;
+      const { default: mermaid } =
+        await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+      await mermaid.run({ querySelector: '.mermaid' });
+    }
+  }
+</script>
+
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: false, theme: 'default' });
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#4e6cf2',
+      primaryTextColor: '#fff',
+      primaryBorderColor: '#3451c7',
+      lineColor: '#6b7280',
+      textColor: '#1e1e2e',
+      mainBkg: '#f8f9fb',
+      classText: '#1e1e2e',
+    },
+  });
+
+  const src = document.querySelector('.mermaid').textContent;
+  document.getElementById('dsl-editor').value = src.trim();
+
   await mermaid.run({ querySelector: '.mermaid' });
 </script>

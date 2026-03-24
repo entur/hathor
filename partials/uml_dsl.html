@@ -1,0 +1,149 @@
+<style>
+  .dsl-standalone {
+    width: 100%;
+    min-height: 80vh;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    padding: 1rem;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    background: var(--clr-surface);
+    color: var(--clr-text);
+  }
+</style>
+
+<div class="card">
+  <h2>Mermaid DSL</h2>
+  <p style="color: var(--clr-text-dim); margin-bottom: 1rem">
+    Editable mermaid source for the vehicle domain model.
+  </p>
+  <textarea class="dsl-standalone">
+classDiagram
+    class Type {
+        +String name
+        +String shortName
+        +PropulsionType propulsionTypes
+        +FuelType fuelTypes
+        +String euroClass
+        +Boolean selfPropelled
+        +Distance maximumRange
+        +Speed maximumVelocity
+        +PassengerCapacity passengerCapacity
+        +Length length
+        +Length width
+        +Length height
+        +Weight weight
+        +Boolean lowFloor
+        +Boolean hasLiftOrRamp
+        +Boolean monitored
+        +String formDragCoeff
+        +String rollResistanceCoeff
+        +String maximumEngineEffectKW
+        +String hybridCategory
+    }
+
+    class TransportMode {
+        +ModeKind kind
+        +TrainSize trainSize
+        +Component components
+    }
+
+    class PhysicalVehicle {
+        +String name
+        +String shortName
+        +Date buildDate
+        +String chassisNumber
+        +String registrationNumber
+        +String operationalNumber
+        +String manufacturer
+        +Length range
+        +WattHours fullCharge
+        +Boolean monitored
+    }
+
+    class Deck {
+        +String name
+        +Number width
+        +Number length
+    }
+
+    class PassengerSpace {
+        +String name
+        +SpaceType passengerSpaceType
+    }
+
+    class PassengerSpot {
+        +String label
+        +Number x
+        +Number y
+        +Number width
+        +Number length
+        +Orientation orientation
+        +Boolean isByWindow
+        +Boolean isByAisle
+        +Boolean hasPower
+    }
+
+    class PassengerEntrance {
+        +String name
+        +VehicleSide vehicleSide
+        +Number width
+        +Number x
+        +Number y
+    }
+
+    class PlannedType {
+        +String name
+        +String shortName
+        +LengthRange length
+        +LengthRange width
+        +LengthRange height
+        +WeightRange weight
+        +NumberRange passengerCapacity
+        +DistanceRange maximumRange
+        +SpeedRange maximumVelocity
+        +NumberRange maximumEngineEffectKW
+        +PropulsionType propulsionTypes
+        +FuelType fuelTypes
+        +String euroClass
+        +String hybridCategory
+        +Boolean lowFloor
+    }
+
+    class TypeRef {
+        +TBD kind
+        +String typeId
+    }
+
+    class Component {
+        +String label
+        +int order
+        +Orientation operationalOrientation
+        +TrainElementType elementTypeRef
+    }
+
+    class ModeKind {
+        &lt;&lt;enumeration&gt;&gt;
+        Bus
+        Train
+        CompoundTrain
+        PoweredTrain
+        UnpoweredTrain
+        Ferry
+    }
+
+    Type --> TransportMode : modeRef
+    Type *-- Deck : deckPlanRef
+    PhysicalVehicle --> Type : typeRef
+    Deck *-- PassengerSpace : deckspaces
+    PassengerSpace *-- PassengerSpot : passengerSpots
+    PassengerSpace *-- PassengerEntrance : deckEntrances
+    PlannedType *-- TypeRef : typeRefs
+    TypeRef --> Type : typeId
+    PlannedType --> TransportMode : modeRef
+    TransportMode *-- Component : components
+    TransportMode --> ModeKind : kind
+  </textarea>
+</div>
