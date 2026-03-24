@@ -76,6 +76,10 @@ classDiagram
         +DeckLevel deckLevelRef
     }
 
+    class DeckPlan {
+        +String name
+    }
+
     class PassengerSpace {
         +String name
         +SpaceType passengerSpaceType
@@ -157,8 +161,10 @@ classDiagram
     }
 
     Type --> TransportMode : modeRef
-    Type *-- DeckLevel : deckLevels
-    Type *-- Deck : deckPlanRef
+    Type --> DeckPlan : deckPlanRef
+    DeckPlan *-- Deck : decks
+    DeckPlan *-- DeckLevel : deckLevels
+    Deck --> DeckLevel : deckLevelRef
     PhysicalVehicle --> Type : typeRef
     Deck *-- PassengerSpace : deckspaces
     PassengerSpace *-- PassengerSpot : passengerSpots
@@ -179,6 +185,7 @@ classDiagram
     style PassengerSpace fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style PassengerSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
     style PassengerEntrance fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
+    style DeckPlan fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style DeckLevel fill:#fde4cc,stroke:#e07830,stroke-width:2px,color:#1e1e2e
     style LuggageSpot fill:#fef0e0,stroke:#d89840,stroke-width:2px,color:#1e1e2e
     style PlannedType fill:#e8d5f5,stroke:#9b59b6,stroke-width:2px,color:#1e1e2e
