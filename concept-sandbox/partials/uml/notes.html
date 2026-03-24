@@ -28,9 +28,10 @@ entity. ModeKind covers Bus, Train, CompoundTrain, PoweredTrain,
 UnpoweredTrain, Ferry. Train-specific props (trainSize, components)
 are optional on TransportMode.
 
-## 4. DeckPlan dropped
-DeckPlan entity removed. Type directly composes Deck array via
-deckPlanRef. Deck hierarchy preserved at full depth from the
+## 4. DeckPlan retained
+Type references DeckPlan via deckPlanRef. DeckPlan composes both
+Deck and DeckLevel arrays. Each Deck references a DeckLevel.
+Deck hierarchy preserved at full depth from the
 NeTEx-Deckplan-Editor: Deck > PassengerSpace > Spot/Entrance.
 
 ## 5. PlannedType combines refs + ranges
