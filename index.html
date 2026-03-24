@@ -324,6 +324,16 @@
           <li>
             <button
               class="selected"
+              hx-get="partials/uml.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#9707;</span> UML
+            </button>
+          </li>
+          <li>
+            <button
               hx-get="partials/definitions.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
@@ -360,7 +370,7 @@
       <main>
         <div
           id="main-content"
-          hx-get="partials/definitions.html"
+          hx-get="partials/uml.html"
           hx-trigger="load"
           hx-swap="innerHTML"
         ></div>

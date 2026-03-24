@@ -1,0 +1,215 @@
+<style>
+  .uml-grid {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .uml-grid > .card {
+    flex: 0 0 calc(50% - 0.75rem);
+    margin: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .notes-area {
+    width: 100%;
+    flex: 1;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    padding: 1rem;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    background: var(--clr-surface);
+    color: var(--clr-text);
+  }
+  @media (max-width: 960px) {
+    .uml-grid {
+      flex-direction: column;
+    }
+    .uml-grid > .card {
+      flex: 1 1 auto;
+    }
+  }
+</style>
+
+<div class="uml-grid">
+  <div class="card" style="overflow-x: auto">
+    <h2>Simplified Vehicle Domain Model</h2>
+    <p style="color: var(--clr-text-dim); margin-bottom: 1.5rem">
+      NeTEx-informed but decoupled &mdash; omnipresent inheritance removed, VehicleModel merged into
+      PhysicalVehicle, VehicleType inverted via TypeGroup.
+    </p>
+
+    <pre class="mermaid">
+classDiagram
+    class Type {
+        +String name
+        +String shortName
+        +PropulsionType propulsionTypes
+        +FuelType fuelTypes
+        +String euroClass
+        +Boolean selfPropelled
+        +Distance maximumRange
+        +Speed maximumVelocity
+        +PassengerCapacity passengerCapacity
+        +Length length
+        +Length width
+        +Length height
+        +Weight weight
+        +Boolean lowFloor
+        +Boolean hasLiftOrRamp
+        +Boolean monitored
+        +String formDragCoeff
+        +String rollResistanceCoeff
+        +String maximumEngineEffectKW
+        +String hybridCategory
+    }
+
+    class TypeGroup {
+        +TypeKind kind
+        +TrainSize trainSize
+        +Component components
+    }
+
+    class PhysicalVehicle {
+        +String name
+        +String shortName
+        +Date buildDate
+        +String chassisNumber
+        +String registrationNumber
+        +String operationalNumber
+        +String manufacturer
+        +Length range
+        +WattHours fullCharge
+        +Boolean monitored
+    }
+
+    class Deck {
+        +String name
+        +Number width
+        +Number length
+    }
+
+    class PassengerSpace {
+        +String name
+        +SpaceType passengerSpaceType
+    }
+
+    class PassengerSpot {
+        +String label
+        +Number x
+        +Number y
+        +Number width
+        +Number length
+        +Orientation orientation
+        +Boolean isByWindow
+        +Boolean isByAisle
+        +Boolean hasPower
+    }
+
+    class PassengerEntrance {
+        +String name
+        +VehicleSide vehicleSide
+        +Number width
+        +Number x
+        +Number y
+    }
+
+    class PlannedType {
+        +LengthRange length
+        +LengthRange width
+        +LengthRange height
+        +WeightRange weight
+        +NumberRange passengerCapacity
+        +DistanceRange maximumRange
+        +SpeedRange maximumVelocity
+        +NumberRange maximumEngineEffectKW
+        +PropulsionType propulsionTypes
+        +FuelType fuelTypes
+        +String euroClass
+        +String hybridCategory
+        +Boolean lowFloor
+    }
+
+    class Component {
+        +String label
+        +int order
+        +Orientation operationalOrientation
+        +TrainElementType elementTypeRef
+    }
+
+    class TypeKind {
+        &lt;&lt;enumeration&gt;&gt;
+        Bus
+        Train
+        CompoundTrain
+        PoweredTrain
+        UnpoweredTrain
+        Ferry
+    }
+
+    Type --> TypeGroup : groupingRef
+    Type *-- Deck : deckPlanRef
+    PhysicalVehicle --> Type : typeRef
+    Deck *-- PassengerSpace : deckspaces
+    PassengerSpace *-- PassengerSpot : passengerSpots
+    PassengerSpace *-- PassengerEntrance : deckEntrances
+    PlannedType --> "0..*" Type : typeRefs
+    TypeGroup *-- Component : components
+    TypeGroup --> TypeKind : kind
+    </pre>
+  </div>
+
+  <div class="card">
+    <h2>Key Decisions</h2>
+    <textarea class="notes-area">
+# Key Decisions
+
+## 1. VehicleModel merged into PhysicalVehicle
+Vehicle + VehicleModel flattened into one entity. Eliminates the
+VehicleModelRef indirection. PhysicalVehicle carries both instance
+props (chassisNumber, buildDate) and model props (manufacturer,
+range, fullCharge).
+
+## 2. VehicleType inverted via TypeGroup
+NeTEx: Train/CompoundTrain/PoweredTrain/UnpoweredTrain inherit
+VehicleType_VersionStructure.
+Simplified: Type HAS-A groupingRef to TypeGroup. TypeGroup uses
+a kind discriminator (TypeKind enum) instead of inheritance.
+
+## 3. TypeGroup subsumes TransportMode
+TransportMode enum and train-specific grouping merged into one
+entity. TypeKind covers Bus, Train, CompoundTrain, PoweredTrain,
+UnpoweredTrain, Ferry. Train-specific props (trainSize, components)
+are optional on TypeGroup.
+
+## 4. DeckPlan dropped
+DeckPlan entity removed. Type directly composes Deck array via
+deckPlanRef. Deck hierarchy preserved at full depth from the
+NeTEx-Deckplan-Editor: Deck > PassengerSpace > Spot/Entrance.
+
+## 5. PlannedType combines refs + ranges
+PlannedTypeByRefs indirection removed. PlannedType directly holds
+both typeRefs (concrete Type references) and range constraints
+(length, width, height, weight, capacity, etc. as [min, max]).
+Potential future CEN NeTEx PR candidate.
+
+## 6. Environmental KVs promoted
+hathor's VehicleType KeyList extras (formDragCoeff,
+rollResistanceCoeff, maximumEngineEffectKW, hybridCategory)
+promoted to first-class props on Type.
+
+## 7. Omnipresent inheritance excluded
+EntityStructure, EntityInVersionStructure, DataManagedObjectStructure
+(~19 infra props: id, version, validity, branding, etc.) stripped
+from all entities per OMNIPRESENT_DEFS.
+    </textarea>
+  </div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: false, theme: 'default' });
+  await mermaid.run({ querySelector: '.mermaid' });
+</script>
