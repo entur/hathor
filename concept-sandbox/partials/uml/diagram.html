@@ -1,0 +1,47 @@
+<h2>Simplified Vehicle Domain Model</h2>
+<p style="color: var(--clr-text-dim); margin-bottom: 0.5rem">
+  NeTEx-informed but decoupled.
+  <a
+    href="https://github.com/entur/hathor/edit/ui-sandboxing/concept-sandbox/partials/uml/dsl.html"
+    target="_blank"
+    >edit</a
+  >
+</p>
+
+<div class="tab-bar">
+  <button class="active" onclick="switchTab(this, 'tab-uml')">UML</button>
+  <button onclick="switchTab(this, 'tab-dsl')">DSL</button>
+</div>
+
+<div id="tab-uml" class="tab-panel active">
+  <pre class="mermaid"></pre>
+</div>
+
+<div id="tab-dsl" class="tab-panel">
+  <textarea id="dsl-editor" class="dsl-area"></textarea>
+</div>
+
+<script>
+  async function switchTab(btn, panelId) {
+    btn
+      .closest('.card')
+      .querySelectorAll('.tab-bar button')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn
+      .closest('.card')
+      .querySelectorAll('.tab-panel')
+      .forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+
+    if (panelId === 'tab-uml') {
+      const src = document.getElementById('dsl-editor').value;
+      const el = document.querySelector('.mermaid');
+      el.removeAttribute('data-processed');
+      el.textContent = src;
+      const { default: mermaid } =
+        await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+      await mermaid.run({ querySelector: '.mermaid' });
+    }
+  }
+</script>
