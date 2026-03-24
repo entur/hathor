@@ -1,0 +1,51 @@
+<h2>Key Decisions</h2>
+<p style="color: var(--clr-text-dim); margin-bottom: 0.5rem">
+  <a
+    href="https://github.com/entur/hathor/edit/ui-sandboxing/concept-sandbox/partials/uml_notes.html"
+    target="_blank"
+    >edit</a
+  >
+</p>
+<textarea class="notes-area">
+Omnipresent inheritance removed, VehicleModel merged into
+PhysicalVehicle, VehicleType inverted via TransportMode.
+
+## 1. VehicleModel merged into PhysicalVehicle
+Vehicle + VehicleModel flattened into one entity. Eliminates the
+VehicleModelRef indirection. PhysicalVehicle carries both instance
+props (chassisNumber, buildDate) and model props (manufacturer,
+range, fullCharge).
+
+## 2. VehicleType inverted via TransportMode
+NeTEx: Train/CompoundTrain/PoweredTrain/UnpoweredTrain inherit
+VehicleType_VersionStructure.
+Simplified: Type HAS-A modeRef to TransportMode. TransportMode uses
+a kind discriminator (ModeKind enum) instead of inheritance.
+
+## 3. TransportMode subsumes NeTEx TransportMode enum
+NeTEx TransportMode enum and train-specific grouping merged into one
+entity. ModeKind covers Bus, Train, CompoundTrain, PoweredTrain,
+UnpoweredTrain, Ferry. Train-specific props (trainSize, components)
+are optional on TransportMode.
+
+## 4. DeckPlan dropped
+DeckPlan entity removed. Type directly composes Deck array via
+deckPlanRef. Deck hierarchy preserved at full depth from the
+NeTEx-Deckplan-Editor: Deck > PassengerSpace > Spot/Entrance.
+
+## 5. PlannedType combines refs + ranges
+PlannedTypeByRefs indirection removed. PlannedType directly holds
+both typeRefs (concrete Type references) and range constraints
+(length, width, height, weight, capacity, etc. as [min, max]).
+Potential future CEN NeTEx PR candidate.
+
+## 6. Environmental KVs promoted
+hathor's VehicleType KeyList extras (formDragCoeff,
+rollResistanceCoeff, maximumEngineEffectKW, hybridCategory)
+promoted to first-class props on Type.
+
+## 7. Omnipresent inheritance excluded
+EntityStructure, EntityInVersionStructure, DataManagedObjectStructure
+(~19 infra props: id, version, validity, branding, etc.) stripped
+from all entities per OMNIPRESENT_DEFS.
+</textarea>
