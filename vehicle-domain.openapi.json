@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Vehicle Domain API",
-    "description": "Simplified vehicle domain model (NeTEx-informed, decoupled).",
+    "description": "Simplified vehicle domain model (NeTEx-informed, decoupled). Schemas referenced from vehicle-domain.schema.json.",
     "version": "0.0.1"
   },
   "servers": [{ "url": "https://api.vehicles.example.com/v1" }],
@@ -131,282 +131,25 @@
   "components": {
     "schemas": {
       "TypeKindEnumeration": {
-        "type": "string",
-        "description": "Discriminator for AbstractType subtypes.",
-        "enum": ["Type", "PlannedType"]
+        "$ref": "vehicle-domain.schema.json#/definitions/TypeKindEnumeration"
       },
       "ModeKindEnumeration": {
-        "type": "string",
-        "description": "Transport mode classification, subsumes NeTEx TransportMode enum and train-specific grouping.",
-        "enum": ["Bus", "Train", "CompoundTrain", "PoweredTrain", "UnpoweredTrain", "Ferry"]
+        "$ref": "vehicle-domain.schema.json#/definitions/ModeKindEnumeration"
       },
-      "AbstractType": {
-        "type": "object",
-        "description": "Shared base for Type and PlannedType. Uses typeKind discriminator instead of NeTEx VehicleType inheritance.",
-        "properties": {
-          "typeKind": {
-            "allOf": [{ "$ref": "#/components/schemas/TypeKindEnumeration" }],
-            "description": "Discriminator: Type or PlannedType."
-          },
-          "name": { "type": "string" },
-          "shortName": { "type": "string" },
-          "propulsionTypes": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Propulsion type values (enum TBD)."
-          },
-          "fuelTypes": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Fuel type values (enum TBD)."
-          },
-          "euroClass": { "type": "string" },
-          "selfPropelled": { "type": "boolean" },
-          "lowFloor": { "type": "boolean" },
-          "hasLiftOrRamp": { "type": "boolean" },
-          "hybridCategory": { "type": "string" },
-          "modeRef": {
-            "type": "string",
-            "description": "Reference to TransportMode."
-          },
-          "deckPlanRef": {
-            "type": "string",
-            "description": "Reference to DeckPlan."
-          }
-        }
-      },
-      "Type": {
-        "allOf": [
-          { "$ref": "#/components/schemas/AbstractType" },
-          {
-            "type": "object",
-            "description": "Concrete vehicle type with exact physical measurements. Environmental KVs promoted from hathor KeyList.",
-            "properties": {
-              "maximumRange": { "type": "number" },
-              "maximumVelocity": { "type": "number" },
-              "passengerCapacity": { "type": "number" },
-              "length": { "type": "number" },
-              "width": { "type": "number" },
-              "height": { "type": "number" },
-              "weight": { "type": "number" },
-              "monitored": { "type": "boolean" },
-              "formDragCoeff": { "type": "string" },
-              "rollResistanceCoeff": { "type": "string" },
-              "maximumEngineEffectKW": { "type": "string" }
-            }
-          }
-        ]
-      },
-      "PlannedType": {
-        "allOf": [
-          { "$ref": "#/components/schemas/AbstractType" },
-          {
-            "type": "object",
-            "description": "Planned vehicle type with medium-prefixed scalar approximations. XxxRange types replaced with scalar equivalents.",
-            "properties": {
-              "mediumLength": { "type": "number" },
-              "mediumWidth": { "type": "number" },
-              "mediumHeight": { "type": "number" },
-              "mediumWeight": { "type": "number" },
-              "mediumPassengerCapacity": { "type": "number" },
-              "mediumMaximumRange": { "type": "number" },
-              "mediumMaximumVelocity": { "type": "number" },
-              "mediumMaximumEngineEffectKW": { "type": "number" },
-              "mediumFormDragCoeff": { "type": "number" },
-              "mediumRollResistanceCoeff": { "type": "number" }
-            }
-          }
-        ]
-      },
-      "TransportMode": {
-        "type": "object",
-        "description": "Subsumes NeTEx TransportMode enum and train-specific grouping. Train-specific props (trainSize, components) are optional.",
-        "properties": {
-          "kind": {
-            "allOf": [{ "$ref": "#/components/schemas/ModeKindEnumeration" }],
-            "description": "Mode classification."
-          },
-          "trainSize": {
-            "type": "string",
-            "description": "Train size value (enum TBD). Optional, train-specific."
-          },
-          "components": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/Component" },
-            "description": "Ordered train element components. Optional, train-specific."
-          }
-        }
-      },
-      "Component": {
-        "type": "object",
-        "description": "A train element within a TransportMode composition.",
-        "properties": {
-          "label": { "type": "string" },
-          "order": { "type": "integer" },
-          "operationalOrientation": {
-            "type": "string",
-            "description": "Orientation value (enum TBD)."
-          },
-          "elementTypeRef": {
-            "type": "string",
-            "description": "Reference to TrainElementType."
-          }
-        }
-      },
-      "Vehicle": {
-        "type": "object",
-        "description": "Vehicle instance. NeTEx-normalised: model props split to VehicleModel.",
-        "properties": {
-          "name": { "type": "string" },
-          "shortName": { "type": "string" },
-          "buildDate": {
-            "type": "string",
-            "format": "date"
-          },
-          "chassisNumber": { "type": "string" },
-          "registrationNumber": { "type": "string" },
-          "operationalNumber": { "type": "string" },
-          "monitored": { "type": "boolean" },
-          "typeRef": {
-            "type": "string",
-            "description": "Reference to AbstractType (Type or PlannedType)."
-          },
-          "vehicleModelRef": {
-            "type": "string",
-            "description": "Reference to VehicleModel."
-          }
-        }
-      },
-      "VehicleModel": {
-        "type": "object",
-        "description": "Vehicle model holding manufacturer and energy properties, split from Vehicle for NeTEx normalisation.",
-        "properties": {
-          "name": { "type": "string" },
-          "manufacturer": { "type": "string" },
-          "range": { "type": "number" },
-          "fullCharge": { "type": "number" }
-        }
-      },
-      "DeckPlan": {
-        "type": "object",
-        "description": "Deck plan referenced by AbstractType. Composes Deck and DeckLevel arrays.",
-        "properties": {
-          "name": { "type": "string" },
-          "decks": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/Deck" }
-          },
-          "deckLevels": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/DeckLevel" }
-          }
-        }
-      },
-      "DeckLevel": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" }
-        }
-      },
-      "Deck": {
-        "type": "object",
-        "description": "A single deck within a DeckPlan. References a DeckLevel and composes PassengerSpaces.",
-        "properties": {
-          "name": { "type": "string" },
-          "width": { "type": "number" },
-          "length": { "type": "number" },
-          "spotRows": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Spot row identifiers."
-          },
-          "spotColumns": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Spot column identifiers."
-          },
-          "deckLevelRef": {
-            "type": "string",
-            "description": "Reference to DeckLevel."
-          },
-          "deckspaces": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/PassengerSpace" }
-          }
-        }
-      },
-      "PassengerSpace": {
-        "type": "object",
-        "description": "A space within a Deck. Composes spots, entrances, and luggage spots.",
-        "properties": {
-          "name": { "type": "string" },
-          "passengerSpaceType": {
-            "type": "string",
-            "description": "Space type value (enum TBD)."
-          },
-          "passengerSpots": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/PassengerSpot" }
-          },
-          "deckEntrances": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/PassengerEntrance" }
-          },
-          "luggageSpots": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/LuggageSpot" }
-          }
-        }
-      },
-      "PassengerSpot": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" },
-          "x": { "type": "number" },
-          "y": { "type": "number" },
-          "width": { "type": "number" },
-          "length": { "type": "number" },
-          "orientation": {
-            "type": "string",
-            "description": "Orientation value (enum TBD)."
-          },
-          "isByWindow": { "type": "boolean" },
-          "isByAisle": { "type": "boolean" },
-          "hasPower": { "type": "boolean" },
-          "spotRowRef": {
-            "type": "string",
-            "description": "Reference to a spot row."
-          },
-          "spotColumnRef": {
-            "type": "string",
-            "description": "Reference to a spot column."
-          }
-        }
-      },
-      "PassengerEntrance": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "vehicleSide": {
-            "type": "string",
-            "description": "Vehicle side value (enum TBD)."
-          },
-          "width": { "type": "number" },
-          "x": { "type": "number" },
-          "y": { "type": "number" },
-          "sequenceFromFront": { "type": "integer" }
-        }
-      },
-      "LuggageSpot": {
-        "type": "object",
-        "properties": {
-          "label": { "type": "string" },
-          "x": { "type": "number" },
-          "y": { "type": "number" },
-          "width": { "type": "number" },
-          "length": { "type": "number" }
-        }
-      }
+      "AbstractType": { "$ref": "vehicle-domain.schema.json#/definitions/AbstractType" },
+      "Type": { "$ref": "vehicle-domain.schema.json#/definitions/Type" },
+      "PlannedType": { "$ref": "vehicle-domain.schema.json#/definitions/PlannedType" },
+      "TransportMode": { "$ref": "vehicle-domain.schema.json#/definitions/TransportMode" },
+      "Component": { "$ref": "vehicle-domain.schema.json#/definitions/Component" },
+      "Vehicle": { "$ref": "vehicle-domain.schema.json#/definitions/Vehicle" },
+      "VehicleModel": { "$ref": "vehicle-domain.schema.json#/definitions/VehicleModel" },
+      "DeckPlan": { "$ref": "vehicle-domain.schema.json#/definitions/DeckPlan" },
+      "DeckLevel": { "$ref": "vehicle-domain.schema.json#/definitions/DeckLevel" },
+      "Deck": { "$ref": "vehicle-domain.schema.json#/definitions/Deck" },
+      "PassengerSpace": { "$ref": "vehicle-domain.schema.json#/definitions/PassengerSpace" },
+      "PassengerSpot": { "$ref": "vehicle-domain.schema.json#/definitions/PassengerSpot" },
+      "PassengerEntrance": { "$ref": "vehicle-domain.schema.json#/definitions/PassengerEntrance" },
+      "LuggageSpot": { "$ref": "vehicle-domain.schema.json#/definitions/LuggageSpot" }
     }
   }
 }
