@@ -1,0 +1,23 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css" />
+<div id="swagger-ui" style="flex: 1; overflow: auto"></div>
+
+<script>
+  (async () => {
+    const src = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js';
+    if (!window.SwaggerUIBundle) {
+      await new Promise((ok, fail) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = ok;
+        s.onerror = fail;
+        document.head.appendChild(s);
+      });
+    }
+    SwaggerUIBundle({
+      url: 'vehicle-domain.openapi.json?t=' + Date.now(),
+      dom_id: '#swagger-ui',
+      presets: [SwaggerUIBundle.presets.apis],
+      layout: 'BaseLayout',
+    });
+  })();
+</script>
