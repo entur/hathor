@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Simplified vehicle domain model (NeTEx-informed, decoupled)",
+  "description": "Simplified vehicle domain model (NeTEx-informed, decoupled). Generated from the Mermaid UML class diagram in partials/uml/dsl.html.",
   "definitions": {
     "TypeKindEnumeration": {
       "type": "string",
