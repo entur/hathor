@@ -31,13 +31,7 @@
   hx-swap="innerHTML"
 ></div>
 
-<div
-  id="tab-openapi"
-  class="tab-panel"
-  hx-get="partials/uml/openapi.html"
-  hx-trigger="load"
-  hx-swap="innerHTML"
-></div>
+<div id="tab-openapi" class="tab-panel"></div>
 
 <script>
   async function switchTab(btn, panelId) {
@@ -51,6 +45,17 @@
       .querySelectorAll('.tab-panel')
       .forEach(p => p.classList.remove('active'));
     document.getElementById(panelId).classList.add('active');
+
+    if (panelId === 'tab-openapi') {
+      const panel = document.getElementById(panelId);
+      if (!panel.dataset.loaded) {
+        panel.dataset.loaded = '1';
+        htmx.ajax('GET', 'partials/uml/openapi.html', {
+          target: '#tab-openapi',
+          swap: 'innerHTML',
+        });
+      }
+    }
 
     if (panelId === 'tab-uml') {
       const src = document.getElementById('dsl-editor').value;
