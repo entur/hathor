@@ -1,0 +1,13 @@
+<textarea id="schema-viewer" class="dsl-area" readonly></textarea>
+
+<script>
+  fetch('vehicle-domain.schema.json?t=' + Date.now())
+    .then(r => {
+      if (!r.ok) throw new Error(r.status);
+      return r.text();
+    })
+    .then(txt => (document.getElementById('schema-viewer').value = txt))
+    .catch(
+      e => (document.getElementById('schema-viewer').value = 'Error loading schema: ' + e.message)
+    );
+</script>

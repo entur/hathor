@@ -11,6 +11,8 @@
 <div class="tab-bar">
   <button class="active" onclick="switchTab(this, 'tab-uml')">UML</button>
   <button onclick="switchTab(this, 'tab-dsl')">DSL</button>
+  <button onclick="switchTab(this, 'tab-schema')">Schema</button>
+  <button onclick="switchTab(this, 'tab-openapi')">OpenAPI</button>
 </div>
 
 <div id="tab-uml" class="tab-panel active">
@@ -20,6 +22,22 @@
 <div id="tab-dsl" class="tab-panel">
   <textarea id="dsl-editor" class="dsl-area"></textarea>
 </div>
+
+<div
+  id="tab-schema"
+  class="tab-panel"
+  hx-get="partials/uml/json-schema-0.0.1.html"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+></div>
+
+<div
+  id="tab-openapi"
+  class="tab-panel"
+  hx-get="partials/uml/openapi.html"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+></div>
 
 <script>
   async function switchTab(btn, panelId) {
