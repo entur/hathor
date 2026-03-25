@@ -1,13 +1,31 @@
-<textarea id="schema-viewer" class="dsl-area" readonly></textarea>
+<pre
+  style="
+    min-height: calc(100vh - 200px);
+    width: 100%;
+    flex: 1;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    padding: 1rem;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    background: var(--clr-surface);
+    overflow: auto;
+  "
+><code id="schema-viewer" class="language-json"></code></pre>
 
-<script>
-  fetch('vehicle-domain.schema.json?t=' + Date.now())
-    .then(r => {
-      if (!r.ok) throw new Error(r.status);
-      return r.text();
-    })
-    .then(txt => (document.getElementById('schema-viewer').value = txt))
-    .catch(
-      e => (document.getElementById('schema-viewer').value = 'Error loading schema: ' + e.message)
-    );
+<script type="module">
+  import hljs from 'https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/es/core.min.js';
+  import json from 'https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/es/languages/json.min.js';
+  hljs.registerLanguage('json', json);
+
+  const el = document.getElementById('schema-viewer');
+  try {
+    const r = await fetch('vehicle-domain.schema.json?t=' + Date.now());
+    if (!r.ok) throw new Error(r.status);
+    el.textContent = await r.text();
+  } catch (e) {
+    el.textContent = 'Error: ' + e.message;
+  }
+  hljs.highlightElement(el);
 </script>
