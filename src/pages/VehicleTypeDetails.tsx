@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Paper, Typography } from '@mui/material';
-import { Editor, validate, serialize } from '@entur/my_vehicletype-editor';
-import type { VehicleType } from '@entur/my_vehicletype-editor';
+import { Editor, validate, serialize } from '@entur/vtype-details';
+import type { VehicleType } from '@entur/vtype-details';
 import { useAuth } from '../auth/authUtils';
 import { useConfig } from '../contexts/configContext';
 import { importAsNetexToBackend } from '../data/vehicle-imports/vehicleImportServices';

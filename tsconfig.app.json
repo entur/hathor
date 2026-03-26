@@ -29,7 +29,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@entur/my_vehicletype-editor": ["./packages/my_vehicletype-editor/src/index.ts"]
+      "@entur/vtype-details": ["./packages/vtype-details/src/index.ts"]
     }
   },
   "include": ["src", "src/**/*.json", "packages/*/src"],

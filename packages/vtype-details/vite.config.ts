@@ -7,7 +7,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       formats: ['es'],
-      fileName: 'my_vehicletype-editor',
+      fileName: 'vtype-details',
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', /^@mui\//, /^@emotion\//],
