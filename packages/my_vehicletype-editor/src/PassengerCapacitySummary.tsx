@@ -1,19 +1,17 @@
 import type React from 'react';
-import type { PassengerCapacityStructure } from './generated/types.js';
+import type { PassengerCapacityStructure } from './generated/VehicleType.js';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { numVal, parseNum } from './fieldHelpers.js';
 
 export interface PassengerCapacitySummaryProps {
   value: Partial<PassengerCapacityStructure>;
   onChange: (next: Partial<PassengerCapacityStructure>) => void;
 }
-
-const numVal = (n: number | undefined) => (n != null ? String(n) : '');
-const parseNum = (s: string) => (s === '' ? undefined : Number(s));
 
 export function PassengerCapacitySummary({
   value,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type React from 'react';
-import type { VehicleType } from './generated/types.js';
+import type { VehicleType } from './generated/VehicleType.js';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { SimpleEditor } from './SimpleEditor.js';
