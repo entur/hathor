@@ -4,44 +4,24 @@ import type {
   TextType,
   PrivateCodeStructure,
   PassengerCapacityStructure,
-  VehicleManoeuvringRequirements_STUB,
+  VehicleManoeuvringRequirement,
   KeyValueStructure,
   AllPublicTransportModesEnumeration,
   PropulsionTypeEnumeration,
-} from './generated/types.js';
-import { TRANSPORT_MODES, PROPULSION_TYPES, FUEL_TYPES, FARE_CLASSES } from './generated/types.js';
-import Autocomplete from '@mui/material/Autocomplete';
+} from './generated/VehicleType.js';
+import {
+  ALL_PUBLIC_TRANSPORT_MODES,
+  PROPULSION_TYPE,
+  FUEL_TYPE,
+  FARE_CLASS,
+} from './generated/VehicleType.js';
 import Box from '@mui/material/Box';
+import { EnumMultiSelect } from './EnumMultiSelect.js';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import './Editor.css';
-
-function EnumMultiSelect<T extends string>({
-  options,
-  value,
-  onChange,
-  label,
-}: {
-  options: readonly T[];
-  value: T[] | undefined;
-  onChange: (selected: T[] | undefined) => void;
-  label: string;
-}): React.JSX.Element {
-  return (
-    <Autocomplete
-      multiple
-      options={options as T[]}
-      value={value ?? []}
-      onChange={(_e, v) => onChange(v.length ? (v as T[]) : undefined)}
-      isOptionEqualToValue={(a, b) => a === b}
-      renderInput={params => <TextField {...params} label={label} size="small" />}
-      size="small"
-      disableCloseOnSelect
-    />
-  );
-}
 
 export interface FullEditorProps {
   value: Partial<VehicleType>;
@@ -61,8 +41,8 @@ function TextTypeRow({
         className="vte-input vte-input--sub"
         type="text"
         placeholder="Value"
-        value={item.Value ?? ''}
-        onChange={e => onChange({ ...item, Value: e.target.value })}
+        value={item.value ?? ''}
+        onChange={e => onChange({ ...item, value: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
@@ -95,8 +75,8 @@ function PrivateCodeStructureRow({
         className="vte-input vte-input--sub"
         type="text"
         placeholder="Value"
-        value={item.Value ?? ''}
-        onChange={e => onChange({ ...item, Value: e.target.value })}
+        value={item.value ?? ''}
+        onChange={e => onChange({ ...item, value: e.target.value })}
       />
       <input
         className="vte-input vte-input--sub"
@@ -127,12 +107,12 @@ function PassengerCapacityStructureRow({
         onChange={e =>
           onChange({
             ...item,
-            FareClass: (e.target.value || undefined) as (typeof FARE_CLASSES)[number],
+            FareClass: (e.target.value || undefined) as (typeof FARE_CLASS)[number],
           })
         }
       >
         <option value=""></option>
-        {FARE_CLASSES.map(v => (
+        {FARE_CLASS.map(v => (
           <option key={v} value={v}>
             {v}
           </option>
@@ -238,12 +218,12 @@ function PassengerCapacityStructureRow({
   );
 }
 
-function VehicleManoeuvringRequirements_STUBRow({
+function VehicleManoeuvringRequirementRow({
   item,
   onChange,
 }: {
-  item: Partial<VehicleManoeuvringRequirements_STUB>;
-  onChange: (next: Partial<VehicleManoeuvringRequirements_STUB>) => void;
+  item: Partial<VehicleManoeuvringRequirement>;
+  onChange: (next: Partial<VehicleManoeuvringRequirement>) => void;
 }): React.JSX.Element {
   return (
     <div className="vte-sub-fields">
@@ -479,7 +459,7 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
               }
             >
               <option value=""></option>
-              {TRANSPORT_MODES.map(v => (
+              {ALL_PUBLIC_TRANSPORT_MODES.map(v => (
                 <option key={v} value={v}>
                   {v}
                 </option>
@@ -539,7 +519,7 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
           <Box>
             <EnumMultiSelect
               label="PropulsionTypes"
-              options={PROPULSION_TYPES}
+              options={PROPULSION_TYPE}
               value={value.PropulsionTypes}
               onChange={selected => onChange({ ...value, PropulsionTypes: selected })}
             />
@@ -560,7 +540,7 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
               }
             >
               <option value=""></option>
-              {PROPULSION_TYPES.map(v => (
+              {PROPULSION_TYPE.map(v => (
                 <option key={v} value={v}>
                   {v}
                 </option>
@@ -570,7 +550,7 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
           <Box>
             <EnumMultiSelect
               label="FuelTypes"
-              options={FUEL_TYPES}
+              options={FUEL_TYPE}
               value={value.FuelTypes}
               onChange={selected => onChange({ ...value, FuelTypes: selected })}
             />
@@ -648,11 +628,11 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
           </Box>
           <Box>
             <TextField
-              label="Facilities"
+              label="facilities"
               size="small"
               fullWidth
-              value={value.Facilities ?? ''}
-              onChange={e => onChange({ ...value, Facilities: e.target.value })}
+              value={value.facilities ?? ''}
+              onChange={e => onChange({ ...value, facilities: e.target.value })}
             />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -825,31 +805,31 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
           </Box>
           <Box>
             <TextField
-              label="CanCarry"
+              label="canCarry"
               size="small"
               fullWidth
-              value={value.CanCarry ?? ''}
-              onChange={e => onChange({ ...value, CanCarry: e.target.value })}
+              value={value.canCarry ?? ''}
+              onChange={e => onChange({ ...value, canCarry: e.target.value })}
             />
           </Box>
           <Box>
             <Typography component="label" variant="body2" fontWeight={500}>
-              CanManoeuvre
+              canManoeuvre
             </Typography>
             <div className="vte-sub-table">
-              <VehicleManoeuvringRequirements_STUBRow
-                item={value.CanManoeuvre ?? {}}
-                onChange={next => onChange({ ...value, CanManoeuvre: next })}
+              <VehicleManoeuvringRequirementRow
+                item={value.canManoeuvre ?? {}}
+                onChange={next => onChange({ ...value, canManoeuvre: next })}
               />
             </div>
           </Box>
           <Box>
             <TextField
-              label="SatisfiesFacilityRequirements"
+              label="satisfiesFacilityRequirements"
               size="small"
               fullWidth
-              value={value.SatisfiesFacilityRequirements ?? ''}
-              onChange={e => onChange({ ...value, SatisfiesFacilityRequirements: e.target.value })}
+              value={value.satisfiesFacilityRequirements ?? ''}
+              onChange={e => onChange({ ...value, satisfiesFacilityRequirements: e.target.value })}
             />
           </Box>
         </Stack>
@@ -861,26 +841,26 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
         <Stack spacing={1}>
           <Box>
             <Typography component="label" variant="body2" fontWeight={500}>
-              KeyList
+              keyList
             </Typography>
             <div className="vte-sub-table">
-              {(value.KeyList ?? []).map((item, idx) => (
+              {(value.keyList ?? []).map((item, idx) => (
                 <div key={idx} className="vte-sub-row">
                   <span className="vte-sub-index">{idx + 1}</span>
                   <KeyValueStructureRow
                     item={item}
                     onChange={next => {
-                      const arr = [...(value.KeyList ?? [])];
+                      const arr = [...(value.keyList ?? [])];
                       arr[idx] = next;
-                      onChange({ ...value, KeyList: arr });
+                      onChange({ ...value, keyList: arr });
                     }}
                   />
                   <button
                     type="button"
                     className="vte-btn-remove"
                     onClick={() => {
-                      const arr = (value.KeyList ?? []).filter((_, i) => i !== idx);
-                      onChange({ ...value, KeyList: arr });
+                      const arr = (value.keyList ?? []).filter((_, i) => i !== idx);
+                      onChange({ ...value, keyList: arr });
                     }}
                   >
                     Remove
@@ -890,7 +870,7 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
               <button
                 type="button"
                 className="vte-btn-add"
-                onClick={() => onChange({ ...value, KeyList: [...(value.KeyList ?? []), {}] })}
+                onClick={() => onChange({ ...value, keyList: [...(value.keyList ?? []), {}] })}
               >
                 + Add KeyValueStructure
               </button>
@@ -898,26 +878,26 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
           </Box>
           <Box>
             <Typography component="label" variant="body2" fontWeight={500}>
-              PrivateCodes
+              privateCodes
             </Typography>
             <div className="vte-sub-table">
-              {(value.PrivateCodes ?? []).map((item, idx) => (
+              {(value.privateCodes ?? []).map((item, idx) => (
                 <div key={idx} className="vte-sub-row">
                   <span className="vte-sub-index">{idx + 1}</span>
                   <PrivateCodeStructureRow
                     item={item}
                     onChange={next => {
-                      const arr = [...(value.PrivateCodes ?? [])];
+                      const arr = [...(value.privateCodes ?? [])];
                       arr[idx] = next;
-                      onChange({ ...value, PrivateCodes: arr });
+                      onChange({ ...value, privateCodes: arr });
                     }}
                   />
                   <button
                     type="button"
                     className="vte-btn-remove"
                     onClick={() => {
-                      const arr = (value.PrivateCodes ?? []).filter((_, i) => i !== idx);
-                      onChange({ ...value, PrivateCodes: arr });
+                      const arr = (value.privateCodes ?? []).filter((_, i) => i !== idx);
+                      onChange({ ...value, privateCodes: arr });
                     }}
                   >
                     Remove
@@ -928,7 +908,7 @@ export function FullEditor({ value, onChange }: FullEditorProps): React.JSX.Elem
                 type="button"
                 className="vte-btn-add"
                 onClick={() =>
-                  onChange({ ...value, PrivateCodes: [...(value.PrivateCodes ?? []), {}] })
+                  onChange({ ...value, privateCodes: [...(value.privateCodes ?? []), {}] })
                 }
               >
                 + Add PrivateCodeStructure

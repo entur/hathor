@@ -1,5 +1,76 @@
-import type { VehicleType, TypeHints } from './generated/types.js';
-import { VEHICLE_TYPE_HINTS } from './generated/types.js';
+import type { VehicleType } from './generated/VehicleType.js';
+import {
+  ALL_PUBLIC_TRANSPORT_MODES,
+  PROPULSION_TYPE,
+  FARE_CLASS,
+} from './generated/VehicleType.js';
+
+export type TypeHints = {
+  booleans?: ReadonlySet<string>;
+  numbers?: ReadonlySet<string>;
+  enums?: Readonly<Record<string, readonly string[]>>;
+  arrays?: ReadonlySet<string>;
+  nested?: Readonly<Record<string, TypeHints>>;
+};
+
+export const PASSENGER_CAPACITY_HINTS: TypeHints = {
+  numbers: new Set([
+    'TotalCapacity',
+    'SeatingCapacity',
+    'StandingCapacity',
+    'SpecialPlaceCapacity',
+    'PushchairCapacity',
+    'WheelchairPlaceCapacity',
+    'PramPlaceCapacity',
+    'BicycleRackCapacity',
+  ]),
+  enums: { FareClass: FARE_CLASS },
+};
+
+export const MANOEUVRE_HINTS: TypeHints = {
+  booleans: new Set(['Reversible']),
+  numbers: new Set(['MinimumTurningCircle', 'MinimumOvertakingWidth', 'MinimumLength']),
+};
+
+export const VEHICLE_TYPE_HINTS: TypeHints = {
+  arrays: new Set([
+    'Name',
+    'ShortName',
+    'Description',
+    'keyList',
+    'privateCodes',
+    'PropulsionTypes',
+    'FuelTypes',
+  ]),
+  booleans: new Set([
+    'ReversingDirection',
+    'SelfPropelled',
+    'Monitored',
+    'LowFloor',
+    'HasLiftOrRamp',
+    'HasHoist',
+  ]),
+  numbers: new Set([
+    'MaximumRange',
+    'MaximumVelocity',
+    'HoistOperatingRadius',
+    'BoardingHeight',
+    'GapToPlatform',
+    'Length',
+    'Width',
+    'Height',
+    'Weight',
+    'FirstAxleHeight',
+  ]),
+  enums: {
+    TransportMode: ALL_PUBLIC_TRANSPORT_MODES,
+    PropulsionType: PROPULSION_TYPE,
+  },
+  nested: {
+    PassengerCapacity: PASSENGER_CAPACITY_HINTS,
+    canManoeuvre: MANOEUVRE_HINTS,
+  },
+};
 
 function unwrap(val: unknown): unknown {
   if (typeof val === 'object' && val !== null && 'value' in (val as Record<string, unknown>)) {

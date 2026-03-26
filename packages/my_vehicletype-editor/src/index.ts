@@ -12,24 +12,22 @@ export type {
   TextType,
   PrivateCodeStructure,
   PassengerCapacityStructure,
-  VehicleManoeuvringRequirements_STUB,
+  VehicleManoeuvringRequirement,
   KeyValueStructure,
   AllPublicTransportModesEnumeration,
   PropulsionTypeEnumeration,
   FuelTypeEnumeration,
-  TypeHints,
-} from './generated/types.js';
+} from './generated/VehicleType.js';
 export {
-  TRANSPORT_MODES,
-  PROPULSION_TYPES,
-  FUEL_TYPES,
-  FARE_CLASSES,
-  VEHICLE_TYPE_HINTS,
-  PASSENGER_CAPACITY_HINTS,
-  MANOEUVRE_HINTS,
-} from './generated/types.js';
+  ALL_PUBLIC_TRANSPORT_MODES,
+  PROPULSION_TYPE,
+  FUEL_TYPE,
+  FARE_CLASS,
+} from './generated/VehicleType.js';
 export { validate } from './generated/validate.js';
 export type { ValidationResult } from './generated/validate.js';
 export { normalize } from './normalize.js';
+export type { TypeHints } from './normalize.js';
+export { VEHICLE_TYPE_HINTS, PASSENGER_CAPACITY_HINTS, MANOEUVRE_HINTS } from './normalize.js';
 export { serialize } from './serialize.js';
-export { toXmlShape } from './generated/type_helpers.js';
+export { vehicleTypeToXmlShape } from './generated/VehicleType-mapping.js';

@@ -4,15 +4,13 @@ import type {
   VehicleType,
   TextType,
   AllPublicTransportModesEnumeration,
-  PropulsionTypeEnumeration,
-  FuelTypeEnumeration,
-} from './generated/types.js';
-import { TRANSPORT_MODES, PROPULSION_TYPES, FUEL_TYPES } from './generated/types.js';
+} from './generated/VehicleType.js';
+import { ALL_PUBLIC_TRANSPORT_MODES, PROPULSION_TYPE, FUEL_TYPE } from './generated/VehicleType.js';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import { EnumMultiSelect } from './EnumMultiSelect.js';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
@@ -24,6 +22,7 @@ import Typography from '@mui/material/Typography';
 import { useResizablePane } from './useResizablePane.js';
 import { PassengerCapacitySummary } from './PassengerCapacitySummary.js';
 import { EnvironmentalExtras } from './EnvironmentalExtras.js';
+import { numVal, parseNum } from './fieldHelpers.js';
 
 export interface SimpleEditorProps {
   value: Partial<VehicleType>;
@@ -38,12 +37,9 @@ const EURO_CLASSES = ['', 'Euro5', 'Euro6'] as const;
 // between a single text field and the underlying NeTEx type:
 //   textVal / textSet  — TextType[]  ↔ single string (first item, lang=nb)
 //   numVal / parseNum  — number      ↔ input string
-const textVal = (arr?: TextType[]) => arr?.[0]?.Value ?? '';
+const textVal = (arr?: TextType[]) => arr?.[0]?.value ?? '';
 const textSet = (text: string): TextType[] | undefined =>
-  text ? [{ Value: text, $lang: 'nb' }] : undefined;
-
-const numVal = (n: number | undefined) => (n != null ? String(n) : '');
-const parseNum = (s: string) => (s === '' ? undefined : Number(s));
+  text ? [{ value: text, $lang: 'nb' }] : undefined;
 
 /**
  * Friendly form editor over {@link VehicleType}.
@@ -131,7 +127,7 @@ export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.
                 }
               >
                 <option value="" />
-                {TRANSPORT_MODES.map(v => (
+                {ALL_PUBLIC_TRANSPORT_MODES.map(v => (
                   <option key={v} value={v}>
                     {v}
                   </option>
@@ -141,11 +137,11 @@ export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.
                 label="Private code"
                 size="small"
                 fullWidth
-                value={value.PrivateCode?.Value ?? ''}
+                value={value.PrivateCode?.value ?? ''}
                 onChange={e =>
                   onChange({
                     ...value,
-                    PrivateCode: { ...value.PrivateCode, Value: e.target.value },
+                    PrivateCode: { ...value.PrivateCode, value: e.target.value },
                   })
                 }
               />
@@ -158,37 +154,17 @@ export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.
               Propulsion &amp; performance
             </Typography>
             <Stack spacing={1.5}>
-              <Autocomplete
-                multiple
-                options={PROPULSION_TYPES as unknown as PropulsionTypeEnumeration[]}
-                value={value.PropulsionTypes ?? []}
-                onChange={(_e, v) =>
-                  onChange({
-                    ...value,
-                    PropulsionTypes: v.length ? (v as PropulsionTypeEnumeration[]) : undefined,
-                  })
-                }
-                isOptionEqualToValue={(a, b) => a === b}
-                renderInput={params => (
-                  <TextField {...params} label="Propulsion types" size="small" />
-                )}
-                size="small"
-                disableCloseOnSelect
+              <EnumMultiSelect
+                label="Propulsion types"
+                options={PROPULSION_TYPE}
+                value={value.PropulsionTypes}
+                onChange={selected => onChange({ ...value, PropulsionTypes: selected })}
               />
-              <Autocomplete
-                multiple
-                options={FUEL_TYPES as unknown as FuelTypeEnumeration[]}
-                value={value.FuelTypes ?? []}
-                onChange={(_e, v) =>
-                  onChange({
-                    ...value,
-                    FuelTypes: v.length ? (v as FuelTypeEnumeration[]) : undefined,
-                  })
-                }
-                isOptionEqualToValue={(a, b) => a === b}
-                renderInput={params => <TextField {...params} label="Fuel types" size="small" />}
-                size="small"
-                disableCloseOnSelect
+              <EnumMultiSelect
+                label="Fuel types"
+                options={FUEL_TYPE}
+                value={value.FuelTypes}
+                onChange={selected => onChange({ ...value, FuelTypes: selected })}
               />
               <TextField
                 label="Euro class"

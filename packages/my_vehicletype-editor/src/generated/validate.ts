@@ -1,5 +1,5 @@
-import type { VehicleType } from './types.js';
-import { TRANSPORT_MODES, PROPULSION_TYPES } from './types.js';
+import type { VehicleType } from './VehicleType.js';
+import { ALL_PUBLIC_TRANSPORT_MODES, PROPULSION_TYPE } from './VehicleType.js';
 
 export interface ValidationResult {
   valid: boolean;
@@ -17,9 +17,9 @@ export function validate(obj: Partial<VehicleType>): ValidationResult {
     errors.push('PrivateCode must be an object');
   if (
     obj.TransportMode != null &&
-    !(TRANSPORT_MODES as readonly string[]).includes(obj.TransportMode)
+    !(ALL_PUBLIC_TRANSPORT_MODES as readonly string[]).includes(obj.TransportMode)
   )
-    errors.push(`TransportMode must be one of: ${TRANSPORT_MODES.join(', ')}`);
+    errors.push(`TransportMode must be one of: ${ALL_PUBLIC_TRANSPORT_MODES.join(', ')}`);
   if (obj.DeckPlanRef != null && typeof obj.DeckPlanRef !== 'string')
     errors.push('DeckPlanRef must be a string');
   if (obj.EuroClass != null && typeof obj.EuroClass !== 'string')
@@ -32,9 +32,9 @@ export function validate(obj: Partial<VehicleType>): ValidationResult {
     errors.push('PropulsionTypes must be an array');
   if (
     obj.PropulsionType != null &&
-    !(PROPULSION_TYPES as readonly string[]).includes(obj.PropulsionType)
+    !(PROPULSION_TYPE as readonly string[]).includes(obj.PropulsionType)
   )
-    errors.push(`PropulsionType must be one of: ${PROPULSION_TYPES.join(', ')}`);
+    errors.push(`PropulsionType must be one of: ${PROPULSION_TYPE.join(', ')}`);
   if (obj.FuelTypes != null && !Array.isArray(obj.FuelTypes))
     errors.push('FuelTypes must be an array');
   if (obj.MaximumRange != null && typeof obj.MaximumRange !== 'number')
@@ -48,8 +48,8 @@ export function validate(obj: Partial<VehicleType>): ValidationResult {
     errors.push('IncludedIn must be a string');
   if (obj.ClassifiedAsRef != null && typeof obj.ClassifiedAsRef !== 'string')
     errors.push('ClassifiedAsRef must be a string');
-  if (obj.Facilities != null && typeof obj.Facilities !== 'string')
-    errors.push('Facilities must be a string');
+  if (obj.facilities != null && typeof obj.facilities !== 'string')
+    errors.push('facilities must be a string');
   if (obj.Monitored != null && typeof obj.Monitored !== 'boolean')
     errors.push('Monitored must be a boolean');
   if (obj.LowFloor != null && typeof obj.LowFloor !== 'boolean')
@@ -70,18 +70,18 @@ export function validate(obj: Partial<VehicleType>): ValidationResult {
   if (obj.Weight != null && typeof obj.Weight !== 'number') errors.push('Weight must be a number');
   if (obj.FirstAxleHeight != null && typeof obj.FirstAxleHeight !== 'number')
     errors.push('FirstAxleHeight must be a number');
-  if (obj.CanCarry != null && typeof obj.CanCarry !== 'string')
-    errors.push('CanCarry must be a string');
-  if (obj.CanManoeuvre != null && typeof obj.CanManoeuvre !== 'object')
-    errors.push('CanManoeuvre must be an object');
+  if (obj.canCarry != null && typeof obj.canCarry !== 'string')
+    errors.push('canCarry must be a string');
+  if (obj.canManoeuvre != null && typeof obj.canManoeuvre !== 'object')
+    errors.push('canManoeuvre must be an object');
   if (
-    obj.SatisfiesFacilityRequirements != null &&
-    typeof obj.SatisfiesFacilityRequirements !== 'string'
+    obj.satisfiesFacilityRequirements != null &&
+    typeof obj.satisfiesFacilityRequirements !== 'string'
   )
-    errors.push('SatisfiesFacilityRequirements must be a string');
-  if (obj.KeyList != null && !Array.isArray(obj.KeyList)) errors.push('KeyList must be an array');
-  if (obj.PrivateCodes != null && !Array.isArray(obj.PrivateCodes))
-    errors.push('PrivateCodes must be an array');
+    errors.push('satisfiesFacilityRequirements must be a string');
+  if (obj.keyList != null && !Array.isArray(obj.keyList)) errors.push('keyList must be an array');
+  if (obj.privateCodes != null && !Array.isArray(obj.privateCodes))
+    errors.push('privateCodes must be an array');
   if (obj.BrandingRef != null && typeof obj.BrandingRef !== 'string')
     errors.push('BrandingRef must be a string');
   if (obj.$responsibilitySetRef != null && typeof obj.$responsibilitySetRef !== 'string')
