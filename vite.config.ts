@@ -9,10 +9,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@entur/my_vehicletype-editor': resolve(
-        __dirname,
-        'packages/my_vehicletype-editor/src/index.ts'
-      ),
+      '@entur/vtype-details': resolve(__dirname, 'packages/vtype-details/src/index.ts'),
     },
   },
   server: {
