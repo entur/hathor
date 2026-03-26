@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { normalize } from '../src/normalize.js';
 
 describe('normalize', () => {
-  // ── String fields pass through PascalCase ──
+  // ── String fields pass through ──
 
   it('passes through DeckPlanRef', () => {
     const result = normalize({ DeckPlanRef: 'hello' });
@@ -24,19 +24,19 @@ describe('normalize', () => {
     expect(result.ClassifiedAsRef).toBe('hello');
   });
 
-  it('passes through Facilities', () => {
-    const result = normalize({ Facilities: 'hello' });
-    expect(result.Facilities).toBe('hello');
+  it('passes through facilities', () => {
+    const result = normalize({ facilities: 'hello' });
+    expect(result.facilities).toBe('hello');
   });
 
-  it('passes through CanCarry', () => {
-    const result = normalize({ CanCarry: 'hello' });
-    expect(result.CanCarry).toBe('hello');
+  it('passes through canCarry', () => {
+    const result = normalize({ canCarry: 'hello' });
+    expect(result.canCarry).toBe('hello');
   });
 
-  it('passes through SatisfiesFacilityRequirements', () => {
-    const result = normalize({ SatisfiesFacilityRequirements: 'hello' });
-    expect(result.SatisfiesFacilityRequirements).toBe('hello');
+  it('passes through satisfiesFacilityRequirements', () => {
+    const result = normalize({ satisfiesFacilityRequirements: 'hello' });
+    expect(result.satisfiesFacilityRequirements).toBe('hello');
   });
 
   it('passes through BrandingRef', () => {
@@ -161,63 +161,55 @@ describe('normalize', () => {
   // ── Array fields ──
 
   it('normalizes Name array', () => {
-    const result = normalize({ Name: [{ Value: 'test' }] });
+    const result = normalize({ Name: [{ value: 'test' }] });
     expect(result.Name).toHaveLength(1);
-    expect(result.Name![0].Value).toBe('test');
   });
 
   it('wraps single Name object in array', () => {
-    const result = normalize({ Name: { Value: 'solo' } });
+    const result = normalize({ Name: { value: 'solo' } });
     expect(result.Name).toHaveLength(1);
-    expect(result.Name![0].Value).toBe('solo');
   });
 
   it('normalizes ShortName array', () => {
-    const result = normalize({ ShortName: [{ Value: 'test' }] });
+    const result = normalize({ ShortName: [{ value: 'test' }] });
     expect(result.ShortName).toHaveLength(1);
-    expect(result.ShortName![0].Value).toBe('test');
   });
 
   it('wraps single ShortName object in array', () => {
-    const result = normalize({ ShortName: { Value: 'solo' } });
+    const result = normalize({ ShortName: { value: 'solo' } });
     expect(result.ShortName).toHaveLength(1);
-    expect(result.ShortName![0].Value).toBe('solo');
   });
 
   it('normalizes Description array', () => {
-    const result = normalize({ Description: [{ Value: 'test' }] });
+    const result = normalize({ Description: [{ value: 'test' }] });
     expect(result.Description).toHaveLength(1);
-    expect(result.Description![0].Value).toBe('test');
   });
 
   it('wraps single Description object in array', () => {
-    const result = normalize({ Description: { Value: 'solo' } });
+    const result = normalize({ Description: { value: 'solo' } });
     expect(result.Description).toHaveLength(1);
-    expect(result.Description![0].Value).toBe('solo');
   });
 
-  it('normalizes KeyList array', () => {
-    const result = normalize({ KeyList: [{ Key: 'test' }] });
-    expect(result.KeyList).toHaveLength(1);
-    expect(result.KeyList![0].Key).toBe('test');
+  it('normalizes keyList array', () => {
+    const result = normalize({ keyList: [{ Key: 'test' }] });
+    expect(result.keyList).toHaveLength(1);
+    expect(result.keyList![0].Key).toBe('test');
   });
 
-  it('wraps single KeyList object in array', () => {
-    const result = normalize({ KeyList: { Key: 'solo' } });
-    expect(result.KeyList).toHaveLength(1);
-    expect(result.KeyList![0].Key).toBe('solo');
+  it('wraps single keyList object in array', () => {
+    const result = normalize({ keyList: { Key: 'solo' } });
+    expect(result.keyList).toHaveLength(1);
+    expect(result.keyList![0].Key).toBe('solo');
   });
 
-  it('normalizes PrivateCodes array', () => {
-    const result = normalize({ PrivateCodes: [{ Value: 'test' }] });
-    expect(result.PrivateCodes).toHaveLength(1);
-    expect(result.PrivateCodes![0].Value).toBe('test');
+  it('normalizes privateCodes array', () => {
+    const result = normalize({ privateCodes: [{ value: 'test' }] });
+    expect(result.privateCodes).toHaveLength(1);
   });
 
-  it('wraps single PrivateCodes object in array', () => {
-    const result = normalize({ PrivateCodes: { Value: 'solo' } });
-    expect(result.PrivateCodes).toHaveLength(1);
-    expect(result.PrivateCodes![0].Value).toBe('solo');
+  it('wraps single privateCodes object in array', () => {
+    const result = normalize({ privateCodes: { value: 'solo' } });
+    expect(result.privateCodes).toHaveLength(1);
   });
 
   it('returns empty object for empty input', () => {

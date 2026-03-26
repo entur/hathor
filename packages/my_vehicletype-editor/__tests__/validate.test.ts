@@ -47,9 +47,9 @@ describe('validate', () => {
     expect(result.errors).toContain('ClassifiedAsRef must be a string');
   });
 
-  it('fails when Facilities has wrong type (number)', () => {
-    const result = validate({ Facilities: 123 as never });
-    expect(result.errors).toContain('Facilities must be a string');
+  it('fails when facilities has wrong type (number)', () => {
+    const result = validate({ facilities: 123 as never });
+    expect(result.errors).toContain('facilities must be a string');
   });
 
   it('fails when Monitored has wrong type (string)', () => {
@@ -112,14 +112,14 @@ describe('validate', () => {
     expect(result.errors).toContain('FirstAxleHeight must be a number');
   });
 
-  it('fails when CanCarry has wrong type (number)', () => {
-    const result = validate({ CanCarry: 123 as never });
-    expect(result.errors).toContain('CanCarry must be a string');
+  it('fails when canCarry has wrong type (number)', () => {
+    const result = validate({ canCarry: 123 as never });
+    expect(result.errors).toContain('canCarry must be a string');
   });
 
-  it('fails when SatisfiesFacilityRequirements has wrong type (number)', () => {
-    const result = validate({ SatisfiesFacilityRequirements: 123 as never });
-    expect(result.errors).toContain('SatisfiesFacilityRequirements must be a string');
+  it('fails when satisfiesFacilityRequirements has wrong type (number)', () => {
+    const result = validate({ satisfiesFacilityRequirements: 123 as never });
+    expect(result.errors).toContain('satisfiesFacilityRequirements must be a string');
   });
 
   it('fails when BrandingRef has wrong type (number)', () => {
@@ -169,7 +169,7 @@ describe('validate', () => {
       $id: 'valid',
       IncludedIn: 'valid',
       ClassifiedAsRef: 'valid',
-      Facilities: 'valid',
+      facilities: 'valid',
       Monitored: true,
       LowFloor: true,
       HasLiftOrRamp: true,
@@ -182,8 +182,8 @@ describe('validate', () => {
       Height: 42,
       Weight: 42,
       FirstAxleHeight: 42,
-      CanCarry: 'valid',
-      SatisfiesFacilityRequirements: 'valid',
+      canCarry: 'valid',
+      satisfiesFacilityRequirements: 'valid',
       BrandingRef: 'valid',
       $responsibilitySetRef: 'valid',
     });
