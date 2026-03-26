@@ -14,9 +14,6 @@ export interface VehicleType {
 
   // ── DataManagedObjectStructure ──
   keyList?: KeyValueStructure[];
-  privateCodes?: PrivateCodeStructure[];
-  BrandingRef?: Ref<'Branding'>;
-  $responsibilitySetRef?: Ref<'ResponsibilitySet'>;
 
   // ── TransportType_VersionStructure ──
   Name?: TextType[];
@@ -33,23 +30,28 @@ export interface VehicleType {
   MaximumVelocity?: number;
   TransportMode?: AllPublicTransportModesEnumeration;
   PassengerCapacity?: PassengerCapacityStructure;
-  DeckPlanRef?: Ref<'DeckPlan'>;
 
   // ── VehicleType_VersionStructure ──
   LowFloor?: boolean;
+  Length?: number;
+  Width?: number;
+  Height?: number;
+  Weight?: number;
+
+  // ── FullEditor-only (not exposed in SimpleEditor) ──
   HasLiftOrRamp?: boolean;
   HasHoist?: boolean;
   HoistOperatingRadius?: number;
   BoardingHeight?: number;
   GapToPlatform?: number;
-  Length?: number;
-  Width?: number;
-  Height?: number;
-  Weight?: number;
   FirstAxleHeight?: number;
   Monitored?: boolean;
   IncludedIn?: Ref<'VehicleType'>;
   ClassifiedAsRef?: Ref<'TypeOfVehicleType'>;
+  privateCodes?: PrivateCodeStructure[];
+  BrandingRef?: Ref<'Branding'>;
+  $responsibilitySetRef?: Ref<'ResponsibilitySet'>;
+  DeckPlanRef?: Ref<'DeckPlan'>;
   facilities?: SimpleRef;
   canCarry?: SimpleRef;
   canManoeuvre?: VehicleManoeuvringRequirement;
