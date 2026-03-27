@@ -19,7 +19,13 @@ export default function VehicleListCell({ vehicles }: VehicleListCellProps) {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${MAX_VISIBLE}, max-content)`,
+          gap: 0.5,
+        }}
+      >
         {visible.map(v => (
           <Chip key={v.id} label={v.registrationNumber} size="small" />
         ))}
