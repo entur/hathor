@@ -25,7 +25,7 @@ import {
   fetchVehicleFromAutosys,
   importAsNetexToBackend,
 } from '../../../data/vehicle-imports/vehicleImportServices';
-import { mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
+import { extractVehicleTypeIds, mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
@@ -158,9 +158,12 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     try {
       const xml = assembledResult?.postPayload;
       const token = await getAccessToken();
-      await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
+      const responseXml = await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
       if (onImportComplete) {
-        onImportComplete(Array.from(assembledResult.summary.vehicleTypeIds));
+        const newIds = extractVehicleTypeIds(responseXml);
+        onImportComplete(
+          newIds.length > 0 ? newIds : Array.from(assembledResult.summary.vehicleTypeIds)
+        );
       }
       onClose();
     } catch (e) {
