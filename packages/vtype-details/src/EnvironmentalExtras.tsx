@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { VehicleType, KeyValueStructure } from './generated/types.js';
+import type { VehicleType, KeyValueStructure } from './generated/VehicleType.js';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
@@ -50,9 +50,9 @@ export function EnvironmentalExtras({
           label={key}
           size="small"
           fullWidth
-          value={findByKey(value.KeyList, key)}
+          value={findByKey(value.keyList, key)}
           onChange={e =>
-            onChange({ ...value, KeyList: setByKey(value.KeyList, key, e.target.value) })
+            onChange({ ...value, keyList: setByKey(value.keyList, key, e.target.value) })
           }
         />
       ))}

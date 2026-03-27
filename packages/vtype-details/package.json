@@ -1,10 +1,10 @@
 {
-  "name": "@entur/my_vehicletype-editor",
+  "name": "@entur/vtype-details",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/my_vehicletype-editor.js",
+  "main": "dist/vtype-details.js",
   "exports": {
-    ".": "./dist/my_vehicletype-editor.js"
+    ".": "./dist/vtype-details.js"
   },
   "scripts": {
     "build": "vite build",

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type React from 'react';
-import type { VehicleType } from './generated/types.js';
+import type { VehicleType } from './generated/VehicleType.js';
 import Box from '@mui/material/Box';
 import { serialize } from './serialize.js';
 
