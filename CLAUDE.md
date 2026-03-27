@@ -65,7 +65,9 @@ Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehic
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
 
-Localhost backend config points to Sobek at `http://localhost:37999/services/vehicles/`.
+Localhost backend config (`.github/environments/config-localhost.json`) points to two backends:
+- **Sobek** at `http://127.0.0.1:37999/services/vehicles/` — GraphQL and NeTEx import
+- **Shepet** at `http://127.0.0.1:37998/services/autosys` — Autosys vehicle data (separate app/port)
 
 ### Routing
 

@@ -1,8 +1,12 @@
-import { XMLParser } from 'fast-xml-parser';
 import { translateAutosysError } from './autosysErrorTranslator';
 import type { ParsedXml, FramesByQueryRegNumber } from './types';
 import type { MergedEntities } from './xmlUtils';
-import { findResourceFrame, mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
+import {
+  findResourceFrame,
+  mergeResourceFrames,
+  pubDeliverySingleRcFrame,
+  xmlParser,
+} from './xmlUtils';
 
 /** Result of fetching a single vehicle from the Autosys registry.
  * On success `xml` contains the raw NeTEx XML and `error` is null.
@@ -32,8 +36,6 @@ export interface AutosysAssembledResult {
   postPayload?: string;
 }
 
-const parser = new XMLParser({ ignoreAttributes: false });
-
 /**
  * Parse an array of Autosys fetch results, extract the NeTEx ResourceFrame
  * from each successful XML, and produce a deduplicated summary of
@@ -58,7 +60,7 @@ export function assembleAutosysResults(
     }
 
     try {
-      const parsed = parser.parse(result.xml);
+      const parsed = xmlParser.parse(result.xml);
       const resourceFrame = findResourceFrame(parsed);
 
       if (!resourceFrame) {

@@ -1,5 +1,5 @@
 import type { FramesByQueryRegNumber, ImportEntry, ParsedXml } from './types';
-import { XMLBuilder } from 'fast-xml-parser';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 
 /** Find ResourceFrame in parsed XML — supports both CompositeFrame-wrapped and flat layouts. */
 export function findResourceFrame(parsed: ParsedXml): ParsedXml | undefined {
@@ -101,6 +101,17 @@ export function pubDeliverySingleRcFrame(
   });
   const xmlContent = builder.build(blueprintClone);
   return xmlContent;
+}
+
+export const xmlParser = new XMLParser({ ignoreAttributes: false });
+
+export function extractVehicleTypeIds(xml: string): string[] {
+  const parsed = xmlParser.parse(xml);
+  const rf = findResourceFrame(parsed);
+  if (!rf) return [];
+  return toArray(rf.vehicleTypes?.VehicleType)
+    .map(vt => vt['@_id'])
+    .filter(Boolean);
 }
 
 /** Wrap a VehicleType XML fragment in a minimal PublicationDelivery envelope. */

@@ -20,7 +20,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "e2e:auth": "E2E_SUITE=auth npx playwright test",
-    "e2e:no-auth": "E2E_SUITE=no-auth npx playwright test"
+    "e2e:no-auth": "E2E_SUITE=no-auth npx playwright test",
+    "e2e:local-backend": "E2E_BACKEND=true E2E_SUITE=no-auth npx playwright test"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
