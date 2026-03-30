@@ -21,7 +21,7 @@ export default function DataTableHeader<T, K extends string>({
       <TableRow>
         {useCompactView && <TableCell padding="none" />}
         {columns.map(col => (
-          <TableCell key={col.id} align={col.align}>
+          <TableCell key={col.id} align={col.align} sx={col.sx}>
             {col.isSortable ? (
               <TableSortLabel
                 active={orderBy === col.id}
