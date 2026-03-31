@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.40.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "predev": "run-p --race copy:theme copy:config",
     "dev": "vite",
