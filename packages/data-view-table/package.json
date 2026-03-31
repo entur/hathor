@@ -2,9 +2,9 @@
   "name": "@entur/data-view-table",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/data-view-table.js",
+  "main": "src/index.ts",
   "exports": {
-    ".": "./dist/data-view-table.js"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "build": "vite build",
