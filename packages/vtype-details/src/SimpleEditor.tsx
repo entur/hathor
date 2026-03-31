@@ -24,9 +24,15 @@ import { PassengerCapacitySummary } from './PassengerCapacitySummary.js';
 import { EnvironmentalExtras } from './EnvironmentalExtras.js';
 import { numVal, parseNum } from './fieldHelpers.js';
 
+export interface ExtraTab {
+  label: string;
+  content: React.ReactNode;
+}
+
 export interface SimpleEditorProps {
   value: Partial<VehicleType>;
   onChange: (next: Partial<VehicleType>) => void;
+  extraTabs?: ExtraTab[];
 }
 
 const EURO_CLASSES = ['', 'Euro5', 'Euro6'] as const;
@@ -50,7 +56,7 @@ const textSet = (text: string): TextType[] | undefined =>
  * `textSet` which rebuilds `TextType[]`). The complex type flows out on
  * every keystroke, so no `simplifiedToStem` transform is needed downstream.
  */
-export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.Element {
+export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps): React.JSX.Element {
   const { containerRef, topFraction, isResizing, onMouseDown } = useResizablePane(0.65);
   const [bottomTab, setBottomTab] = useState(0);
 
@@ -337,13 +343,17 @@ export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
         <Tabs value={bottomTab} onChange={(_, v) => setBottomTab(v)}>
           <Tab label="Environmental extras" />
-          <Tab label="Deck plans" />
+          {extraTabs?.map(t => (
+            <Tab key={t.label} label={t.label} />
+          ))}
         </Tabs>
         {bottomTab === 0 && <EnvironmentalExtras value={value} onChange={onChange} />}
-        {bottomTab === 1 && (
-          <Box sx={{ p: 2 }}>
-            <Typography color="text.secondary">Coming soon</Typography>
-          </Box>
+        {extraTabs?.map((t, i) =>
+          bottomTab === i + 1 ? (
+            <Box key={t.label} sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+              {t.content}
+            </Box>
+          ) : null
         )}
       </Box>
     </Box>

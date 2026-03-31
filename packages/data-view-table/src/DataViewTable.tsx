@@ -49,7 +49,7 @@ export interface DataViewTableProps<T extends { id: string }, K extends string> 
   floatingAction?: ReactNode;
 }
 
-export function DataViewTable<T extends { id: string; version?: number }, K extends string>(
+export function DataViewTable<T extends { id: string }, K extends string>(
   props: DataViewTableProps<T, K>
 ) {
   const {
@@ -157,7 +157,7 @@ export function DataViewTable<T extends { id: string; version?: number }, K exte
           <TableBody>
             {rows.map(item => (
               <DataTableRow
-                key={`${item.id}-${item.version ?? ''}`}
+                key={item.id}
                 item={item}
                 compact={compact}
                 columns={visibleCols}
