@@ -50,6 +50,10 @@ export default function App() {
                     path="/vehicle-type/new"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
+                  <Route
+                    path="/vehicle-type/:id"
+                    element={<ProtectedRoute element={<VehicleTypeDetails />} />}
+                  />
                 </Routes>
               </Box>
             </Box>

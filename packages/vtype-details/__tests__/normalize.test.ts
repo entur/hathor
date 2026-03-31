@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalize } from '../src/normalize.js';
+import { normalizeXML as normalize, normalizeGraphQL } from '../src/normalize.js';
 
 describe('normalize', () => {
   // ── String fields pass through ──
@@ -227,5 +227,56 @@ describe('normalize', () => {
   it('maps @_responsibilitySetRef → $responsibilitySetRef (XML attribute prefix)', () => {
     const result = normalize({ '@_responsibilitySetRef': 'attr-value' });
     expect(result.$responsibilitySetRef).toBe('attr-value');
+  });
+});
+
+describe('normalizeGraphQL', () => {
+  it('maps id → $id', () => {
+    const r = normalizeGraphQL({ id: 'NMR:VehicleType:1' });
+    expect(r.$id).toBe('NMR:VehicleType:1');
+  });
+
+  it('maps name.value → Name array', () => {
+    const r = normalizeGraphQL({ name: { value: 'Flirt' } });
+    expect(r.Name).toEqual([{ value: 'Flirt' }]);
+  });
+
+  it('maps dimensions', () => {
+    const r = normalizeGraphQL({ length: 75, width: 3.2, height: 4.1 });
+    expect(r.Length).toBe(75);
+    expect(r.Width).toBe(3.2);
+    expect(r.Height).toBe(4.1);
+  });
+
+  it('maps deckPlan.id → DeckPlanRef', () => {
+    const r = normalizeGraphQL({ deckPlan: { id: 'NMR:DeckPlan:1' } });
+    expect(r.DeckPlanRef).toBe('NMR:DeckPlan:1');
+  });
+
+  it('maps transportMode → TransportMode', () => {
+    const r = normalizeGraphQL({ transportMode: 'rail' });
+    expect(r.TransportMode).toBe('rail');
+  });
+
+  it('rejects invalid transportMode', () => {
+    const r = normalizeGraphQL({ transportMode: 'spaceship' });
+    expect(r.TransportMode).toBeUndefined();
+  });
+
+  it('maps boolean fields', () => {
+    const r = normalizeGraphQL({ lowFloor: true, selfPropelled: false });
+    expect(r.LowFloor).toBe(true);
+    expect(r.SelfPropelled).toBe(false);
+  });
+
+  it('skips null/undefined fields', () => {
+    const r = normalizeGraphQL({ id: 'X', length: null, name: undefined });
+    expect(r.$id).toBe('X');
+    expect(r.Length).toBeUndefined();
+    expect(r.Name).toBeUndefined();
+  });
+
+  it('returns empty for empty input', () => {
+    expect(normalizeGraphQL({})).toEqual({});
   });
 });
