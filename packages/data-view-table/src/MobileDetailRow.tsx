@@ -1,0 +1,54 @@
+import { TableRow, TableCell, Collapse, Box, Typography } from '@mui/material';
+import type { ColumnDefinition } from './types.js';
+
+interface Props<T, K extends string> {
+  open: boolean;
+  item: T;
+  colSpan: number;
+  columns: ColumnDefinition<T, K>[];
+  handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+}
+
+export default function MobileDetailRow<T, K extends string>({
+  open,
+  item,
+  colSpan,
+  columns,
+  handleColumnEvent,
+}: Props<T, K>) {
+  if (columns.length === 0) {
+    return null;
+  }
+
+  return (
+    <TableRow>
+      <TableCell colSpan={colSpan} sx={{ p: 0, borderBottom: 'none' }}>
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <Box
+            sx={{
+              m: 2,
+              ml: { xs: 2, sm: 7 },
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: 2,
+            }}
+          >
+            {columns.map(col => (
+              <Box key={col.id}>
+                <Typography variant="subtitle2" component="div" gutterBottom>
+                  <strong>{col.headerLabel}</strong>
+                </Typography>
+                <Box>
+                  {col.renderCell(
+                    item,
+                    (event, item) => handleColumnEvent && handleColumnEvent(event, col, item)
+                  )}
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Collapse>
+      </TableCell>
+    </TableRow>
+  );
+}
