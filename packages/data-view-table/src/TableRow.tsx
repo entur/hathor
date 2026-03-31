@@ -8,6 +8,8 @@ interface Props<T, K extends string> {
   item: T;
   columns: ColumnDefinition<T, K>[];
   compact: boolean;
+  selected?: boolean;
+  onRowClick?: (item: T) => void;
   DetailRowComponent?: ComponentType<{
     open: boolean;
     item: T;
@@ -23,6 +25,8 @@ export default function TableRow<T, K extends string>({
   item,
   columns,
   compact,
+  selected,
+  onRowClick,
   DetailRowComponent,
   detailColumns,
   colSpan,
@@ -34,8 +38,12 @@ export default function TableRow<T, K extends string>({
     <>
       <MuiTableRow
         hover
-        onClick={compact ? () => setOpen(o => !o) : undefined}
-        sx={{ cursor: compact ? 'pointer' : 'inherit' }}
+        selected={selected}
+        onClick={() => {
+          if (compact) setOpen(o => !o);
+          onRowClick?.(item);
+        }}
+        sx={{ cursor: compact || onRowClick ? 'pointer' : 'inherit' }}
       >
         {compact && (
           <TableCell padding="none">

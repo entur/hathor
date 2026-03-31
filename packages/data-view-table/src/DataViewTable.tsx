@@ -38,6 +38,10 @@ export interface DataViewTableProps<T extends { id: string }, K extends string> 
   onRowsPerPageChange?: (rpp: number) => void;
   rowsPerPageOptions?: number[];
 
+  // Row selection
+  onRowClick?: (item: T) => void;
+  selectedId?: string;
+
   // Optional features
   searchQuery?: string;
   activeFilters?: string[];
@@ -64,6 +68,8 @@ export function DataViewTable<T extends { id: string }, K extends string>(
     title,
     noDataLabel = 'No data to display.',
     totalLabel = n => `${n} entries`,
+    onRowClick,
+    selectedId,
     handleColumnEvent,
     floatingAction,
     rowsPerPageOptions = [10, 25, 100],
@@ -160,6 +166,8 @@ export function DataViewTable<T extends { id: string }, K extends string>(
                 key={item.id}
                 item={item}
                 compact={compact}
+                selected={selectedId === item.id}
+                onRowClick={onRowClick}
                 columns={visibleCols}
                 DetailRowComponent={DetailRow}
                 detailColumns={detailCols}
