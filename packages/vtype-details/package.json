@@ -2,9 +2,9 @@
   "name": "@entur/vtype-details",
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/vtype-details.js",
+  "main": "src/index.ts",
   "exports": {
-    ".": "./dist/vtype-details.js"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "build": "vite build",
