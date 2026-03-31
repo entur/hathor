@@ -7,7 +7,7 @@ import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 
-export type OrderBy = 'name' | 'id' | 'length' | 'height' | 'width' | 'deckPlanName';
+export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName';
 
 export function useVehicleTypes() {
   const [data, setData] = useState<VehicleType[]>([]);
