@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { Chip } from '@mui/material';
 import { useVehicleTypes } from './useVehicleTypes.ts';
 import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
@@ -16,7 +18,16 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'id',
     headerLabel: 'ID',
     isSortable: true,
-    renderCell: item => item.id,
+    renderCell: item => (
+      <Chip
+        label={item.id}
+        component={Link}
+        to={`/vehicle-type/${encodeURIComponent(item.id)}`}
+        clickable
+        size="small"
+        variant="outlined"
+      />
+    ),
     display: 'always',
   },
   {

@@ -137,6 +137,73 @@ function normalizeValue(src: Record<string, unknown>, hints: TypeHints): Record<
   return out;
 }
 
-export function normalize(src: Record<string, unknown>): Partial<VehicleType> {
+/** Normalize parsed NeTEx XML (fast-xml-parser output) into editor shape. */
+export function normalizeXML(src: Record<string, unknown>): Partial<VehicleType> {
   return normalizeValue(src, VEHICLE_TYPE_HINTS) as Partial<VehicleType>;
+}
+
+/** @deprecated Use normalizeXML */
+export const normalize = normalizeXML;
+
+// ── GraphQL → editor helpers (mirrors VehicleType-mapping.ts pattern) ──
+
+type Src = Record<string, unknown>;
+
+const gStr = (s: Src, from: string, to: string) =>
+  s[from] != null ? { [to]: String(s[from]) } : {};
+
+const gNum = (s: Src, from: string, to: string) =>
+  s[from] != null ? { [to]: Number(s[from]) } : {};
+
+const gBool = (s: Src, from: string, to: string) =>
+  s[from] != null ? { [to]: Boolean(s[from]) } : {};
+
+const TRANSPORT_MODES = new Set<string>(ALL_PUBLIC_TRANSPORT_MODES);
+
+const gEnum = (s: Src, from: string, to: string, valid: Set<string>) => {
+  if (s[from] == null) return {};
+  const v = String(s[from]);
+  return valid.has(v) ? { [to]: v } : {};
+};
+
+// name: { value } → Name: [{ value }]
+const gNameArr = (s: Src, from: string, to: string) => {
+  if (s[from] == null || typeof s[from] !== 'object') return {};
+  const n = s[from] as Src;
+  return n.value != null ? { [to]: [{ value: String(n.value) }] } : {};
+};
+
+// deckPlan: { id } → DeckPlanRef
+const gNestedRef = (s: Src, from: string, key: string, to: string) => {
+  if (s[from] == null || typeof s[from] !== 'object') return {};
+  const obj = s[from] as Src;
+  return obj[key] != null ? { [to]: String(obj[key]) } : {};
+};
+
+/** Map a Sobek GraphQL VehicleType response (camelCase) into editor shape. */
+export function normalizeGraphQL(gql: object): Partial<VehicleType> {
+  const s = gql as Src;
+  return {
+    ...gStr(s, 'id', '$id'),
+    ...gStr(s, 'version', '$version'),
+    ...gNameArr(s, 'name', 'Name'),
+    ...gNum(s, 'length', 'Length'),
+    ...gNum(s, 'width', 'Width'),
+    ...gNum(s, 'height', 'Height'),
+    ...gNum(s, 'weight', 'Weight'),
+    ...gNum(s, 'maximumRange', 'MaximumRange'),
+    ...gNum(s, 'maximumVelocity', 'MaximumVelocity'),
+    ...gNum(s, 'boardingHeight', 'BoardingHeight'),
+    ...gNum(s, 'gapToPlatform', 'GapToPlatform'),
+    ...gNum(s, 'firstAxleHeight', 'FirstAxleHeight'),
+    ...gNum(s, 'hoistOperatingRadius', 'HoistOperatingRadius'),
+    ...gEnum(s, 'transportMode', 'TransportMode', TRANSPORT_MODES),
+    ...gNestedRef(s, 'deckPlan', 'id', 'DeckPlanRef'),
+    ...gBool(s, 'reversingDirection', 'ReversingDirection'),
+    ...gBool(s, 'selfPropelled', 'SelfPropelled'),
+    ...gBool(s, 'lowFloor', 'LowFloor'),
+    ...gBool(s, 'monitored', 'Monitored'),
+    ...gBool(s, 'hasLiftOrRamp', 'HasLiftOrRamp'),
+    ...gBool(s, 'hasHoist', 'HasHoist'),
+  } as Partial<VehicleType>;
 }

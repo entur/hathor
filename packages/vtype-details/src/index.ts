@@ -1,7 +1,7 @@
 export { Editor } from './Editor.js';
 export type { EditorProps } from './Editor.js';
 export { SimpleEditor } from './SimpleEditor.js';
-export type { SimpleEditorProps } from './SimpleEditor.js';
+export type { SimpleEditorProps, ExtraTab } from './SimpleEditor.js';
 export { FullEditor } from './FullEditor.js';
 export type { FullEditorProps } from './FullEditor.js';
 export { XmlPreview } from './XmlPreview.js';
@@ -26,7 +26,7 @@ export {
 } from './generated/VehicleType.js';
 export { validate } from './generated/validate.js';
 export type { ValidationResult } from './generated/validate.js';
-export { normalize } from './normalize.js';
+export { normalize, normalizeXML, normalizeGraphQL } from './normalize.js';
 export type { TypeHints } from './normalize.js';
 export { VEHICLE_TYPE_HINTS, PASSENGER_CAPACITY_HINTS, MANOEUVRE_HINTS } from './normalize.js';
 export { serialize } from './serialize.js';

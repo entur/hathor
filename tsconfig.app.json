@@ -29,7 +29,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@entur/vtype-details": ["./packages/vtype-details/src/index.ts"]
+      "@entur/vtype-details": ["./packages/vtype-details/src/index.ts"],
+      "@entur/data-view-table": ["./packages/data-view-table/src/index.ts"]
     }
   },
   "include": ["src", "src/**/*.json", "packages/*/src"],
