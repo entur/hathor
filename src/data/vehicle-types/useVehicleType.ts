@@ -19,7 +19,11 @@ export function useVehicleType(id: string | undefined) {
     try {
       const token = await getAccessToken();
       const vtype = await fetchVehicleType(applicationBaseUrl, id, token);
-      setData(vtype);
+      if (!vtype) {
+        setError(`VehicleType "${id}" not found`);
+      } else {
+        setData(vtype);
+      }
     } catch (err: unknown) {
       setError(graphqlErrMsg(err));
     } finally {
