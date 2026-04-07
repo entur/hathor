@@ -4,6 +4,10 @@ import type { ThemeConfig } from './theme-config';
 export function createThemeFromConfig(cfg: ThemeConfig): Theme {
   const { logoUrl, ...themeOptions } = cfg;
   const userTableRow = themeOptions.components?.MuiTableRow;
+  const userRootStyles =
+    typeof userTableRow?.styleOverrides?.root === 'object'
+      ? (userTableRow.styleOverrides.root as Record<string, unknown>)
+      : {};
 
   return createTheme({
     ...themeOptions,
@@ -25,6 +29,7 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
             '&.MuiTableRow-hover:hover': {
               backgroundColor: alpha(theme.palette.primary.main, 0.08),
             },
+            ...userRootStyles,
           }),
         },
       },
