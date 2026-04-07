@@ -56,6 +56,12 @@ Your application can switch between a default theme and a custom theme. This beh
   }
   ```
 
+* **Note on `palette.action.hover` and table rows:**
+
+    `createThemeFromConfig` overrides `MuiTableRow` hover to use a subtle semi-transparent tint of `primary.main` (8% opacity) instead of the palette's `action.hover` color. This prevents opaque hover backgrounds from hiding buttons and links inside table rows. If you set `palette.action.hover` in your theme JSON, it will still apply to non-table components (dropzones, import column mapper, etc.) but **not** to table row hover.
+
+    You can still provide custom `MuiTableRow.styleOverrides.root` in your theme JSON — those styles are merged on top of the hover override.
+
 * **Enable Custom Features:**
 
     * Start the app.
