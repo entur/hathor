@@ -1,5 +1,6 @@
 export type Name = {
   value: string;
+  lang?: string;
 };
 
 export type DeckPlan = {
@@ -18,16 +19,29 @@ export type VehicleType = {
   id: string;
   version: number;
   name?: Name;
+  shortName?: Name;
+  transportMode?: string;
   deckPlan?: DeckPlan;
   length: number;
   width: number;
   height: number;
+  created?: string;
+  changed?: string;
+  changedBy?: string;
+  versionComment?: string;
   vehicles?: Vehicle[];
   __typename: string;
 };
 
 export type VehicleTypeContext = {
   vehicleTypes: VehicleType[];
+};
+
+export type VehicleTypePage = {
+  content: VehicleType[];
+  totalElements: number;
+  page: number;
+  size: number;
 };
 
 export type NeTExPassengerCapacity = {
