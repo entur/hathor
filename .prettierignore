@@ -16,6 +16,7 @@ public/theme-*.json
 public/deckplan-editor
 
 # Ignore other files
+.claude
 .github
 .husky
 .vscode
