@@ -2,31 +2,53 @@ import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth';
 
 const fetchVehicleTypesGQL = gql`
-  query VehicleTypes {
-    vehicleTypes {
-      id
-      name {
-        value
-      }
-      length
-      width
-      height
-      deckPlan {
+  query VehicleTypes($page: Int, $size: Int, $filter: VehicleTypeFilter) {
+    vehicleTypes(page: $page, size: $size, filter: $filter) {
+      content {
         id
-        description
+        version
         name {
           value
         }
+        shortName {
+          value
+        }
+        transportMode
+        length
+        width
+        height
+        created
+        changed
+        changedBy
+        versionComment
+        deckPlan {
+          id
+          description
+          name {
+            value
+          }
+        }
+        vehicles {
+          id
+          registrationNumber
+          version
+        }
       }
-      vehicles {
-        id
-        registrationNumber
-        version
-      }
+      totalElements
+      page
+      size
     }
   }
 `;
 
-export const fetchVehicleTypesRequest = (applicationBaseUrl: string, token: AccessToken) => {
-  return request(applicationBaseUrl, fetchVehicleTypesGQL, undefined, authHeader(token));
+import type { PageVars } from '../../../types/paginationTypes.ts';
+
+export type VehicleTypeVars = PageVars & {
+  filter?: { ids?: string[]; transportMode?: string };
 };
+
+export const fetchVehicleTypesRequest = (
+  applicationBaseUrl: string,
+  token: AccessToken,
+  variables?: VehicleTypeVars
+) => request(applicationBaseUrl, fetchVehicleTypesGQL, variables, authHeader(token));

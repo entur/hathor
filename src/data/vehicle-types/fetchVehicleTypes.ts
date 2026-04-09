@@ -1,14 +1,17 @@
 import { fetchVehicleTypesRequest } from '../../graphql/vehicles/queries/fetchVehicleTypes.ts';
-import type { VehicleTypeContext } from './vehicleTypeTypes.ts';
+import type { VehicleTypeContext, VehicleType } from './vehicleTypeTypes.ts';
 import type { AccessToken } from '../../auth';
-
-let fetchedVehicleTypes: VehicleTypeContext | undefined = undefined;
+import type { Page } from '../../types/paginationTypes.ts';
+import { FETCH_ALL_SIZE } from '../../types/paginationTypes.ts';
 
 export const fetchVehicleTypes = async (
   applicationBaseUrl: string,
   token: AccessToken
 ): Promise<VehicleTypeContext> => {
-  fetchedVehicleTypes = await fetchVehicleTypesRequest(applicationBaseUrl, token);
-
-  return Object.assign({}, fetchedVehicleTypes);
+  const raw: { vehicleTypes: Page<VehicleType> } = await fetchVehicleTypesRequest(
+    applicationBaseUrl,
+    token,
+    { size: FETCH_ALL_SIZE }
+  );
+  return { vehicleTypes: raw.vehicleTypes.content };
 };
