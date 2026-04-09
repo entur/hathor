@@ -18,7 +18,7 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.3.0"
+    "fast-xml-parser": "^5.5.10"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
