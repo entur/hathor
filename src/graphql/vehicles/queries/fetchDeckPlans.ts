@@ -17,7 +17,9 @@ const fetchDeckPlansGQL = gql`
   }
 `;
 
-export type DeckPlanVars = { page?: number; size?: number };
+import type { PageVars } from '../../../types/paginationTypes.ts';
+
+export type DeckPlanVars = PageVars;
 
 export const fetchDeckPlansRequest = (
   applicationBaseUrl: string,

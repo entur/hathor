@@ -37,13 +37,6 @@ export type VehicleTypeContext = {
   vehicleTypes: VehicleType[];
 };
 
-export type VehicleTypePage = {
-  content: VehicleType[];
-  totalElements: number;
-  page: number;
-  size: number;
-};
-
 export type NeTExPassengerCapacity = {
   StandingCapacity?: number;
   SeatingCapacity?: number;
