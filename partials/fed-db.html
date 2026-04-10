@@ -89,9 +89,9 @@
   const data = await fetch('fed-search-mock.json').then(r => r.json());
 
   const sections = [
-    { key: 'vehicleTypes', label: 'Vehicle Types', title: v => v.name },
+    { key: 'vehicleTypes', label: 'Vehicle-Types', title: v => v.name },
     { key: 'vehicles', label: 'Vehicles', title: v => v.registrationNumber },
-    { key: 'deckPlans', label: 'Deck Plans', title: v => v.name },
+    { key: 'deckPlans', label: 'Deck-Plans', title: v => v.name },
   ];
 
   const fmtVal = v =>

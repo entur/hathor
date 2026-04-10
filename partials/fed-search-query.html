@@ -41,13 +41,14 @@
     z-index: 100;
   }
   .fed-group-header {
-    padding: 8px 16px 4px;
-    font-size: 11px;
+    padding: 6px 16px 4px 16px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--clr-text-dim);
     border-top: 1px solid var(--clr-border);
+    border-bottom: 1px solid var(--clr-border);
   }
   .fed-group-header:first-child {
     border-top: none;
@@ -152,7 +153,7 @@
 
 <h1 style="margin-bottom: 8px">Federated Search</h1>
 <p style="color: var(--clr-text-dim); margin-bottom: 20px">
-  Search across Vehicle Types, Vehicles, and Deck Plans &mdash; powered by in-browser GraphQL.
+  Search across Vehicle-Types, Vehicles, and Deck-Plans &mdash; powered by in-browser GraphQL.
 </p>
 
 <label class="fed-filter-toggle">
@@ -235,40 +236,68 @@
     type Query {
       vehicleTypes(q: String!, transportMode: String): [VehicleType!]!
       vehicles(q: String!, transportMode: String): [Vehicle!]!
-      deckPlans(q: String!): [DeckPlan!]!
+      deckPlans(q: String!, transportMode: String): [DeckPlan!]!
     }
     type VehicleType { id: ID!, name: String!, shortName: String, transportMode: String, length: Float, width: Float, height: Float, vehicleCount: Int }
     type Vehicle { id: ID!, registrationNumber: String!, version: Int, operationalNumber: String, vehicleTypeName: String }
     type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int }
   `);
 
+  const vtByName = Object.fromEntries(data.vehicleTypes.map(v => [v.name, v]));
+
+  /* Shared resolver helpers — eliminates duplication across 3 resolvers */
+  const modeFrom = (q, tm) => {
+    const { filters, tokens } = parseQuery(q);
+    return { tokens, mode: tm || filters.find(f => f.field === 'transportMode')?.val };
+  };
+
+  const vtNamesFromVehicles = tokens =>
+    tokens.length
+      ? new Set(
+          data.vehicles
+            .filter(v => matchAll(tokens, v.registrationNumber, v.operationalNumber))
+            .map(v => v.vehicleTypeName)
+        )
+      : new Set();
+
+  const matchVTs = (tokens, mode, vtNames) =>
+    data.vehicleTypes.filter(vt => {
+      if (mode && !vt.transportMode.toLowerCase().startsWith(mode)) return false;
+      return matchAll(tokens, vt.name, vt.shortName, vt.transportMode) || vtNames.has(vt.name);
+    });
+
+  /* Reverse joins are SQL-viable as EXISTS subqueries with indexed FKs */
   const root = {
     vehicleTypes: ({ q, transportMode }) => {
-      const { filters, tokens } = parseQuery(q);
-      const mode = transportMode || filters.find(f => f.field === 'transportMode')?.val;
-      return data.vehicleTypes.filter(v => {
-        if (mode && !v.transportMode.toLowerCase().startsWith(mode)) return false;
-        return matchAll(tokens, v.name, v.shortName, v.transportMode);
-      });
+      const { tokens, mode } = modeFrom(q, transportMode);
+      return matchVTs(tokens, mode, vtNamesFromVehicles(tokens));
     },
     vehicles: ({ q, transportMode }) => {
-      const { filters, tokens } = parseQuery(q);
-      const mode = transportMode || filters.find(f => f.field === 'transportMode')?.val;
+      const { tokens, mode } = modeFrom(q, transportMode);
       return data.vehicles.filter(v => {
-        if (mode && !v.vehicleTypeName.toLowerCase().includes(mode)) return false;
+        if (mode) {
+          const vt = vtByName[v.vehicleTypeName];
+          if (!vt || !vt.transportMode.toLowerCase().startsWith(mode)) return false;
+        }
         return matchAll(tokens, v.registrationNumber, v.operationalNumber, v.vehicleTypeName);
       });
     },
-    deckPlans: ({ q }) => {
-      const { tokens } = parseQuery(q);
-      return data.deckPlans.filter(v => matchAll(tokens, v.name, v.description));
+    deckPlans: ({ q, transportMode }) => {
+      const { tokens, mode } = modeFrom(q, transportMode);
+      const reachableIds = new Set(
+        matchVTs(tokens, mode, vtNamesFromVehicles(tokens)).flatMap(vt => vt.deckPlans ?? [])
+      );
+      return data.deckPlans.filter(v => {
+        if (mode && !reachableIds.has(v.id)) return false;
+        return matchAll(tokens, v.name, v.description) || reachableIds.has(v.id);
+      });
     },
   };
 
   const groups = [
     {
       key: 'vehicleTypes',
-      label: 'Vehicle Types',
+      label: 'Vehicle-Types',
       vars: '$q:String!,$tm:String',
       src: `{ vehicleTypes(q:$q, transportMode:$tm) { id name shortName transportMode length width height vehicleCount } }`,
       fmt: v =>
@@ -284,9 +313,9 @@
     },
     {
       key: 'deckPlans',
-      label: 'Deck Plans',
-      vars: '$q:String!',
-      src: `{ deckPlans(q:$q) { id name description deckCount } }`,
+      label: 'Deck-Plans',
+      vars: '$q:String!,$tm:String',
+      src: `{ deckPlans(q:$q, transportMode:$tm) { id name description deckCount } }`,
       fmt: v =>
         `<span class="fed-item-name">${v.name}</span><span class="fed-item-meta">${v.deckCount} deck${v.deckCount > 1 ? 's' : ''} &middot; ${v.description}</span>`,
     },
@@ -318,8 +347,8 @@
       const { tokens } = parseQuery(term);
       const suggestions = suggestFilters(tokens);
       if (suggestions.length) {
-        const hdr = mk('div', { class: 'fed-group-header', textContent: 'Suggested Filters' });
-        const body = mk('div', { class: 'fed-group-body' });
+        const hdr = mk('div', { className: 'fed-group-header', textContent: 'Suggested Filters' });
+        const body = mk('div', { className: 'fed-group-body' });
         body.innerHTML = suggestions
           .map(
             s =>
@@ -332,8 +361,8 @@
 
     /* ── Entity groups ──────────────────────────────── */
     groups.forEach((g, i) => {
-      const hdr = mk('div', { class: 'fed-group-header', textContent: g.label });
-      const body = mk('div', { class: 'fed-group-body' });
+      const hdr = mk('div', { className: 'fed-group-header', textContent: g.label });
+      const body = mk('div', { className: 'fed-group-body' });
       body.innerHTML = `<div class="fed-skeleton"><div class="fed-skeleton-bar" style="width:40%"></div><div class="fed-skeleton-bar" style="width:25%"></div></div>`;
       listbox.append(hdr, body);
 

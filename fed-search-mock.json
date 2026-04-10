@@ -8,7 +8,8 @@
       "length": 12.0,
       "width": 2.55,
       "height": 3.2,
-      "vehicleCount": 15
+      "vehicleCount": 15,
+      "deckPlans": ["NMR:DeckPlan:1"]
     },
     {
       "id": "NMR:VehicleType:2",
@@ -18,7 +19,8 @@
       "length": 18.0,
       "width": 2.55,
       "height": 3.3,
-      "vehicleCount": 8
+      "vehicleCount": 8,
+      "deckPlans": ["NMR:DeckPlan:2"]
     },
     {
       "id": "NMR:VehicleType:3",
@@ -28,7 +30,8 @@
       "length": 45.0,
       "width": 12.0,
       "height": 6.5,
-      "vehicleCount": 3
+      "vehicleCount": 3,
+      "deckPlans": ["NMR:DeckPlan:3"]
     },
     {
       "id": "NMR:VehicleType:4",
@@ -38,7 +41,8 @@
       "length": 32.0,
       "width": 2.65,
       "height": 3.6,
-      "vehicleCount": 12
+      "vehicleCount": 12,
+      "deckPlans": ["NMR:DeckPlan:5"]
     },
     {
       "id": "NMR:VehicleType:5",
@@ -48,7 +52,8 @@
       "length": 80.0,
       "width": 3.26,
       "height": 4.28,
-      "vehicleCount": 6
+      "vehicleCount": 6,
+      "deckPlans": ["NMR:DeckPlan:4"]
     },
     {
       "id": "NMR:VehicleType:6",
@@ -58,7 +63,8 @@
       "length": 14.0,
       "width": 2.55,
       "height": 4.38,
-      "vehicleCount": 4
+      "vehicleCount": 4,
+      "deckPlans": ["NMR:DeckPlan:6"]
     },
     {
       "id": "NMR:VehicleType:7",
@@ -68,7 +74,8 @@
       "length": 12.0,
       "width": 2.55,
       "height": 3.3,
-      "vehicleCount": 5
+      "vehicleCount": 5,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:8",
@@ -78,7 +85,8 @@
       "length": 8.0,
       "width": 2.3,
       "height": 2.9,
-      "vehicleCount": 20
+      "vehicleCount": 20,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:9",
@@ -88,7 +96,8 @@
       "length": 24.0,
       "width": 2.55,
       "height": 3.4,
-      "vehicleCount": 6
+      "vehicleCount": 6,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:10",
@@ -98,7 +107,8 @@
       "length": 15.0,
       "width": 2.55,
       "height": 3.5,
-      "vehicleCount": 10
+      "vehicleCount": 10,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:11",
@@ -108,7 +118,8 @@
       "length": 28.0,
       "width": 2.4,
       "height": 3.5,
-      "vehicleCount": 9
+      "vehicleCount": 9,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:12",
@@ -118,7 +129,8 @@
       "length": 158.0,
       "width": 3.26,
       "height": 4.28,
-      "vehicleCount": 4
+      "vehicleCount": 4,
+      "deckPlans": []
     }
   ],
   "vehicles": [
@@ -205,6 +217,34 @@
       "version": 1,
       "operationalNumber": "110",
       "vehicleTypeName": "Intercity Train 6-car"
+    },
+    {
+      "id": "NMR:Vehicle:113",
+      "registrationNumber": "YZ-44556",
+      "version": 1,
+      "operationalNumber": "210",
+      "vehicleTypeName": "BRT Bus 24m"
+    },
+    {
+      "id": "NMR:Vehicle:114",
+      "registrationNumber": "AA-55667",
+      "version": 1,
+      "operationalNumber": "303",
+      "vehicleTypeName": "Low-Floor Tram 28m"
+    },
+    {
+      "id": "NMR:Vehicle:115",
+      "registrationNumber": "BB-66778",
+      "version": 2,
+      "operationalNumber": "802",
+      "vehicleTypeName": "Electric Ferry 45m"
+    },
+    {
+      "id": "NMR:Vehicle:116",
+      "registrationNumber": "CC-77889",
+      "version": 1,
+      "operationalNumber": "202",
+      "vehicleTypeName": "Airport Express Coach"
     }
   ],
   "deckPlans": [
