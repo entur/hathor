@@ -205,6 +205,34 @@
       "version": 1,
       "operationalNumber": "110",
       "vehicleTypeName": "Intercity Train 6-car"
+    },
+    {
+      "id": "NMR:Vehicle:113",
+      "registrationNumber": "YZ-44556",
+      "version": 1,
+      "operationalNumber": "210",
+      "vehicleTypeName": "BRT Bus 24m"
+    },
+    {
+      "id": "NMR:Vehicle:114",
+      "registrationNumber": "AA-55667",
+      "version": 1,
+      "operationalNumber": "303",
+      "vehicleTypeName": "Low-Floor Tram 28m"
+    },
+    {
+      "id": "NMR:Vehicle:115",
+      "registrationNumber": "BB-66778",
+      "version": 2,
+      "operationalNumber": "802",
+      "vehicleTypeName": "Electric Ferry 45m"
+    },
+    {
+      "id": "NMR:Vehicle:116",
+      "registrationNumber": "CC-77889",
+      "version": 1,
+      "operationalNumber": "202",
+      "vehicleTypeName": "Airport Express Coach"
     }
   ],
   "deckPlans": [

@@ -41,13 +41,14 @@
     z-index: 100;
   }
   .fed-group-header {
-    padding: 8px 16px 4px;
-    font-size: 11px;
+    padding: 6px 16px 4px 16px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--clr-text-dim);
     border-top: 1px solid var(--clr-border);
+    border-bottom: 1px solid var(--clr-border);
   }
   .fed-group-header:first-child {
     border-top: none;
@@ -152,7 +153,7 @@
 
 <h1 style="margin-bottom: 8px">Federated Search</h1>
 <p style="color: var(--clr-text-dim); margin-bottom: 20px">
-  Search across Vehicle Types, Vehicles, and Deck Plans &mdash; powered by in-browser GraphQL.
+  Search across Vehicle-Types, Vehicles, and Deck-Plans &mdash; powered by in-browser GraphQL.
 </p>
 
 <label class="fed-filter-toggle">
@@ -268,7 +269,7 @@
   const groups = [
     {
       key: 'vehicleTypes',
-      label: 'Vehicle Types',
+      label: 'Vehicle-Types',
       vars: '$q:String!,$tm:String',
       src: `{ vehicleTypes(q:$q, transportMode:$tm) { id name shortName transportMode length width height vehicleCount } }`,
       fmt: v =>
@@ -284,7 +285,7 @@
     },
     {
       key: 'deckPlans',
-      label: 'Deck Plans',
+      label: 'Deck-Plans',
       vars: '$q:String!',
       src: `{ deckPlans(q:$q) { id name description deckCount } }`,
       fmt: v =>
@@ -318,8 +319,8 @@
       const { tokens } = parseQuery(term);
       const suggestions = suggestFilters(tokens);
       if (suggestions.length) {
-        const hdr = mk('div', { class: 'fed-group-header', textContent: 'Suggested Filters' });
-        const body = mk('div', { class: 'fed-group-body' });
+        const hdr = mk('div', { className: 'fed-group-header', textContent: 'Suggested Filters' });
+        const body = mk('div', { className: 'fed-group-body' });
         body.innerHTML = suggestions
           .map(
             s =>
@@ -332,8 +333,8 @@
 
     /* ── Entity groups ──────────────────────────────── */
     groups.forEach((g, i) => {
-      const hdr = mk('div', { class: 'fed-group-header', textContent: g.label });
-      const body = mk('div', { class: 'fed-group-body' });
+      const hdr = mk('div', { className: 'fed-group-header', textContent: g.label });
+      const body = mk('div', { className: 'fed-group-body' });
       body.innerHTML = `<div class="fed-skeleton"><div class="fed-skeleton-bar" style="width:40%"></div><div class="fed-skeleton-bar" style="width:25%"></div></div>`;
       listbox.append(hdr, body);
 
