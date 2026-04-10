@@ -75,7 +75,7 @@
       "width": 2.55,
       "height": 3.3,
       "vehicleCount": 5,
-      "deckPlans": []
+      "deckPlans": ["NMR:DeckPlan:7"]
     },
     {
       "id": "NMR:VehicleType:8",
@@ -86,7 +86,7 @@
       "width": 2.3,
       "height": 2.9,
       "vehicleCount": 20,
-      "deckPlans": []
+      "deckPlans": ["NMR:DeckPlan:8"]
     },
     {
       "id": "NMR:VehicleType:9",
@@ -97,7 +97,7 @@
       "width": 2.55,
       "height": 3.4,
       "vehicleCount": 6,
-      "deckPlans": []
+      "deckPlans": ["NMR:DeckPlan:9"]
     },
     {
       "id": "NMR:VehicleType:10",
@@ -108,7 +108,7 @@
       "width": 2.55,
       "height": 3.5,
       "vehicleCount": 10,
-      "deckPlans": []
+      "deckPlans": ["NMR:DeckPlan:10"]
     },
     {
       "id": "NMR:VehicleType:11",
@@ -119,7 +119,7 @@
       "width": 2.4,
       "height": 3.5,
       "vehicleCount": 9,
-      "deckPlans": []
+      "deckPlans": ["NMR:DeckPlan:11"]
     },
     {
       "id": "NMR:VehicleType:12",
@@ -130,7 +130,7 @@
       "width": 3.26,
       "height": 4.28,
       "vehicleCount": 4,
-      "deckPlans": []
+      "deckPlans": ["NMR:DeckPlan:12"]
     }
   ],
   "vehicles": [
@@ -283,6 +283,42 @@
       "name": "Double Decker Layout",
       "description": "Lower deck with priority seating, upper deck 2+2 standard",
       "deckCount": 2
+    },
+    {
+      "id": "NMR:DeckPlan:7",
+      "name": "Hydrogen Bus Layout",
+      "description": "Roof-mounted fuel cell, reduced rear luggage bay, 2+2 seating",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:8",
+      "name": "Minibus Shuttle",
+      "description": "Compact 2+1 seating, rear wheelchair ramp, low floor",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:9",
+      "name": "BRT High-Capacity",
+      "description": "Three-door layout, wide aisles, standing-priority center section",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:10",
+      "name": "Coach Premium",
+      "description": "2+1 reclining seats, overhead luggage bins, onboard lavatory",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:11",
+      "name": "Low-Floor Tram Open",
+      "description": "Step-free throughout, four double doors, flexible standing zones",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:12",
+      "name": "Intercity First Class",
+      "description": "2+1 seating with tables, quiet zone, bistro car section",
+      "deckCount": 1
     }
   ]
 }
