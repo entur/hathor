@@ -118,6 +118,23 @@
     clip: rect(0, 0, 0, 0);
     border: 0;
   }
+  .fed-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--clr-text-dim);
+    cursor: pointer;
+    user-select: none;
+  }
+  .fed-filter-toggle input {
+    accent-color: var(--clr-accent);
+  }
+  .fed-filter-suggestion {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+  }
   .fed-detail dl {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -137,6 +154,11 @@
 <p style="color: var(--clr-text-dim); margin-bottom: 20px">
   Search across Vehicle Types, Vehicles, and Deck Plans &mdash; powered by in-browser GraphQL.
 </p>
+
+<label class="fed-filter-toggle">
+  <input type="checkbox" id="fed-filter-toggle" />
+  Enable filter suggestions
+</label>
 
 <div class="fed-search">
   <span class="fed-search-icon">&#x1F50D;</span>
@@ -163,10 +185,56 @@
 
   const data = await fetch('fed-search-mock.json').then(r => r.json());
 
+  /* ── Enum registry for filter suggestions ────────── */
+  const enums = {
+    transportMode: [...new Set(data.vehicleTypes.map(v => v.transportMode))],
+  };
+
+  /* ── Query parser: "transportMode:rail city 12" → { filters, tokens } */
+  function parseQuery(raw) {
+    const parts = raw.trim().split(/\s+/).filter(Boolean);
+    const filters = [],
+      tokens = [];
+    for (const p of parts) {
+      const col = p.indexOf(':');
+      if (col > 0) {
+        const field = p.slice(0, col);
+        if (enums[field]) {
+          filters.push({ field, val: p.slice(col + 1).toLowerCase() });
+          continue;
+        }
+      }
+      tokens.push(p.toLowerCase());
+    }
+    return { filters, tokens };
+  }
+
+  /* ── AND matching: every token must hit at least one field */
+  const matchAll = (tokens, ...fields) =>
+    tokens.length === 0 || tokens.every(t => fields.some(f => f?.toLowerCase().includes(t)));
+
+  /* ── Filter suggestions: match free tokens against enum values */
+  function suggestFilters(tokens) {
+    const seen = new Set();
+    const hits = [];
+    for (const t of tokens) {
+      for (const [field, vals] of Object.entries(enums)) {
+        for (const v of vals) {
+          const key = `${field}:${v}`;
+          if (v.toLowerCase().startsWith(t) && !seen.has(key)) {
+            seen.add(key);
+            hits.push({ field, value: v, matchedToken: t });
+          }
+        }
+      }
+    }
+    return hits;
+  }
+
   const schema = buildSchema(`
     type Query {
-      vehicleTypes(q: String!): [VehicleType!]!
-      vehicles(q: String!): [Vehicle!]!
+      vehicleTypes(q: String!, transportMode: String): [VehicleType!]!
+      vehicles(q: String!, transportMode: String): [Vehicle!]!
       deckPlans(q: String!): [DeckPlan!]!
     }
     type VehicleType { id: ID!, name: String!, shortName: String, transportMode: String, length: Float, width: Float, height: Float, vehicleCount: Int }
@@ -174,26 +242,26 @@
     type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int }
   `);
 
-  const match = (hay, q) => hay?.toLowerCase().includes(q);
   const root = {
-    vehicleTypes: ({ q }) => {
-      const l = q.toLowerCase();
-      return data.vehicleTypes.filter(
-        v => match(v.name, l) || match(v.shortName, l) || match(v.transportMode, l)
-      );
+    vehicleTypes: ({ q, transportMode }) => {
+      const { filters, tokens } = parseQuery(q);
+      const mode = transportMode || filters.find(f => f.field === 'transportMode')?.val;
+      return data.vehicleTypes.filter(v => {
+        if (mode && !v.transportMode.toLowerCase().startsWith(mode)) return false;
+        return matchAll(tokens, v.name, v.shortName, v.transportMode);
+      });
     },
-    vehicles: ({ q }) => {
-      const l = q.toLowerCase();
-      return data.vehicles.filter(
-        v =>
-          match(v.registrationNumber, l) ||
-          match(v.operationalNumber, l) ||
-          match(v.vehicleTypeName, l)
-      );
+    vehicles: ({ q, transportMode }) => {
+      const { filters, tokens } = parseQuery(q);
+      const mode = transportMode || filters.find(f => f.field === 'transportMode')?.val;
+      return data.vehicles.filter(v => {
+        if (mode && !v.vehicleTypeName.toLowerCase().includes(mode)) return false;
+        return matchAll(tokens, v.registrationNumber, v.operationalNumber, v.vehicleTypeName);
+      });
     },
     deckPlans: ({ q }) => {
-      const l = q.toLowerCase();
-      return data.deckPlans.filter(v => match(v.name, l) || match(v.description, l));
+      const { tokens } = parseQuery(q);
+      return data.deckPlans.filter(v => matchAll(tokens, v.name, v.description));
     },
   };
 
@@ -201,20 +269,23 @@
     {
       key: 'vehicleTypes',
       label: 'Vehicle Types',
-      src: `{ vehicleTypes(q:$q) { id name shortName transportMode length width height vehicleCount } }`,
+      vars: '$q:String!,$tm:String',
+      src: `{ vehicleTypes(q:$q, transportMode:$tm) { id name shortName transportMode length width height vehicleCount } }`,
       fmt: v =>
         `<span class="fed-item-name">${v.name}</span><span class="fed-badge">${v.transportMode}</span><span class="fed-item-meta">${v.length}x${v.width}x${v.height}m &middot; ${v.vehicleCount} vehicles</span>`,
     },
     {
       key: 'vehicles',
       label: 'Vehicles',
-      src: `{ vehicles(q:$q) { id registrationNumber version operationalNumber vehicleTypeName } }`,
+      vars: '$q:String!,$tm:String',
+      src: `{ vehicles(q:$q, transportMode:$tm) { id registrationNumber version operationalNumber vehicleTypeName } }`,
       fmt: v =>
         `<span class="fed-item-name">${v.registrationNumber}</span><span class="fed-item-meta">#${v.operationalNumber} &middot; ${v.vehicleTypeName}</span>`,
     },
     {
       key: 'deckPlans',
       label: 'Deck Plans',
+      vars: '$q:String!',
       src: `{ deckPlans(q:$q) { id name description deckCount } }`,
       fmt: v =>
         `<span class="fed-item-name">${v.name}</span><span class="fed-item-meta">${v.deckCount} deck${v.deckCount > 1 ? 's' : ''} &middot; ${v.description}</span>`,
@@ -225,13 +296,16 @@
   const listbox = document.getElementById('fed-listbox');
   const status = document.getElementById('fed-status');
   const detail = document.getElementById('search-detail');
+  const filterToggle = document.getElementById('fed-filter-toggle');
   let searchId = 0,
     activeIdx = -1,
-    flatItems = [];
+    flatItems = [],
+    lastSearchAt = 0;
 
   const delay = ms => new Promise(r => setTimeout(r, ms));
 
   async function search(term) {
+    lastSearchAt = Date.now();
     const id = ++searchId;
     activeIdx = -1;
     flatItems = [];
@@ -239,6 +313,24 @@
     open(true);
     let totalResults = 0;
 
+    /* ── Suggested Filters (when checkbox enabled) ── */
+    if (filterToggle.checked) {
+      const { tokens } = parseQuery(term);
+      const suggestions = suggestFilters(tokens);
+      if (suggestions.length) {
+        const hdr = mk('div', { class: 'fed-group-header', textContent: 'Suggested Filters' });
+        const body = mk('div', { class: 'fed-group-body' });
+        body.innerHTML = suggestions
+          .map(
+            s =>
+              `<div class="fed-filter-suggestion fed-result-item" role="option" data-filter-field="${s.field}" data-filter-value="${s.value}" data-matched="${s.matchedToken}"><span class="fed-item-name">${s.field}:${s.value}</span></div>`
+          )
+          .join('');
+        listbox.append(hdr, body);
+      }
+    }
+
+    /* ── Entity groups ──────────────────────────────── */
     groups.forEach((g, i) => {
       const hdr = mk('div', { class: 'fed-group-header', textContent: g.label });
       const body = mk('div', { class: 'fed-group-body' });
@@ -249,9 +341,9 @@
         .then(() =>
           exec({
             schema,
-            source: `query($q:String!)${g.src}`,
+            source: `query(${g.vars})${g.src}`,
             rootValue: root,
-            variableValues: { q: term },
+            variableValues: { q: term, tm: null },
           })
         )
         .then(res => {
@@ -270,6 +362,8 @@
           status.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''} found`;
         });
     });
+
+    rebuildFlat();
   }
 
   function rebuildFlat() {
@@ -300,6 +394,42 @@
 
   function select(el) {
     if (!el) return;
+
+    /* ── Filter suggestion click: replace token nearest to cursor ── */
+    if (el.dataset.filterField) {
+      const prefix = `${el.dataset.filterField}:${el.dataset.filterValue}`;
+      const matched = el.dataset.matched;
+      const raw = input.value;
+      const cursor = input.selectionStart ?? raw.length;
+
+      const parts = [];
+      for (const m of raw.matchAll(/\S+/g)) {
+        parts.push({ text: m[0], start: m.index, end: m.index + m[0].length });
+      }
+
+      /* Among tokens that match, pick the one closest to cursor */
+      let best = -1,
+        bestDist = Infinity;
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i].text.toLowerCase() !== matched) continue;
+        const mid = (parts[i].start + parts[i].end) / 2;
+        const dist = Math.abs(cursor - mid);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = i;
+        }
+      }
+
+      if (best >= 0) {
+        const p = parts[best];
+        input.value = raw.slice(0, p.start) + prefix + raw.slice(p.end);
+      } else {
+        input.value = (raw.trimEnd() + ' ' + prefix).trimStart();
+      }
+      search(input.value.trim());
+      return;
+    }
+
     const gk = el.dataset.group,
       id = el.dataset.id;
     const src = data[gk]?.find(v => v.id === id);
@@ -347,9 +477,16 @@
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       highlight((activeIdx - 1 + flatItems.length) % flatItems.length);
-    } else if (e.key === 'Enter' && activeIdx >= 0) {
+    } else if (e.key === 'Enter') {
       e.preventDefault();
-      select(flatItems[activeIdx]);
+      if (activeIdx >= 0) {
+        select(flatItems[activeIdx]);
+      } else {
+        const entities = [
+          ...listbox.querySelectorAll('.fed-result-item:not(.fed-filter-suggestion)'),
+        ];
+        if (entities.length === 1) select(entities[0]);
+      }
     } else if (e.key === 'Escape') {
       open(false);
     }
@@ -364,7 +501,16 @@
     if (item) select(item);
   });
 
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.fed-search')) open(false);
+  if (!window.__fedClickBound) {
+    window.__fedClickBound = true;
+    document.addEventListener('click', e => {
+      if (Date.now() - lastSearchAt < 50) return;
+      if (!e.target.closest('.fed-search')) open(false);
+    });
+  }
+
+  filterToggle.addEventListener('change', () => {
+    const q = input.value.trim();
+    if (q) search(q);
   });
 </script>
