@@ -1,0 +1,128 @@
+<style>
+  .fed-db h2 {
+    margin-bottom: 12px;
+    font-size: 18px;
+  }
+  .fed-db details {
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .fed-db summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    background: var(--clr-bg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    user-select: none;
+  }
+  .fed-db summary::-webkit-details-marker {
+    display: none;
+  }
+  .fed-db summary::before {
+    content: '\25B6';
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    transition: transform 0.15s;
+  }
+  .fed-db details[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  .fed-db summary:hover {
+    background: var(--clr-border);
+  }
+  .fed-db .db-count {
+    margin-left: auto;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--clr-text-dim);
+  }
+  .fed-db .tree {
+    padding: 0;
+    margin: 0;
+  }
+  .fed-db .tree-item {
+    border-top: 1px solid var(--clr-border);
+  }
+  .fed-db .tree-item summary {
+    padding: 6px 14px 6px 28px;
+    font-weight: 500;
+    font-size: 13px;
+    background: var(--clr-surface);
+  }
+  .fed-db .tree-item summary::before {
+    content: '\25B8';
+    font-size: 9px;
+  }
+  .fed-db .tree-item[open] > summary::before {
+    transform: rotate(90deg);
+  }
+  .fed-db .tree-fields {
+    padding: 4px 14px 8px 42px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    line-height: 1.8;
+    color: var(--clr-text);
+  }
+  .fed-db .tf-key {
+    color: var(--clr-text-dim);
+  }
+  .fed-db .tf-str {
+    color: #22863a;
+  }
+  .fed-db .tf-num {
+    color: #005cc5;
+  }
+</style>
+
+<div class="fed-db">
+  <h2>Database:</h2>
+  <div id="db-accordion"></div>
+</div>
+
+<script type="module">
+  const data = await fetch('fed-search-mock.json').then(r => r.json());
+
+  const sections = [
+    { key: 'vehicleTypes', label: 'Vehicle Types', title: v => v.name },
+    { key: 'vehicles', label: 'Vehicles', title: v => v.registrationNumber },
+    { key: 'deckPlans', label: 'Deck Plans', title: v => v.name },
+  ];
+
+  const fmtVal = v =>
+    typeof v === 'string'
+      ? `<span class="tf-str">"${v}"</span>`
+      : typeof v === 'number'
+        ? `<span class="tf-num">${v}</span>`
+        : String(v);
+
+  const accordion = document.getElementById('db-accordion');
+
+  for (const sec of sections) {
+    const items = data[sec.key];
+    const det = document.createElement('details');
+    det.innerHTML = `<summary>${sec.label}<span class="db-count">${items.length}</span></summary>`;
+
+    const tree = document.createElement('div');
+    tree.className = 'tree';
+
+    for (const item of items) {
+      const node = document.createElement('details');
+      node.className = 'tree-item';
+      const fields = Object.entries(item)
+        .map(([k, v]) => `<span class="tf-key">${k}:</span> ${fmtVal(v)}`)
+        .join('<br>');
+      node.innerHTML = `<summary>${sec.title(item)}<span class="db-count">${item.id}</span></summary>
+        <div class="tree-fields">${fields}</div>`;
+      tree.append(node);
+    }
+
+    det.append(tree);
+    accordion.append(det);
+  }
+</script>

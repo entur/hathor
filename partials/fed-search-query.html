@@ -1,0 +1,370 @@
+<style>
+  .fed-search {
+    position: relative;
+    margin: 0 0 24px;
+  }
+  .fed-search-input {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    font-size: 16px;
+    font-family: inherit;
+    background: var(--clr-surface);
+    color: var(--clr-text);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .fed-search-input:focus {
+    border-color: var(--clr-accent);
+  }
+  .fed-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--clr-text-dim);
+    font-size: 16px;
+    pointer-events: none;
+  }
+  .fed-search-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 420px;
+    overflow-y: auto;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+  }
+  .fed-group-header {
+    padding: 8px 16px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--clr-text-dim);
+    border-top: 1px solid var(--clr-border);
+  }
+  .fed-group-header:first-child {
+    border-top: none;
+  }
+  .fed-result-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    transition: background var(--transition);
+  }
+  .fed-result-item:hover,
+  .fed-result-item[aria-selected='true'] {
+    background: rgba(78, 108, 242, 0.07);
+  }
+  .fed-item-name {
+    font-weight: 500;
+    color: var(--clr-text);
+  }
+  .fed-item-meta {
+    font-size: 13px;
+    color: var(--clr-text-dim);
+  }
+  .fed-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    background: rgba(78, 108, 242, 0.12);
+    color: var(--clr-accent);
+  }
+  .fed-empty {
+    padding: 12px 16px;
+    color: var(--clr-text-dim);
+    font-size: 14px;
+  }
+  .fed-skeleton {
+    padding: 10px 16px;
+    display: flex;
+    gap: 8px;
+  }
+  .fed-skeleton-bar {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      var(--clr-border) 25%,
+      var(--clr-bg) 50%,
+      var(--clr-border) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.2s infinite;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+  .fed-detail dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+  }
+  .fed-detail dt {
+    font-weight: 600;
+    color: var(--clr-text-dim);
+    font-size: 13px;
+  }
+  .fed-detail dd {
+    margin: 0;
+  }
+</style>
+
+<h1 style="margin-bottom: 8px">Federated Search</h1>
+<p style="color: var(--clr-text-dim); margin-bottom: 20px">
+  Search across Vehicle Types, Vehicles, and Deck Plans &mdash; powered by in-browser GraphQL.
+</p>
+
+<div class="fed-search">
+  <span class="fed-search-icon">&#x1F50D;</span>
+  <input
+    id="fed-input"
+    class="fed-search-input"
+    type="text"
+    placeholder="Search vehicle types, vehicles, deck plans..."
+    autocomplete="off"
+    role="combobox"
+    aria-expanded="false"
+    aria-autocomplete="list"
+    aria-controls="fed-listbox"
+    aria-activedescendant=""
+  />
+  <div id="fed-listbox" role="listbox" class="fed-search-dropdown" hidden></div>
+  <div id="fed-status" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+</div>
+
+<div id="search-detail"></div>
+
+<script type="module">
+  import { buildSchema, graphql as exec } from 'https://esm.sh/graphql@16.11.0';
+
+  const data = await fetch('fed-search-mock.json').then(r => r.json());
+
+  const schema = buildSchema(`
+    type Query {
+      vehicleTypes(q: String!): [VehicleType!]!
+      vehicles(q: String!): [Vehicle!]!
+      deckPlans(q: String!): [DeckPlan!]!
+    }
+    type VehicleType { id: ID!, name: String!, shortName: String, transportMode: String, length: Float, width: Float, height: Float, vehicleCount: Int }
+    type Vehicle { id: ID!, registrationNumber: String!, version: Int, operationalNumber: String, vehicleTypeName: String }
+    type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int }
+  `);
+
+  const match = (hay, q) => hay?.toLowerCase().includes(q);
+  const root = {
+    vehicleTypes: ({ q }) => {
+      const l = q.toLowerCase();
+      return data.vehicleTypes.filter(
+        v => match(v.name, l) || match(v.shortName, l) || match(v.transportMode, l)
+      );
+    },
+    vehicles: ({ q }) => {
+      const l = q.toLowerCase();
+      return data.vehicles.filter(
+        v =>
+          match(v.registrationNumber, l) ||
+          match(v.operationalNumber, l) ||
+          match(v.vehicleTypeName, l)
+      );
+    },
+    deckPlans: ({ q }) => {
+      const l = q.toLowerCase();
+      return data.deckPlans.filter(v => match(v.name, l) || match(v.description, l));
+    },
+  };
+
+  const groups = [
+    {
+      key: 'vehicleTypes',
+      label: 'Vehicle Types',
+      src: `{ vehicleTypes(q:$q) { id name shortName transportMode length width height vehicleCount } }`,
+      fmt: v =>
+        `<span class="fed-item-name">${v.name}</span><span class="fed-badge">${v.transportMode}</span><span class="fed-item-meta">${v.length}x${v.width}x${v.height}m &middot; ${v.vehicleCount} vehicles</span>`,
+    },
+    {
+      key: 'vehicles',
+      label: 'Vehicles',
+      src: `{ vehicles(q:$q) { id registrationNumber version operationalNumber vehicleTypeName } }`,
+      fmt: v =>
+        `<span class="fed-item-name">${v.registrationNumber}</span><span class="fed-item-meta">#${v.operationalNumber} &middot; ${v.vehicleTypeName}</span>`,
+    },
+    {
+      key: 'deckPlans',
+      label: 'Deck Plans',
+      src: `{ deckPlans(q:$q) { id name description deckCount } }`,
+      fmt: v =>
+        `<span class="fed-item-name">${v.name}</span><span class="fed-item-meta">${v.deckCount} deck${v.deckCount > 1 ? 's' : ''} &middot; ${v.description}</span>`,
+    },
+  ];
+
+  const input = document.getElementById('fed-input');
+  const listbox = document.getElementById('fed-listbox');
+  const status = document.getElementById('fed-status');
+  const detail = document.getElementById('search-detail');
+  let searchId = 0,
+    activeIdx = -1,
+    flatItems = [];
+
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+
+  async function search(term) {
+    const id = ++searchId;
+    activeIdx = -1;
+    flatItems = [];
+    listbox.innerHTML = '';
+    open(true);
+    let totalResults = 0;
+
+    groups.forEach((g, i) => {
+      const hdr = mk('div', { class: 'fed-group-header', textContent: g.label });
+      const body = mk('div', { class: 'fed-group-body' });
+      body.innerHTML = `<div class="fed-skeleton"><div class="fed-skeleton-bar" style="width:40%"></div><div class="fed-skeleton-bar" style="width:25%"></div></div>`;
+      listbox.append(hdr, body);
+
+      delay(i * 80)
+        .then(() =>
+          exec({
+            schema,
+            source: `query($q:String!)${g.src}`,
+            rootValue: root,
+            variableValues: { q: term },
+          })
+        )
+        .then(res => {
+          if (id !== searchId) return;
+          const items = res.data?.[g.key] ?? [];
+          totalResults += items.length;
+          body.innerHTML = items.length
+            ? items
+                .map(
+                  v =>
+                    `<div class="fed-result-item" role="option" data-group="${g.key}" data-id="${v.id}">${g.fmt(v)}</div>`
+                )
+                .join('')
+            : `<div class="fed-empty">No ${g.label.toLowerCase()} found</div>`;
+          rebuildFlat();
+          status.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''} found`;
+        });
+    });
+  }
+
+  function rebuildFlat() {
+    flatItems = [...listbox.querySelectorAll('.fed-result-item')];
+    flatItems.forEach((el, i) => (el.id = `fed-item-${i}`));
+  }
+
+  function highlight(idx) {
+    flatItems.forEach(el => el.setAttribute('aria-selected', 'false'));
+    activeIdx = idx;
+    if (idx >= 0 && idx < flatItems.length) {
+      flatItems[idx].setAttribute('aria-selected', 'true');
+      flatItems[idx].scrollIntoView({ block: 'nearest' });
+      input.setAttribute('aria-activedescendant', flatItems[idx].id);
+    } else {
+      input.removeAttribute('aria-activedescendant');
+    }
+  }
+
+  function open(show) {
+    listbox.hidden = !show;
+    input.setAttribute('aria-expanded', String(show));
+    if (!show) {
+      highlight(-1);
+      status.textContent = '';
+    }
+  }
+
+  function select(el) {
+    if (!el) return;
+    const gk = el.dataset.group,
+      id = el.dataset.id;
+    const src = data[gk]?.find(v => v.id === id);
+    if (!src) return;
+    input.value = el.querySelector('.fed-item-name')?.textContent ?? '';
+    open(false);
+    renderDetail(gk, src);
+  }
+
+  function renderDetail(group, v) {
+    const pairs = Object.entries(v)
+      .filter(([k]) => k !== 'id')
+      .map(([k, val]) => `<dt>${k}</dt><dd>${val}</dd>`)
+      .join('');
+    detail.innerHTML = `<div class="fed-detail" style="margin-top:16px;">
+      <h2 style="margin-bottom:12px">${v.name ?? v.registrationNumber ?? v.id}</h2>
+      <p style="margin-bottom:12px; color:var(--clr-text-dim); font-size:13px">${group} &middot; ${v.id}</p>
+      <dl>${pairs}</dl></div>`;
+  }
+
+  function mk(tag, props) {
+    const e = document.createElement(tag);
+    Object.assign(e, props);
+    return e;
+  }
+
+  /* ── Input handling ──────────────────────────────── */
+  let timer;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = input.value.trim();
+    if (!q) {
+      open(false);
+      detail.innerHTML = '';
+      return;
+    }
+    timer = setTimeout(() => search(q), 200);
+  });
+
+  input.addEventListener('keydown', e => {
+    if (!flatItems.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlight((activeIdx + 1) % flatItems.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlight((activeIdx - 1 + flatItems.length) % flatItems.length);
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault();
+      select(flatItems[activeIdx]);
+    } else if (e.key === 'Escape') {
+      open(false);
+    }
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim() && listbox.children.length) open(true);
+  });
+
+  listbox.addEventListener('click', e => {
+    const item = e.target.closest('.fed-result-item');
+    if (item) select(item);
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.fed-search')) open(false);
+  });
+</script>
