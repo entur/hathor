@@ -4,6 +4,7 @@ node_modules
 
 # Ignore build files
 build
+.vite
 
 # Ignore coverage reports
 coverage

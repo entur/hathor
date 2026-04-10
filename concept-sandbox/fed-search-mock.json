@@ -1,0 +1,248 @@
+{
+  "vehicleTypes": [
+    {
+      "id": "NMR:VehicleType:1",
+      "name": "City Bus 12m",
+      "shortName": "CB12",
+      "transportMode": "Bus",
+      "length": 12.0,
+      "width": 2.55,
+      "height": 3.2,
+      "vehicleCount": 15
+    },
+    {
+      "id": "NMR:VehicleType:2",
+      "name": "Articulated Bus 18m",
+      "shortName": "AB18",
+      "transportMode": "Bus",
+      "length": 18.0,
+      "width": 2.55,
+      "height": 3.3,
+      "vehicleCount": 8
+    },
+    {
+      "id": "NMR:VehicleType:3",
+      "name": "Electric Ferry 45m",
+      "shortName": "EF45",
+      "transportMode": "Water",
+      "length": 45.0,
+      "width": 12.0,
+      "height": 6.5,
+      "vehicleCount": 3
+    },
+    {
+      "id": "NMR:VehicleType:4",
+      "name": "Light Rail Tram",
+      "shortName": "LRT",
+      "transportMode": "Tram",
+      "length": 32.0,
+      "width": 2.65,
+      "height": 3.6,
+      "vehicleCount": 12
+    },
+    {
+      "id": "NMR:VehicleType:5",
+      "name": "Regional EMU 4-car",
+      "shortName": "EMU4",
+      "transportMode": "Rail",
+      "length": 80.0,
+      "width": 3.26,
+      "height": 4.28,
+      "vehicleCount": 6
+    },
+    {
+      "id": "NMR:VehicleType:6",
+      "name": "Double-Decker Bus",
+      "shortName": "DD14",
+      "transportMode": "Bus",
+      "length": 14.0,
+      "width": 2.55,
+      "height": 4.38,
+      "vehicleCount": 4
+    },
+    {
+      "id": "NMR:VehicleType:7",
+      "name": "Hydrogen Bus 12m",
+      "shortName": "HB12",
+      "transportMode": "Bus",
+      "length": 12.0,
+      "width": 2.55,
+      "height": 3.3,
+      "vehicleCount": 5
+    },
+    {
+      "id": "NMR:VehicleType:8",
+      "name": "Minibus 8m",
+      "shortName": "MB8",
+      "transportMode": "Bus",
+      "length": 8.0,
+      "width": 2.3,
+      "height": 2.9,
+      "vehicleCount": 20
+    },
+    {
+      "id": "NMR:VehicleType:9",
+      "name": "BRT Bus 24m",
+      "shortName": "BRT24",
+      "transportMode": "Bus",
+      "length": 24.0,
+      "width": 2.55,
+      "height": 3.4,
+      "vehicleCount": 6
+    },
+    {
+      "id": "NMR:VehicleType:10",
+      "name": "Airport Express Coach",
+      "shortName": "AXC",
+      "transportMode": "Coach",
+      "length": 15.0,
+      "width": 2.55,
+      "height": 3.5,
+      "vehicleCount": 10
+    },
+    {
+      "id": "NMR:VehicleType:11",
+      "name": "Low-Floor Tram 28m",
+      "shortName": "LFT28",
+      "transportMode": "Tram",
+      "length": 28.0,
+      "width": 2.4,
+      "height": 3.5,
+      "vehicleCount": 9
+    },
+    {
+      "id": "NMR:VehicleType:12",
+      "name": "Intercity Train 6-car",
+      "shortName": "IC6",
+      "transportMode": "Rail",
+      "length": 158.0,
+      "width": 3.26,
+      "height": 4.28,
+      "vehicleCount": 4
+    }
+  ],
+  "vehicles": [
+    {
+      "id": "NMR:Vehicle:101",
+      "registrationNumber": "AB-12345",
+      "version": 1,
+      "operationalNumber": "601",
+      "vehicleTypeName": "City Bus 12m"
+    },
+    {
+      "id": "NMR:Vehicle:102",
+      "registrationNumber": "CD-23456",
+      "version": 1,
+      "operationalNumber": "602",
+      "vehicleTypeName": "City Bus 12m"
+    },
+    {
+      "id": "NMR:Vehicle:103",
+      "registrationNumber": "EF-34567",
+      "version": 2,
+      "operationalNumber": "701",
+      "vehicleTypeName": "Articulated Bus 18m"
+    },
+    {
+      "id": "NMR:Vehicle:104",
+      "registrationNumber": "GH-45678",
+      "version": 1,
+      "operationalNumber": "801",
+      "vehicleTypeName": "Electric Ferry 45m"
+    },
+    {
+      "id": "NMR:Vehicle:105",
+      "registrationNumber": "IJ-56789",
+      "version": 1,
+      "operationalNumber": "301",
+      "vehicleTypeName": "Light Rail Tram"
+    },
+    {
+      "id": "NMR:Vehicle:106",
+      "registrationNumber": "KL-67890",
+      "version": 3,
+      "operationalNumber": "302",
+      "vehicleTypeName": "Light Rail Tram"
+    },
+    {
+      "id": "NMR:Vehicle:107",
+      "registrationNumber": "MN-78901",
+      "version": 1,
+      "operationalNumber": "901",
+      "vehicleTypeName": "Regional EMU 4-car"
+    },
+    {
+      "id": "NMR:Vehicle:108",
+      "registrationNumber": "OP-89012",
+      "version": 1,
+      "operationalNumber": "101",
+      "vehicleTypeName": "Double-Decker Bus"
+    },
+    {
+      "id": "NMR:Vehicle:109",
+      "registrationNumber": "QR-90123",
+      "version": 2,
+      "operationalNumber": "501",
+      "vehicleTypeName": "Hydrogen Bus 12m"
+    },
+    {
+      "id": "NMR:Vehicle:110",
+      "registrationNumber": "ST-01234",
+      "version": 1,
+      "operationalNumber": "401",
+      "vehicleTypeName": "Minibus 8m"
+    },
+    {
+      "id": "NMR:Vehicle:111",
+      "registrationNumber": "UV-11223",
+      "version": 1,
+      "operationalNumber": "201",
+      "vehicleTypeName": "Airport Express Coach"
+    },
+    {
+      "id": "NMR:Vehicle:112",
+      "registrationNumber": "WX-33445",
+      "version": 1,
+      "operationalNumber": "110",
+      "vehicleTypeName": "Intercity Train 6-car"
+    }
+  ],
+  "deckPlans": [
+    {
+      "id": "NMR:DeckPlan:1",
+      "name": "Standard Bus Layout",
+      "description": "Single deck, 2+2 seating, rear low-floor section",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:2",
+      "name": "Articulated Bus Layout",
+      "description": "Two sections with accordion joint, standing area in rear",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:3",
+      "name": "Ferry Car Deck",
+      "description": "Open vehicle deck with lane markings, passenger saloon above",
+      "deckCount": 2
+    },
+    {
+      "id": "NMR:DeckPlan:4",
+      "name": "Train Coach Standard",
+      "description": "Open saloon 2+2, vestibules at both ends, wheelchair bay",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:5",
+      "name": "Light Rail 3-Section",
+      "description": "Low-floor throughout, multi-purpose area in center section",
+      "deckCount": 1
+    },
+    {
+      "id": "NMR:DeckPlan:6",
+      "name": "Double Decker Layout",
+      "description": "Lower deck with priority seating, upper deck 2+2 standard",
+      "deckCount": 2
+    }
+  ]
+}

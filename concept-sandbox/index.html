@@ -327,6 +327,16 @@
           <li>
             <button
               class="selected"
+              hx-get="partials/fed-search.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#128269;</span> Search
+            </button>
+          </li>
+          <li>
+            <button
               hx-get="partials/uml/index.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
@@ -373,7 +383,7 @@
       <main>
         <div
           id="main-content"
-          hx-get="partials/uml/index.html"
+          hx-get="partials/fed-search.html"
           hx-trigger="load"
           hx-swap="innerHTML"
         ></div>

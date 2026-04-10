@@ -1,0 +1,32 @@
+<style>
+  .fed-grid {
+    display: flex;
+    gap: 0.5rem;
+    height: calc(100vh - var(--header-h) - 1rem);
+  }
+  .fed-grid > .card {
+    margin: 0;
+    min-width: 0;
+    flex: 1 1 50%;
+    overflow-y: auto;
+    height: 100%;
+  }
+  @media (max-width: 960px) {
+    .fed-grid {
+      flex-direction: column;
+    }
+    .fed-grid > .card {
+      flex: 1 1 auto;
+    }
+  }
+</style>
+
+<div class="fed-grid">
+  <div
+    class="card"
+    hx-get="partials/fed-search-query.html"
+    hx-trigger="load"
+    hx-swap="innerHTML"
+  ></div>
+  <div class="card" hx-get="partials/fed-db.html" hx-trigger="load" hx-swap="innerHTML"></div>
+</div>
