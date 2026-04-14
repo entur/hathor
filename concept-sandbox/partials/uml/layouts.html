@@ -53,12 +53,23 @@
 <div class="layouts-wrap">
   <div class="card">
     <div class="tab-bar">
-      <button class="active" onclick="switchLayoutTab(this, 'tab-last-season')">Last season</button>
+      <button class="active" onclick="switchLayoutTab(this, 'tab-layout-dummy')">
+        Current/flex
+      </button>
+      <button onclick="switchLayoutTab(this, 'tab-last-season')">Screenshot</button>
     </div>
 
     <div
-      id="tab-last-season"
+      id="tab-layout-dummy"
       class="tab-panel active"
+      hx-get="partials/uml/layout-dummy.html"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+    ></div>
+
+    <div
+      id="tab-last-season"
+      class="tab-panel"
       hx-get="partials/uml/last-season.html"
       hx-trigger="load"
       hx-swap="innerHTML"
