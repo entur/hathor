@@ -1,7 +1,7 @@
 {
   "vehicleTypes": [
     {
-      "id": "NMR:VehicleType:1",
+      "id": "ATB:VehicleType:1",
       "name": "City Bus 12m",
       "shortName": "CB12",
       "transportMode": "Bus",
@@ -34,7 +34,7 @@
       "deckPlans": ["NMR:DeckPlan:3"]
     },
     {
-      "id": "NMR:VehicleType:4",
+      "id": "VY:VehicleType:4",
       "name": "Light Rail Tram",
       "shortName": "LRT",
       "transportMode": "Tram",
@@ -56,7 +56,7 @@
       "deckPlans": ["NMR:DeckPlan:4"]
     },
     {
-      "id": "NMR:VehicleType:6",
+      "id": "RUT:VehicleType:6",
       "name": "Double-Decker Bus",
       "shortName": "DD14",
       "transportMode": "Bus",
@@ -67,7 +67,7 @@
       "deckPlans": ["NMR:DeckPlan:6"]
     },
     {
-      "id": "NMR:VehicleType:7",
+      "id": "RUT:VehicleType:7",
       "name": "Hydrogen Bus 12m",
       "shortName": "HB12",
       "transportMode": "Bus",
