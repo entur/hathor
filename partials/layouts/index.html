@@ -56,6 +56,10 @@
       <button class="active" onclick="switchLayoutTab(this, 'tab-layout-dummy')">
         Current/flex
       </button>
+      <button onclick="switchLayoutTab(this, 'tab-drawer')">Drawer</button>
+      <button onclick="switchLayoutTab(this, 'tab-detail-page')">Detail page</button>
+      <button onclick="switchLayoutTab(this, 'tab-expandable')">Expandable row</button>
+      <button onclick="switchLayoutTab(this, 'tab-master-detail')">Master-detail</button>
       <button onclick="switchLayoutTab(this, 'tab-last-season')">Screenshot</button>
     </div>
 
@@ -63,6 +67,38 @@
       id="tab-layout-dummy"
       class="tab-panel active"
       hx-get="partials/layouts/layout-dummy.html"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+    ></div>
+
+    <div
+      id="tab-drawer"
+      class="tab-panel"
+      hx-get="partials/layouts/layout-drawer.html"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+    ></div>
+
+    <div
+      id="tab-detail-page"
+      class="tab-panel"
+      hx-get="partials/layouts/layout-detail-page.html"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+    ></div>
+
+    <div
+      id="tab-expandable"
+      class="tab-panel"
+      hx-get="partials/layouts/layout-expandable.html"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+    ></div>
+
+    <div
+      id="tab-master-detail"
+      class="tab-panel"
+      hx-get="partials/layouts/layout-master-detail.html"
       hx-trigger="load"
       hx-swap="innerHTML"
     ></div>

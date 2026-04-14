@@ -1,0 +1,259 @@
+<style>
+  .ex-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    font-size: 12px;
+    color: var(--clr-text);
+  }
+  .ex-header {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: var(--clr-primary);
+    color: #fff;
+    padding: 0 14px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .ex-body {
+    flex: 1;
+    min-height: 0;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-top: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .ex-title {
+    padding: 10px 14px 4px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .ex-subtitle {
+    padding: 0 14px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+  }
+
+  /* Table */
+  .ex-table {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 14px;
+  }
+  .ex-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .ex-table th {
+    text-align: left;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--clr-border);
+    color: var(--clr-text-dim);
+  }
+  .ex-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text-dim);
+  }
+  .ex-table tr.expandable td:first-child {
+    cursor: default;
+  }
+  .ex-table tr.selected td {
+    background: rgba(78, 108, 242, 0.06);
+    font-weight: 600;
+    color: var(--clr-accent);
+  }
+
+  /* Expanded detail row */
+  .ex-detail-row td {
+    padding: 0 !important;
+    border-bottom: 2px solid var(--clr-accent);
+  }
+  .ex-detail {
+    background: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin: 0 8px 6px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ex-detail h4 {
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ex-detail h4 span {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    font-weight: 400;
+  }
+
+  /* Field grid */
+  .ex-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* Shared */
+  .ex-norm {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    line-height: 1.5;
+    padding: 4px 6px;
+    background: #fff;
+    border-radius: 4px;
+    border-left: 2px solid var(--clr-accent);
+  }
+  .ex-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ex-field label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--clr-text-dim);
+  }
+  .ex-field .ex-input {
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+    background: #fff;
+  }
+  .ex-btn-row {
+    display: flex;
+    gap: 4px;
+  }
+  .ex-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--clr-border);
+    background: #fff;
+    color: var(--clr-text-dim);
+  }
+  .ex-btn.primary {
+    background: var(--clr-accent);
+    color: #fff;
+    border-color: var(--clr-accent);
+  }
+</style>
+
+<div class="ex-shell">
+  <div class="ex-header">ENTUR App</div>
+
+  <div class="ex-body">
+    <div class="ex-title">Vehicle Types</div>
+    <div class="ex-subtitle">Total entries: 28</div>
+
+    <div class="ex-table">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Dims</th>
+            <th>Deck</th>
+            <th>Veh</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="expandable">
+            <td>&#9654;</td>
+            <td>NMR:Type:1</td>
+            <td>Alpha</td>
+            <td>L:11980</td>
+            <td>&mdash;</td>
+            <td>3</td>
+          </tr>
+          <tr class="expandable selected">
+            <td>&#9660;</td>
+            <td>NMR:Type:2</td>
+            <td>Beta</td>
+            <td>L:17980</td>
+            <td>CG</td>
+            <td>1</td>
+          </tr>
+          <!-- Expanded detail -->
+          <tr class="ex-detail-row">
+            <td colspan="6">
+              <div class="ex-detail">
+                <h4>
+                  &#9660; Details for Beta
+                  <span>NMR:VehicleType:2</span>
+                </h4>
+                <div class="ex-norm">
+                  Row expands inline. Table stays in place, no navigation. Good for 10-20 fields.
+                  Wider rows allow a multi-column grid. Seen in: AG Grid, MUI DataGrid Pro, Jira
+                  backlog, AWS DynamoDB console.
+                </div>
+                <div class="ex-grid">
+                  <div class="ex-field">
+                    <label>Name</label>
+                    <div class="ex-input">Beta</div>
+                  </div>
+                  <div class="ex-field">
+                    <label>Type</label>
+                    <div class="ex-input">Train &#9660;</div>
+                  </div>
+                  <div class="ex-field">
+                    <label>Include</label>
+                    <div class="ex-input">&#9745; yes</div>
+                  </div>
+                  <div class="ex-field">
+                    <label>Dimensions</label>
+                    <div class="ex-input">L:17980 W:2500 H:3320</div>
+                  </div>
+                  <div class="ex-field">
+                    <label>Deck Plan</label>
+                    <div class="ex-input">CG &#8594;</div>
+                  </div>
+                  <div class="ex-field">
+                    <label>Validity</label>
+                    <div class="ex-input">2024-01-01 &mdash; 2026-12-31</div>
+                  </div>
+                </div>
+                <div class="ex-norm">
+                  Limits: deep nesting is awkward inline. For 30+ fields, combine with a "Details
+                  &#8594;" link to a full page. Only one row expanded at a time keeps the table
+                  scannable.
+                </div>
+                <div class="ex-btn-row">
+                  <span class="ex-btn primary">Save</span>
+                  <span class="ex-btn">Cancel</span>
+                  <span class="ex-btn">Details &#8594;</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr class="expandable">
+            <td>&#9654;</td>
+            <td>NMR:Type:3</td>
+            <td>Gamma</td>
+            <td>L:14705</td>
+            <td>CE</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
