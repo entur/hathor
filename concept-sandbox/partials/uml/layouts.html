@@ -1,0 +1,77 @@
+<style>
+  .layouts-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+  }
+  .layouts-wrap > .card {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .layouts-wrap .tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 2px solid var(--clr-border);
+    flex-shrink: 0;
+  }
+  .layouts-wrap .tab-bar button {
+    padding: 0.4rem 1.2rem;
+    border: none;
+    background: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--clr-text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+  .layouts-wrap .tab-bar button.active {
+    color: var(--clr-accent);
+    border-bottom-color: var(--clr-accent);
+    font-weight: 600;
+  }
+  .layouts-wrap .tab-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .layouts-wrap .tab-panel.active {
+    display: flex;
+    flex: 1;
+  }
+</style>
+
+<div class="layouts-wrap">
+  <div class="card">
+    <div class="tab-bar">
+      <button class="active" onclick="switchLayoutTab(this, 'tab-last-season')">Last season</button>
+    </div>
+
+    <div
+      id="tab-last-season"
+      class="tab-panel active"
+      hx-get="partials/uml/last-season.html"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+    ></div>
+  </div>
+</div>
+
+<script>
+  function switchLayoutTab(btn, panelId) {
+    const card = btn.closest('.card');
+    card.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    card.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+  }
+</script>
