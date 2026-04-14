@@ -347,6 +347,17 @@
           </li>
           <li>
             <button
+              hx-get="partials/uml/layouts.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+              style="padding-left: 42px; font-size: 13px"
+            >
+              <span class="icon">&#9636;</span> Layouts
+            </button>
+          </li>
+          <li>
+            <button
               hx-get="partials/definitions.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
