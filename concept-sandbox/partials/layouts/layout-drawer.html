@@ -1,0 +1,256 @@
+<style>
+  .dr-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    font-size: 12px;
+    color: var(--clr-text);
+  }
+  .dr-header {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: var(--clr-primary);
+    color: #fff;
+    padding: 0 14px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .dr-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    border: 1px solid var(--clr-border);
+    border-top: none;
+  }
+
+  /* Table area */
+  .dr-table-area {
+    flex: 1;
+    min-width: 0;
+    background: var(--clr-surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .dr-table-area.dimmed {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .dr-title {
+    padding: 10px 14px 4px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .dr-subtitle {
+    padding: 0 14px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+  }
+  .dr-table {
+    flex: 1;
+    overflow: auto;
+    padding: 0 14px;
+  }
+  .dr-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .dr-table th {
+    text-align: left;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--clr-border);
+    color: var(--clr-text-dim);
+  }
+  .dr-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text-dim);
+  }
+  .dr-table tr.selected td {
+    background: rgba(78, 108, 242, 0.08);
+    color: var(--clr-accent);
+    font-weight: 600;
+  }
+
+  /* Drawer */
+  .dr-drawer {
+    width: 260px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--clr-border);
+    background: var(--clr-surface);
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .dr-drawer h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .dr-drawer h3 span {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    font-weight: 400;
+  }
+
+  /* Shared */
+  .dr-norm {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    line-height: 1.5;
+    padding: 4px 6px;
+    background: var(--clr-bg);
+    border-radius: 4px;
+    border-left: 2px solid var(--clr-accent);
+  }
+  .dr-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dr-field label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--clr-text-dim);
+  }
+  .dr-field .dr-input {
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+    background: var(--clr-bg);
+  }
+  .dr-btn-row {
+    display: flex;
+    gap: 4px;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid var(--clr-border);
+  }
+  .dr-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-surface);
+    color: var(--clr-text-dim);
+  }
+  .dr-btn.primary {
+    background: var(--clr-accent);
+    color: #fff;
+    border-color: var(--clr-accent);
+  }
+</style>
+
+<div class="dr-shell">
+  <div class="dr-header">ENTUR App</div>
+
+  <div class="dr-body">
+    <!-- Table (dimmed when drawer open) -->
+    <div class="dr-table-area dimmed">
+      <div class="dr-title">Vehicle Types</div>
+      <div class="dr-subtitle">Total entries: 28</div>
+      <div class="dr-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Dims</th>
+              <th>Deck</th>
+              <th>Veh</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>NMR:Type:1</td>
+              <td>Alpha</td>
+              <td>L:11980</td>
+              <td>&mdash;</td>
+              <td>3</td>
+            </tr>
+            <tr class="selected">
+              <td>NMR:Type:2</td>
+              <td>Beta</td>
+              <td>L:17980</td>
+              <td>CG</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>NMR:Type:3</td>
+              <td>Gamma</td>
+              <td>L:14705</td>
+              <td>CE</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Slide-out drawer -->
+    <div class="dr-drawer">
+      <h3>
+        Edit: Beta
+        <span>&#10005; close</span>
+      </h3>
+      <div class="dr-norm">
+        Drawer slides from right on row click. Table dims but stays visible for context. Supports
+        scrollable form for 15-30+ fields. Width ~40% or fixed. Seen in: Linear, Vercel, Shopify
+        admin.
+      </div>
+      <div class="dr-field">
+        <label>Name</label>
+        <div class="dr-input">Beta</div>
+      </div>
+      <div class="dr-field">
+        <label>Type</label>
+        <div class="dr-input">Train &#9660;</div>
+      </div>
+      <div class="dr-field">
+        <label>Dimensions</label>
+        <div class="dr-input">L:17980 W:2500 H:3320</div>
+      </div>
+      <div class="dr-field">
+        <label>Deck Plan</label>
+        <div class="dr-input">CG &#8594;</div>
+      </div>
+      <div class="dr-field">
+        <label>Description</label>
+        <div class="dr-input">multi-line text area</div>
+      </div>
+      <div class="dr-field">
+        <label>Validity</label>
+        <div class="dr-input">2024-01-01 &mdash; 2026-12-31</div>
+      </div>
+      <div class="dr-field">
+        <label>Include</label>
+        <div class="dr-input">&#9745; yes</div>
+      </div>
+      <div class="dr-norm">
+        Scrolls for more fields. Grouped sections possible. Keyboard: Esc to close, Tab through
+        fields.
+      </div>
+      <div class="dr-btn-row">
+        <span class="dr-btn primary">Save</span>
+        <span class="dr-btn">Cancel</span>
+        <span class="dr-btn">Details &#8594;</span>
+      </div>
+    </div>
+  </div>
+</div>

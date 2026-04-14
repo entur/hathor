@@ -1,0 +1,223 @@
+<style>
+  .dp-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    font-size: 12px;
+    color: var(--clr-text);
+  }
+  .dp-header {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: var(--clr-primary);
+    color: #fff;
+    padding: 0 14px;
+    flex-shrink: 0;
+    font-size: 13px;
+    gap: 10px;
+  }
+  .dp-header .dp-brand {
+    font-weight: 700;
+  }
+  .dp-back {
+    font-size: 11px;
+    opacity: 0.7;
+    cursor: default;
+  }
+
+  .dp-body {
+    flex: 1;
+    min-height: 0;
+    background: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    border-top: none;
+    overflow-y: auto;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Entity heading */
+  .dp-entity-title {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .dp-entity-title span {
+    font-size: 11px;
+    color: var(--clr-text-dim);
+    font-weight: 400;
+  }
+
+  /* Tabs */
+  .dp-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--clr-border);
+    flex-shrink: 0;
+  }
+  .dp-tab {
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--clr-text-dim);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+  .dp-tab.active {
+    color: var(--clr-accent);
+    border-bottom-color: var(--clr-accent);
+    font-weight: 600;
+  }
+
+  /* Tab content card */
+  .dp-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+  }
+  .dp-card h4 {
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  /* 2-col grid inside card */
+  .dp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* Shared */
+  .dp-norm {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    line-height: 1.5;
+    padding: 4px 6px;
+    background: var(--clr-bg);
+    border-radius: 4px;
+    border-left: 2px solid var(--clr-accent);
+  }
+  .dp-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dp-field label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--clr-text-dim);
+  }
+  .dp-field .dp-input {
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+    background: #fff;
+  }
+  .dp-btn-row {
+    display: flex;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--clr-border);
+  }
+  .dp-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-surface);
+    color: var(--clr-text-dim);
+  }
+  .dp-btn.primary {
+    background: var(--clr-accent);
+    color: #fff;
+    border-color: var(--clr-accent);
+  }
+  .dp-btn.danger {
+    color: #d32f2f;
+    border-color: #d32f2f;
+  }
+</style>
+
+<div class="dp-shell">
+  <div class="dp-header">
+    <span class="dp-brand">ENTUR App</span>
+    <span class="dp-back">&#8592; Back to Vehicle Types</span>
+  </div>
+
+  <div class="dp-body">
+    <div class="dp-entity-title">
+      Vehicle Type: Beta
+      <span>NMR:VehicleType:2</span>
+    </div>
+
+    <div class="dp-norm">
+      Full detail page. Row click navigates away from the table entirely. Fields are grouped into
+      tabs or sections. Handles 30+ fields with deep nesting. Back button returns to list. Seen in:
+      Django admin, Salesforce, AWS Console, GitHub issue detail.
+    </div>
+
+    <div class="dp-tabs">
+      <div class="dp-tab active">General</div>
+      <div class="dp-tab">Dimensions</div>
+      <div class="dp-tab">Linked Entities</div>
+      <div class="dp-tab">History</div>
+    </div>
+
+    <div class="dp-card">
+      <h4>General Properties</h4>
+      <div class="dp-grid">
+        <div class="dp-field">
+          <label>Name</label>
+          <div class="dp-input">Beta</div>
+        </div>
+        <div class="dp-field">
+          <label>Type</label>
+          <div class="dp-input">Train &#9660;</div>
+        </div>
+        <div class="dp-field">
+          <label>Include</label>
+          <div class="dp-input">&#9745; yes</div>
+        </div>
+        <div class="dp-field">
+          <label>Validity</label>
+          <div class="dp-input">2024-01-01 &mdash; 2026-12-31</div>
+        </div>
+        <div class="dp-field">
+          <label>Description</label>
+          <div class="dp-input">Multi-line text. Full width on detail page.</div>
+        </div>
+        <div class="dp-field">
+          <label>Organisation</label>
+          <div class="dp-input">NSB Anbud AS &#8594;</div>
+        </div>
+      </div>
+      <div class="dp-norm">
+        Each tab shows a focused group. Dimensions tab: L/W/H fields. Linked Entities tab:
+        DeckPlans, Vehicles as sub-tables. History tab: audit log / version diff. Tabs keep the page
+        scannable even with 40+ total fields.
+      </div>
+      <div class="dp-btn-row">
+        <span class="dp-btn primary">Save</span>
+        <span class="dp-btn">Cancel</span>
+        <span class="dp-btn danger">Delete</span>
+      </div>
+    </div>
+  </div>
+</div>

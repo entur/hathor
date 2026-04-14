@@ -1,0 +1,308 @@
+<style>
+  .md-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    font-size: 12px;
+    color: var(--clr-text);
+  }
+  .md-header {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    background: var(--clr-primary);
+    color: #fff;
+    padding: 0 14px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .md-body {
+    flex: 1;
+    min-height: 0;
+    border: 1px solid var(--clr-border);
+    border-top: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Master (table) — top half */
+  .md-master {
+    flex: 1;
+    min-height: 0;
+    background: var(--clr-surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .md-title {
+    padding: 10px 14px 4px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .md-subtitle {
+    padding: 0 14px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+  }
+  .md-table {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 14px;
+  }
+  .md-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .md-table th {
+    text-align: left;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--clr-border);
+    color: var(--clr-text-dim);
+  }
+  .md-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text-dim);
+  }
+  .md-table tr.selected td {
+    background: rgba(78, 108, 242, 0.08);
+    color: var(--clr-accent);
+    font-weight: 600;
+  }
+
+  /* Resize handle */
+  .md-divider {
+    height: 6px;
+    background: var(--clr-border);
+    flex-shrink: 0;
+    cursor: row-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .md-divider::after {
+    content: '\2501\2501\2501';
+    font-size: 8px;
+    color: var(--clr-text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* Detail — bottom half */
+  .md-detail {
+    flex: 1;
+    min-height: 0;
+    background: var(--clr-bg);
+    overflow-y: auto;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .md-detail-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .md-detail-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .md-detail-header span {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+  }
+
+  /* 2-col sections */
+  .md-sections {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+  }
+  .md-section {
+    flex: 1;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .md-section h4 {
+    font-size: 11px;
+    font-weight: 700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--clr-text-dim);
+  }
+
+  /* Shared */
+  .md-norm {
+    font-size: 10px;
+    color: var(--clr-text-dim);
+    line-height: 1.5;
+    padding: 4px 6px;
+    background: var(--clr-bg);
+    border-radius: 4px;
+    border-left: 2px solid var(--clr-accent);
+  }
+  .md-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .md-field label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--clr-text-dim);
+  }
+  .md-field .md-input {
+    border: 1px solid var(--clr-border);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 11px;
+    color: var(--clr-text-dim);
+    background: #fff;
+  }
+  .md-btn-row {
+    display: flex;
+    gap: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--clr-border);
+  }
+  .md-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-surface);
+    color: var(--clr-text-dim);
+  }
+  .md-btn.primary {
+    background: var(--clr-accent);
+    color: #fff;
+    border-color: var(--clr-accent);
+  }
+</style>
+
+<div class="md-shell">
+  <div class="md-header">ENTUR App</div>
+
+  <div class="md-body">
+    <!-- Master: table -->
+    <div class="md-master">
+      <div class="md-title">Vehicle Types</div>
+      <div class="md-subtitle">Total entries: 28</div>
+      <div class="md-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Dims</th>
+              <th>Deck</th>
+              <th>Veh</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>NMR:Type:1</td>
+              <td>Alpha</td>
+              <td>L:11980</td>
+              <td>&mdash;</td>
+              <td>3</td>
+            </tr>
+            <tr class="selected">
+              <td>NMR:Type:2</td>
+              <td>Beta</td>
+              <td>L:17980</td>
+              <td>CG</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>NMR:Type:3</td>
+              <td>Gamma</td>
+              <td>L:14705</td>
+              <td>CE</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Resize divider -->
+    <div class="md-divider"></div>
+
+    <!-- Detail: selected row -->
+    <div class="md-detail">
+      <div class="md-detail-header">
+        <h3>Beta</h3>
+        <span>NMR:VehicleType:2</span>
+      </div>
+
+      <div class="md-norm">
+        Table and detail always visible. Click a row to update the bottom pane. Resizable split.
+        Good for quick scanning + editing without losing list context. Seen in: Outlook, Apple Mail,
+        VS Code explorer, many IDE property panels.
+      </div>
+
+      <div class="md-sections">
+        <div class="md-section">
+          <h4>General</h4>
+          <div class="md-field">
+            <label>Name</label>
+            <div class="md-input">Beta</div>
+          </div>
+          <div class="md-field">
+            <label>Type</label>
+            <div class="md-input">Train &#9660;</div>
+          </div>
+          <div class="md-field">
+            <label>Include</label>
+            <div class="md-input">&#9745; yes</div>
+          </div>
+          <div class="md-field">
+            <label>Validity</label>
+            <div class="md-input">2024-01-01 &mdash; 2026-12-31</div>
+          </div>
+        </div>
+
+        <div class="md-section">
+          <h4>Linked Entities</h4>
+          <div class="md-field">
+            <label>Deck Plan</label>
+            <div class="md-input">CG &#8594;</div>
+          </div>
+          <div class="md-field">
+            <label>Vehicles</label>
+            <div class="md-input">1 vehicle linked</div>
+          </div>
+          <div class="md-field">
+            <label>Organisation</label>
+            <div class="md-input">NSB Anbud AS &#8594;</div>
+          </div>
+          <div class="md-norm">
+            Linked entities as clickable refs. Sub-tables for many-to-many. "Details &#8594;" opens
+            full page for deep editing.
+          </div>
+        </div>
+      </div>
+
+      <div class="md-btn-row">
+        <span class="md-btn primary">Save</span>
+        <span class="md-btn">Cancel</span>
+        <span class="md-btn">Details &#8594;</span>
+      </div>
+    </div>
+  </div>
+</div>
