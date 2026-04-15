@@ -1,6 +1,14 @@
 # Hathor
 
+*Work in progress*  
+
 Frontend for [Sobek](https://github.com/entur/sobek) — Entur's national vehicle registry (Nasjonalt Materiellregister).
+
+
+↻ Deployment(s) : [dev](https://materiellregister.dev.entur.no)
+
+💡 Sandbox/mind-maps : [entur.github.io/hathor](https://entur.github.io/hathor/)
+
 
 ## Tech Stack
 
