@@ -12,6 +12,34 @@
     flex-direction: column;
     min-height: 0;
   }
+
+  /* Level 1: group tabs (Current / Alternative) */
+  .layouts-wrap .group-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 3px solid var(--clr-border);
+    flex-shrink: 0;
+  }
+  .layouts-wrap .group-bar button {
+    padding: 0.5rem 1.4rem;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--clr-text-dim);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -3px;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
+  }
+  .layouts-wrap .group-bar button.active {
+    color: var(--clr-text);
+    border-bottom-color: var(--clr-accent);
+  }
+
+  /* Level 2: layout tabs within each group */
   .layouts-wrap .tab-bar {
     display: flex;
     gap: 0;
@@ -38,6 +66,20 @@
     border-bottom-color: var(--clr-accent);
     font-weight: 600;
   }
+
+  /* Group panels */
+  .layouts-wrap .group-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .layouts-wrap .group-panel.active {
+    display: flex;
+    flex: 1;
+  }
+
+  /* Tab panels */
   .layouts-wrap .tab-panel {
     display: none;
     flex: 1;
@@ -52,73 +94,92 @@
 
 <div class="layouts-wrap">
   <div class="card">
-    <div class="tab-bar">
-      <button class="active" onclick="switchLayoutTab(this, 'tab-layout-dummy')">
-        Current/flex
-      </button>
-      <button onclick="switchLayoutTab(this, 'tab-drawer')">Drawer</button>
-      <button onclick="switchLayoutTab(this, 'tab-detail-page')">Detail page</button>
-      <button onclick="switchLayoutTab(this, 'tab-expandable')">Expandable row</button>
-      <button onclick="switchLayoutTab(this, 'tab-master-detail')">Master-detail</button>
-      <button onclick="switchLayoutTab(this, 'tab-last-season')">Screenshot</button>
+    <!-- Level 1: group tabs -->
+    <div class="group-bar">
+      <button class="active" onclick="switchGroupTab(this, 'group-current')">Current</button>
+      <button onclick="switchGroupTab(this, 'group-alternative')">Alternative</button>
     </div>
 
-    <div
-      id="tab-layout-dummy"
-      class="tab-panel active"
-      hx-get="partials/layouts/layout-dummy.html"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-    ></div>
+    <!-- Group: Current -->
+    <div id="group-current" class="group-panel active">
+      <div class="tab-bar">
+        <button class="active" onclick="switchLayoutTab(this, 'tab-layout-dummy')">
+          Table
+</button>
+        <button onclick="switchLayoutTab(this, 'tab-detail-page')">Detail page</button>
+        <button onclick="switchLayoutTab(this, 'tab-last-season')">Screenshot</button>
+      </div>
 
-    <div
-      id="tab-drawer"
-      class="tab-panel"
-      hx-get="partials/layouts/layout-drawer.html"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-    ></div>
+      <div
+        id="tab-layout-dummy"
+        class="tab-panel active"
+        hx-get="partials/layouts/layout-dummy.html"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      ></div>
+      <div
+        id="tab-detail-page"
+        class="tab-panel"
+        hx-get="partials/layouts/layout-detail-page.html"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      ></div>
+      <div
+        id="tab-last-season"
+        class="tab-panel"
+        hx-get="partials/layouts/last-season.html"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      ></div>
+    </div>
 
-    <div
-      id="tab-detail-page"
-      class="tab-panel"
-      hx-get="partials/layouts/layout-detail-page.html"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-    ></div>
+    <!-- Group: Alternative -->
+    <div id="group-alternative" class="group-panel">
+      <div class="tab-bar">
+        <button class="active" onclick="switchLayoutTab(this, 'tab-drawer')">Drawer</button>
+        <button onclick="switchLayoutTab(this, 'tab-expandable')">Expandable row</button>
+        <button onclick="switchLayoutTab(this, 'tab-master-detail')">Master-detail</button>
+      </div>
 
-    <div
-      id="tab-expandable"
-      class="tab-panel"
-      hx-get="partials/layouts/layout-expandable.html"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-    ></div>
-
-    <div
-      id="tab-master-detail"
-      class="tab-panel"
-      hx-get="partials/layouts/layout-master-detail.html"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-    ></div>
-
-    <div
-      id="tab-last-season"
-      class="tab-panel"
-      hx-get="partials/layouts/last-season.html"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-    ></div>
+      <div
+        id="tab-drawer"
+        class="tab-panel active"
+        hx-get="partials/layouts/layout-drawer.html"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      ></div>
+      <div
+        id="tab-expandable"
+        class="tab-panel"
+        hx-get="partials/layouts/layout-expandable.html"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      ></div>
+      <div
+        id="tab-master-detail"
+        class="tab-panel"
+        hx-get="partials/layouts/layout-master-detail.html"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      ></div>
+    </div>
   </div>
 </div>
 
 <script>
-  function switchLayoutTab(btn, panelId) {
+  function switchGroupTab(btn, panelId) {
     const card = btn.closest('.card');
-    card.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    card.querySelectorAll('.group-bar button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    card.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    card.querySelectorAll('.group-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  function switchLayoutTab(btn, panelId) {
+    const group = btn.closest('.group-panel');
+    group.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    group.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById(panelId).classList.add('active');
   }
 </script>
