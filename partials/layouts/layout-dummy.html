@@ -120,6 +120,37 @@
     text-align: right;
   }
 
+  /* Editable row */
+  .ld-table tr.editing td {
+    padding: 3px 4px;
+    background: rgba(78, 108, 242, 0.04);
+    font-style: normal;
+  }
+  .ld-table .ld-cell-input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--clr-accent);
+    border-radius: 3px;
+    padding: 3px 5px;
+    font-size: 11px;
+    color: var(--clr-text);
+    background: #fff;
+    outline: none;
+  }
+  .ld-table th.col-actions,
+  .ld-table td.col-actions {
+    width: 40px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* New button above table */
+  .ld-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 14px 4px;
+  }
+
   /* ── Sidebar right — Nav Drawer ──────────── */
   .ld-sidebar-r {
     width: 140px;
@@ -247,6 +278,9 @@
         Sortable columns. Common columns: ID (NeTEx URN), Name, Dimensions (L/W/H), linked Deck
         Plans, linked Vehicles. Click row to edit in Work Area.
       </div>
+      <div class="ld-toolbar">
+        <span class="ld-btn primary">+ New</span>
+      </div>
       <div class="ld-table">
         <table>
           <thead>
@@ -256,29 +290,33 @@
               <th>Dimensions</th>
               <th>Deck Plan</th>
               <th>Vehicles</th>
+              <th class="col-actions"></th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>NMR:Type:1</td>
-              <td>entity name</td>
-              <td>L:nnn W:nnn H:nnn</td>
-              <td>linked plan</td>
-              <td>count or list</td>
+            <tr class="editing">
+              <td><div class="ld-cell-input">NMR:Type:1</div></td>
+              <td><div class="ld-cell-input">Alpha</div></td>
+              <td><div class="ld-cell-input">L:24.5 W:3.1 H:4.2</div></td>
+              <td><div class="ld-cell-input">Main deck</div></td>
+              <td><div class="ld-cell-input">3</div></td>
+              <td class="col-actions"><span class="ld-btn primary">Save</span></td>
             </tr>
             <tr>
               <td>NMR:Type:2</td>
-              <td>entity name</td>
-              <td>L:nnn W:nnn H:nnn</td>
-              <td>linked plan</td>
-              <td>count or list</td>
+              <td>Beta</td>
+              <td>L:18.0 W:2.9 H:3.8</td>
+              <td>Upper deck</td>
+              <td>5</td>
+              <td class="col-actions"></td>
             </tr>
             <tr>
               <td>NMR:Type:3</td>
-              <td>entity name</td>
-              <td>L:nnn W:nnn H:nnn</td>
-              <td>linked plan</td>
-              <td>count or list</td>
+              <td>Gamma</td>
+              <td>L:30.2 W:3.4 H:4.5</td>
+              <td>—</td>
+              <td>1</td>
+              <td class="col-actions"></td>
             </tr>
           </tbody>
         </table>
