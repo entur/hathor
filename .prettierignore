@@ -1,6 +1,7 @@
 # Ignore artifacts
 dist
 node_modules
+.vite
 
 # Ignore build files
 build

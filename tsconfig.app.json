@@ -30,6 +30,7 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@entur/vtype-details": ["./packages/vtype-details/src/index.ts"],
+      "@entur/vehicle-details": ["./packages/vehicle-details/src/index.ts"],
       "@entur/data-view-table": ["./packages/data-view-table/src/index.ts"]
     }
   },
