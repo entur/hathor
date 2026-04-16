@@ -45,6 +45,47 @@ const autosysFixturePath = path.join(fixturesDir, `autosys-response-${REG_NR}.xm
  * The fixture uses "?" for transient values (frame ids, timestamps) that
  * change on every backend response — tests must not assert on those fields.
  */
+/**
+ * Smarter GraphQL interceptor: returns only the matching item when the request
+ * filters by `ids`, otherwise returns the full list. Covers both the detail
+ * page (single-item fetch) and the list page.
+ */
+export async function interceptVehicleTypeDetailQuery(page: import('@playwright/test').Page) {
+  await page.route('**/graphql', async route => {
+    const postData = route.request().postDataJSON();
+    if (postData?.query?.includes('vehicleTypes')) {
+      const ids: string[] | undefined = postData?.variables?.filter?.ids;
+      if (ids?.length) {
+        const match = MOCK_VEHICLE_TYPES.data.vehicleTypes.content.find((vt: { id: string }) =>
+          ids.includes(vt.id)
+        );
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            data: {
+              vehicleTypes: {
+                content: match ? [match] : [],
+                totalElements: match ? 1 : 0,
+                page: 0,
+                size: 1,
+              },
+            },
+          }),
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(MOCK_VEHICLE_TYPES),
+        });
+      }
+    } else {
+      await route.continue();
+    }
+  });
+}
+
 export async function interceptAutosysQuery(page: import('@playwright/test').Page) {
   await page.route('**/autosys?registrationNumber=**', async route => {
     if (fs.existsSync(autosysFixturePath)) {

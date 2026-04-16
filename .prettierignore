@@ -18,6 +18,7 @@ public/deckplan-editor
 # Ignore other files
 .claude
 .wolf
+.vite
 .github
 .husky
 .vscode
