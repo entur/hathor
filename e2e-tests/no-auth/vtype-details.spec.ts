@@ -5,6 +5,7 @@ import {
   targetConfig,
   interceptVehicleTypeDetailQuery,
   interceptVehicleTypesQuery,
+  captureGqlResponse,
 } from './autosys-helpers';
 
 const URL = '/vehicle-type/NMR:VehicleType:1';
@@ -101,6 +102,71 @@ test.describe('VehicleType detail page', () => {
 
   test.describe('with live backend', () => {
     test.skip(() => process.env.E2E_BACKEND !== 'true', 'Requires local Sobek backend');
+
+    test('list response has correct vehicles shape', async ({ page }) => {
+      const captured = captureGqlResponse(page);
+      await page.goto('/vehicle-type');
+      const json = (await captured) as {
+        data: {
+          vehicleTypes: {
+            content: {
+              vehicles?: { id: string; registrationNumber: string }[];
+              deckPlan?: { id: string; name?: { value: string } };
+            }[];
+          };
+        };
+      };
+
+      const items = json.data.vehicleTypes.content;
+      expect(items.length).toBeGreaterThan(0);
+
+      const withVehicles = items.find(vt => vt.vehicles && vt.vehicles.length > 0);
+      if (withVehicles) {
+        const v = withVehicles.vehicles![0];
+        expect(typeof v.id).toBe('string');
+        expect(typeof v.registrationNumber).toBe('string');
+      }
+
+      const withDeck = items.find(vt => vt.deckPlan);
+      if (withDeck) {
+        expect(typeof withDeck.deckPlan!.id).toBe('string');
+      }
+    });
+
+    test('detail response has correct vehicles shape', async ({ page }) => {
+      await page.goto('/vehicle-type');
+      await page.waitForLoadState('networkidle');
+
+      const firstLink = page.locator('table tbody tr').first().getByRole('link');
+      await expect(firstLink).toBeVisible({ timeout: 10_000 });
+
+      const captured = captureGqlResponse(page);
+      await firstLink.click();
+
+      const json = (await captured) as {
+        data: {
+          vehicleTypes: {
+            content: {
+              vehicles?: { id: string; registrationNumber: string }[];
+              deckPlan?: { id: string; name?: { value: string } };
+            }[];
+          };
+        };
+      };
+
+      const vt = json.data.vehicleTypes.content[0];
+      expect(vt).toBeTruthy();
+
+      if (vt.vehicles && vt.vehicles.length > 0) {
+        const v = vt.vehicles[0];
+        expect(typeof v.id).toBe('string');
+        expect(typeof v.registrationNumber).toBe('string');
+      }
+
+      if (vt.deckPlan) {
+        expect(typeof vt.deckPlan.id).toBe('string');
+      }
+    });
 
     test('create new vehicle type', async ({ page }) => {
       await page.goto('/vehicle-type/new');

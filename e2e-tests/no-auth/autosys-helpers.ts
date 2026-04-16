@@ -86,6 +86,27 @@ export async function interceptVehicleTypeDetailQuery(page: import('@playwright/
   });
 }
 
+/**
+ * Passthrough interceptor that captures the first GraphQL response without
+ * altering it. Returns a promise that resolves with the parsed JSON body.
+ */
+export function captureGqlResponse(
+  page: import('@playwright/test').Page
+): Promise<Record<string, unknown>> {
+  return new Promise(resolve => {
+    page.route('**/graphql', async route => {
+      const resp = await route.fetch();
+      const body = await resp.text();
+      resolve(JSON.parse(body));
+      await route.fulfill({
+        status: resp.status(),
+        headers: resp.headers(),
+        body,
+      });
+    });
+  });
+}
+
 export async function interceptAutosysQuery(page: import('@playwright/test').Page) {
   await page.route('**/autosys?registrationNumber=**', async route => {
     if (fs.existsSync(autosysFixturePath)) {
