@@ -2,6 +2,16 @@
  * Project Vehicle to fast-xml-parser XMLBuilder shape.
  * Renames $-prefixed attrs to @_, stringifies booleans,
  * and delegates complex children via reshapeComplex.
+ *
+ * POST-CODEGEN EDITS (reapply if regenerated):
+ *   1. Dropped unused `reshapeComplex: Reshape` parameter from the three
+ *      leaf helpers — keyValueStructureToXmlShape, privateCodeStructureToXmlShape,
+ *      textTypeToXmlShape — and updated their call sites in the reshapeComplex
+ *      switch. These helpers don't recurse, so the param was dead.
+ *   2. Removed the unused `childWrapped` helper function — Vehicle has no
+ *      wrapped-child field (unlike VehicleType's canManoeuvre).
+ *   Why: repo's tsconfig has noUnusedLocals/noUnusedParameters and ESLint's
+ *   @typescript-eslint/no-unused-vars — both flagged the dead code.
  */
 export function vehicleToXmlShape(obj: Obj): Obj {
   return {

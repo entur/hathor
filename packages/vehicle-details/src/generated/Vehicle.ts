@@ -1,6 +1,12 @@
 /**
  * Suggested flat interface for Vehicle
  * Resolved from 4 types in the inheritance chain
+ *
+ * POST-CODEGEN EDITS (reapply if regenerated):
+ *   Extensions?: any → Extensions?: unknown  (3 occurrences — Vehicle,
+ *   ValidBetween_VersionStructure, AlternativeText_VersionedChildStructure).
+ *   Why: repo ESLint forbids `@typescript-eslint/no-explicit-any`. `unknown`
+ *   round-trips through normalize/serialize the same way without a cast.
  */
 export interface Vehicle {
   // ── EntityStructure ──
