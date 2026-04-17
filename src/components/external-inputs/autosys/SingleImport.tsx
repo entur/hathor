@@ -3,10 +3,8 @@
 
 import { useTranslation } from 'react-i18next';
 import { useConfig } from '../../../contexts/configContext';
-import {
-  fetchVehicleFromAutosys,
-  importAsNetexToBackend,
-} from '../../../data/vehicle-imports/vehicleImportServices';
+import { fetchVehicleFromAutosys } from '../../../data/autosys-integration/autosysServices';
+import { importAsNetexToBackend } from '../../../data/netexImport';
 import type { NeTExResourceFrame } from '../../../data/vehicle-types/vehicleTypeTypes';
 import { useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';

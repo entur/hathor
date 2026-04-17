@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
+import { findResourceFrame } from '../../xmlUtils';
+import { mergeResourceFrames } from '../mergeResourceFrames';
 import type { ImportEntry, FramesByQueryRegNumber } from '../types';
-import { findResourceFrame, mergeResourceFrames, toArray } from '../xmlUtils';
 import { makeXml } from './__fixtures__/makeXml';
 
 const parser = new XMLParser({ ignoreAttributes: false });
@@ -67,23 +68,5 @@ describe('mergeResourceFrames', () => {
 
     expect(merged.vehicles).toHaveLength(1);
     expect(merged.vehicles[0].OperationalNumber).toBeUndefined();
-  });
-});
-
-describe('toArray', () => {
-  it('wraps a single value', () => {
-    expect(toArray('a')).toEqual(['a']);
-  });
-
-  it('returns an array as-is', () => {
-    expect(toArray([1, 2])).toEqual([1, 2]);
-  });
-
-  it('returns empty array for undefined', () => {
-    expect(toArray(undefined)).toEqual([]);
-  });
-
-  it('returns empty array for null', () => {
-    expect(toArray(null)).toEqual([]);
   });
 });

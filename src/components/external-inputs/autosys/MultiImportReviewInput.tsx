@@ -7,9 +7,9 @@ import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { parseEntryInput } from '../../../data/vehicle-imports/parseEntryInput';
-import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
-import type { ImportEntry } from '../../../data/vehicle-imports/types';
+import { parseEntryInput } from '../../../data/autosys-integration/parseEntryInput';
+import type { RegNumbersStatus } from '../../../data/autosys-integration/regNumbersTextTransformer';
+import type { ImportEntry } from '../../../data/autosys-integration/types';
 
 interface MultiImportReviewInputProps {
   entries: ImportEntry[];

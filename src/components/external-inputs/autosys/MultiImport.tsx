@@ -13,19 +13,18 @@ import { useConfig } from '../../../contexts/configContext';
 import {
   type AutosysAssembledResult,
   assembleAutosysResults,
-} from '../../../data/vehicle-imports/assembleAutosysResults';
-import { fetchAllWithConcurrency } from '../../../data/vehicle-imports/fetchAllWithConcurrency';
-import type { TableMeta } from '../../../data/vehicle-imports/inputTextAnalyzer';
+} from '../../../data/autosys-integration/assembleAutosysResults';
+import { fetchAllWithConcurrency } from '../../../data/autosys-integration/fetchAllWithConcurrency';
+import type { TableMeta } from '../../../data/autosys-integration/inputTextAnalyzer';
 import {
   type RegNumbersStatus,
   deduplicateEntries,
-} from '../../../data/vehicle-imports/regNumbersTextTransformer';
-import type { ImportEntry } from '../../../data/vehicle-imports/types';
-import {
-  fetchVehicleFromAutosys,
-  importAsNetexToBackend,
-} from '../../../data/vehicle-imports/vehicleImportServices';
-import { extractVehicleTypeIds, mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
+} from '../../../data/autosys-integration/regNumbersTextTransformer';
+import type { ImportEntry } from '../../../data/autosys-integration/types';
+import { fetchVehicleFromAutosys } from '../../../data/autosys-integration/autosysServices';
+import { importAsNetexToBackend } from '../../../data/netexImport';
+import { extractVehicleTypeIds } from '../../../data/xmlUtils';
+import { mergeResourceFrames } from '../../../data/autosys-integration/mergeResourceFrames';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';

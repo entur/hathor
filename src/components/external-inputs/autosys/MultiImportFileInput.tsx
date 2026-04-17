@@ -7,8 +7,8 @@ import {
   type AnalyzerResult,
   type TableMeta,
   inputTextAnalyzer,
-} from '../../../data/vehicle-imports/inputTextAnalyzer';
-import type { RegNumbersStatus } from '../../../data/vehicle-imports/regNumbersTextTransformer';
+} from '../../../data/autosys-integration/inputTextAnalyzer';
+import type { RegNumbersStatus } from '../../../data/autosys-integration/regNumbersTextTransformer';
 
 interface MultiImportFileInputProps {
   onParsed: (regNumbers: string[], status: RegNumbersStatus) => void;

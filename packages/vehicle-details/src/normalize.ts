@@ -71,6 +71,10 @@ function normalizeValue(src: Record<string, unknown>, hints: TypeHints): Record<
           out[key] = rawVal.map(item =>
             normalizeValue(item as Record<string, unknown>, nestedHints)
           );
+        } else if (isArray) {
+          // fast-xml-parser collapses a single repeated element into an object;
+          // wrap as single-element array when the schema expects a list.
+          out[key] = [normalizeValue(rawVal as Record<string, unknown>, nestedHints)];
         } else {
           out[key] = normalizeValue(rawVal as Record<string, unknown>, nestedHints);
         }

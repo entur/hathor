@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Paper, Typography } from '@mui/material';
 import { Editor, validate, serialize, normalizeGraphQL } from '@entur/vtype-details';
 import type { VehicleType as EditorVehicleType, ExtraTab } from '@entur/vtype-details';
 import { DataViewTable, type ColumnDefinition } from '@entur/data-view-table';
 import { useAuth } from '../auth/authUtils';
 import { useConfig } from '../contexts/configContext';
-import { importAsNetexToBackend } from '../data/vehicle-imports/vehicleImportServices';
-import { wrapInPublicationDelivery } from '../data/vehicle-imports/xmlUtils';
+import { importAsNetexToBackend } from '../data/netexImport';
+import { wrapInPublicationDelivery } from '../data/xmlUtils';
 import { useVehicleType } from '../data/vehicle-types/useVehicleType';
 import type { Vehicle, DeckPlan } from '../data/vehicle-types/vehicleTypeTypes';
 import LoadingPage from '../components/common/LoadingPage';
@@ -17,7 +17,17 @@ import GenericDetailsPage from './GenericDetailsPage';
 type VehicleSortKey = 'id' | 'registrationNumber';
 
 const vehicleCols: ColumnDefinition<Vehicle, VehicleSortKey>[] = [
-  { id: 'id', headerLabel: 'ID', isSortable: true, renderCell: v => v.id, display: 'always' },
+  {
+    id: 'id',
+    headerLabel: 'ID',
+    isSortable: true,
+    // Sobek GQL returns Vehicle.id as DB row id, not netexId — prepend the
+    // prefix until Sobek registers getNetexIdFetcher for OUTPUT_TYPE_VEHICLE.
+    renderCell: v => (
+      <Link to={`/vehicle/${encodeURIComponent(`NMR:Vehicle:${v.id}`)}`}>{v.id}</Link>
+    ),
+    display: 'always',
+  },
   {
     id: 'registrationNumber',
     headerLabel: 'Reg. Number',

@@ -10,6 +10,7 @@ import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './pages/VehicleTypeView.tsx';
 import VehicleTypeDetails from './pages/VehicleTypeDetails.tsx';
+import VehicleDetails from './pages/VehicleDetails.tsx';
 import DeckPlanView from './pages/DeckPlanView.tsx';
 import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
 
@@ -53,6 +54,10 @@ export default function App() {
                   <Route
                     path="/vehicle-type/:id"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
+                  />
+                  <Route
+                    path="/vehicle/:id"
+                    element={<ProtectedRoute element={<VehicleDetails />} />}
                   />
                 </Routes>
               </Box>
