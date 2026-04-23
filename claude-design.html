@@ -1,0 +1,5534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vehicle Types — NMR</title>
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg-tint-neutral);
+        color: var(--text-dark);
+        font-family: var(--font-body);
+      }
+
+      /* ============================================================
+     TransportMode icon colors
+     ============================================================ */
+      :root {
+        --tm-bus: #c5044e;
+        --tm-tram: #642e88;
+        --tm-coach: #8a1414;
+        --tm-rail: #00367f;
+        --tm-metro: #bf5826;
+        --tm-ferry: #0c6693;
+        --tm-air: #800664;
+        --tm-trolleyBus: #a11440;
+        --tm-water: #022536;
+        --tm-cableway: #642e88;
+        --tm-funicular: #78469a;
+        --tm-taxi: #181c56;
+        --tm-unknown: #6a6b78;
+        --tm-all: #262f7d;
+
+        /* NetexID type colors (just what we need) */
+        --nx-VehicleType: #e6560f;
+        --nx-VehicleType-tint: #feebde;
+        --nx-Vehicle: #bf5826;
+        --nx-Vehicle-tint: #f8e6d7;
+        --nx-DeckPlan: #046690;
+        --nx-DeckPlan-tint: #dfeef6;
+        --nx-Branding: #6a4fb8;
+        --nx-Branding-tint: #ece6fa;
+        --nx-GenericType: #525360;
+        --nx-GenericType-tint: #ededef;
+      }
+
+      /* ============================================================
+     App shell — Entur header
+     ============================================================ */
+      .app-header {
+        background: var(--bg-contrast-light);
+        color: var(--text-light);
+        height: 56px;
+        display: flex;
+        align-items: center;
+        padding: 0 24px;
+        gap: 20px;
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .app-header .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 0;
+        font-weight: 600;
+        font-size: 18px;
+        letter-spacing: 0.01em;
+      }
+      .app-header .brand .en {
+        color: #fff;
+      }
+      .app-header .brand .tur {
+        color: var(--coral-50);
+      }
+      .app-header .brand .app-name {
+        color: rgba(255, 255, 255, 0.88);
+        font-weight: 400;
+        margin-left: 8px;
+      }
+      .app-header .spacer {
+        flex: 1;
+      }
+      .app-header .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        cursor: pointer;
+        position: relative;
+        background: transparent;
+        border: 0;
+      }
+      .app-header .icon-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .app-header .icon-btn .pip {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--mint-50);
+      }
+
+      /* Federated search on top of header */
+      .fed-search {
+        flex: 0 1 520px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: var(--radius-pill);
+        padding: 7px 16px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 14px;
+        cursor: text;
+        transition:
+          background 120ms,
+          border-color 120ms;
+      }
+      .fed-search:hover,
+      .fed-search:focus-within {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+      .fed-search input {
+        flex: 1;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: #fff;
+        font: inherit;
+      }
+      .fed-search input::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+      }
+      .fed-search kbd {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        padding: 2px 6px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 4px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* ============================================================
+     App shell: sidebar + main
+     ============================================================ */
+      .app-root {
+        display: grid;
+        grid-template-columns: var(--sidebar-w, 60px) 1fr;
+        height: calc(100vh - 56px);
+        transition: grid-template-columns 180ms ease;
+      }
+      .app-root.sb-expanded {
+        --sidebar-w: 212px;
+      }
+
+      .sidebar {
+        background: var(--bg-standard);
+        border-right: 1px solid var(--stroke-neutral);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-width: 0;
+      }
+      .sidebar .sb-top {
+        padding: 10px 10px 6px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .sidebar .sb-toggle {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 6px;
+        color: var(--text-neutral);
+      }
+      .sidebar .sb-toggle:hover {
+        background: var(--bg-tint-light);
+        color: var(--text-dark);
+      }
+      .sidebar .sb-nav {
+        list-style: none;
+        padding: 4px 6px;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        flex: 1;
+      }
+      .sidebar .sb-nav a {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        color: var(--text-dark);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        position: relative;
+      }
+      .sidebar .sb-nav a:hover {
+        background: var(--bg-tint-light);
+      }
+      .sidebar .sb-nav a.active {
+        background: var(--lavender-20);
+        color: var(--text-accent);
+      }
+      .sidebar .sb-nav a.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 6px;
+        bottom: 6px;
+        width: 3px;
+        background: var(--stroke-accent);
+        border-radius: 2px;
+      }
+      .sidebar .sb-nav a .sb-ic {
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-neutral);
+      }
+      .sidebar .sb-nav a.active .sb-ic {
+        color: var(--text-accent);
+      }
+      .sidebar .sb-nav a .sb-lbl,
+      .sidebar .sb-nav a .sb-count {
+        opacity: 0;
+        transition: opacity 120ms ease;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .app-root.sb-expanded .sidebar .sb-nav a .sb-lbl,
+      .app-root.sb-expanded .sidebar .sb-nav a .sb-count {
+        opacity: 1;
+      }
+      .sidebar .sb-nav a .sb-count {
+        font-size: 11px;
+        color: var(--text-neutral);
+        font-variant-numeric: tabular-nums;
+        background: var(--bg-tint-neutral);
+        padding: 1px 6px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+      .sidebar .sb-nav a.active .sb-count {
+        background: var(--lavender-30, #d8ccf0);
+        color: var(--text-accent);
+      }
+      .sidebar .sb-sep {
+        height: 1px;
+        background: var(--stroke-neutral);
+        margin: 8px 10px;
+      }
+      /* tooltip when collapsed */
+      .sidebar .sb-nav a[data-tip]::after {
+        content: attr(data-tip);
+        position: absolute;
+        left: calc(100% + 6px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: #1a1a1a;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+        z-index: 1000;
+      }
+      .app-root:not(.sb-expanded) .sidebar .sb-nav a:hover[data-tip]::after {
+        opacity: 1;
+      }
+
+      .app-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* route panels */
+      .route {
+        display: none;
+        flex: 1;
+        min-height: 0;
+        flex-direction: column;
+      }
+      .route.active {
+        display: flex;
+      }
+
+      /* placeholder route */
+      .route-placeholder {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-neutral);
+        gap: 10px;
+        padding: 40px;
+      }
+      .route-placeholder h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+      }
+      .route-placeholder p {
+        font-size: 13px;
+        margin: 0;
+        max-width: 420px;
+        text-align: center;
+      }
+      .route-placeholder .ph-ic {
+        width: 48px;
+        height: 48px;
+        color: var(--text-subdued);
+        margin-bottom: 4px;
+      }
+
+      /* Vehicles route bits */
+      .veh-filter-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .veh-select {
+        font: inherit;
+        font-size: 12px;
+        padding: 5px 24px 5px 10px;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-sm);
+        background: var(--bg-standard)
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23666' d='M1 1l4 4 4-4'/%3E%3C/svg%3E")
+          no-repeat right 8px center;
+        appearance: none;
+        -webkit-appearance: none;
+        color: var(--text-dark);
+        cursor: pointer;
+        min-width: 140px;
+      }
+      .veh-select:hover {
+        border-color: var(--text-neutral);
+      }
+      .status-seg {
+        display: inline-flex;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: var(--bg-standard);
+      }
+      .status-seg button {
+        font: inherit;
+        font-size: 12px;
+        padding: 5px 10px;
+        border: 0;
+        background: transparent;
+        color: var(--text-neutral);
+        cursor: pointer;
+        font-weight: 500;
+        border-right: 1px solid var(--stroke-neutral);
+      }
+      .status-seg button:last-child {
+        border-right: 0;
+      }
+      .status-seg button:hover {
+        color: var(--text-dark);
+        background: var(--bg-tint-light);
+      }
+      .status-seg button.active {
+        background: var(--bg-tint-neutral);
+        color: var(--text-dark);
+      }
+
+      /* Vehicle detail */
+      .vd-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--stroke-neutral);
+        margin-bottom: 18px;
+      }
+      .vd-header .vd-mode {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        background: var(--bg-tint-neutral);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .vd-header h2 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 2px;
+        letter-spacing: -0.01em;
+      }
+      .vd-header .sub {
+        font-size: 12px;
+        color: var(--text-neutral);
+      }
+      .vd-header .close-btn {
+        margin-left: auto;
+        width: 28px;
+        height: 28px;
+        border: 0;
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-neutral);
+        border-radius: 4px;
+      }
+      .vd-header .close-btn:hover {
+        background: var(--bg-tint-light);
+        color: var(--text-dark);
+      }
+      .vd-status-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .vd-pill {
+        font-size: 11px;
+        font-weight: 500;
+        padding: 3px 9px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .vd-pill.in_service {
+        background: #e0f3e7;
+        color: #1c6b3a;
+      }
+      .vd-pill.depot {
+        background: #f3eadb;
+        color: #8a5a1f;
+      }
+      .vd-pill.withdrawn {
+        background: #efe0e0;
+        color: #8a2a2a;
+      }
+      .vd-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .vd-pill.monitored {
+        background: var(--lavender-20);
+        color: var(--text-accent);
+      }
+      .vd-pill.monitored.off {
+        background: var(--bg-tint-neutral);
+        color: var(--text-neutral);
+      }
+
+      .vd-grid {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 12px 16px;
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+      .vd-grid dt {
+        color: var(--text-neutral);
+        font-weight: 500;
+      }
+      .vd-grid dd {
+        margin: 0;
+        color: var(--text-dark);
+        font-variant-numeric: tabular-nums;
+      }
+      .vd-grid dd.mono {
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      .vd-grid dd input,
+      .vd-grid dd select {
+        font: inherit;
+        font-size: 13px;
+        padding: 5px 8px;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-sm);
+        background: var(--bg-standard);
+        color: var(--text-dark);
+        width: 100%;
+        max-width: 280px;
+        font-variant-numeric: tabular-nums;
+      }
+      .vd-grid dd input.mono {
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      .vd-grid dd input:focus,
+      .vd-grid dd select:focus {
+        outline: 2px solid var(--stroke-accent);
+        outline-offset: -1px;
+        border-color: transparent;
+      }
+
+      .vd-section-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-neutral);
+        margin: 24px 0 10px;
+      }
+
+      /* Pane-level edit toolbar — one bar per tab/pane, right-aligned.
+     Appears above the first section title. Shared across vehicle & types details. */
+      .pane-edit-bar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        padding: 8px 0 4px;
+        border-bottom: 1px solid transparent;
+        transition: border-color 150ms;
+      }
+      .pane-edit-bar.editing {
+        border-bottom-color: var(--stroke-accent);
+        margin-bottom: 4px;
+      }
+      .pane-edit-bar .edit-status {
+        flex: 1;
+        font-size: 11px;
+        color: var(--text-neutral);
+        font-weight: 500;
+        letter-spacing: 0.03em;
+      }
+      .pane-edit-bar.editing .edit-status {
+        color: var(--text-accent);
+      }
+      .pane-edit-bar .btn {
+        font: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 5px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--stroke-neutral);
+        background: var(--bg-standard);
+        color: var(--text-dark);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .pane-edit-bar .btn:hover {
+        background: var(--bg-tint-light);
+      }
+      .pane-edit-bar .btn.primary {
+        background: var(--text-accent);
+        color: #fff;
+        border-color: var(--text-accent);
+      }
+      .pane-edit-bar .btn.primary:hover {
+        filter: brightness(1.05);
+      }
+      .pane-edit-bar .btn.primary:disabled {
+        background: var(--bg-tint-neutral);
+        color: var(--text-subdued);
+        border-color: var(--stroke-neutral);
+        cursor: default;
+      }
+      .pane-edit-bar .btn.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--text-neutral);
+      }
+      .pane-edit-bar .btn.ghost:hover {
+        background: var(--bg-tint-light);
+        color: var(--text-dark);
+      }
+      .pane-edit-bar .btn svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      /* Environmental pane — two-column list: label+hint | value/input */
+      .env-pane {
+        padding: 4px 24px 24px;
+      }
+      .env-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        border-top: 1px solid var(--stroke-neutral);
+      }
+      .env-row {
+        display: grid;
+        grid-template-columns: minmax(220px, 40%) 1fr;
+        gap: 24px;
+        align-items: center;
+        padding: 14px 4px;
+        border-bottom: 1px solid var(--stroke-neutral);
+      }
+      .env-label-main {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+      .env-label-hint {
+        font-size: 11px;
+        color: var(--text-neutral);
+        margin-top: 2px;
+      }
+      .env-value {
+        font-size: 13px;
+        color: var(--text-dark);
+        min-width: 0;
+      }
+      .env-value .input,
+      .env-value .select {
+        width: 100%;
+        max-width: 280px;
+      }
+      .env-value .range-input {
+        max-width: 320px;
+      }
+      .vd-type-card {
+        border: 1px solid var(--stroke-neutral);
+        border-radius: 8px;
+        padding: 12px 14px;
+        background: var(--bg-tint-light);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition:
+          border-color 120ms,
+          background 120ms;
+      }
+      .vd-type-card:hover {
+        border-color: var(--stroke-accent);
+        background: var(--bg-standard);
+      }
+      .vd-type-card .tc-ic {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: var(--bg-standard);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: 1px solid var(--stroke-neutral);
+      }
+      .vd-type-card .tc-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .vd-type-card .tc-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 2px;
+      }
+      .vd-type-card .tc-id {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-neutral);
+      }
+      .vd-type-card .tc-arrow {
+        color: var(--text-subdued);
+      }
+
+      .vd-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-neutral);
+        gap: 8px;
+        text-align: center;
+        padding: 40px 20px;
+      }
+      .vd-empty .ic {
+        width: 40px;
+        height: 40px;
+        color: var(--text-subdued);
+      }
+      .vd-empty .hint {
+        font-size: 12px;
+        max-width: 260px;
+      }
+
+      /* Shared NeTEx-id pill — simple gray, flavour-tinted */
+      .nx-pill {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        color: var(--text-dark);
+        white-space: nowrap;
+        display: inline-block;
+        background: var(--bg-tint-neutral);
+        border: 1px solid transparent;
+      }
+      .nx-pill.planned {
+        background: #ecebf1;
+        border-color: #dfdce7;
+      } /* lavender-tinted gray */
+      .nx-pill.physical {
+        background: #e7ecea;
+        border-color: #dae1de;
+      } /* mint-tinted gray */
+
+      /* Vehicles table specific cells */
+      #veh-table td .reg-cell {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+      #veh-table tr.selected td {
+        background: var(--lavender-20);
+      }
+      #veh-table tr.selected td:first-child {
+        box-shadow: inset 3px 0 0 var(--stroke-accent);
+      }
+
+      /* ============================================================
+     Page
+     ============================================================ */
+      .page-shell {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        flex: 1;
+        min-height: 0;
+      }
+      .page-head {
+        padding: 20px 32px 0;
+        background: var(--bg-standard);
+        border-bottom: 1px solid var(--stroke-neutral);
+      }
+      .crumbs {
+        font-size: 12px;
+        color: var(--text-neutral);
+        margin-bottom: 6px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .crumbs a {
+        color: var(--text-subdued);
+        text-decoration: none;
+      }
+      .page-title-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 20px;
+        padding-bottom: 16px;
+      }
+      .page-title-row h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .page-title-row .total {
+        font-size: 13px;
+        color: var(--text-neutral);
+        font-variant-numeric: tabular-nums;
+        padding-bottom: 6px;
+      }
+      .page-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        padding-bottom: 4px;
+      }
+      .btn {
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: var(--radius-pill);
+        border: 1px solid transparent;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition:
+          background 120ms,
+          border-color 120ms,
+          color 120ms;
+      }
+      .btn-primary {
+        background: var(--primary-default);
+        color: var(--text-light);
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--text-accent);
+        border-color: var(--stroke-accent);
+      }
+      .btn-secondary:hover {
+        background: var(--secondary-hover);
+      }
+      .btn-tertiary {
+        background: transparent;
+        color: var(--text-accent);
+        padding: 8px 12px;
+      }
+      .btn-tertiary:hover {
+        background: var(--secondary-hover);
+      }
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+
+      /* Tabs row */
+      .tabs {
+        display: flex;
+        gap: 0;
+        padding: 0 0;
+        border-bottom: 0;
+        margin-bottom: -1px;
+      }
+      .tab {
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-neutral);
+        cursor: pointer;
+        background: none;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+      }
+      .tab:hover {
+        color: var(--text-dark);
+      }
+      .tab.active {
+        color: var(--text-accent);
+        border-bottom-color: var(--stroke-accent);
+      }
+      .tab .count {
+        font-size: 11px;
+        color: var(--text-neutral);
+        font-variant-numeric: tabular-nums;
+        background: var(--bg-tint-neutral);
+        padding: 1px 6px;
+        border-radius: 10px;
+      }
+      .tab.active .count {
+        background: var(--lavender-20);
+        color: var(--text-accent);
+      }
+
+      /* ============================================================
+     Filter bar
+     ============================================================ */
+      .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        padding: 12px 32px;
+        background: var(--bg-tint-light);
+        border-bottom: 1px solid var(--stroke-neutral);
+        font-size: 13px;
+      }
+      .filter-bar .label {
+        color: var(--text-neutral);
+        font-weight: 500;
+        margin-right: 2px;
+      }
+      .filter-bar .divider {
+        width: 1px;
+        height: 20px;
+        background: var(--stroke-neutral);
+        margin: 0 4px;
+      }
+      .filter-bar .spacer {
+        flex: 1;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px 4px 10px;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-pill);
+        font-size: 12px;
+        background: #fff;
+        color: var(--text-dark);
+        cursor: pointer;
+        transition:
+          background 120ms,
+          border-color 120ms;
+      }
+      .chip:hover {
+        border-color: var(--stroke-neutral-alt);
+      }
+      .chip.active {
+        background: var(--selected-default-light);
+        border-color: var(--stroke-subdued);
+        color: var(--text-accent);
+      }
+      .chip .x {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        color: var(--text-neutral);
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+      }
+      .chip .x:hover {
+        background: var(--grey-20);
+        color: var(--text-dark);
+      }
+
+      .flavour-seg {
+        display: inline-flex;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-small);
+        overflow: hidden;
+      }
+      .flavour-seg button {
+        border: 0;
+        background: transparent;
+        padding: 5px 12px;
+        font: inherit;
+        font-size: 12px;
+        color: var(--text-neutral);
+        cursor: pointer;
+        border-right: 1px solid var(--stroke-neutral);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .flavour-seg button:last-child {
+        border-right: 0;
+      }
+      .flavour-seg button.active {
+        background: var(--primary-default);
+        color: var(--text-light);
+      }
+      .flavour-seg button .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.6;
+      }
+
+      .mode-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-pill);
+        padding: 3px 4px;
+      }
+      .mode-filter button {
+        width: 26px;
+        height: 26px;
+        border: 0;
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 50%;
+        color: var(--text-neutral-alt);
+      }
+      .mode-filter button:hover {
+        background: var(--bg-tint-neutral);
+        color: var(--text-dark);
+      }
+      .mode-filter button.active {
+        background: var(--selected-default-light);
+      }
+      .mode-filter button.active svg {
+        color: var(--current-tm);
+      }
+
+      .search-field {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-pill);
+        padding: 5px 12px 5px 30px;
+        font-size: 13px;
+        min-width: 260px;
+      }
+      .search-field svg.icn {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-neutral-alt);
+      }
+      .search-field input {
+        border: 0;
+        outline: 0;
+        background: transparent;
+        font: inherit;
+        flex: 1;
+      }
+      .search-field input::placeholder {
+        color: var(--text-neutral-alt);
+      }
+
+      /* Col picker dropdown */
+      .col-picker {
+        position: relative;
+      }
+      .col-picker-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 6px);
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-medium);
+        box-shadow: var(--shadow-large);
+        min-width: 220px;
+        padding: 6px;
+        z-index: 20;
+        display: none;
+      }
+      .col-picker.open .col-picker-menu {
+        display: block;
+      }
+      .col-picker-menu .head {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-neutral-alt);
+        padding: 8px 10px 4px;
+      }
+      .col-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: var(--radius-small);
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .col-item:hover {
+        background: var(--bg-tint-light);
+      }
+      .col-item .grip {
+        cursor: grab;
+        color: var(--text-neutral-alt);
+        font-size: 11px;
+      }
+      .col-item input[type='checkbox'] {
+        accent-color: var(--primary-default);
+      }
+      .col-item .label {
+        flex: 1;
+        color: var(--text-dark);
+      }
+
+      /* ============================================================
+     Master-detail split
+     ============================================================ */
+      .split {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 0px;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        transition: grid-template-columns 200ms ease;
+        background: var(--bg-tint-neutral);
+      }
+      .split.detail-open {
+        grid-template-columns: minmax(0, 1fr) 540px;
+      }
+
+      /* ============================================================
+     LIST PANE
+     ============================================================ */
+      .list-pane {
+        overflow: auto;
+        padding: 16px 32px 40px;
+        min-width: 0;
+      }
+
+      .tbl-wrap {
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-medium);
+        overflow: hidden;
+      }
+
+      table.vt-list {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+      }
+      table.vt-list thead th {
+        background: var(--bg-tint-light);
+        text-align: left;
+        font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-neutral);
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--stroke-neutral);
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        user-select: none;
+      }
+      table.vt-list thead th .hd {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+      table.vt-list thead th .hd .sort-ic {
+        opacity: 0.4;
+      }
+      table.vt-list thead th.sorted .hd .sort-ic {
+        opacity: 1;
+        color: var(--text-accent);
+      }
+      /* resizer handle */
+      table.vt-list thead th .resizer {
+        position: absolute;
+        right: 0;
+        top: 20%;
+        height: 60%;
+        width: 5px;
+        cursor: col-resize;
+        border-right: 1px dashed transparent;
+      }
+      table.vt-list thead th:hover .resizer {
+        border-right-color: var(--stroke-neutral-alt);
+      }
+      table.vt-list thead th {
+        position: sticky;
+        position: relative;
+      }
+      /* We want sticky + relative; sticky wins. Keep resizer absolute but parent relative via JS-less trick: wrap */
+      table.vt-list thead th .th-inner {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      table.vt-list tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--stroke-neutral);
+        vertical-align: middle;
+        color: var(--text-dark);
+      }
+      table.vt-list tbody tr {
+        cursor: pointer;
+        transition: background 100ms;
+      }
+      table.vt-list tbody tr:hover td {
+        background: var(--bg-tint-light);
+      }
+      table.vt-list tbody tr.selected td {
+        background: var(--selected-default-light);
+      }
+      table.vt-list tbody tr.selected td:first-child {
+        box-shadow: inset 3px 0 0 var(--primary-default);
+      }
+
+      .mode-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .mode-cell svg {
+        flex: none;
+      }
+      .mode-cell .mname {
+        font-size: 12px;
+        color: var(--text-neutral);
+        text-transform: capitalize;
+      }
+
+      .cell-title {
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+      .cell-sub {
+        color: var(--text-neutral);
+        font-size: 11px;
+        font-family: var(--font-mono);
+        margin-top: 2px;
+      }
+
+      .flavour-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px 2px 6px;
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: var(--radius-pill);
+        font-variant-numeric: tabular-nums;
+      }
+      .flavour-pill.planned {
+        background: var(--lavender-20);
+        color: var(--lavender-90);
+      }
+      .flavour-pill.physical {
+        background: var(--mint-20);
+        color: var(--mint-80);
+      }
+      .flavour-pill .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.75;
+      }
+
+      .sum-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-pill);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-dark);
+      }
+      .sum-chip.zero {
+        color: var(--text-neutral-alt);
+      }
+      .sum-chip .n {
+        font-weight: 500;
+      }
+      .sum-chip .prefix {
+        color: var(--text-neutral-alt);
+        font-size: 11px;
+        font-weight: 400;
+        margin-right: -2px;
+      }
+
+      .dim-cell {
+        font-variant-numeric: tabular-nums;
+        color: var(--text-neutral);
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      .dim-cell b {
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+      .dim-cell.range b {
+        color: var(--lavender-90);
+      }
+      .range-hint {
+        color: var(--text-neutral-alt);
+        font-size: 10px;
+        margin-left: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      /* Empty/no results */
+      .empty-row td {
+        padding: 40px;
+        text-align: center;
+        color: var(--text-neutral);
+      }
+
+      /* Footer (pagination) */
+      .tbl-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        background: var(--bg-tint-light);
+        border-top: 1px solid var(--stroke-neutral);
+        font-size: 12px;
+        color: var(--text-neutral);
+      }
+      .page-ctrl {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+      }
+      .page-ctrl button {
+        width: 28px;
+        height: 28px;
+        border: 0;
+        background: transparent;
+        border-radius: var(--radius-small);
+        cursor: pointer;
+        color: var(--text-neutral);
+      }
+      .page-ctrl button:hover {
+        background: var(--bg-tint-neutral);
+        color: var(--text-dark);
+      }
+      .page-ctrl button:disabled {
+        color: var(--text-neutral-alt);
+        cursor: not-allowed;
+      }
+      .page-ctrl .sep {
+        color: var(--text-neutral-alt);
+      }
+
+      /* Float "new" button */
+      .fab {
+        position: fixed;
+        right: 28px;
+        bottom: 28px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--primary-default);
+        color: #fff;
+        border: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-large);
+        transition:
+          background 120ms,
+          transform 120ms;
+        z-index: 30;
+      }
+      .fab:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+
+      /* ============================================================
+     DETAIL PANE
+     ============================================================ */
+      .detail-pane {
+        background: #fff;
+        border-left: 1px solid var(--stroke-neutral);
+        overflow: auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .detail-head {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 5;
+        padding: 20px 24px 0;
+        border-bottom: 1px solid var(--stroke-neutral);
+      }
+      .detail-head .top-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .detail-head .close {
+        margin-left: auto;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-neutral);
+      }
+      .detail-head .close:hover {
+        background: var(--bg-tint-light);
+        color: var(--text-dark);
+      }
+
+      .detail-head .title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .detail-head h2 {
+        cursor: text;
+        border-radius: 4px;
+        padding: 2px 4px;
+        margin: 0 -4px;
+      }
+      .detail-head h2:hover {
+        background: var(--bg-tint-light);
+      }
+      .detail-head h2[contenteditable='true'] {
+        background: var(--lavender-10);
+        outline: 2px solid var(--stroke-accent);
+        outline-offset: -2px;
+        cursor: text;
+      }
+      .detail-head .name-edit {
+        order: 10; /* place after h2 via flex order so it sits right of name */
+        width: 26px;
+        height: 26px;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: var(--text-neutral-alt);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 120ms,
+          color 120ms;
+      }
+      .detail-head .name-edit:hover {
+        background: var(--bg-tint-light);
+        color: var(--text-accent);
+      }
+      .detail-head h2 {
+        order: 0;
+      }
+      #d-id-slot {
+        order: 1;
+      }
+
+      /* Transport-mode row (between title and tabs) — 2-column layout:
+     mode dropdown on the left, summary meta right-aligned. */
+      .detail-head .mode-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 6px 0 4px;
+      }
+      .mode-dd {
+        position: relative;
+        display: inline-block;
+      }
+      .mode-dd-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-pill);
+        padding: 4px 10px 4px 8px;
+        font: inherit;
+        font-size: 12px;
+        color: var(--text-dark);
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          border-color 120ms,
+          background 120ms;
+      }
+      .mode-dd-btn:hover {
+        border-color: var(--stroke-neutral-alt);
+        background: var(--bg-tint-light);
+      }
+      .mode-dd-btn .mode-dd-ic {
+        display: inline-flex;
+      }
+      .mode-dd-btn .mode-dd-label {
+        text-transform: capitalize;
+      }
+      .mode-dd-btn svg:last-child {
+        color: var(--text-neutral-alt);
+      }
+      .mode-dd-menu {
+        position: fixed;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-medium);
+        box-shadow: var(--shadow-large);
+        padding: 4px;
+        min-width: 160px;
+        z-index: 1000;
+        display: none;
+      }
+      .mode-dd.open .mode-dd-menu {
+        display: block;
+      }
+      .mode-dd-menu button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 7px 10px;
+        border: 0;
+        background: transparent;
+        border-radius: var(--radius-small);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        color: var(--text-dark);
+        text-align: left;
+        text-transform: capitalize;
+      }
+      .mode-dd-menu button:hover {
+        background: var(--bg-tint-light);
+      }
+      .mode-dd-menu button.active {
+        background: var(--selected-default-light);
+        color: var(--text-accent);
+        font-weight: 500;
+      }
+      .detail-head h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+      }
+      .detail-head .sub-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: var(--text-neutral);
+        font-size: 12px;
+      }
+      .detail-head .sub-row .meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .detail-head .sub-row .meta-item svg {
+        color: var(--text-neutral-alt);
+      }
+
+      .detail-tabs {
+        display: flex;
+        gap: 0;
+        margin-top: 4px;
+      }
+      .detail-tabs .tab {
+        padding: 10px 16px;
+        font-size: 12px;
+      }
+
+      .detail-body {
+        padding: 20px 24px 40px;
+        flex: 1;
+        min-height: 0;
+      }
+
+      /* Section card */
+      .sec {
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-medium);
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+      .sec-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg-tint-light);
+        border-bottom: 1px solid var(--stroke-neutral);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-subdued);
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .sec-head .caret {
+        margin-left: auto;
+        color: var(--text-neutral-alt);
+        transition: transform 120ms;
+      }
+      .sec.collapsed .caret {
+        transform: rotate(-90deg);
+      }
+      .sec.collapsed .sec-body {
+        display: none;
+      }
+      .sec-head .tag {
+        margin-left: auto;
+        font-size: 11px;
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: var(--text-neutral);
+        font-family: var(--font-mono);
+      }
+      .sec-body {
+        padding: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .sec-body.single {
+        grid-template-columns: 1fr;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .field.full {
+        grid-column: 1 / -1;
+      }
+      .field label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-subdued);
+        font-weight: 500;
+      }
+      .field .input,
+      .field .select,
+      .field textarea {
+        font: inherit;
+        font-size: 13px;
+        padding: 7px 10px;
+        background: var(--bg-tint-neutral);
+        border: 1px solid var(--stroke-neutral-alt);
+        border-radius: var(--radius-small);
+        color: var(--text-dark);
+        width: 100%;
+        font-family: inherit;
+      }
+      .field .input:focus,
+      .field .select:focus,
+      .field textarea:focus {
+        outline: none;
+        border-color: var(--stroke-accent);
+        background: #fff;
+        box-shadow: var(--focus-ring);
+      }
+      .field .select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='none' stroke='%23626493' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 4.5l3.5 3.5 3.5-3.5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 28px;
+      }
+      .field .range-input {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .field .range-input .input {
+        flex: 1;
+      }
+      .field .range-input .dash {
+        color: var(--text-neutral-alt);
+        font-size: 11px;
+      }
+      .field .hint {
+        font-size: 10px;
+        color: var(--text-neutral-alt);
+        margin-top: 1px;
+      }
+
+      .switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .switch input {
+        appearance: none;
+        width: 32px;
+        height: 18px;
+        background: var(--grey-40);
+        border-radius: 999px;
+        position: relative;
+        cursor: pointer;
+        margin: 0;
+        transition: background 120ms;
+      }
+      .switch input::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 120ms;
+        box-shadow: var(--shadow-small);
+      }
+      .switch input:checked {
+        background: var(--primary-default);
+      }
+      .switch input:checked::after {
+        transform: translateX(14px);
+      }
+
+      /* Planned-refs table inside detail */
+      .refs-tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .refs-tbl th {
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-neutral-alt);
+        background: var(--bg-tint-light);
+        border-bottom: 1px solid var(--stroke-neutral);
+      }
+      .refs-tbl td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--stroke-neutral);
+      }
+      .refs-tbl tr:last-child td {
+        border-bottom: 0;
+      }
+      .refs-tbl tr:hover td {
+        background: var(--bg-tint-light);
+      }
+      .refs-tbl .name {
+        color: var(--text-dark);
+      }
+      .refs-tbl .remove {
+        width: 22px;
+        height: 22px;
+        border: 0;
+        background: transparent;
+        border-radius: 50%;
+        color: var(--text-neutral);
+        cursor: pointer;
+      }
+      .refs-tbl .remove:hover {
+        background: var(--coral-10);
+        color: var(--coral-70);
+      }
+
+      .add-ref-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: var(--bg-tint-light);
+        border-top: 1px solid var(--stroke-neutral);
+      }
+
+      /* ============================================================
+     NetexID widget (inlined, trimmed)
+     ============================================================ */
+      .nxid {
+        --c-solid: var(--nx-VehicleType);
+        --c-tint: var(--nx-VehicleType-tint);
+        --c-on-solid: #fff;
+        --c-on-tint: #2a1205;
+
+        display: inline-flex;
+        align-items: stretch;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        line-height: 1;
+        height: 22px;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-small);
+        overflow: hidden;
+        background: #fff;
+        vertical-align: middle;
+        transition:
+          border-color 120ms,
+          box-shadow 120ms;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+      .nxid:hover {
+        border-color: var(--stroke-neutral-alt);
+      }
+      .nxid.nx-lg {
+        height: 28px;
+        font-size: 12px;
+      }
+      .nxid .nx-codespace {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        /* Paler codespace background — subtle neutral so the chip reads as calm metadata. */
+        background: #eef1f4;
+        color: var(--text-dark);
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+      .nxid.nx-lg .nx-codespace {
+        font-size: 11px;
+        padding: 0 10px;
+      }
+      .nxid .nx-colon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        background: var(--c-tint);
+        color: var(--c-on-tint);
+        opacity: 0.55;
+        font-weight: 600;
+      }
+      .nxid .nx-type {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 7px;
+        background: var(--c-tint);
+        color: var(--c-on-tint);
+        font-weight: 500;
+      }
+      .nxid.nx-lg .nx-type {
+        padding: 0 10px;
+      }
+      .nxid .nx-sep {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 2px;
+        background: var(--c-tint);
+        color: var(--c-on-tint);
+        opacity: 0.5;
+      }
+      .nxid .nx-id {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        background: #fff;
+        color: var(--text-dark);
+        font-weight: 500;
+        border-left: 1px solid var(--stroke-neutral);
+      }
+      .nxid.nx-lg .nx-id {
+        padding: 0 10px;
+      }
+
+      /* type themes used here */
+      .nxid[data-type='VehicleType'] {
+        --c-solid: var(--nx-VehicleType);
+        --c-tint: var(--nx-VehicleType-tint);
+      }
+      .nxid[data-type='Vehicle'] {
+        --c-solid: var(--nx-Vehicle);
+        --c-tint: var(--nx-Vehicle-tint);
+      }
+      .nxid[data-type='DeckPlan'] {
+        --c-solid: var(--nx-DeckPlan);
+        --c-tint: var(--nx-DeckPlan-tint);
+      }
+      .nxid[data-type='Deck'] {
+        --c-solid: var(--nx-DeckPlan);
+        --c-tint: var(--nx-DeckPlan-tint);
+      }
+
+      .nxid.nx-ref {
+        cursor: pointer;
+      }
+      .nxid.nx-ref:hover .nx-id {
+        color: var(--text-accent);
+      }
+
+      /* Small variant — used inside dense list cells */
+      .nxid.nx-sm {
+        height: 20px;
+        font-size: 10px;
+      }
+      .nxid.nx-sm .nx-codespace {
+        font-size: 9px;
+        padding: 0 6px;
+      }
+      .nxid.nx-sm .nx-type {
+        padding: 0 6px;
+      }
+      .nxid.nx-sm .nx-id {
+        padding: 0 7px;
+      }
+      .nxid.nx-sm .nx-colon,
+      .nxid.nx-sm .nx-sep {
+        padding: 0 2px;
+      }
+
+      /* Branding type theme */
+      .nxid[data-type='Branding'] {
+        --c-solid: var(--nx-Branding);
+        --c-tint: var(--nx-Branding-tint);
+      }
+
+      /* Linked column — tint the chip to match row flavour (not the whole cell).
+     This keeps the list visually calm; the chip carries the relationship color. */
+      #vt-table tr[data-flavour='physical'] td[data-col='linked'] .sum-chip {
+        background: #e7ecea; /* mint-tinted gray — matches .nx-pill.physical */
+        border-color: #dae1de;
+        color: var(--text-dark);
+      }
+      #vt-table tr[data-flavour='physical'] td[data-col='linked'] .sum-chip.zero {
+        background: #fff;
+        border-color: var(--stroke-neutral);
+        color: var(--text-neutral-alt);
+      }
+      #vt-table tr[data-flavour='planned'] td[data-col='linked'] .sum-chip {
+        background: #ecebf1; /* lavender-tinted gray — matches .nx-pill.planned */
+        border-color: #dfdce7;
+        color: var(--text-dark);
+      }
+      #vt-table tr[data-flavour='planned'] td[data-col='linked'] .sum-chip.zero {
+        background: #fff;
+        border-color: var(--stroke-neutral);
+        color: var(--text-neutral-alt);
+      }
+      #vt-table tr[data-flavour='physical'] td[data-col='linked'] .sum-chip .n,
+      #vt-table tr[data-flavour='planned'] td[data-col='linked'] .sum-chip .n {
+        color: inherit;
+      }
+
+      /* Deck-plan tab — plain-text label "DeckPlan:<id>". */
+      .detail-tabs .tab.deckplan-tab {
+        padding: 10px 16px;
+      }
+      .detail-tabs .tab.deckplan-tab .deck-tab-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: inherit;
+      }
+      .detail-tabs .tab.deckplan-tab .deck-tab-label .sep {
+        color: var(--text-neutral-alt);
+        margin: 0 2px;
+      }
+
+      /* Deck / Vehicles / Linked-types tab header — plain title, 2-column layout:
+     main title on the left, meta tag right-aligned. Shared across panes. */
+      .deck-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 24px 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-dark);
+        letter-spacing: 0.01em;
+      }
+      .deck-title .deck-title-main {
+        text-transform: none;
+      }
+      .deck-title .tag {
+        margin-left: auto;
+      }
+
+      /* Deck pane table — id / name / spots */
+      .deck-tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .deck-tbl th,
+      .deck-tbl td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--stroke-neutral);
+        text-align: left;
+        vertical-align: middle;
+      }
+      .deck-tbl th {
+        font-weight: 500;
+        color: var(--text-neutral-alt);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: var(--bg-tint-light);
+      }
+      .deck-tbl td.num,
+      .deck-tbl th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .deck-tbl tfoot td {
+        font-weight: 500;
+        background: var(--bg-tint-light);
+        border-top: 1px solid var(--stroke-neutral);
+      }
+
+      /* Codespace theming — overrides the codespace chip color to reflect
+     the flavour of the owning record (physical = mint, planned = lavender).
+     Applied via data-cs-theme on the .nxid so only the codespace chip swaps,
+     not the type/id cells. */
+      .nxid[data-cs-theme='physical'] .nx-codespace,
+      .nxid[data-cs-theme='planned'] .nx-codespace {
+        background: #eef1f4;
+        color: var(--text-dark);
+      }
+
+      /* Hover feedback on reference chips */
+      .nxid.nx-ref:hover {
+        border-color: var(--c-solid);
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--c-solid) 12%, transparent);
+      }
+
+      /* ============================================================
+     Responsive
+     ============================================================ */
+      @media (max-width: 1100px) {
+        .split.detail-open {
+          grid-template-columns: 1fr;
+        }
+        .split.detail-open .list-pane {
+          display: none;
+        }
+        .detail-pane {
+          border-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============== TransportMode icon sprites (subset) ============== -->
+    <svg style="display: none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="tm-bus" viewBox="0 0 16 16">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M2 5.4C2 5.18 2.18 5 2.4 5h11.2c.22 0 .4.18.4.4v5.2a.4.4 0 0 1-.4.4h-1.04a1.8 1.8 0 0 0-3.52 0H6.46a1.8 1.8 0 0 0-3.52 0H2.4a.4.4 0 0 1-.4-.4V5.4Zm2 .9a.3.3 0 0 0-.3.3v1.3c0 .166.134.3.3.3H6a.3.3 0 0 0 .3-.3V6.6A.3.3 0 0 0 6 6.3H4Zm3 0a.3.3 0 0 0-.3.3v1.3c0 .166.134.3.3.3H9a.3.3 0 0 0 .3-.3V6.6A.3.3 0 0 0 9 6.3H7Zm3 0a.3.3 0 0 0-.3.3v1.3c0 .166.134.3.3.3H12a.3.3 0 0 0 .3-.3V6.6a.3.3 0 0 0-.3-.3h-2Z"
+          />
+          <circle cx="4.7" cy="12" r="1" fill="currentColor" />
+          <circle cx="11.3" cy="12" r="1" fill="currentColor" />
+        </symbol>
+        <symbol id="tm-coach" viewBox="0 0 16 16">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M1.4 4.6C1.4 4.27 1.67 4 2 4h12c.33 0 .6.27.6.6v6.4a.4.4 0 0 1-.4.4h-1.04a1.8 1.8 0 0 0-3.52 0H6.46a1.8 1.8 0 0 0-3.52 0H1.8a.4.4 0 0 1-.4-.4V4.6Zm1.9.7a.3.3 0 0 0-.3.3v1.3c0 .166.134.3.3.3h1.9a.3.3 0 0 0 .3-.3V5.6a.3.3 0 0 0-.3-.3H3.3Zm3.25 0a.3.3 0 0 0-.3.3v1.3c0 .166.134.3.3.3h1.9a.3.3 0 0 0 .3-.3V5.6a.3.3 0 0 0-.3-.3h-1.9Zm3.25 0a.3.3 0 0 0-.3.3v1.3c0 .166.134.3.3.3h2a.3.3 0 0 0 .3-.3V5.6a.3.3 0 0 0-.3-.3h-2ZM1.8 9h12.4v.7H1.8V9Z"
+          />
+          <circle cx="4.5" cy="12" r="1" fill="currentColor" />
+          <circle cx="11.5" cy="12" r="1" fill="currentColor" />
+        </symbol>
+        <symbol id="tm-rail" viewBox="0 0 16 16">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M3 4.6C3 4.27 3.27 4 3.6 4h7.4c.19 0 .37.08.5.21l2.35 2.4c.12.12.19.29.19.46V11.1a.4.4 0 0 1-.4.4h-.94a1.5 1.5 0 0 1-2.94 0H6.84a1.5 1.5 0 0 1-2.94 0H3.4a.4.4 0 0 1-.4-.4V4.6Zm.9.8a.3.3 0 0 1 .3-.3h2.4a.3.3 0 0 1 .3.3v2a.3.3 0 0 1-.3.3H4.2a.3.3 0 0 1-.3-.3v-2Zm4.4 0a.3.3 0 0 1 .3-.3H10c.1 0 .19.05.24.12l1.55 1.9c.11.13.02.34-.15.34H8.6a.3.3 0 0 1-.3-.3v-1.76Z"
+          />
+          <path fill="currentColor" d="M2 13h12v.6H2z" />
+        </symbol>
+        <symbol id="tm-tram" viewBox="0 0 16 16">
+          <path fill="currentColor" d="M7.7 1.5h.6v1.2h-.6z" />
+          <path fill="currentColor" d="M5.5 2.7h5v.6h-5z" />
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M3.6 4C3.27 4 3 4.27 3 4.6v6.4c0 .22.18.4.4.4h.54a1.8 1.8 0 0 0 3.52 0H8.54a1.8 1.8 0 0 0 3.52 0h.54a.4.4 0 0 0 .4-.4V4.6c0-.33-.27-.6-.6-.6H3.6Zm.7 1.7a.3.3 0 0 1 .3-.3H7a.3.3 0 0 1 .3.3v1.8A.3.3 0 0 1 7 7.8H4.6a.3.3 0 0 1-.3-.3V5.7Zm5 0a.3.3 0 0 1 .3-.3h2.1a.3.3 0 0 1 .3.3v1.8a.3.3 0 0 1-.3.3H9.6a.3.3 0 0 1-.3-.3V5.7Z"
+          />
+          <circle cx="5.7" cy="11.5" r=".9" fill="currentColor" />
+          <circle cx="10.3" cy="11.5" r=".9" fill="currentColor" />
+          <path fill="currentColor" d="M2 13.6h12v.5H2z" />
+        </symbol>
+        <symbol id="tm-metro" viewBox="0 0 16 16">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1a6 6 0 1 1 0 12A6 6 0 0 1 8 2Z"
+          />
+          <path fill="currentColor" d="M5 5h6v1.2H8.6V12H7.4V6.2H5z" />
+        </symbol>
+        <symbol id="tm-ferry" viewBox="0 0 16 16">
+          <path fill="currentColor" d="M7 3.2h2v1.6H7z" />
+          <path fill="currentColor" d="M5.5 5h5l.5 1.5h-6z" />
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M2.5 7h11l-.6 1.8a.5.5 0 0 1-.47.34H3.57a.5.5 0 0 1-.47-.34L2.5 7Z"
+          />
+          <path
+            fill="currentColor"
+            d="M1.5 10.3l.25.55c.26.56.85.9 1.46.84.5-.05.98-.29 1.34-.66.2-.21.54-.21.74 0 .36.37.84.61 1.34.66.5.05 1.01-.09 1.4-.4a.55.55 0 0 1 .66 0c.4.31.9.45 1.4.4.5-.05.98-.29 1.34-.66.2-.21.54-.21.74 0 .36.37.84.61 1.34.66.61.06 1.2-.28 1.46-.84l.25-.55-1-.35-.1.24c-.1.22-.33.35-.56.32a.8.8 0 0 1-.57-.28 1.32 1.32 0 0 0-1.86 0 .8.8 0 0 1-.57.28c-.22.03-.45-.07-.58-.24a1.57 1.57 0 0 0-1.78 0c-.13.17-.36.27-.58.24a.8.8 0 0 1-.57-.28 1.32 1.32 0 0 0-1.86 0 .8.8 0 0 1-.57.28c-.23.03-.46-.1-.56-.32l-.1-.24-1 .35Z"
+          />
+        </symbol>
+        <symbol id="tm-air" viewBox="0 0 16 16">
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M14.6 6.3a.6.6 0 0 1-.36.56L5.1 10.6a.4.4 0 0 1-.43-.08L2.3 8.2c-.24-.23-.1-.63.24-.65l1.2-.07 1.8.8L7.7 7.44l-3.1-1.5a.2.2 0 0 1 .04-.37l.9-.22c.12-.03.25 0 .35.06L9 7.05l4.2-1.86c.51-.23 1.1-.05 1.4.4.03.05.05.12.05.2v.51Z"
+          />
+          <path fill="currentColor" d="M2 13h12v.6H2z" />
+        </symbol>
+        <symbol id="tm-all" viewBox="0 0 16 16">
+          <rect x="2.5" y="2.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="6.5" y="2.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="10.5" y="2.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="2.5" y="6.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="6.5" y="6.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="10.5" y="6.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="2.5" y="10.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="6.5" y="10.5" width="3" height="3" fill="currentColor" rx=".5" />
+          <rect x="10.5" y="10.5" width="3" height="3" fill="currentColor" rx=".5" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <!-- ============== Header ============== -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="en">EN</span><span class="tur">TUR</span
+        ><span class="app-name">Materiell-register</span>
+      </div>
+
+      <div class="fed-search" onclick="this.querySelector('input').focus()">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-3-3" />
+        </svg>
+        <input placeholder="Search vehicle types, vehicles, deck plans, operators…" />
+        <kbd>⌘K</kbd>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="icon-btn" aria-label="Notifications">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10 21a2 2 0 0 0 4 0" />
+        </svg>
+        <span class="pip"></span>
+      </button>
+      <button class="icon-btn" aria-label="Account">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+        </svg>
+      </button>
+      <button class="icon-btn" aria-label="Settings">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+          />
+        </svg>
+      </button>
+      <button class="icon-btn" aria-label="Menu">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="app-root" id="app-root">
+      <!-- ============== SIDEBAR ============== -->
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="sb-top">
+          <button
+            class="sb-toggle"
+            id="sb-toggle"
+            aria-label="Toggle sidebar"
+            title="Toggle sidebar"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+          </button>
+        </div>
+        <nav>
+          <ul class="sb-nav" id="sb-nav">
+            <li>
+              <a data-route="home" data-tip="Home" href="#/home">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M3 11l9-8 9 8" />
+                    <path d="M5 10v10h14V10" />
+                    <path d="M10 20v-6h4v6" /></svg
+                ></span>
+                <span class="sb-lbl">Home</span>
+              </a>
+            </li>
+            <li>
+              <a data-route="types" data-tip="Vehicle types" href="#/types">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="4" width="18" height="14" rx="2" />
+                    <path d="M3 9h18" />
+                    <path d="M8 14h2M14 14h2" /></svg
+                ></span>
+                <span class="sb-lbl">Types</span>
+                <span class="sb-count" id="sb-count-types">24</span>
+              </a>
+            </li>
+            <li>
+              <a data-route="vehicles" data-tip="Vehicles" href="#/vehicles">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M4 14l1-5a2 2 0 0 1 2-1.5h10a2 2 0 0 1 2 1.5l1 5v4H4z" />
+                    <circle cx="8" cy="17" r="1.5" />
+                    <circle cx="16" cy="17" r="1.5" />
+                    <path d="M7 14h10" /></svg
+                ></span>
+                <span class="sb-lbl">Vehicles</span>
+                <span class="sb-count" id="sb-count-vehicles">—</span>
+              </a>
+            </li>
+            <li>
+              <a data-route="decks" data-tip="Deck plans" href="#/decks">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 10h18" />
+                    <path d="M7 14h3M14 14h3" /></svg
+                ></span>
+                <span class="sb-lbl">Deck plans</span>
+              </a>
+            </li>
+            <li class="sb-sep" aria-hidden="true"></li>
+            <li>
+              <a data-route="branding" data-tip="Branding / Liveries" href="#/branding">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M4 8l8-5 8 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+                    <path d="M8 10h8M8 14h5" /></svg
+                ></span>
+                <span class="sb-lbl">Branding</span>
+              </a>
+            </li>
+            <li>
+              <a data-route="operators" data-tip="Operators" href="#/operators">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+                    <circle cx="9" cy="8" r="3.5" />
+                    <path d="M17 21v-2a4 4 0 0 0-3-3.9" />
+                    <circle cx="16" cy="8" r="2.5" /></svg
+                ></span>
+                <span class="sb-lbl">Operators</span>
+              </a>
+            </li>
+            <li>
+              <a data-route="settings" data-tip="Settings" href="#/settings">
+                <span class="sb-ic"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+                    /></svg
+                ></span>
+                <span class="sb-lbl">Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- ============== MAIN ============== -->
+      <main class="app-main">
+        <!-- ROUTE: TYPES ============================================= -->
+        <div class="route" data-route="types" id="route-types">
+          <div class="page-shell">
+            <div class="page-head">
+              <div class="crumbs"><a>Home</a> <span>/</span> <span>Vehicle types</span></div>
+              <div class="page-title-row">
+                <h1>Vehicle Types</h1>
+                <span class="total" id="total-str">24 entries</span>
+                <div class="page-actions">
+                  <button class="btn btn-secondary btn-sm">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 3v12M6 9l6-6 6 6M4 21h16" />
+                    </svg>
+                    Import
+                  </button>
+                  <button class="btn btn-secondary btn-sm">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 21V9M6 15l6 6 6-6M4 3h16" />
+                    </svg>
+                    Export NeTEx
+                  </button>
+                  <button class="btn btn-primary btn-sm">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    New vehicle type
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+              <!-- Federated-style search over the list -->
+              <div class="search-field">
+                <svg
+                  class="icn"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3-3" />
+                </svg>
+                <input id="search" placeholder="Filter by name, ID, code…" />
+              </div>
+
+              <!-- Flavour segmented (Planned / Physical) -->
+              <div class="flavour-seg" id="flavour-seg" role="tablist">
+                <button data-flavour="all" class="active">All</button>
+                <button data-flavour="planned">
+                  <span
+                    style="
+                      width: 6px;
+                      height: 6px;
+                      border-radius: 50%;
+                      background: var(--lavender-70);
+                      display: inline-block;
+                    "
+                  ></span
+                  >Planned
+                </button>
+                <button data-flavour="physical">
+                  <span
+                    style="
+                      width: 6px;
+                      height: 6px;
+                      border-radius: 50%;
+                      background: var(--mint-60);
+                      display: inline-block;
+                    "
+                  ></span
+                  >Physical
+                </button>
+              </div>
+
+              <!-- TransportMode icon filter -->
+              <div class="mode-filter" id="mode-filter">
+                <button data-mode="all" class="active" title="All modes">
+                  <svg width="16" height="16" style="color: var(--tm-all)">
+                    <use href="#tm-all" />
+                  </svg>
+                </button>
+                <button data-mode="bus" title="Bus">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-bus); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-bus" />
+                  </svg>
+                </button>
+                <button data-mode="coach" title="Coach">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-coach); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-coach" />
+                  </svg>
+                </button>
+                <button data-mode="tram" title="Tram">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-tram); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-tram" />
+                  </svg>
+                </button>
+                <button data-mode="rail" title="Rail">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-rail); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-rail" />
+                  </svg>
+                </button>
+                <button data-mode="metro" title="Metro">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-metro); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-metro" />
+                  </svg>
+                </button>
+                <button data-mode="ferry" title="Ferry">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-ferry); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-ferry" />
+                  </svg>
+                </button>
+                <button data-mode="air" title="Air">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-air); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-air" />
+                  </svg>
+                </button>
+              </div>
+
+              <div id="chip-stack" style="display: flex; gap: 6px"></div>
+
+              <div class="spacer"></div>
+
+              <!-- Column picker -->
+              <div class="col-picker" id="col-picker">
+                <button class="btn btn-tertiary btn-sm" id="col-btn">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M3 3h18v18H3z" />
+                    <path d="M9 3v18M15 3v18" />
+                  </svg>
+                  Columns
+                </button>
+                <div class="col-picker-menu" id="col-menu">
+                  <div class="head">Visible columns · drag to reorder</div>
+                </div>
+              </div>
+              <button class="btn btn-tertiary btn-sm" id="clear-btn">Clear</button>
+            </div>
+
+            <!-- Split: list + detail -->
+            <div class="split" id="split">
+              <!-- ================== LIST ================== -->
+              <div class="list-pane">
+                <div class="tbl-wrap">
+                  <table class="vt-list" id="vt-table">
+                    <thead id="thead"></thead>
+                    <tbody id="tbody"></tbody>
+                  </table>
+                  <div class="tbl-footer">
+                    <span id="range-str">Showing 1–10 of 24</span>
+                    <div class="page-ctrl">
+                      <span>Rows</span>
+                      <select
+                        id="page-size"
+                        style="
+                          font: inherit;
+                          font-size: 12px;
+                          padding: 3px 6px;
+                          border: 1px solid var(--stroke-neutral);
+                          border-radius: 4px;
+                          background: #fff;
+                          color: var(--text-dark);
+                          margin: 0 10px;
+                        "
+                      >
+                        <option>10</option>
+                        <option selected>25</option>
+                        <option>50</option>
+                      </select>
+                      <button id="prev" disabled>‹</button>
+                      <span id="page-str" style="padding: 0 8px">1 / 1</span>
+                      <button id="next">›</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ================== DETAIL ================== -->
+              <aside class="detail-pane" id="detail-pane">
+                <div class="detail-head">
+                  <div class="top-row">
+                    <span class="flavour-pill planned" id="d-flavour"
+                      ><span class="dot"></span> Planned</span
+                    >
+
+                    <button class="close" id="d-close" aria-label="Close" style="margin-left: auto">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      >
+                        <path d="M6 6l12 12M18 6L6 18" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="title-row">
+                    <button
+                      class="name-edit"
+                      id="d-name-edit"
+                      title="Edit name"
+                      aria-label="Edit name"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg>
+                    </button>
+                    <h2 id="d-name" contenteditable="false" spellcheck="false">—</h2>
+                    <span id="d-id-slot"></span>
+                  </div>
+                  <div class="mode-row">
+                    <div class="mode-dd" id="d-mode-dd">
+                      <button class="mode-dd-btn" id="d-mode-btn" aria-haspopup="listbox">
+                        <span class="mode-dd-ic" id="d-mode-ic"></span>
+                        <span class="mode-dd-label" id="d-mode-label">bus</span>
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        >
+                          <path d="M2.5 4.5l3.5 3.5 3.5-3.5" />
+                        </svg>
+                      </button>
+                      <div class="mode-dd-menu" id="d-mode-menu" role="listbox"></div>
+                    </div>
+                    <div class="sub-row" id="d-sub"></div>
+                  </div>
+                  <div class="detail-tabs">
+                    <button class="tab active" data-dtab="edit">Edit</button>
+                    <button class="tab" data-dtab="vehicles" id="d-tab-vehicles">Vehicles</button>
+                    <button class="tab" data-dtab="planned" id="d-tab-planned">Linked types</button>
+                    <button
+                      class="tab deckplan-tab"
+                      data-dtab="deck"
+                      id="d-tab-deck"
+                      title="Deck plan"
+                    ></button>
+                    <button class="tab" data-dtab="environmental">Environmental</button>
+                    <button class="tab" data-dtab="xml" style="display: none">XML preview</button>
+                  </div>
+                </div>
+
+                <div class="detail-body">
+                  <!-- EDIT TAB -->
+                  <div data-dpane="edit">
+                    <div class="sec">
+                      <div class="sec-head">
+                        Passenger capacity <span class="tag" id="d-cap-tag"></span
+                        ><span class="caret">▾</span>
+                      </div>
+                      <div class="sec-body" id="d-cap-body"></div>
+                    </div>
+
+                    <div class="sec">
+                      <div class="sec-head">
+                        Propulsion &amp; performance <span class="caret">▾</span>
+                      </div>
+                      <div class="sec-body">
+                        <div class="field">
+                          <label>Propulsion type</label>
+                          <select class="select">
+                            <option>diesel</option>
+                            <option>electric</option>
+                            <option>hybrid</option>
+                            <option>hydrogen</option>
+                          </select>
+                        </div>
+                        <div class="field">
+                          <label>Fuel type</label>
+                          <select class="select">
+                            <option>diesel</option>
+                            <option>biogas</option>
+                            <option>electricity</option>
+                          </select>
+                        </div>
+                        <div class="field">
+                          <label>Euro class</label>
+                          <select class="select">
+                            <option>Euro VI</option>
+                            <option>Euro V</option>
+                            <option>—</option>
+                          </select>
+                        </div>
+                        <div class="field">
+                          <label>Max velocity (km/h)</label><input class="input" id="f-vmax" />
+                        </div>
+                        <div class="field">
+                          <label>Max range (km)</label><input class="input" id="f-rmax" />
+                        </div>
+                        <div
+                          class="field"
+                          style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px"
+                        >
+                          <label class="switch"
+                            ><input type="checkbox" checked /> Self-propelled</label
+                          >
+                          <label class="switch"><input type="checkbox" /> Reversing</label>
+                          <label class="switch"><input type="checkbox" checked /> Low floor</label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="sec">
+                      <div class="sec-head">
+                        Dimensions <span class="tag" id="d-dim-tag"></span
+                        ><span class="caret">▾</span>
+                      </div>
+                      <div class="sec-body" id="d-dim-body">
+                        <!-- dynamic: range inputs for planned, scalars for physical -->
+                      </div>
+                    </div>
+
+                    <div class="sec" id="d-model-sec">
+                      <div class="sec-head">
+                        Model <span class="tag">physical only</span><span class="caret">▾</span>
+                      </div>
+                      <div class="sec-body">
+                        <div class="field">
+                          <label>Name</label
+                          ><input
+                            class="input"
+                            id="f-model-name"
+                            placeholder="e.g. Volvo 7900 Hybrid"
+                          />
+                        </div>
+                        <div class="field">
+                          <label>Presentation</label>
+                          <div
+                            id="f-model-pres"
+                            style="display: flex; align-items: center; gap: 8px; padding: 6px 0"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ENVIRONMENTAL TAB — rendered by renderEnvironmentalPane() -->
+                  <div data-dpane="environmental" style="display: none">
+                    <div id="d-env-body"></div>
+                  </div>
+
+                  <!-- VEHICLES TAB (physical flavour would embed VehicleModel props — planned shows a count of matched physicals) -->
+                  <div data-dpane="vehicles" style="display: none">
+                    <div class="sec-body single" style="padding: 0">
+                      <div class="deck-title" id="d-vh-head">
+                        <span class="deck-title-main">Vehicles</span>
+                        <span class="tag" id="d-vh-tag"></span>
+                      </div>
+                      <table class="refs-tbl" id="vh-tbl"></table>
+                      <div class="add-ref-row">
+                        <button class="btn btn-secondary btn-sm">+ Assign vehicle</button>
+                        <span style="font-size: 11px; color: var(--text-neutral-alt)"
+                          >Counts only — click a vehicle row to open its record.</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- LINKED TYPES TAB -->
+                  <div data-dpane="planned" style="display: none">
+                    <div class="sec-body single" style="padding: 0">
+                      <div class="deck-title" id="d-pl-head">
+                        <span class="deck-title-main">Linked types</span>
+                        <span class="tag" id="d-pl-tag"></span>
+                      </div>
+                      <table class="refs-tbl" id="pl-tbl"></table>
+                      <div class="add-ref-row">
+                        <div id="pl-add-combo"></div>
+                        <button class="btn btn-secondary btn-sm" id="pl-add-btn">+ Link</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div data-dpane="deck" style="display: none">
+                    <div class="sec-body single" style="padding: 0">
+                      <div class="deck-title" id="d-deck-head">
+                        <span class="deck-title-main">Decks</span>
+                        <span class="tag" id="d-deck-tag"></span>
+                      </div>
+                      <table class="deck-tbl" id="deck-tbl"></table>
+                    </div>
+                  </div>
+
+                  <div data-dpane="xml" style="display: none">
+                    <div class="sec">
+                      <div class="sec-head">NeTEx fragment</div>
+                      <div class="sec-body single">
+                        <pre
+                          id="xml-pre"
+                          style="
+                            margin: 0;
+                            padding: 12px;
+                            background: var(--bg-tint-light);
+                            border: 1px solid var(--stroke-neutral);
+                            border-radius: 6px;
+                            font-family: var(--font-mono);
+                            font-size: 11px;
+                            line-height: 1.5;
+                            color: var(--text-dark);
+                            overflow: auto;
+                            max-height: 560px;
+                          "
+                        ></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <!-- /page-shell -->
+        </div>
+        <!-- /route-types -->
+
+        <!-- ROUTE: VEHICLES ============================================= -->
+        <div class="route" data-route="vehicles" id="route-vehicles">
+          <div class="page-shell">
+            <div class="page-head">
+              <div class="crumbs">
+                <a href="#/home">Home</a> <span>/</span> <span>Vehicles</span>
+              </div>
+              <div class="page-title-row">
+                <h1>Vehicles</h1>
+                <span class="total" id="veh-total-str">— entries</span>
+                <div class="page-actions">
+                  <button class="btn btn-secondary btn-sm">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 3v12M6 9l6-6 6 6M4 21h16" />
+                    </svg>
+                    Import CSV
+                  </button>
+                  <button
+                    class="btn btn-secondary btn-sm"
+                    id="veh-bulk-assign"
+                    disabled
+                    title="Select rows to enable"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    >
+                      <path d="M9 12l2 2 4-4" />
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                    </svg>
+                    Bulk assign to type
+                  </button>
+                  <button class="btn btn-primary btn-sm">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    New vehicle
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+              <div class="search-field">
+                <svg
+                  class="icn"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3-3" />
+                </svg>
+                <input id="veh-search" placeholder="Filter by id, reg no, name, vin…" />
+              </div>
+
+              <div class="mode-filter" id="veh-mode-filter">
+                <button data-mode="all" class="active" title="All modes">
+                  <svg width="16" height="16" style="color: var(--tm-all)">
+                    <use href="#tm-all" />
+                  </svg>
+                </button>
+                <button data-mode="bus" title="Bus">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-bus); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-bus" />
+                  </svg>
+                </button>
+                <button data-mode="coach" title="Coach">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-coach); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-coach" />
+                  </svg>
+                </button>
+                <button data-mode="tram" title="Tram">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-tram); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-tram" />
+                  </svg>
+                </button>
+                <button data-mode="rail" title="Rail">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-rail); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-rail" />
+                  </svg>
+                </button>
+                <button data-mode="metro" title="Metro">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-metro); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-metro" />
+                  </svg>
+                </button>
+                <button data-mode="ferry" title="Ferry">
+                  <svg
+                    width="16"
+                    height="16"
+                    style="--current-tm: var(--tm-ferry); color: var(--text-neutral-alt)"
+                  >
+                    <use href="#tm-ferry" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="veh-filter-group" id="veh-type-pick">
+                <label class="label" style="font-size: 12px; color: var(--text-neutral)"
+                  >Type:</label
+                >
+                <select id="veh-type-select" class="veh-select">
+                  <option value="all">All types</option>
+                </select>
+              </div>
+
+              <div class="veh-filter-group">
+                <label class="label" style="font-size: 12px; color: var(--text-neutral)"
+                  >Status:</label
+                >
+                <div class="status-seg" id="veh-status-seg" role="tablist">
+                  <button data-status="all" class="active">All</button>
+                  <button data-status="in_service">In service</button>
+                  <button data-status="depot">Depot</button>
+                  <button data-status="withdrawn">Withdrawn</button>
+                </div>
+              </div>
+
+              <div id="veh-chip-stack" style="display: flex; gap: 6px"></div>
+              <div class="spacer"></div>
+              <button class="btn btn-tertiary btn-sm" id="veh-clear-btn">Clear</button>
+            </div>
+
+            <!-- Split: list + detail -->
+            <div class="split" id="veh-split">
+              <div class="list-pane">
+                <div class="tbl-wrap">
+                  <table class="vt-list" id="veh-table">
+                    <thead id="veh-thead"></thead>
+                    <tbody id="veh-tbody"></tbody>
+                  </table>
+                  <div class="tbl-footer">
+                    <span id="veh-range-str">Showing 0 of 0</span>
+                    <span style="flex: 1"></span>
+                    <button class="btn btn-tertiary btn-sm" id="veh-prev">‹ Prev</button>
+                    <button class="btn btn-tertiary btn-sm" id="veh-next">Next ›</button>
+                    <select
+                      id="veh-page-size"
+                      style="
+                        font: inherit;
+                        padding: 4px 8px;
+                        border: 1px solid var(--stroke-neutral);
+                        border-radius: var(--radius-sm);
+                        background: var(--bg-standard);
+                      "
+                    >
+                      <option value="25">25 / page</option>
+                      <option value="50" selected>50 / page</option>
+                      <option value="100">100 / page</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <aside class="detail-pane" id="veh-detail-pane">
+                <div class="detail-body" id="veh-detail-body" style="padding: 20px 24px"></div>
+              </aside>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROUTE: HOME (placeholder) -->
+        <div class="route" data-route="home" id="route-home">
+          <div class="route-placeholder">
+            <svg
+              class="ph-ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 11l9-8 9 8" />
+              <path d="M5 10v10h14V10" />
+            </svg>
+            <h2>Home</h2>
+            <p>
+              A dashboard view will live here — fleet counts, recent changes, linked-type alerts.
+              Not built yet.
+            </p>
+          </div>
+        </div>
+
+        <!-- ROUTE: DECKS (placeholder) -->
+        <div class="route" data-route="decks" id="route-decks">
+          <div class="route-placeholder">
+            <svg
+              class="ph-ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="M3 10h18" />
+              <path d="M7 14h3M14 14h3" />
+            </svg>
+            <h2>Deck plans</h2>
+            <p>Seat layouts, floor plans and capacity zones per type. Coming next.</p>
+          </div>
+        </div>
+
+        <!-- ROUTE: BRANDING (placeholder) -->
+        <div class="route" data-route="branding" id="route-branding">
+          <div class="route-placeholder">
+            <svg
+              class="ph-ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 8l8-5 8 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+            </svg>
+            <h2>Branding / Liveries</h2>
+            <p>Operator visual identity registry — logos, palettes, livery specs.</p>
+          </div>
+        </div>
+
+        <!-- ROUTE: OPERATORS (placeholder) -->
+        <div class="route" data-route="operators" id="route-operators">
+          <div class="route-placeholder">
+            <svg
+              class="ph-ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+            </svg>
+            <h2>Operators</h2>
+            <p>Codespace registry and contact directory.</p>
+          </div>
+        </div>
+
+        <!-- ROUTE: SETTINGS (placeholder) -->
+        <div class="route" data-route="settings" id="route-settings">
+          <div class="route-placeholder">
+            <svg
+              class="ph-ic"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+              />
+            </svg>
+            <h2>Settings</h2>
+            <p>Preferences and account settings.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+    <!-- /app-root -->
+
+    <button class="fab" id="fab" aria-label="New" title="New">
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        stroke-linecap="round"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    </button>
+
+    <script>
+      /* ============================================================
+   DATA
+   ============================================================ */
+      const MODES = ['bus', 'coach', 'tram', 'rail', 'metro', 'ferry', 'air'];
+
+      // Seed. Planned types = ranges for dimensional props; physical types = scalars.
+      const DATA = [
+        // PLANNED — rich, multi-vehicle parents
+        {
+          id: '2',
+          flavour: 'planned',
+          mode: 'bus',
+          name: 'City Bus 12m, Low-Floor',
+          short: 'CB12',
+          dims: {
+            L: { min: 11800, max: 12200 },
+            W: { min: 2500, max: 2550 },
+            H: { min: 3180, max: 3320 },
+          },
+          cap: {
+            seats: { min: 30, max: 36 },
+            stand: { min: 45, max: 60 },
+            total: { min: 75, max: 96 },
+          },
+          deck: 'DP:CityBus12',
+          physicals: [],
+          vehicles: 45,
+          propulsion: 'hybrid',
+          fuel: 'biogas',
+          euro: 'Euro VI',
+          vmax: 80,
+          rmax: 420,
+          desc: '12-meter low-floor city bus — generic planned profile used by multiple operators in the Oslo region.',
+        },
+        {
+          id: '3',
+          flavour: 'planned',
+          mode: 'coach',
+          name: 'Regional Coach 13.5m',
+          short: 'RC135',
+          dims: {
+            L: { min: 13200, max: 13800 },
+            W: { min: 2550, max: 2600 },
+            H: { min: 3580, max: 3620 },
+          },
+          cap: {
+            seats: { min: 48, max: 55 },
+            stand: { min: 0, max: 0 },
+            total: { min: 48, max: 55 },
+          },
+          deck: 'DP:Coach135',
+          physicals: [],
+          vehicles: 18,
+          propulsion: 'diesel',
+          fuel: 'diesel',
+          euro: 'Euro VI',
+          vmax: 100,
+          rmax: 900,
+          desc: 'Long-distance coach with reclining seats and luggage bay.',
+        },
+        {
+          id: '4',
+          flavour: 'planned',
+          mode: 'rail',
+          name: 'Stadler FLIRT Class 74',
+          short: 'FLIRT74',
+          dims: {
+            L: { min: 105000, max: 106000 },
+            W: { min: 2820, max: 2850 },
+            H: { min: 4300, max: 4400 },
+          },
+          cap: {
+            seats: { min: 250, max: 260 },
+            stand: { min: 150, max: 180 },
+            total: { min: 400, max: 440 },
+          },
+          deck: 'DP:FLIRT74',
+          physicals: [],
+          vehicles: 12,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 200,
+          rmax: 0,
+          desc: 'Electric multiple-unit commuter trainset.',
+        },
+        {
+          id: '5',
+          flavour: 'planned',
+          mode: 'bus',
+          name: 'Articulated Bus 18m',
+          short: 'AB18',
+          dims: {
+            L: { min: 17800, max: 18200 },
+            W: { min: 2500, max: 2550 },
+            H: { min: 3280, max: 3360 },
+          },
+          cap: {
+            seats: { min: 42, max: 48 },
+            stand: { min: 70, max: 90 },
+            total: { min: 112, max: 138 },
+          },
+          deck: 'DP:Artic18',
+          physicals: [],
+          vehicles: 22,
+          propulsion: 'hybrid',
+          fuel: 'biogas',
+          euro: 'Euro VI',
+          vmax: 80,
+          rmax: 380,
+          desc: 'Two-section articulated city bus.',
+        },
+        {
+          id: '6',
+          flavour: 'planned',
+          mode: 'metro',
+          name: 'MX3000 Metro Set',
+          short: 'MX3K',
+          dims: {
+            L: { min: 65000, max: 67000 },
+            W: { min: 3160, max: 3200 },
+            H: { min: 3600, max: 3700 },
+          },
+          cap: {
+            seats: { min: 140, max: 150 },
+            stand: { min: 380, max: 420 },
+            total: { min: 520, max: 570 },
+          },
+          deck: 'DP:MX3000',
+          physicals: [],
+          vehicles: 32,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 80,
+          rmax: 0,
+          desc: 'Standard Oslo T-bane metro consist.',
+        },
+        {
+          id: '7',
+          flavour: 'planned',
+          mode: 'tram',
+          name: 'SL18 Tram',
+          short: 'SL18',
+          dims: {
+            L: { min: 33800, max: 34000 },
+            W: { min: 2650, max: 2650 },
+            H: { min: 3600, max: 3620 },
+          },
+          cap: {
+            seats: { min: 60, max: 66 },
+            stand: { min: 140, max: 160 },
+            total: { min: 200, max: 226 },
+          },
+          deck: 'DP:SL18',
+          physicals: [],
+          vehicles: 12,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 70,
+          rmax: 0,
+          desc: 'Sporveien low-floor 5-section tram.',
+        },
+        {
+          id: '8',
+          flavour: 'planned',
+          mode: 'ferry',
+          name: 'Passenger Ferry 300p',
+          short: 'PF300',
+          dims: {
+            L: { min: 42000, max: 46000 },
+            W: { min: 9500, max: 10500 },
+            H: { min: 8000, max: 9000 },
+          },
+          cap: {
+            seats: { min: 180, max: 200 },
+            stand: { min: 100, max: 120 },
+            total: { min: 280, max: 320 },
+          },
+          deck: 'DP:Ferry300',
+          physicals: [],
+          vehicles: 4,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 30,
+          rmax: 0,
+          desc: 'Electric passenger ferry for Oslofjord.',
+        },
+
+        // PHYSICAL — individual vehicles
+        {
+          id: '101',
+          flavour: 'physical',
+          mode: 'bus',
+          name: 'CB12 unit #1431',
+          short: '1431',
+          dims: { L: { v: 11980 }, W: { v: 2500 }, H: { v: 3320 } },
+          cap: { seats: { v: 34 }, stand: { v: 52 }, total: { v: 86 } },
+          deck: 'DP:CityBus12',
+          plannedRefs: [{ id: '2', name: 'City Bus 12m, Low-Floor' }],
+          vehicles: 1,
+          propulsion: 'hybrid',
+          fuel: 'biogas',
+          euro: 'Euro VI',
+          vmax: 80,
+          rmax: 420,
+          reg: 'EL 82134',
+          vin: 'YV3T2P728NA004311',
+          year: 2022,
+          odo: 84210,
+          desc: 'Unit operating on Oslo route 34.',
+        },
+        {
+          id: '102',
+          flavour: 'physical',
+          mode: 'bus',
+          name: 'CB12 unit #1432',
+          short: '1432',
+          dims: { L: { v: 11978 }, W: { v: 2500 }, H: { v: 3318 } },
+          cap: { seats: { v: 34 }, stand: { v: 52 }, total: { v: 86 } },
+          deck: 'DP:CityBus12',
+          plannedRefs: [{ id: '2', name: 'City Bus 12m, Low-Floor' }],
+          vehicles: 1,
+          propulsion: 'hybrid',
+          fuel: 'biogas',
+          euro: 'Euro VI',
+          vmax: 80,
+          rmax: 420,
+          reg: 'EL 82135',
+          vin: 'YV3T2P728NA004312',
+          year: 2022,
+          odo: 79105,
+          desc: '',
+        },
+        {
+          id: '103',
+          flavour: 'physical',
+          mode: 'bus',
+          name: 'AB18 unit #2044',
+          short: '2044',
+          dims: { L: { v: 18040 }, W: { v: 2550 }, H: { v: 3300 } },
+          cap: { seats: { v: 45 }, stand: { v: 80 }, total: { v: 125 } },
+          deck: 'DP:Artic18',
+          plannedRefs: [{ id: '5', name: 'Articulated Bus 18m' }],
+          vehicles: 1,
+          propulsion: 'hybrid',
+          fuel: 'biogas',
+          euro: 'Euro VI',
+          vmax: 80,
+          rmax: 380,
+          reg: 'EL 82201',
+          vin: 'WMAN27ZZ8NL123044',
+          year: 2023,
+          odo: 42050,
+          desc: '',
+        },
+        {
+          id: '104',
+          flavour: 'physical',
+          mode: 'rail',
+          name: 'Type 74 set 74-031',
+          short: '74-031',
+          dims: { L: { v: 105800 }, W: { v: 2820 }, H: { v: 4340 } },
+          cap: { seats: { v: 252 }, stand: { v: 160 }, total: { v: 412 } },
+          deck: 'DP:FLIRT74',
+          plannedRefs: [{ id: '4', name: 'Stadler FLIRT Class 74' }],
+          vehicles: 1,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 200,
+          rmax: 0,
+          reg: '74-031',
+          vin: '—',
+          year: 2016,
+          odo: 1_120_000,
+          desc: '',
+        },
+        {
+          id: '105',
+          flavour: 'physical',
+          mode: 'metro',
+          name: 'MX3000 set MX-117',
+          short: 'MX-117',
+          dims: { L: { v: 65800 }, W: { v: 3180 }, H: { v: 3620 } },
+          cap: { seats: { v: 144 }, stand: { v: 400 }, total: { v: 544 } },
+          deck: 'DP:MX3000',
+          plannedRefs: [{ id: '6', name: 'MX3000 Metro Set' }],
+          vehicles: 1,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 80,
+          rmax: 0,
+          reg: 'MX-117',
+          vin: '—',
+          year: 2010,
+          odo: 980_000,
+          desc: '',
+        },
+        {
+          id: '106',
+          flavour: 'physical',
+          mode: 'tram',
+          name: 'SL18 unit #403',
+          short: '403',
+          dims: { L: { v: 33840 }, W: { v: 2650 }, H: { v: 3610 } },
+          cap: { seats: { v: 64 }, stand: { v: 152 }, total: { v: 216 } },
+          deck: 'DP:SL18',
+          plannedRefs: [{ id: '7', name: 'SL18 Tram' }],
+          vehicles: 1,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 70,
+          rmax: 0,
+          reg: '403',
+          vin: '—',
+          year: 2021,
+          odo: 210_000,
+          desc: '',
+        },
+        {
+          id: '107',
+          flavour: 'physical',
+          mode: 'ferry',
+          name: 'MF Nesodden',
+          short: 'MFN',
+          dims: { L: { v: 42500 }, W: { v: 9600 }, H: { v: 8400 } },
+          cap: { seats: { v: 190 }, stand: { v: 110 }, total: { v: 300 } },
+          deck: 'DP:Ferry300',
+          plannedRefs: [{ id: '8', name: 'Passenger Ferry 300p' }],
+          vehicles: 1,
+          propulsion: 'electric',
+          fuel: 'electricity',
+          euro: '—',
+          vmax: 24,
+          rmax: 0,
+          reg: 'LM3421',
+          vin: '—',
+          year: 2023,
+          odo: 18_400,
+          desc: '',
+        },
+        {
+          id: '108',
+          flavour: 'physical',
+          mode: 'coach',
+          name: 'Setra ComfortClass S515 HD',
+          short: 'S515',
+          dims: { L: { v: 13240 }, W: { v: 2550 }, H: { v: 3580 } },
+          cap: { seats: { v: 53 }, stand: { v: 0 }, total: { v: 53 } },
+          deck: 'DP:Coach135',
+          plannedRefs: [{ id: '3', name: 'Regional Coach 13.5m' }],
+          vehicles: 1,
+          propulsion: 'diesel',
+          fuel: 'diesel',
+          euro: 'Euro VI',
+          vmax: 100,
+          rmax: 960,
+          reg: 'EK 09872',
+          vin: 'WKK62700234560321',
+          year: 2020,
+          odo: 640_000,
+          desc: '',
+        },
+        {
+          id: '109',
+          flavour: 'physical',
+          mode: 'bus',
+          name: 'CB12 unit #1470',
+          short: '1470',
+          dims: { L: { v: 11980 }, W: { v: 2500 }, H: { v: 3320 } },
+          cap: { seats: { v: 34 }, stand: { v: 52 }, total: { v: 86 } },
+          deck: 'DP:CityBus12',
+          plannedRefs: [{ id: '2', name: 'City Bus 12m, Low-Floor' }],
+          vehicles: 1,
+          propulsion: 'hybrid',
+          fuel: 'biogas',
+          euro: 'Euro VI',
+          vmax: 80,
+          rmax: 420,
+          reg: 'EL 82140',
+          vin: 'YV3T2P728NA004470',
+          year: 2023,
+          odo: 22100,
+          desc: '',
+        },
+        {
+          id: '110',
+          flavour: 'physical',
+          mode: 'coach',
+          name: "MAN Lion's Coach unit 601",
+          short: 'LC-601',
+          dims: { L: { v: 13300 }, W: { v: 2550 }, H: { v: 3620 } },
+          cap: { seats: { v: 55 }, stand: { v: 0 }, total: { v: 55 } },
+          deck: 'DP:Coach135',
+          plannedRefs: [{ id: '3', name: 'Regional Coach 13.5m' }],
+          vehicles: 1,
+          propulsion: 'diesel',
+          fuel: 'diesel',
+          euro: 'Euro VI',
+          vmax: 100,
+          rmax: 900,
+          reg: 'EK 09876',
+          vin: 'WMAN07ZZ1PL987601',
+          year: 2023,
+          odo: 210_000,
+          desc: '',
+        },
+      ];
+
+      // Attach physical counts to planned types
+      for (const p of DATA.filter(d => d.flavour === 'planned')) {
+        p.physicals = DATA.filter(
+          d => d.flavour === 'physical' && d.plannedRefs?.some(r => r.id === p.id)
+        );
+      }
+
+      // Seed Model + Branding data onto physical records (NeTEx Branding ref + Model.Name + Presentation)
+      const PHYSICAL_MODELS = {
+        101: {
+          modelName: 'Volvo 7900 Hybrid',
+          presentation: 'Ruter red · low-floor city',
+          brandingId: 'Ruter',
+        },
+        102: {
+          modelName: 'Volvo 7900 Hybrid',
+          presentation: 'Ruter red · low-floor city',
+          brandingId: 'Ruter',
+        },
+        103: {
+          modelName: 'MAN Lion’s City 18 EfficientHybrid',
+          presentation: 'Ruter articulated · biogas',
+          brandingId: 'Ruter',
+        },
+        104: {
+          modelName: 'Stadler FLIRT 3',
+          presentation: 'Vy white/red · regional EMU',
+          brandingId: 'Vy',
+        },
+        105: {
+          modelName: 'Siemens MX3000',
+          presentation: 'Sporveien T-bane · silver/orange',
+          brandingId: 'Sporveien',
+        },
+        106: {
+          modelName: 'CAF Urbos AXL',
+          presentation: 'Sporveien Trikk · blue livery',
+          brandingId: 'Sporveien',
+        },
+        107: {
+          modelName: 'Brødrene Aa BB300',
+          presentation: 'Ruter Båt · electric fjord ferry',
+          brandingId: 'RuterBat',
+        },
+        108: {
+          modelName: 'Setra ComfortClass S515 HD',
+          presentation: 'Nor-Way · long-distance livery',
+          brandingId: 'NorWay',
+        },
+        109: {
+          modelName: 'Volvo 7900 Hybrid',
+          presentation: 'Ruter red · low-floor city',
+          brandingId: 'Ruter',
+        },
+        110: {
+          modelName: 'MAN Lion’s Coach',
+          presentation: 'Nor-Way · long-distance livery',
+          brandingId: 'NorWay',
+        },
+      };
+      for (const r of DATA) {
+        if (r.flavour === 'physical') Object.assign(r, PHYSICAL_MODELS[r.id] || {});
+      }
+
+      /* Environmental data.
+   Planned types carry RANGES (min/max) across the fleet; physical records
+   carry single values measured/rated for that specific vehicle.
+   Values are realistic but illustrative — rolling resistance coefficients
+   around 0.006–0.012, aerodynamic drag Cd*A roughly 3–8 m², engine power
+   ratings in kW, and a qualitative hybridisation level. */
+      const ENV_PLANNED = {
+        2: {
+          drag: { min: 5.2, max: 5.8 },
+          roll: { min: 0.0085, max: 0.0095 },
+          power: { min: 180, max: 220 },
+          hybrid: 'Parallel',
+        },
+        3: {
+          drag: { min: 5.8, max: 6.4 },
+          roll: { min: 0.007, max: 0.008 },
+          power: { min: 320, max: 360 },
+          hybrid: 'None',
+        },
+        4: {
+          drag: { min: 7.0, max: 7.6 },
+          roll: { min: 0.0035, max: 0.0045 },
+          power: { min: 2000, max: 2400 },
+          hybrid: 'Full electric',
+        },
+        5: {
+          drag: { min: 6.8, max: 7.4 },
+          roll: { min: 0.009, max: 0.01 },
+          power: { min: 260, max: 300 },
+          hybrid: 'Parallel',
+        },
+        6: {
+          drag: { min: 6.2, max: 6.8 },
+          roll: { min: 0.003, max: 0.004 },
+          power: { min: 2400, max: 2800 },
+          hybrid: 'Full electric',
+        },
+        7: {
+          drag: { min: 5.4, max: 6.0 },
+          roll: { min: 0.0035, max: 0.0045 },
+          power: { min: 600, max: 720 },
+          hybrid: 'Full electric',
+        },
+        8: {
+          drag: { min: 7.8, max: 8.6 },
+          roll: { min: 0.009, max: 0.011 },
+          power: { min: 1800, max: 2200 },
+          hybrid: 'Full electric',
+        },
+      };
+      const ENV_PHYSICAL = {
+        101: { drag: 5.5, roll: 0.009, power: 200, hybrid: 'Parallel' },
+        102: { drag: 5.4, roll: 0.009, power: 200, hybrid: 'Parallel' },
+        103: { drag: 7.1, roll: 0.0095, power: 280, hybrid: 'Parallel' },
+        104: { drag: 7.3, roll: 0.004, power: 2200, hybrid: 'Full electric' },
+        105: { drag: 6.5, roll: 0.0035, power: 2640, hybrid: 'Full electric' },
+        106: { drag: 5.7, roll: 0.004, power: 660, hybrid: 'Full electric' },
+        107: { drag: 8.2, roll: 0.01, power: 2000, hybrid: 'Full electric' },
+        108: { drag: 6.1, roll: 0.0075, power: 350, hybrid: 'None' },
+        109: { drag: 5.5, roll: 0.009, power: 200, hybrid: 'Parallel' },
+        110: { drag: 6.0, roll: 0.0075, power: 340, hybrid: 'None' },
+      };
+      for (const r of DATA) {
+        r.env = r.flavour === 'planned' ? ENV_PLANNED[r.id] : ENV_PHYSICAL[r.id];
+      }
+
+      /* ============================================================
+   NetexID widget helper
+   ============================================================ */
+      function nxid({
+        codespace = 'NMR',
+        type = 'VehicleType',
+        id,
+        size = 'md',
+        version,
+        created,
+        modified,
+        csTheme,
+      }) {
+        const cls = ['nxid', 'nx-ref'];
+        if (size === 'lg') cls.push('nx-lg');
+        if (size === 'sm') cls.push('nx-sm');
+        // Version tooltip
+        const v = version || 'v1';
+        const cm = created || '2024-03-12';
+        const md = modified || '2025-09-28';
+        const tip = `${codespace}:${type}:${id} — ${v}\nCreated ${cm}\nModified ${md}`;
+        const csAttr = csTheme ? ` data-cs-theme="${csTheme}"` : '';
+        return `<span class="${cls.join(' ')}" data-type="${type}"${csAttr} title="${tip}">
+    <span class="nx-codespace">${codespace}</span>
+    <span class="nx-colon">:</span>
+    <span class="nx-type">${type}</span>
+    <span class="nx-sep">:</span>
+    <span class="nx-id">${id}</span>
+  </span>`;
+      }
+
+      /* Assign a stable codespace + theme token to every record.
+   Physical records use the fixed NMR codespace (the registry's own namespace),
+   styled in the mint family.
+   Planned records cycle through a small pool of Norwegian operator codespaces
+   (planned types in NMR belong to individual operators), styled in lavender. */
+      const PLANNED_OPERATORS = ['RUT', 'VY', 'SPO', 'NOR'];
+      for (const r of DATA) {
+        if (r.flavour === 'physical') {
+          r.codespace = 'NMR';
+          r.csTheme = 'physical';
+        } else {
+          r.codespace = PLANNED_OPERATORS[parseInt(r.id, 10) % PLANNED_OPERATORS.length];
+          r.csTheme = 'planned';
+        }
+      }
+      function modeIcon(mode) {
+        const color = `var(--tm-${mode})`;
+        return `<svg width="16" height="16" style="color:${color}" aria-label="${mode}"><use href="#tm-${mode}"/></svg>`;
+      }
+
+      /* ============================================================
+   Column definitions (reorderable + resizable + toggleable)
+   ============================================================ */
+      const ALL_COLS = [
+        {
+          key: 'mode',
+          label: 'Mode',
+          w: 80,
+          render: r =>
+            `<div class="mode-cell">${modeIcon(r.mode)}<span class="mname">${r.mode}</span></div>`,
+        },
+        {
+          key: 'id',
+          label: 'ID',
+          w: 200,
+          render: r =>
+            `<span class="nx-pill ${r.flavour}" title="NMR:VehicleType:${r.id}">NMR:VehicleType:${r.id}</span>`,
+        },
+        {
+          key: 'name',
+          label: 'Name',
+          w: 260,
+          render: r => `<div class="cell-title">${r.name}</div>`,
+        },
+        {
+          key: 'flavour',
+          label: 'Flavour',
+          w: 100,
+          render: r =>
+            r.flavour === 'planned'
+              ? `<span class="flavour-pill planned"><span class="dot"></span>Planned</span>`
+              : `<span class="flavour-pill physical"><span class="dot"></span>Physical</span>`,
+        },
+        {
+          key: 'linked',
+          label: 'Linked',
+          w: 120,
+          render: r => {
+            if (r.flavour === 'planned') {
+              const n = r.physicals.length;
+              return `<span class="sum-chip ${n ? '' : 'zero'}" title="Physical vehicle types sharing this planned profile"><span class="prefix">has</span><span class="n">${n}</span><span>physical</span></span>`;
+            } else {
+              const n = r.plannedRefs?.length || 0;
+              return `<span class="sum-chip ${n ? '' : 'zero'}" title="Planned profiles this physical type fulfills"><span class="prefix">has</span><span class="n">${n}</span><span>planned</span></span>`;
+            }
+          },
+        },
+        {
+          key: 'vehicles',
+          label: 'Vehicles',
+          w: 100,
+          render: r => {
+            const n = r.vehicles || 0;
+            return `<span class="sum-chip ${n ? '' : 'zero'}"><span class="n">${n}</span><span>${n === 1 ? 'vehicle' : 'vehicles'}</span></span>`;
+          },
+        },
+        {
+          key: 'dims',
+          label: 'Dimensions (m)',
+          w: 200,
+          render: r => {
+            const p = r.dims;
+            const toM = v => (v / 1000).toFixed(1);
+            const isRange = 'min' in p.L;
+            if (isRange) {
+              const fmt = d => (d.min === d.max ? toM(d.min) : `${toM(d.min)}–${toM(d.max)}`);
+              return `<span class="dim-cell range"><b>L</b> ${fmt(p.L)} · <b>W</b> ${fmt(p.W)} · <b>H</b> ${fmt(p.H)}<span class="range-hint">range</span></span>`;
+            }
+            return `<span class="dim-cell"><b>L</b> ${toM(p.L.v)} · <b>W</b> ${toM(p.W.v)} · <b>H</b> ${toM(p.H.v)}</span>`;
+          },
+        },
+        {
+          key: 'deck',
+          label: 'Deck plan',
+          w: 180,
+          render: r => nxid({ codespace: 'NMR', type: 'DeckPlan', id: r.deck.replace('DP:', '') }),
+        },
+        {
+          key: 'capacity',
+          label: 'Capacity',
+          w: 120,
+          render: r => {
+            const c = r.cap.total;
+            if ('min' in c)
+              return `<span class="dim-cell range"><b>${c.min}–${c.max}</b> pax</span>`;
+            return `<span class="dim-cell"><b>${c.v}</b> pax</span>`;
+          },
+        },
+        {
+          key: 'propulsion',
+          label: 'Propulsion',
+          w: 120,
+          render: r =>
+            `<span style="font-size:12px;color:var(--text-neutral);text-transform:capitalize">${r.propulsion}</span>`,
+        },
+        {
+          key: 'model',
+          label: 'Model',
+          w: 220,
+          render: r => {
+            if (r.flavour !== 'physical')
+              return `<span style="color:var(--text-neutral-alt);font-size:12px">—</span>`;
+            return `<div class="cell-title" style="font-size:12px">${r.modelName || '—'}</div>`;
+          },
+        },
+      ];
+
+      // Column order + visibility state (persisted in localStorage)
+      const STORAGE_KEY = 'nmr:vt:cols:v2';
+      let colState = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {
+        order: [
+          'mode',
+          'id',
+          'name',
+          'flavour',
+          'linked',
+          'vehicles',
+          'model',
+          'dims',
+          'deck',
+          'capacity',
+        ],
+        visible: ['mode', 'id', 'name', 'flavour', 'linked', 'vehicles', 'model', 'dims', 'deck'],
+        widths: {},
+      };
+
+      function saveColState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(colState));
+      }
+
+      /* ============================================================
+   STATE
+   ============================================================ */
+      let state = {
+        flavour: 'all',
+        mode: 'all',
+        search: '',
+        sort: { key: 'id', dir: 'asc' },
+        page: 1,
+        pageSize: 25,
+        selected: null,
+      };
+
+      /* ============================================================
+   RENDERERS
+   ============================================================ */
+      function orderedVisibleCols() {
+        return colState.order
+          .filter(k => colState.visible.includes(k))
+          .map(k => ALL_COLS.find(c => c.key === k))
+          .filter(Boolean);
+      }
+
+      function renderThead() {
+        const cols = orderedVisibleCols();
+        const thead = document.getElementById('thead');
+        thead.innerHTML = `<tr>${cols
+          .map(c => {
+            const w = colState.widths[c.key] || c.w;
+            const sortCls = state.sort.key === c.key ? 'sorted' : '';
+            const sortArrow =
+              state.sort.dir === 'asc'
+                ? `<svg class="sort-ic" width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 2L9 7H1z"/></svg>`
+                : `<svg class="sort-ic" width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M5 8L1 3h8z"/></svg>`;
+            return `<th class="${sortCls}" data-key="${c.key}" style="width:${w}px"><div class="th-inner"><span class="hd" data-sort="${c.key}">${c.label} ${sortArrow}</span><span class="resizer" data-key="${c.key}"></span></div></th>`;
+          })
+          .join('')}</tr>`;
+      }
+
+      function filteredSortedRows() {
+        const s = state.search.trim().toLowerCase();
+        let rows = DATA.filter(r => {
+          if (state.flavour !== 'all' && r.flavour !== state.flavour) return false;
+          if (state.mode !== 'all' && r.mode !== state.mode) return false;
+          if (s && !(r.name.toLowerCase().includes(s) || r.id.toLowerCase().includes(s)))
+            return false;
+          return true;
+        });
+        const { key, dir } = state.sort;
+        rows.sort((a, b) => {
+          let av, bv;
+          if (key === 'dims') {
+            av = a.dims.L.min ?? a.dims.L.v;
+            bv = b.dims.L.min ?? b.dims.L.v;
+          } else if (key === 'capacity') {
+            av = a.cap.total.min ?? a.cap.total.v;
+            bv = b.cap.total.min ?? b.cap.total.v;
+          } else if (key === 'linked') {
+            av = a.flavour === 'planned' ? a.physicals.length : a.plannedRefs?.length || 0;
+            bv = b.flavour === 'planned' ? b.physicals.length : b.plannedRefs?.length || 0;
+          } else if (key === 'deck') {
+            av = a.deck;
+            bv = b.deck;
+          } else {
+            av = a[key];
+            bv = b[key];
+          }
+          if (typeof av === 'string') {
+            av = av.toLowerCase();
+            bv = (bv || '').toString().toLowerCase();
+          }
+          if (av < bv) return dir === 'asc' ? -1 : 1;
+          if (av > bv) return dir === 'asc' ? 1 : -1;
+          return 0;
+        });
+        return rows;
+      }
+
+      function renderTbody() {
+        const cols = orderedVisibleCols();
+        const rows = filteredSortedRows();
+        const total = rows.length;
+        const pages = Math.max(1, Math.ceil(total / state.pageSize));
+        if (state.page > pages) state.page = pages;
+        const start = (state.page - 1) * state.pageSize;
+        const pageRows = rows.slice(start, start + state.pageSize);
+
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = pageRows.length
+          ? pageRows
+              .map(
+                r =>
+                  `<tr data-id="${r.id}" data-flavour="${r.flavour}" class="${state.selected === r.id ? 'selected' : ''}">${cols
+                    .map(c => `<td data-col="${c.key}">${c.render(r)}</td>`)
+                    .join('')}</tr>`
+              )
+              .join('')
+          : `<tr class="empty-row"><td colspan="${cols.length}">No vehicle types match — try clearing filters.</td></tr>`;
+
+        document.getElementById('range-str').textContent = total
+          ? `Showing ${start + 1}–${Math.min(start + state.pageSize, total)} of ${total}`
+          : '0 of 0';
+        document.getElementById('page-str').textContent = `${state.page} / ${pages}`;
+        document.getElementById('prev').disabled = state.page <= 1;
+        document.getElementById('next').disabled = state.page >= pages;
+        document.getElementById('total-str').textContent =
+          `${DATA.length} entries · ${total} shown`;
+      }
+
+      function renderChips() {
+        const chips = [];
+        if (state.flavour !== 'all')
+          chips.push({
+            label: state.flavour,
+            remove: () => {
+              state.flavour = 'all';
+              document
+                .querySelectorAll('#flavour-seg button')
+                .forEach(b => b.classList.toggle('active', b.dataset.flavour === 'all'));
+            },
+          });
+        if (state.mode !== 'all')
+          chips.push({
+            label: state.mode,
+            remove: () => {
+              state.mode = 'all';
+              document
+                .querySelectorAll('#mode-filter button')
+                .forEach(b => b.classList.toggle('active', b.dataset.mode === 'all'));
+            },
+          });
+        if (state.search)
+          chips.push({
+            label: `"${state.search}"`,
+            remove: () => {
+              state.search = '';
+              document.getElementById('search').value = '';
+            },
+          });
+
+        const stack = document.getElementById('chip-stack');
+        stack.innerHTML = chips
+          .map(
+            (c, i) =>
+              `<span class="chip active" data-ci="${i}">${c.label}<span class="x">✕</span></span>`
+          )
+          .join('');
+        stack.querySelectorAll('.chip').forEach((el, i) => {
+          el.querySelector('.x').addEventListener('click', () => {
+            chips[i].remove();
+            rerender();
+          });
+        });
+      }
+
+      function renderColPicker() {
+        const menu = document.getElementById('col-menu');
+        menu.innerHTML =
+          `<div class="head">Visible columns · drag to reorder</div>` +
+          colState.order
+            .map(k => {
+              const c = ALL_COLS.find(x => x.key === k);
+              const checked = colState.visible.includes(k) ? 'checked' : '';
+              return `<label class="col-item" draggable="true" data-k="${k}">
+        <span class="grip">⋮⋮</span>
+        <input type="checkbox" ${checked} data-toggle="${k}" />
+        <span class="label">${c.label}</span>
+      </label>`;
+            })
+            .join('');
+
+        // Toggle visibility
+        menu.querySelectorAll('input[data-toggle]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const k = cb.dataset.toggle;
+            if (cb.checked && !colState.visible.includes(k)) colState.visible.push(k);
+            if (!cb.checked) colState.visible = colState.visible.filter(x => x !== k);
+            saveColState();
+            rerender();
+          });
+        });
+
+        // Drag reorder
+        let dragKey = null;
+        menu.querySelectorAll('.col-item').forEach(row => {
+          row.addEventListener('dragstart', e => {
+            dragKey = row.dataset.k;
+            row.style.opacity = '0.5';
+          });
+          row.addEventListener('dragend', e => {
+            row.style.opacity = '1';
+          });
+          row.addEventListener('dragover', e => {
+            e.preventDefault();
+          });
+          row.addEventListener('drop', e => {
+            e.preventDefault();
+            const targetKey = row.dataset.k;
+            if (!dragKey || dragKey === targetKey) return;
+            const order = colState.order.filter(k => k !== dragKey);
+            const i = order.indexOf(targetKey);
+            order.splice(i, 0, dragKey);
+            colState.order = order;
+            saveColState();
+            rerender();
+          });
+        });
+      }
+
+      function rerender() {
+        renderThead();
+        renderTbody();
+        renderChips();
+        renderColPicker();
+      }
+
+      /* ============================================================
+   DETAIL
+   ============================================================ */
+
+      function buildVehicleList(r) {
+        // Deterministic sample list. For physical: one record (r itself).
+        // For planned: generate r.vehicles entries with plausible reg numbers + location names.
+        if (r.flavour === 'physical') {
+          return [
+            {
+              id: 'V-' + (r.reg || r.id).replace(/\s+/g, ''),
+              reg: r.reg || '—',
+              name: r.name,
+            },
+          ];
+        }
+        const prefixes = {
+          bus: ['EL', 'SX', 'DA', 'BR'],
+          rail: ['74', '75', '72', '69'],
+          metro: ['MX', 'T-', 'M3'],
+          tram: ['SL', 'TR'],
+          water: ['F-', 'SJ'],
+          coach: ['RE', 'VY'],
+          air: ['LN', 'OY'],
+          cableway: ['CW'],
+        };
+        const cities = [
+          'Oslo',
+          'Lillestrøm',
+          'Drammen',
+          'Bergen',
+          'Asker',
+          'Ski',
+          'Moss',
+          'Gjøvik',
+        ];
+        const px = prefixes[r.mode] || ['VT'];
+        const n = Math.min(r.vehicles || 0, 10);
+        const list = [];
+        for (let i = 0; i < n; i++) {
+          const p = px[i % px.length];
+          const num = 80000 + (parseInt(r.id, 10) || 1) * 100 + i;
+          const reg = /^\d/.test(p) ? `${p} ${num}` : `${p} ${num}`;
+          list.push({
+            id: 'V-' + reg.replace(/\s+/g, ''),
+            reg,
+            name: `${r.name} · Unit ${i + 1} (${cities[i % cities.length]})`,
+          });
+        }
+        return list;
+      }
+
+      function renderModeDropdown(r) {
+        const ic = document.getElementById('d-mode-ic');
+        const label = document.getElementById('d-mode-label');
+        ic.innerHTML = modeIcon(r.mode);
+        label.textContent = r.mode;
+
+        const menu = document.getElementById('d-mode-menu');
+        menu.innerHTML = MODES.map(
+          m =>
+            `<button data-mode="${m}" class="${m === r.mode ? 'active' : ''}">${modeIcon(m)}<span>${m}</span></button>`
+        ).join('');
+
+        menu.querySelectorAll('button').forEach(b => {
+          b.onclick = () => {
+            r.mode = b.dataset.mode;
+            document.getElementById('d-mode-dd').classList.remove('open');
+            renderModeDropdown(r);
+            renderTbody();
+          };
+        });
+      }
+
+      // Environmental tab — view/edit with shared pane-edit-bar pattern.
+      // Friendly labels map to NeTEx field names; ranges apply to planned types.
+      const typesEnv = { editing: false };
+
+      function fmtDrag(v) {
+        return v == null ? '—' : `${v.toFixed(2)} m²`;
+      }
+      function fmtRoll(v) {
+        return v == null ? '—' : v.toFixed(4);
+      }
+      function fmtPower(v) {
+        return v == null ? '—' : `${v.toLocaleString('en')} kW`;
+      }
+      function fmtRange(r, fmt) {
+        if (!r) return '—';
+        return r.min === r.max ? fmt(r.min) : `${fmt(r.min)} – ${fmt(r.max)}`;
+      }
+
+      function renderEnvironmentalPane(r) {
+        const body = document.getElementById('d-env-body');
+        const env = r.env || {};
+        const editing = typesEnv.editing;
+        const planned = r.flavour === 'planned';
+
+        const editBarHTML = editing
+          ? `<div class="pane-edit-bar editing">
+         <span class="edit-status">Editing</span>
+         <button class="btn ghost" id="env-edit-cancel">Cancel</button>
+         <button class="btn primary" id="env-edit-save">Save changes</button>
+       </div>`
+          : `<div class="pane-edit-bar">
+         <button class="btn" id="env-edit-btn">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+           Edit
+         </button>
+       </div>`;
+
+        // Field rows — each row is a label + value (view) or input(s) (edit).
+        // Planned flavour uses range inputs; physical uses single scalars.
+        const fieldRow = (label, hint, viewEl, editEl) => `
+    <div class="env-row">
+      <div class="env-label">
+        <div class="env-label-main">${label}</div>
+        ${hint ? `<div class="env-label-hint">${hint}</div>` : ''}
+      </div>
+      <div class="env-value">${editing ? editEl : viewEl}</div>
+    </div>`;
+
+        const rangeInputs = (val, step, prefix) => `
+    <div class="range-input">
+      <input class="input" type="number" step="${step}" data-env="${prefix}Min" value="${val?.min ?? ''}" />
+      <span class="dash">—</span>
+      <input class="input" type="number" step="${step}" data-env="${prefix}Max" value="${val?.max ?? ''}" />
+    </div>`;
+
+        const scalarInput = (val, step, key) =>
+          `<input class="input" type="number" step="${step}" data-env="${key}" value="${val ?? ''}" />`;
+
+        const hybridOpts = [
+          'None',
+          'Parallel',
+          'Serial',
+          'Full electric',
+          'Hydrogen fuel cell',
+          'Plug-in hybrid',
+        ];
+        const hybridSelect = val => `
+    <select class="select" data-env="hybrid">
+      ${hybridOpts.map(o => `<option ${o === val ? 'selected' : ''}>${o}</option>`).join('')}
+    </select>`;
+
+        const rowsHTML = planned
+          ? [
+              fieldRow(
+                'Aerodynamic drag',
+                'Frontal area × drag coefficient (Cd·A)',
+                fmtRange(env.drag, fmtDrag),
+                rangeInputs(env.drag, '0.1', 'drag')
+              ),
+              fieldRow(
+                'Rolling resistance',
+                'Tyre/rail rolling resistance coefficient',
+                fmtRange(env.roll, fmtRoll),
+                rangeInputs(env.roll, '0.0001', 'roll')
+              ),
+              fieldRow(
+                'Max engine power',
+                'Peak output of the drive system',
+                fmtRange(env.power, fmtPower),
+                rangeInputs(env.power, '10', 'power')
+              ),
+              fieldRow(
+                'Hybridisation',
+                'Type of electrified drive system',
+                env.hybrid || '—',
+                hybridSelect(env.hybrid || 'None')
+              ),
+            ].join('')
+          : [
+              fieldRow(
+                'Aerodynamic drag',
+                'Frontal area × drag coefficient (Cd·A)',
+                fmtDrag(env.drag),
+                scalarInput(env.drag, '0.1', 'drag')
+              ),
+              fieldRow(
+                'Rolling resistance',
+                'Tyre/rail rolling resistance coefficient',
+                fmtRoll(env.roll),
+                scalarInput(env.roll, '0.0001', 'roll')
+              ),
+              fieldRow(
+                'Max engine power',
+                'Peak output of the drive system',
+                fmtPower(env.power),
+                scalarInput(env.power, '10', 'power')
+              ),
+              fieldRow(
+                'Hybridisation',
+                'Type of electrified drive system',
+                env.hybrid || '—',
+                hybridSelect(env.hybrid || 'None')
+              ),
+            ].join('');
+
+        body.innerHTML = `
+    <div class="env-pane">
+      ${editBarHTML}
+      <div class="env-grid">${rowsHTML}</div>
+    </div>`;
+
+        if (editing) {
+          document.getElementById('env-edit-cancel').addEventListener('click', () => {
+            typesEnv.editing = false;
+            renderEnvironmentalPane(r);
+          });
+          document.getElementById('env-edit-save').addEventListener('click', () => {
+            const get = k => body.querySelector(`[data-env="${k}"]`)?.value;
+            const num = v => (v === '' || v == null ? null : Number(v));
+            if (planned) {
+              r.env = {
+                drag: { min: num(get('dragMin')), max: num(get('dragMax')) },
+                roll: { min: num(get('rollMin')), max: num(get('rollMax')) },
+                power: { min: num(get('powerMin')), max: num(get('powerMax')) },
+                hybrid: get('hybrid'),
+              };
+            } else {
+              r.env = {
+                drag: num(get('drag')),
+                roll: num(get('roll')),
+                power: num(get('power')),
+                hybrid: get('hybrid'),
+              };
+            }
+            typesEnv.editing = false;
+            renderEnvironmentalPane(r);
+          });
+          const first = body.querySelector('input, select');
+          if (first) {
+            first.focus();
+            if (first.select) first.select();
+          }
+        } else {
+          const btn = document.getElementById('env-edit-btn');
+          if (btn)
+            btn.addEventListener('click', () => {
+              typesEnv.editing = true;
+              renderEnvironmentalPane(r);
+            });
+        }
+      }
+
+      function openDetail(id) {
+        const r = DATA.find(x => x.id === id);
+        if (!r) return;
+        state.selected = id;
+        typesEnv.editing = false;
+        document.getElementById('split').classList.add('detail-open');
+        document
+          .querySelectorAll('#tbody tr')
+          .forEach(tr => tr.classList.toggle('selected', tr.dataset.id === id));
+
+        // Flavour pill
+        const fp = document.getElementById('d-flavour');
+        fp.className = `flavour-pill ${r.flavour}`;
+        fp.innerHTML = `<span class="dot"></span> ${r.flavour[0].toUpperCase() + r.flavour.slice(1)}`;
+
+        // Title + ID chip
+        document.getElementById('d-name').textContent = r.name;
+        document.getElementById('d-name').setAttribute('contenteditable', 'false');
+        document.getElementById('d-id-slot').innerHTML = nxid({
+          codespace: r.codespace,
+          csTheme: r.csTheme,
+          id: r.id,
+          type: 'VehicleType',
+          size: 'lg',
+        });
+
+        // Transport-mode dropdown (in the detail top-row)
+        renderModeDropdown(r);
+
+        // Sub-row meta (no deckplan icon here; deckplan stays as its own section / tab)
+        const sub = document.getElementById('d-sub');
+        const physCount = r.flavour === 'planned' ? r.physicals.length : r.plannedRefs?.length || 0;
+        const physLabel = r.flavour === 'planned' ? 'physical types' : 'planned types';
+        sub.innerHTML = `
+    <span class="meta-item"><strong style="color:var(--text-dark)">${r.vehicles}</strong> vehicles</span>
+    <span style="color:var(--stroke-neutral)">·</span>
+    <span class="meta-item"><strong style="color:var(--text-dark)">${physCount}</strong> ${physLabel}</span>
+  `;
+
+        // Tab visibility
+        document.getElementById('d-tab-vehicles').textContent =
+          r.flavour === 'planned' ? `Vehicles (${r.vehicles})` : `Vehicles (1)`;
+        const linkedCount =
+          r.flavour === 'planned' ? r.physicals.length : r.plannedRefs?.length || 0;
+        document.getElementById('d-tab-planned').textContent = `Linked types (${linkedCount})`;
+
+        // Deck-plan tab: plain-text label "DeckPlan:<id>" (no widget)
+        const deckId = r.deck.replace('DP:', '');
+        document.getElementById('d-tab-deck').innerHTML =
+          `<span class="deck-tab-label">DeckPlan<span class="sep">:</span>${deckId}</span>`;
+
+        // Edit fields (Identity section removed; name edits inline via h2, mode via dropdown)
+        document.getElementById('f-vmax').value = r.vmax || '';
+        document.getElementById('f-rmax').value = r.rmax || '';
+
+        // Dimensions
+        const dimBody = document.getElementById('d-dim-body');
+        const dimTag = document.getElementById('d-dim-tag');
+        if (r.flavour === 'planned') {
+          dimTag.textContent = 'range values';
+          dimBody.innerHTML = ['L', 'W', 'H']
+            .map(k => {
+              const d = r.dims[k];
+              return `<div class="field"><label>${k} (mm)</label><div class="range-input"><input class="input" value="${d.min}"/><span class="dash">—</span><input class="input" value="${d.max}"/></div></div>`;
+            })
+            .join('');
+        } else {
+          dimTag.textContent = '';
+          dimBody.innerHTML = ['L', 'W', 'H']
+            .map(
+              k =>
+                `<div class="field"><label>${k} (mm)</label><input class="input" value="${r.dims[k].v}"/></div>`
+            )
+            .join('');
+        }
+
+        // Capacity
+        const capBody = document.getElementById('d-cap-body');
+        const capTag = document.getElementById('d-cap-tag');
+        if (r.flavour === 'planned') {
+          capTag.textContent = 'range values';
+          capBody.innerHTML = [
+            ['seats', 'Seats'],
+            ['stand', 'Standing'],
+            ['total', 'Total'],
+          ]
+            .map(([k, l]) => {
+              const c = r.cap[k];
+              return `<div class="field"><label>${l}</label><div class="range-input"><input class="input" value="${c.min}"/><span class="dash">—</span><input class="input" value="${c.max}"/></div></div>`;
+            })
+            .join('');
+        } else {
+          capTag.textContent = '';
+          capBody.innerHTML = [
+            ['seats', 'Seats'],
+            ['stand', 'Standing'],
+            ['total', 'Total'],
+          ]
+            .map(
+              ([k, l]) =>
+                `<div class="field"><label>${l}</label><input class="input" value="${r.cap[k].v}"/></div>`
+            )
+            .join('');
+        }
+
+        // Model (physical only)
+        const modelSec = document.getElementById('d-model-sec');
+        modelSec.style.display = r.flavour === 'physical' ? '' : 'none';
+        if (r.flavour === 'physical') {
+          document.getElementById('f-model-name').value = r.modelName || '';
+          const presSlot = document.getElementById('f-model-pres');
+          presSlot.innerHTML = r.brandingId
+            ? nxid({ codespace: 'NMR', type: 'Branding', id: r.brandingId })
+            : `<span style="color:var(--text-neutral-alt);font-size:12px">No presentation linked</span>`;
+        }
+
+        // Environmental tab
+        renderEnvironmentalPane(r);
+
+        // Vehicles tab body — reads from the master VEHICLES list (filtered by this type)
+        const vhTbl = document.getElementById('vh-tbl');
+        const vehicles =
+          typeof VEHICLES !== 'undefined'
+            ? VEHICLES.filter(
+                v =>
+                  v.typeId === r.id ||
+                  (r.flavour === 'physical' && v.id === 'V-' + (r.reg || r.id).replace(/\s+/g, ''))
+              )
+            : buildVehicleList(r);
+        document.getElementById('d-vh-head').innerHTML =
+          `<span class="deck-title-main">Vehicles</span><span class="tag">${vehicles.length} record${vehicles.length === 1 ? '' : 's'}</span>`;
+
+        vhTbl.innerHTML = `
+    <thead>
+      <tr>
+        <th style="width:60px">ID</th>
+        <th style="width:120px">RegNo</th>
+        <th>Name</th>
+        <th style="width:40px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${vehicles
+        .map(
+          v => `<tr data-vid="${v.id}" style="cursor:pointer;" title="Open in Vehicles">
+        <td>${nxid({ codespace: 'NMR', type: 'Vehicle', id: v.id })}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-dark)">${v.regno || v.reg}</td>
+        <td class="name">${v.name}</td>
+        <td style="text-align:right"><button class="remove" title="Unassign" onclick="event.stopPropagation()">✕</button></td>
+      </tr>`
+        )
+        .join('')}
+    </tbody>`;
+
+        // Linked-types tab — shows the counter-part:
+        //   physical record  → list of planned types it fulfills
+        //   planned record   → list of physical types that fulfill it
+        const plTbl = document.getElementById('pl-tbl');
+        const plHead = document.getElementById('d-pl-head');
+        const plBtn = document.getElementById('pl-add-btn');
+        const plCombo = document.getElementById('pl-add-combo');
+        if (r.flavour === 'physical') {
+          plHead.innerHTML = `Linked planned types <span class="tag" id="d-pl-tag">${r.plannedRefs.length} linked</span>`;
+          plBtn.textContent = '+ Link planned type';
+          plCombo.innerHTML = `<input class="input" placeholder="Search planned types…" style="font-family:inherit;font-size:12px;padding:5px 10px;background:#fff;border:1px solid var(--stroke-neutral);border-radius:14px;width:220px"/>`;
+          plTbl.innerHTML =
+            r.plannedRefs
+              .map(
+                ref => `<tr>
+      <td style="width:40px">${nxid({ codespace: 'NMR', type: 'VehicleType', id: ref.id, size: 'sm' })}</td>
+      <td class="name">${ref.name}</td>
+      <td style="text-align:right"><button class="remove" title="Remove link">✕</button></td>
+    </tr>`
+              )
+              .join('') ||
+            `<tr><td colspan="3" style="text-align:center;color:var(--text-neutral-alt);font-size:11px;padding:18px">No linked planned types</td></tr>`;
+        } else {
+          plHead.innerHTML = `Physical types fulfilling this <span class="tag" id="d-pl-tag">${r.physicals.length} linked</span>`;
+          plBtn.textContent = '+ Link physical type';
+          plCombo.innerHTML = `<input class="input" placeholder="Search physical types…" style="font-family:inherit;font-size:12px;padding:5px 10px;background:#fff;border:1px solid var(--stroke-neutral);border-radius:14px;width:220px"/>`;
+          plTbl.innerHTML =
+            r.physicals
+              .map(
+                ph => `<tr>
+      <td style="width:40px">${nxid({ codespace: 'NMR', type: 'VehicleType', id: ph.id, size: 'sm' })}</td>
+      <td class="name">${ph.name}</td>
+      <td style="text-align:right"><button class="remove" title="Unlink">✕</button></td>
+    </tr>`
+              )
+              .join('') ||
+            `<tr><td colspan="3" style="text-align:center;color:var(--text-neutral-alt);font-size:11px;padding:18px">No physical types link to this</td></tr>`;
+        }
+
+        // Deck-plan tab body — one row per physical deck on this vehicle type.
+        // Each deck lists the individual deck id, its conventional name, and spot count.
+        renderDeckTable(r);
+
+        // XML
+        const xml = buildXml(r);
+        document.getElementById('xml-pre').textContent = xml;
+      }
+
+      /* Deck-plan decks — synthesise 1–3 deck rows per vehicle type.
+   Real deck plans describe the physical layout of each deck (lower, upper,
+   etc.); here we fabricate plausible rows so the tab has content.
+   Deterministic per type id so the mock is stable across re-renders. */
+      const DECK_LAYOUTS = {
+        CityBus12: [{ id: 'MAIN', name: 'Main floor', spots: 86 }],
+        Coach135: [{ id: 'MAIN', name: 'Main floor', spots: 53 }],
+        Artic18: [
+          { id: 'FRONT', name: 'Front section', spots: 48 },
+          { id: 'REAR', name: 'Rear section', spots: 70 },
+        ],
+        FLIRT74: [
+          { id: 'CAR-A', name: 'Car A (drive)', spots: 92 },
+          { id: 'CAR-B', name: 'Car B (mid)', spots: 112 },
+          { id: 'CAR-C', name: 'Car C (drive)', spots: 96 },
+        ],
+        MX3000: [
+          { id: 'CAR-A', name: 'Car A', spots: 130 },
+          { id: 'CAR-B', name: 'Car B', spots: 140 },
+          { id: 'CAR-C', name: 'Car C', spots: 130 },
+        ],
+        SL18: [
+          { id: 'S1', name: 'Section 1', spots: 42 },
+          { id: 'S2', name: 'Section 2', spots: 38 },
+          { id: 'S3', name: 'Section 3', spots: 42 },
+          { id: 'S4', name: 'Section 4', spots: 38 },
+          { id: 'S5', name: 'Section 5', spots: 46 },
+        ],
+        Ferry300: [
+          { id: 'LOWER', name: 'Lower deck', spots: 180 },
+          { id: 'UPPER', name: 'Upper deck (sun)', spots: 120 },
+        ],
+      };
+
+      function renderDeckTable(r) {
+        const deckId = r.deck.replace('DP:', '');
+        const decks = DECK_LAYOUTS[deckId] || [
+          { id: 'MAIN', name: 'Main floor', spots: r.cap?.total?.v || r.cap?.total?.max || 0 },
+        ];
+        const total = decks.reduce((s, d) => s + d.spots, 0);
+        const head = document.getElementById('d-deck-head');
+        const tbl = document.getElementById('deck-tbl');
+        head.innerHTML = `<span class="deck-title-main">Decks in <strong>${deckId}</strong></span><span class="tag">${decks.length} deck${decks.length === 1 ? '' : 's'}</span>`;
+        tbl.innerHTML = `
+    <thead>
+      <tr>
+        <th style="width:160px">ID</th>
+        <th>Name</th>
+        <th class="num" style="width:120px">Spots</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${decks
+        .map(
+          d => `<tr>
+        <td>${nxid({ codespace: 'NMR', type: 'Deck', id: d.id, size: 'sm' })}</td>
+        <td style="color:var(--text-dark)">${d.name}</td>
+        <td class="num">${d.spots}</td>
+      </tr>`
+        )
+        .join('')}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" style="text-align:right;color:var(--text-neutral-alt)">Total capacity</td>
+        <td class="num"><strong>${total}</strong></td>
+      </tr>
+    </tfoot>
+  `;
+      }
+
+      function closeDetail() {
+        state.selected = null;
+        document.getElementById('split').classList.remove('detail-open');
+        document.querySelectorAll('#tbody tr').forEach(tr => tr.classList.remove('selected'));
+      }
+
+      function buildXml(r) {
+        const ind = '  ';
+        const dims =
+          r.flavour === 'planned'
+            ? `<Length range="${r.dims.L.min}-${r.dims.L.max}" unit="mm"/>\n${ind}<Width range="${r.dims.W.min}-${r.dims.W.max}" unit="mm"/>\n${ind}<Height range="${r.dims.H.min}-${r.dims.H.max}" unit="mm"/>`
+            : `<Length value="${r.dims.L.v}" unit="mm"/>\n${ind}<Width value="${r.dims.W.v}" unit="mm"/>\n${ind}<Height value="${r.dims.H.v}" unit="mm"/>`;
+        const refs =
+          r.flavour === 'physical' && r.plannedRefs.length
+            ? `\n${ind}<PlannedVehicleTypeRefs>\n` +
+              r.plannedRefs
+                .map(ref => `${ind}${ind}<VehicleTypeRef ref="NMR:VehicleType:${ref.id}"/>`)
+                .join('\n') +
+              `\n${ind}</PlannedVehicleTypeRefs>`
+            : '';
+        const physProps =
+          r.flavour === 'physical'
+            ? `\n${ind}<Registration>${r.reg}</Registration>\n${ind}<Vin>${r.vin}</Vin>\n${ind}<YearOfRegistration>${r.year}</YearOfRegistration>`
+            : '';
+        return `<VehicleType id="NMR:VehicleType:${r.id}" flavour="${r.flavour}">
+${ind}<Name>${r.name}</Name>
+${ind}<ShortName>${r.short || ''}</ShortName>
+${ind}<TransportMode>${r.mode}</TransportMode>
+${ind}<DeckPlanRef ref="NMR:DeckPlan:${r.deck.replace('DP:', '')}"/>
+${ind}${dims}${physProps}${refs}
+</VehicleType>`;
+      }
+
+      /* ============================================================
+   WIRING
+   ============================================================ */
+      // Flavour segmented
+      document.getElementById('flavour-seg').addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        document.querySelectorAll('#flavour-seg button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        state.flavour = b.dataset.flavour;
+        state.page = 1;
+        rerender();
+      });
+
+      // Mode filter
+      document.getElementById('mode-filter').addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        document.querySelectorAll('#mode-filter button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        state.mode = b.dataset.mode;
+        state.page = 1;
+        rerender();
+      });
+
+      // Search
+      document.getElementById('search').addEventListener('input', e => {
+        state.search = e.target.value;
+        state.page = 1;
+        rerender();
+      });
+
+      // Clear
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        state = { ...state, flavour: 'all', mode: 'all', search: '', page: 1 };
+        document
+          .querySelectorAll('#flavour-seg button')
+          .forEach(b => b.classList.toggle('active', b.dataset.flavour === 'all'));
+        document
+          .querySelectorAll('#mode-filter button')
+          .forEach(b => b.classList.toggle('active', b.dataset.mode === 'all'));
+        document.getElementById('search').value = '';
+        rerender();
+      });
+
+      // Sort (header click)
+      document.addEventListener('click', e => {
+        const s = e.target.closest('[data-sort]');
+        if (!s) return;
+        const key = s.dataset.sort;
+        if (state.sort.key === key) state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+        else state.sort = { key, dir: 'asc' };
+        rerender();
+      });
+
+      // Row click
+      document.getElementById('tbody').addEventListener('click', e => {
+        const tr = e.target.closest('tr[data-id]');
+        if (!tr) return;
+        openDetail(tr.dataset.id);
+      });
+
+      // Close detail
+      document.getElementById('d-close').addEventListener('click', closeDetail);
+
+      // Inline name editing — click the pencil (or the title itself) to edit
+      const nameEl = document.getElementById('d-name');
+      const nameEditBtn = document.getElementById('d-name-edit');
+      function startNameEdit() {
+        nameEl.setAttribute('contenteditable', 'true');
+        nameEl.focus();
+        // place caret at end
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(nameEl);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      function commitNameEdit() {
+        nameEl.setAttribute('contenteditable', 'false');
+        const r = DATA.find(x => x.id === state.selected);
+        if (r) {
+          r.name = nameEl.textContent.trim() || r.name;
+          nameEl.textContent = r.name;
+          renderTbody();
+        }
+      }
+      function cancelNameEdit() {
+        nameEl.setAttribute('contenteditable', 'false');
+        const r = DATA.find(x => x.id === state.selected);
+        if (r) nameEl.textContent = r.name;
+      }
+      nameEditBtn.addEventListener('click', startNameEdit);
+      nameEl.addEventListener('dblclick', startNameEdit);
+      nameEl.addEventListener('blur', commitNameEdit);
+      nameEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          nameEl.blur();
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          cancelNameEdit();
+        }
+      });
+
+      // Mode dropdown open/close
+      document.getElementById('d-mode-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        const dd = document.getElementById('d-mode-dd');
+        const menu = document.getElementById('d-mode-menu');
+        const btn = document.getElementById('d-mode-btn');
+        const willOpen = !dd.classList.contains('open');
+        dd.classList.toggle('open');
+        if (willOpen) {
+          const r = btn.getBoundingClientRect();
+          menu.style.top = r.bottom + 4 + 'px';
+          menu.style.left = r.left + 'px';
+        }
+      });
+      document.addEventListener('click', e => {
+        if (!e.target.closest('#d-mode-dd')) {
+          document.getElementById('d-mode-dd').classList.remove('open');
+        }
+      });
+
+      // Detail tabs
+      document.querySelectorAll('.detail-tabs .tab').forEach(t =>
+        t.addEventListener('click', () => {
+          document.querySelectorAll('.detail-tabs .tab').forEach(x => x.classList.remove('active'));
+          t.classList.add('active');
+          const key = t.dataset.dtab;
+          document
+            .querySelectorAll('[data-dpane]')
+            .forEach(p => (p.style.display = p.dataset.dpane === key ? '' : 'none'));
+          // Reset env edit state when leaving the tab
+          if (key !== 'environmental' && typesEnv.editing) {
+            typesEnv.editing = false;
+            const r = DATA.find(x => x.id === state.selected);
+            if (r) renderEnvironmentalPane(r);
+          }
+        })
+      );
+
+      // Section collapse
+      document.addEventListener('click', e => {
+        const h = e.target.closest('.sec-head');
+        if (!h) return;
+        h.parentElement.classList.toggle('collapsed');
+      });
+
+      // Pagination
+      document.getElementById('prev').addEventListener('click', () => {
+        state.page--;
+        rerender();
+      });
+      document.getElementById('next').addEventListener('click', () => {
+        state.page++;
+        rerender();
+      });
+      document.getElementById('page-size').addEventListener('change', e => {
+        state.pageSize = +e.target.value;
+        state.page = 1;
+        rerender();
+      });
+
+      // Column picker toggle
+      document.getElementById('col-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        document.getElementById('col-picker').classList.toggle('open');
+      });
+      document.addEventListener('click', e => {
+        if (!e.target.closest('#col-picker'))
+          document.getElementById('col-picker').classList.remove('open');
+      });
+
+      // Column resize
+      let rz = null;
+      document.addEventListener('mousedown', e => {
+        const r = e.target.closest('.resizer');
+        if (!r) return;
+        rz = {
+          key: r.dataset.key,
+          startX: e.clientX,
+          startW: colState.widths[r.dataset.key] || ALL_COLS.find(c => c.key === r.dataset.key).w,
+        };
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', e => {
+        if (!rz) return;
+        const dx = e.clientX - rz.startX;
+        colState.widths[rz.key] = Math.max(60, rz.startW + dx);
+        const th = document.querySelector(`th[data-key="${rz.key}"]`);
+        if (th) th.style.width = colState.widths[rz.key] + 'px';
+      });
+      document.addEventListener('mouseup', () => {
+        if (rz) {
+          saveColState();
+          rz = null;
+        }
+      });
+
+      // FAB / New
+      document
+        .getElementById('fab')
+        .addEventListener('click', () =>
+          alert('Create new vehicle type flow (not wired in this mock).')
+        );
+
+      // ============================================================
+      // VEHICLES — master dataset + list route
+      // ============================================================
+
+      // Operators (codespace registry)
+      const OPERATORS = [
+        { code: 'RUT', name: 'Ruter' },
+        { code: 'VYX', name: 'Vy Buss' },
+        { code: 'SKY', name: 'Skyss' },
+        { code: 'SPV', name: 'Sporveien' },
+        { code: 'NSB', name: 'Vy Tog' },
+        { code: 'NOR', name: 'Norled' },
+      ];
+
+      // Build vehicles:
+      //  - Every physical DATA row is already a vehicle (one per row) → emit as-is.
+      //  - For each planned type, generate `vehicles` count vehicles distributed across operators.
+      const VEHICLES = (function buildVehicles() {
+        const list = [];
+        let seq = 1001;
+
+        // 1) Physical DATA rows → individual vehicles with their embedded model props
+        for (const r of DATA.filter(d => d.flavour === 'physical')) {
+          const typeRef = (r.plannedRefs && r.plannedRefs[0]) || null;
+          const op = pickOp(r.id);
+          list.push({
+            id: 'V-' + (r.reg || r.id).replace(/\s+/g, ''),
+            netexId: `NMR:Vehicle:V-${(r.reg || r.id).replace(/\s+/g, '')}`,
+            regno: r.reg || '—',
+            name: r.name,
+            operationalNumber: r.short || r.id,
+            vin: r.vin || '—',
+            typeId: typeRef ? typeRef.id : r.id,
+            typeName: typeRef ? typeRef.name : r.name,
+            typeFlavour: typeRef ? 'planned' : 'physical',
+            mode: r.mode,
+            operator: op.code,
+            monitored: seq % 5 !== 0,
+            inServiceFrom: `${r.year || 2020}-03-15`,
+            withdrawnOn: null,
+            status: 'in_service',
+            year: r.year,
+            odo: r.odo,
+          });
+          seq++;
+        }
+
+        // 2) Planned types → generate fleet spread across operators
+        const prefixes = {
+          bus: ['EL', 'SX', 'DA', 'BR'],
+          rail: ['74', '75', '72'],
+          metro: ['MX', 'M3'],
+          tram: ['SL', 'TR'],
+          ferry: ['F-', 'SJ'],
+          coach: ['RE', 'VY'],
+          air: ['LN'],
+        };
+        const cities = [
+          'Oslo',
+          'Lillestrøm',
+          'Drammen',
+          'Bergen',
+          'Asker',
+          'Ski',
+          'Moss',
+          'Gjøvik',
+        ];
+
+        for (const t of DATA.filter(d => d.flavour === 'planned')) {
+          const px = prefixes[t.mode] || ['VT'];
+          // Cap generation to keep ~80 total; use a ratio of declared fleet
+          const n = Math.min(Math.max(6, Math.round((t.vehicles || 0) * 0.35)), 14);
+          for (let i = 0; i < n; i++) {
+            const p = px[i % px.length];
+            const num = 80000 + (parseInt(t.id, 10) || 1) * 100 + i;
+            const reg = `${p} ${num}`;
+            const op = pickOp(t.id + ':' + i);
+            const cityIdx = (parseInt(t.id, 10) + i) % cities.length;
+            // distribute statuses: ~70% in service, ~20% depot, ~10% withdrawn
+            const h = (parseInt(t.id, 10) * 13 + i * 7) % 100;
+            const status = h < 70 ? 'in_service' : h < 90 ? 'depot' : 'withdrawn';
+            const year = 2015 + ((parseInt(t.id, 10) + i) % 10);
+            list.push({
+              id: 'V-' + reg.replace(/\s+/g, ''),
+              netexId: `NMR:Vehicle:V-${reg.replace(/\s+/g, '')}`,
+              regno: reg,
+              name: `${t.name} · Unit ${i + 1} (${cities[cityIdx]})`,
+              operationalNumber: `${t.short || 'U'}-${String(i + 1).padStart(3, '0')}`,
+              vin: `${t.mode.toUpperCase().slice(0, 3)}${year}${String(num).padStart(6, '0')}X`,
+              typeId: t.id,
+              typeName: t.name,
+              typeFlavour: 'planned',
+              mode: t.mode,
+              operator: op.code,
+              monitored: i % 4 !== 0,
+              inServiceFrom: `${year}-${String(((i * 3) % 12) + 1).padStart(2, '0')}-${String(((i * 5) % 28) + 1).padStart(2, '0')}`,
+              withdrawnOn: status === 'withdrawn' ? `${year + 8}-06-01` : null,
+              status,
+              year,
+              odo: null,
+            });
+            seq++;
+          }
+        }
+        return list;
+      })();
+
+      function pickOp(seed) {
+        let h = 0;
+        for (const c of String(seed)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+        return OPERATORS[h % OPERATORS.length];
+      }
+
+      // Vehicle list state
+      const vehState = {
+        search: '',
+        mode: 'all',
+        typeId: 'all',
+        status: 'all',
+        page: 1,
+        pageSize: 50,
+        selectedId: null,
+      };
+
+      function vehFiltered() {
+        const q = vehState.search.trim().toLowerCase();
+        return VEHICLES.filter(v => {
+          if (vehState.mode !== 'all' && v.mode !== vehState.mode) return false;
+          if (vehState.typeId !== 'all' && v.typeId !== vehState.typeId) return false;
+          if (vehState.status !== 'all' && v.status !== vehState.status) return false;
+          if (q) {
+            const hay =
+              `${v.id} ${v.regno} ${v.name} ${v.vin} ${v.operationalNumber}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderVehThead() {
+        document.getElementById('veh-thead').innerHTML = `
+    <tr>
+      <th style="width:34px;text-align:center;"><input type="checkbox" id="veh-all-chk" aria-label="Select all"/></th>
+      <th style="width:260px">NMR:Vehicle:&lt;id&gt;</th>
+      <th style="width:120px">Reg no</th>
+      <th>Name</th>
+      <th style="width:48px;text-align:center">Mode</th>
+      <th style="width:300px">Vehicle type</th>
+      <th style="width:110px">Status</th>
+    </tr>`;
+      }
+
+      function renderVehList() {
+        const all = vehFiltered();
+        const total = all.length;
+        const start = (vehState.page - 1) * vehState.pageSize;
+        const rows = all.slice(start, start + vehState.pageSize);
+
+        document.getElementById('veh-total-str').textContent = `${total} entries`;
+        document.getElementById('veh-range-str').textContent = total
+          ? `Showing ${start + 1}–${Math.min(start + rows.length, total)} of ${total}`
+          : `No vehicles match the filters`;
+        document.getElementById('sb-count-vehicles').textContent = String(VEHICLES.length);
+
+        const tbody = document.getElementById('veh-tbody');
+        tbody.innerHTML = rows
+          .map(v => {
+            const sel = v.id === vehState.selectedId ? ' selected' : '';
+            const statusLbl =
+              v.status === 'in_service'
+                ? 'In service'
+                : v.status === 'depot'
+                  ? 'Depot'
+                  : 'Withdrawn';
+            const flavourDot =
+              v.typeFlavour === 'planned'
+                ? '<span style="width:6px;height:6px;border-radius:50%;background:var(--lavender-70);display:inline-block;"></span>'
+                : '<span style="width:6px;height:6px;border-radius:50%;background:var(--mint-60);display:inline-block;"></span>';
+            return `
+      <tr class="${sel.trim()}" data-vid="${v.id}">
+        <td style="text-align:center;"><input type="checkbox" class="veh-row-chk" data-vid="${v.id}"/></td>
+        <td>
+          <span class="nx-pill ${v.typeFlavour}">${v.netexId}</span>
+        </td>
+        <td><span class="reg-cell">${v.regno}</span></td>
+        <td style="color:var(--text-dark);">${v.name}</td>
+        <td style="text-align:center;"><svg width="16" height="16"><use href="#tm-${v.mode}"/></svg></td>
+        <td>
+          <span style="display:inline-flex;align-items:center;gap:6px;">
+            <span class="nx-pill ${v.typeFlavour}" title="NMR:VehicleType:${v.typeId}">NMR:VehicleType:${v.typeId}</span>
+            <span style="color:var(--text-neutral);font-size:12px;">${v.typeName}</span>
+          </span>
+        </td>
+        <td><span class="vd-pill ${v.status}"><span class="dot"></span>${statusLbl}</span></td>
+      </tr>`;
+          })
+          .join('');
+
+        // Row click → detail
+        tbody.querySelectorAll('tr').forEach(tr => {
+          tr.addEventListener('click', e => {
+            if (e.target.closest('input')) return;
+            const vid = tr.dataset.vid;
+            openVehicleDetail(vid);
+          });
+        });
+
+        updateBulkAssignBtn();
+      }
+
+      function openVehicleDetail(vid) {
+        const v = VEHICLES.find(x => x.id === vid);
+        if (!v) return;
+        vehState.selectedId = vid;
+        vehState.editMode = false;
+        // Update selection in table
+        document.querySelectorAll('#veh-tbody tr').forEach(tr => {
+          tr.classList.toggle('selected', tr.dataset.vid === vid);
+        });
+        document.getElementById('veh-split').classList.add('detail-open');
+
+        renderVehicleDetailBody(v);
+
+        // Update hash with id (replaceState so Prev/Next in table don't stack history)
+        history.replaceState(null, '', `#/vehicles?id=${vid}`);
+      }
+
+      /* Render vehicle detail pane in view or edit mode. Shared pattern: one
+   `.pane-edit-bar` toolbar per pane — not per section. */
+      function renderVehicleDetailBody(v) {
+        const body = document.getElementById('veh-detail-body');
+        const op = OPERATORS.find(o => o.code === v.operator) || {
+          name: v.operator,
+          code: v.operator,
+        };
+        const statusLbl =
+          v.status === 'in_service' ? 'In service' : v.status === 'depot' ? 'Depot' : 'Withdrawn';
+        const editing = !!vehState.editMode;
+
+        // Header (always the same)
+        const headerHTML = `
+    <div class="vd-header">
+      <div class="vd-mode"><svg width="24" height="24"><use href="#tm-${v.mode}"/></svg></div>
+      <div style="flex:1;min-width:0;">
+        <h2>${v.name}</h2>
+        <div class="sub" style="font-family:var(--font-mono);">${v.netexId}</div>
+      </div>
+      <button class="close-btn" id="veh-close-btn" aria-label="Close" title="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>`;
+
+        const statusRowHTML = `
+    <div class="vd-status-row">
+      <span class="vd-pill ${v.status}"><span class="dot"></span>${statusLbl}</span>
+      <span class="vd-pill ${v.monitored ? 'monitored' : 'monitored off'}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${v.monitored ? '<circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>' : '<path d="M3 3l18 18"/><path d="M10.5 5.5A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.5M6.5 6.5C3.5 8.5 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1"/>'}</svg>
+        ${v.monitored ? 'Monitored' : 'Not monitored'}
+      </span>
+    </div>`;
+
+        // Single pane-level edit toolbar. Lives above the first section, right-aligned.
+        const editBarHTML = editing
+          ? `<div class="pane-edit-bar editing">
+         <span class="edit-status">Editing</span>
+         <button class="btn ghost" id="veh-edit-cancel">Cancel</button>
+         <button class="btn primary" id="veh-edit-save">Save changes</button>
+       </div>`
+          : `<div class="pane-edit-bar">
+         <button class="btn" id="veh-edit-btn">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+           Edit
+         </button>
+       </div>`;
+
+        const operatorCell = editing
+          ? `<select data-f="operator">${OPERATORS.map(o => `<option value="${o.code}" ${o.code === v.operator ? 'selected' : ''}>${o.name} (${o.code})</option>`).join('')}</select>`
+          : `${op.name} <span style="color:var(--text-neutral);font-family:var(--font-mono);font-size:11px;margin-left:4px;">${op.code}</span>`;
+
+        const statusCell = editing
+          ? `<select data-f="status">
+         <option value="in_service" ${v.status === 'in_service' ? 'selected' : ''}>In service</option>
+         <option value="depot" ${v.status === 'depot' ? 'selected' : ''}>Depot</option>
+         <option value="withdrawn" ${v.status === 'withdrawn' ? 'selected' : ''}>Withdrawn</option>
+       </select>`
+          : `<span class="vd-pill ${v.status}"><span class="dot"></span>${statusLbl}</span>`;
+
+        const gridHTML = editing
+          ? `<dl class="vd-grid">
+        <dt>Registration</dt><dd><input class="mono" data-f="regno" value="${v.regno}"></dd>
+        <dt>Operational number</dt><dd><input data-f="operationalNumber" value="${v.operationalNumber}"></dd>
+        <dt>VIN</dt><dd><input class="mono" data-f="vin" value="${v.vin}"></dd>
+        <dt>Operator</dt><dd>${operatorCell}</dd>
+        <dt>Status</dt><dd>${statusCell}</dd>
+        <dt>In service from</dt><dd><input type="date" data-f="inServiceFrom" value="${v.inServiceFrom || ''}"></dd>
+        <dt>Withdrawn on</dt><dd><input type="date" data-f="withdrawnOn" value="${v.withdrawnOn || ''}"></dd>
+        <dt>Year</dt><dd><input type="number" min="1950" max="2030" data-f="year" value="${v.year || ''}"></dd>
+        ${v.odo != null ? `<dt>Odometer (km)</dt><dd><input type="number" min="0" data-f="odo" value="${v.odo}"></dd>` : ''}
+      </dl>`
+          : `<dl class="vd-grid">
+        <dt>Registration</dt><dd class="mono">${v.regno}</dd>
+        <dt>Operational number</dt><dd>${v.operationalNumber}</dd>
+        <dt>VIN</dt><dd class="mono">${v.vin}</dd>
+        <dt>Operator</dt><dd>${op.name} <span style="color:var(--text-neutral);font-family:var(--font-mono);font-size:11px;margin-left:4px;">${op.code}</span></dd>
+        <dt>In service from</dt><dd>${v.inServiceFrom}</dd>
+        <dt>Withdrawn on</dt><dd>${v.withdrawnOn || '—'}</dd>
+        <dt>Year</dt><dd>${v.year || '—'}</dd>
+        ${v.odo != null ? `<dt>Odometer</dt><dd>${v.odo.toLocaleString('en')} km</dd>` : ''}
+      </dl>`;
+
+        body.innerHTML = `
+    ${headerHTML}
+    ${statusRowHTML}
+    ${editBarHTML}
+    ${gridHTML}
+
+    <div class="vd-section-title">Vehicle type</div>
+    <a class="vd-type-card" href="#/types?id=${v.typeId}" data-type-id="${v.typeId}">
+      <span class="tc-ic"><svg width="18" height="18"><use href="#tm-${v.mode}"/></svg></span>
+      <div class="tc-main">
+        <div class="tc-name">${v.typeName}</div>
+        <div class="tc-id">NMR:VehicleType:${v.typeId} · ${v.typeFlavour === 'planned' ? 'Planned' : 'Physical'}</div>
+      </div>
+      <svg class="tc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    </a>
+  `;
+
+        // Edit-mode wiring
+        if (editing) {
+          document.getElementById('veh-edit-cancel').addEventListener('click', () => {
+            vehState.editMode = false;
+            renderVehicleDetailBody(v);
+          });
+          document.getElementById('veh-edit-save').addEventListener('click', () => {
+            // Read all inputs/selects and patch v in place
+            body.querySelectorAll('[data-f]').forEach(el => {
+              const key = el.dataset.f;
+              let val = el.value;
+              if (el.type === 'number') val = val === '' ? null : Number(val);
+              if ((key === 'withdrawnOn' || key === 'inServiceFrom') && val === '') val = null;
+              v[key] = val;
+            });
+            vehState.editMode = false;
+            renderVehicleDetailBody(v);
+            // Re-render table row (status/regno/opnum may have changed)
+            renderVehiclesTable();
+          });
+          // Autofocus first field for quick editing
+          const first = body.querySelector('.vd-grid input, .vd-grid select');
+          if (first) {
+            first.focus();
+            if (first.select) first.select();
+          }
+        } else {
+          const editBtn = document.getElementById('veh-edit-btn');
+          if (editBtn)
+            editBtn.addEventListener('click', () => {
+              vehState.editMode = true;
+              renderVehicleDetailBody(v);
+            });
+        }
+
+        document.getElementById('veh-close-btn').addEventListener('click', () => {
+          vehState.selectedId = null;
+          document.getElementById('veh-split').classList.remove('detail-open');
+          document
+            .querySelectorAll('#veh-tbody tr.selected')
+            .forEach(tr => tr.classList.remove('selected'));
+          // update hash without the id
+          const h = location.hash.split('?')[0];
+          history.replaceState(null, '', h);
+        });
+
+        // Cross-link: clicking the type card navigates to types route & opens it
+        const tc = body.querySelector('.vd-type-card');
+        tc.addEventListener('click', e => {
+          e.preventDefault();
+          location.hash = `#/types?id=${v.typeId}`;
+        });
+      }
+
+      function updateBulkAssignBtn() {
+        const n = document.querySelectorAll('.veh-row-chk:checked').length;
+        const btn = document.getElementById('veh-bulk-assign');
+        if (!btn) return;
+        btn.disabled = n === 0;
+        btn.title =
+          n === 0
+            ? 'Select rows to enable'
+            : `Bulk-assign ${n} selected vehicle${n === 1 ? '' : 's'} to a type`;
+      }
+
+      function populateVehTypeSelect() {
+        const sel = document.getElementById('veh-type-select');
+        const types = DATA.filter(d => d.flavour === 'planned' || d.flavour === 'physical').sort(
+          (a, b) => a.name.localeCompare(b.name)
+        );
+        sel.innerHTML =
+          '<option value="all">All types</option>' +
+          types
+            .map(
+              t =>
+                `<option value="${t.id}">${t.flavour === 'planned' ? '●' : '○'}  ${t.name}</option>`
+            )
+            .join('');
+      }
+
+      function wireVehiclesRoute() {
+        renderVehThead();
+        populateVehTypeSelect();
+
+        document.getElementById('veh-search').addEventListener('input', e => {
+          vehState.search = e.target.value;
+          vehState.page = 1;
+          renderVehList();
+        });
+        document.getElementById('veh-mode-filter').addEventListener('click', e => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          document
+            .querySelectorAll('#veh-mode-filter button')
+            .forEach(b => b.classList.toggle('active', b === btn));
+          vehState.mode = btn.dataset.mode;
+          vehState.page = 1;
+          renderVehList();
+        });
+        document.getElementById('veh-status-seg').addEventListener('click', e => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          document
+            .querySelectorAll('#veh-status-seg button')
+            .forEach(b => b.classList.toggle('active', b === btn));
+          vehState.status = btn.dataset.status;
+          vehState.page = 1;
+          renderVehList();
+        });
+        document.getElementById('veh-type-select').addEventListener('change', e => {
+          vehState.typeId = e.target.value;
+          vehState.page = 1;
+          renderVehList();
+        });
+        document.getElementById('veh-clear-btn').addEventListener('click', () => {
+          vehState.search = '';
+          vehState.mode = 'all';
+          vehState.typeId = 'all';
+          vehState.status = 'all';
+          vehState.page = 1;
+          document.getElementById('veh-search').value = '';
+          document
+            .querySelectorAll('#veh-mode-filter button')
+            .forEach(b => b.classList.toggle('active', b.dataset.mode === 'all'));
+          document
+            .querySelectorAll('#veh-status-seg button')
+            .forEach(b => b.classList.toggle('active', b.dataset.status === 'all'));
+          document.getElementById('veh-type-select').value = 'all';
+          renderVehList();
+        });
+        document.getElementById('veh-prev').addEventListener('click', () => {
+          if (vehState.page > 1) {
+            vehState.page--;
+            renderVehList();
+          }
+        });
+        document.getElementById('veh-next').addEventListener('click', () => {
+          const maxPage = Math.max(1, Math.ceil(vehFiltered().length / vehState.pageSize));
+          if (vehState.page < maxPage) {
+            vehState.page++;
+            renderVehList();
+          }
+        });
+        document.getElementById('veh-page-size').addEventListener('change', e => {
+          vehState.pageSize = +e.target.value;
+          vehState.page = 1;
+          renderVehList();
+        });
+        document.addEventListener('change', e => {
+          if (e.target.matches('.veh-row-chk') || e.target.id === 'veh-all-chk') {
+            if (e.target.id === 'veh-all-chk') {
+              document.querySelectorAll('.veh-row-chk').forEach(c => {
+                c.checked = e.target.checked;
+              });
+            }
+            updateBulkAssignBtn();
+          }
+        });
+
+        renderVehList();
+      }
+
+      // ============================================================
+      // ROUTING
+      // ============================================================
+      const ROUTES = ['home', 'types', 'vehicles', 'decks', 'branding', 'operators', 'settings'];
+
+      function parseHash() {
+        const h = location.hash || '#/types';
+        const m = h.match(/^#\/([a-z]+)(?:\?(.*))?$/);
+        if (!m) return { route: 'types', params: {} };
+        const route = ROUTES.includes(m[1]) ? m[1] : 'types';
+        const params = {};
+        if (m[2]) {
+          for (const pair of m[2].split('&')) {
+            const [k, v] = pair.split('=');
+            if (k) params[k] = decodeURIComponent(v || '');
+          }
+        }
+        return { route, params };
+      }
+
+      function applyRoute() {
+        const { route, params } = parseHash();
+        document.querySelectorAll('.route').forEach(r => {
+          r.classList.toggle('active', r.dataset.route === route);
+        });
+        document.querySelectorAll('#sb-nav a').forEach(a => {
+          a.classList.toggle('active', a.dataset.route === route);
+        });
+
+        // FAB should only show on list routes
+        const fab = document.getElementById('fab');
+        if (fab) fab.style.display = route === 'types' || route === 'vehicles' ? '' : 'none';
+
+        // Deep link handling
+        if (route === 'types' && params.id) {
+          openDetail(params.id);
+        } else if (route === 'vehicles' && params.id) {
+          openVehicleDetail(params.id);
+        } else if (route === 'vehicles' && !params.id) {
+          // no-op; list view
+        }
+      }
+
+      window.addEventListener('hashchange', applyRoute);
+
+      // ============================================================
+      // SIDEBAR
+      // ============================================================
+      function initSidebar() {
+        const root = document.getElementById('app-root');
+        const saved = localStorage.getItem('nmr.sb') === '1';
+        root.classList.toggle('sb-expanded', saved);
+        document.getElementById('sb-toggle').addEventListener('click', () => {
+          const nowExpanded = !root.classList.contains('sb-expanded');
+          root.classList.toggle('sb-expanded', nowExpanded);
+          localStorage.setItem('nmr.sb', nowExpanded ? '1' : '0');
+        });
+        document.getElementById('sb-count-types').textContent = String(DATA.length);
+      }
+
+      // ============================================================
+      // Hook: from Types detail's Vehicles tab → navigate to Vehicles route
+      // ============================================================
+      document.addEventListener('click', e => {
+        // matches rows in the refs-tbl inside the Vehicles dpane
+        const row = e.target.closest('[data-dpane="vehicles"] #vh-tbl tbody tr');
+        if (!row) return;
+        const vid = row.dataset.vid;
+        if (!vid) return;
+        e.preventDefault();
+        location.hash = `#/vehicles?id=${vid}`;
+      });
+
+      // initial
+      rerender();
+      initSidebar();
+      wireVehiclesRoute();
+      // Default route: if no hash, go to types
+      if (!location.hash) location.hash = '#/types';
+      applyRoute();
+      // Pre-select the first planned row (only matters on types route without deep link)
+      if (parseHash().route === 'types' && !parseHash().params.id) openDetail('5');
+    </script>
+  </body>
+</html>
