@@ -86,23 +86,49 @@
         gap: 8px;
       }
 
-      header nav button {
+      header nav button,
+      header nav a {
+        display: inline-flex;
+        align-items: center;
         background: transparent;
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: #fff;
         padding: 6px 14px;
         border-radius: var(--radius);
         font-size: 13px;
+        font-family: inherit;
+        line-height: 1;
+        text-decoration: none;
         cursor: pointer;
         transition:
           background var(--transition),
-          border-color var(--transition);
+          border-color var(--transition),
+          transform var(--transition);
       }
 
-      header nav button:hover,
-      header nav button.active {
+      header nav button:hover:not(:disabled),
+      header nav button.active,
+      header nav a:hover {
         background: var(--clr-accent);
         border-color: var(--clr-accent);
+      }
+
+      header nav .nav-cta {
+        background: var(--clr-accent);
+        border-color: var(--clr-accent);
+        font-weight: 600;
+        box-shadow: 0 0 0 2px rgba(78, 108, 242, 0.25);
+      }
+
+      header nav .nav-cta:hover {
+        background: #3d59d9;
+        border-color: #3d59d9;
+        transform: translateY(-1px);
+      }
+
+      header nav button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
       }
 
       /* ── Layout beneath header ────────────────────────── */
@@ -313,9 +339,9 @@
     <header>
       <div class="logo">Hathor <span>Sandbox</span></div>
       <nav>
-        <button class="active">Dashboard</button>
-        <button>Concepts</button>
-        <button>Settings</button>
+        <a class="nav-cta" href="claude-design.html">Concept</a>
+        <button disabled>Dashboard</button>
+        <button disabled>Settings</button>
       </nav>
     </header>
 
