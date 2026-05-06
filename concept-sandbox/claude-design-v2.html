@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Vehicle Types — NMR</title>
-    <link rel="stylesheet" href="assets-v1/tokens.css" />
+    <link rel="stylesheet" href="assets/tokens.css" />
     <style>
       * {
         box-sizing: border-box;
@@ -545,41 +545,61 @@
         margin: 24px 0 10px;
       }
 
-      /* Pane-level edit toolbar — one bar per tab/pane, right-aligned.
-     Appears above the first section title. Shared across vehicle & types details. */
+      /* Pane-level edit affordance — floats in the pane's top-right corner.
+     Idle: circular icon-only pen. Editing: expands to a pill with Cancel / Save. */
       .pane-edit-bar {
-        display: flex;
+        position: absolute;
+        top: -4px;
+        right: 16px;
+        z-index: 4;
+        display: inline-flex;
         align-items: center;
-        justify-content: flex-end;
         gap: 6px;
-        padding: 8px 0 4px;
-        border-bottom: 1px solid transparent;
-        transition: border-color 150ms;
+        padding: 3px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid var(--stroke-neutral);
+        border-radius: 999px;
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.04),
+          0 4px 14px rgba(0, 0, 0, 0.06);
+        transition:
+          padding 150ms ease,
+          gap 150ms ease,
+          background 150ms ease,
+          border-color 150ms ease,
+          box-shadow 150ms ease;
+      }
+      .pane-edit-bar:not(.editing) {
+        /* Idle: fully transparent chrome — just a floating icon button */
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        padding: 0;
       }
       .pane-edit-bar.editing {
-        border-bottom-color: var(--stroke-accent);
-        margin-bottom: 4px;
+        padding: 3px 4px 3px 12px;
+        gap: 8px;
       }
       .pane-edit-bar .edit-status {
-        flex: 1;
-        font-size: 11px;
-        color: var(--text-neutral);
-        font-weight: 500;
-        letter-spacing: 0.03em;
-      }
-      .pane-edit-bar.editing .edit-status {
+        font-size: 10px;
         color: var(--text-accent);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
       .pane-edit-bar .btn {
         font: inherit;
         font-size: 12px;
         font-weight: 500;
         padding: 5px 12px;
-        border-radius: var(--radius-sm);
+        border-radius: 999px;
         border: 1px solid var(--stroke-neutral);
         background: var(--bg-standard);
         color: var(--text-dark);
         cursor: pointer;
+        line-height: 1.2;
         display: inline-flex;
         align-items: center;
         gap: 5px;
@@ -615,9 +635,40 @@
         height: 13px;
       }
 
+      /* Idle state: circular icon-only trigger (hide its text label) */
+      .pane-edit-bar:not(.editing) .btn.edit-idle {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border-radius: 50%;
+        background: var(--bg-standard);
+        border-color: var(--stroke-neutral);
+        color: var(--text-neutral);
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.05),
+          0 2px 8px rgba(0, 0, 0, 0.05);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+      }
+      .pane-edit-bar:not(.editing) .btn.edit-idle:hover {
+        background: var(--bg-tint-light);
+        color: var(--text-dark);
+        border-color: var(--stroke-accent);
+      }
+      .pane-edit-bar:not(.editing) .btn.edit-idle svg {
+        width: 14px;
+        height: 14px;
+      }
+      .pane-edit-bar:not(.editing) .btn.edit-idle .lbl {
+        display: none;
+      }
+
       /* Environmental pane — two-column list: label+hint | value/input */
       .env-pane {
-        padding: 4px 24px 24px;
+        position: relative;
+        padding: 18px 24px 24px;
       }
       .env-grid {
         display: grid;
@@ -655,6 +706,117 @@
       }
       .env-value .range-input {
         max-width: 320px;
+      }
+
+      /* Edit pane — same shape as env-pane but with thin group separators */
+      .edit-pane {
+        position: relative;
+        padding: 18px 24px 24px;
+      }
+      .edit-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        margin-top: 12px;
+        border-top: 1px solid var(--stroke-neutral);
+      }
+      .edit-group-sep {
+        height: 1px;
+        background: var(--stroke-neutral);
+        margin: 0;
+      }
+      .edit-group-label {
+        font-size: 10px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-neutral-alt);
+        padding: 14px 0 6px;
+        border-bottom: 1px solid var(--stroke-neutral);
+      }
+      .edit-group-label:first-child {
+        padding-top: 4px;
+      }
+      .edit-row {
+        display: grid;
+        grid-template-columns: minmax(220px, 40%) 1fr;
+        gap: 24px;
+        align-items: center;
+        padding: 10px 0;
+      }
+      .edit-row.multi {
+        align-items: start;
+      }
+      .edit-label-main {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+      .edit-label-hint {
+        font-size: 11px;
+        color: var(--text-neutral);
+        margin-top: 2px;
+      }
+      .edit-value {
+        font-size: 13px;
+        color: var(--text-dark);
+        min-width: 0;
+      }
+      .edit-value.dim {
+        color: var(--text-neutral-alt);
+      }
+      .edit-value .input,
+      .edit-value .select {
+        width: 100%;
+        max-width: 280px;
+      }
+      /* Range inputs (planned) — keep min/max on one row, each ~1/4 width. */
+      .edit-value .range-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: none;
+      }
+      .edit-value .range-input .input {
+        width: 96px;
+        flex: 0 0 96px;
+      }
+      .edit-value .range-input .dash {
+        color: var(--text-neutral-alt);
+        font-size: 11px;
+      }
+      .edit-switches {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .edit-switches-view {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .edit-switches-view .chip-ro {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--stroke-neutral);
+        color: var(--text-dark);
+        background: var(--bg-standard);
+      }
+      .edit-switches-view .chip-ro.off {
+        color: var(--text-neutral-alt);
+        background: var(--bg-tint-light);
+      }
+      .edit-switches-view .chip-ro .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--mint-60);
+      }
+      .edit-switches-view .chip-ro.off .dot {
+        background: var(--grey-40);
       }
       .vd-type-card {
         border: 1px solid var(--stroke-neutral);
@@ -1807,6 +1969,78 @@
         border-top: 1px solid var(--stroke-neutral);
       }
 
+      /* Link popover — anchored above the + Link button in the Linked-types tab.
+     Fixed width list of candidate types with a search box at the top. */
+      .link-pop {
+        position: fixed;
+        z-index: 1000;
+        width: 300px;
+        background: #fff;
+        border: 1px solid var(--stroke-neutral);
+        border-radius: var(--radius-small);
+        box-shadow:
+          0 8px 24px rgba(0, 0, 0, 0.12),
+          0 2px 6px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        font-family: inherit;
+      }
+      .link-pop-search {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 12px;
+        border: 0;
+        border-bottom: 1px solid var(--stroke-neutral);
+        background: var(--bg-tint-light);
+        font: inherit;
+        font-size: 12px;
+        outline: none;
+      }
+      .link-pop-search:focus {
+        background: #fff;
+        border-bottom-color: var(--stroke-accent);
+      }
+      .link-pop-list {
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 4px 0;
+      }
+      .link-pop-item {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 6px 12px;
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid transparent;
+        text-align: left;
+        font: inherit;
+        font-size: 12px;
+        color: var(--text-dark);
+        cursor: pointer;
+      }
+      .link-pop-item:hover {
+        background: var(--bg-tint-light);
+      }
+      .link-pop-item .link-pop-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .link-pop-item .link-pop-mode {
+        font-size: 10px;
+        color: var(--text-neutral-alt);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .link-pop-empty {
+        padding: 18px 12px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-neutral-alt);
+      }
+
       /* ============================================================
      NetexID widget (inlined, trimmed)
      ============================================================ */
@@ -2740,7 +2974,7 @@
                   <div class="detail-tabs">
                     <button class="tab active" data-dtab="edit">Edit</button>
                     <button class="tab" data-dtab="vehicles" id="d-tab-vehicles">Vehicles</button>
-                    <button class="tab" data-dtab="planned" id="d-tab-planned">Linked types</button>
+                    <button class="tab" data-dtab="planned" id="d-tab-planned">Links</button>
                     <button
                       class="tab deckplan-tab"
                       data-dtab="deck"
@@ -2753,97 +2987,9 @@
                 </div>
 
                 <div class="detail-body">
-                  <!-- EDIT TAB -->
+                  <!-- EDIT TAB — rendered by renderEditPane() -->
                   <div data-dpane="edit">
-                    <div class="sec">
-                      <div class="sec-head">
-                        Passenger capacity <span class="tag" id="d-cap-tag"></span
-                        ><span class="caret">▾</span>
-                      </div>
-                      <div class="sec-body" id="d-cap-body"></div>
-                    </div>
-
-                    <div class="sec">
-                      <div class="sec-head">
-                        Propulsion &amp; performance <span class="caret">▾</span>
-                      </div>
-                      <div class="sec-body">
-                        <div class="field">
-                          <label>Propulsion type</label>
-                          <select class="select">
-                            <option>diesel</option>
-                            <option>electric</option>
-                            <option>hybrid</option>
-                            <option>hydrogen</option>
-                          </select>
-                        </div>
-                        <div class="field">
-                          <label>Fuel type</label>
-                          <select class="select">
-                            <option>diesel</option>
-                            <option>biogas</option>
-                            <option>electricity</option>
-                          </select>
-                        </div>
-                        <div class="field">
-                          <label>Euro class</label>
-                          <select class="select">
-                            <option>Euro VI</option>
-                            <option>Euro V</option>
-                            <option>—</option>
-                          </select>
-                        </div>
-                        <div class="field">
-                          <label>Max velocity (km/h)</label><input class="input" id="f-vmax" />
-                        </div>
-                        <div class="field">
-                          <label>Max range (km)</label><input class="input" id="f-rmax" />
-                        </div>
-                        <div
-                          class="field"
-                          style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px"
-                        >
-                          <label class="switch"
-                            ><input type="checkbox" checked /> Self-propelled</label
-                          >
-                          <label class="switch"><input type="checkbox" /> Reversing</label>
-                          <label class="switch"><input type="checkbox" checked /> Low floor</label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="sec">
-                      <div class="sec-head">
-                        Dimensions <span class="tag" id="d-dim-tag"></span
-                        ><span class="caret">▾</span>
-                      </div>
-                      <div class="sec-body" id="d-dim-body">
-                        <!-- dynamic: range inputs for planned, scalars for physical -->
-                      </div>
-                    </div>
-
-                    <div class="sec" id="d-model-sec">
-                      <div class="sec-head">
-                        Model <span class="tag">physical only</span><span class="caret">▾</span>
-                      </div>
-                      <div class="sec-body">
-                        <div class="field">
-                          <label>Name</label
-                          ><input
-                            class="input"
-                            id="f-model-name"
-                            placeholder="e.g. Volvo 7900 Hybrid"
-                          />
-                        </div>
-                        <div class="field">
-                          <label>Presentation</label>
-                          <div
-                            id="f-model-pres"
-                            style="display: flex; align-items: center; gap: 8px; padding: 6px 0"
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
+                    <div id="d-edit-body"></div>
                   </div>
 
                   <!-- ENVIRONMENTAL TAB — rendered by renderEnvironmentalPane() -->
@@ -3126,7 +3272,11 @@
               </div>
 
               <aside class="detail-pane" id="veh-detail-pane">
-                <div class="detail-body" id="veh-detail-body" style="padding: 20px 24px"></div>
+                <div
+                  class="detail-body"
+                  id="veh-detail-body"
+                  style="padding: 20px 24px; position: relative"
+                ></div>
               </aside>
             </div>
           </div>
@@ -4270,6 +4420,243 @@
         });
       }
 
+      // Edit tab — view/edit with shared pane-edit-bar pattern.
+      // Flat list of fields grouped by thin separators. Same readOnly look as environmental.
+      const typesEdit = { editing: false };
+
+      function fmtMm(v) {
+        return v == null || v === '' ? '—' : `${Number(v).toLocaleString('en')} mm`;
+      }
+      function fmtMmRange(r) {
+        if (!r) return '—';
+        return r.min === r.max ? fmtMm(r.min) : `${fmtMm(r.min)} – ${fmtMm(r.max)}`;
+      }
+      function fmtCountRange(r) {
+        if (!r) return '—';
+        return r.min === r.max ? String(r.min) : `${r.min} – ${r.max}`;
+      }
+
+      function renderEditPane(r) {
+        const body = document.getElementById('d-edit-body');
+        const editing = typesEdit.editing;
+        const planned = r.flavour === 'planned';
+
+        const editBarHTML = editing
+          ? `<div class="pane-edit-bar editing">
+         <span class="edit-status">Editing</span>
+         <button class="btn ghost" id="edit-edit-cancel">Cancel</button>
+         <button class="btn primary" id="edit-edit-save">Save changes</button>
+       </div>`
+          : `<div class="pane-edit-bar">
+         <button class="btn edit-idle" id="edit-edit-btn" type="button" aria-label="Edit" title="Edit">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+           <span class="lbl">Edit</span>
+         </button>
+       </div>`;
+
+        const row = (label, hint, viewEl, editEl, extraCls = '') => `
+    <div class="edit-row ${extraCls}">
+      <div>
+        <div class="edit-label-main">${label}</div>
+        ${hint ? `<div class="edit-label-hint">${hint}</div>` : ''}
+      </div>
+      <div class="edit-value ${!editing && (viewEl === '—' || viewEl == null || viewEl === '') ? 'dim' : ''}">${editing ? editEl : (viewEl ?? '—')}</div>
+    </div>`;
+
+        const groupLabel = txt => `<div class="edit-group-label">${txt}</div>`;
+
+        const scalarIn = (val, step, key) =>
+          `<input class="input" type="number" step="${step || 'any'}" data-edit="${key}" value="${val ?? ''}" />`;
+        const rangeIn = (val, step, prefix) => `
+    <div class="range-input">
+      <input class="input" type="number" step="${step || 'any'}" data-edit="${prefix}Min" value="${val?.min ?? ''}" />
+      <span class="dash">—</span>
+      <input class="input" type="number" step="${step || 'any'}" data-edit="${prefix}Max" value="${val?.max ?? ''}" />
+    </div>`;
+
+        const selIn = (val, opts, key) => `
+    <select class="select" data-edit="${key}">
+      ${opts.map(o => `<option ${o.toLowerCase() === String(val).toLowerCase() ? 'selected' : ''}>${o}</option>`).join('')}
+    </select>`;
+
+        const switches = [
+          { k: 'selfPropelled', label: 'Self-propelled', def: true },
+          { k: 'reversing', label: 'Reversing', def: false },
+          { k: 'lowFloor', label: 'Low floor', def: true },
+        ];
+        const swVals = switches.map(s => ({ ...s, v: r[s.k] !== undefined ? r[s.k] : s.def }));
+
+        // Capacity rows
+        const capRows = [
+          ['seats', 'Seats'],
+          ['stand', 'Standing'],
+          ['total', 'Total'],
+        ]
+          .map(([k, l]) => {
+            const c = r.cap[k];
+            if (planned) {
+              return row(l, null, fmtCountRange(c), rangeIn(c, '1', `cap_${k}`));
+            }
+            return row(l, null, c.v ?? '—', scalarIn(c.v, '1', `cap_${k}`));
+          })
+          .join('');
+
+        // Dimensions rows
+        const dimRows = ['L', 'W', 'H']
+          .map(k => {
+            const d = r.dims[k];
+            const label = { L: 'Length', W: 'Width', H: 'Height' }[k];
+            if (planned) {
+              return row(label, null, fmtMmRange(d), rangeIn(d, '1', `dim_${k}`));
+            }
+            return row(label, null, fmtMm(d.v), scalarIn(d.v, '1', `dim_${k}`));
+          })
+          .join('');
+
+        // Propulsion rows
+        const propRows = [
+          row(
+            'Propulsion type',
+            null,
+            r.propulsion || '—',
+            selIn(r.propulsion, ['diesel', 'electric', 'hybrid', 'hydrogen'], 'propulsion')
+          ),
+          row(
+            'Fuel type',
+            null,
+            r.fuel || '—',
+            selIn(r.fuel, ['diesel', 'biogas', 'electricity', 'hydrogen'], 'fuel')
+          ),
+          row('Euro class', null, r.euro || '—', selIn(r.euro, ['Euro VI', 'Euro V', '—'], 'euro')),
+          row(
+            'Max velocity',
+            'km/h',
+            r.vmax ? `${r.vmax} km/h` : '—',
+            scalarIn(r.vmax, '1', 'vmax')
+          ),
+          row(
+            'Max range',
+            'km (0 = overhead/continuous supply)',
+            r.rmax != null ? `${r.rmax} km` : '—',
+            scalarIn(r.rmax, '1', 'rmax')
+          ),
+          row(
+            'Capabilities',
+            null,
+            `<div class="edit-switches-view">${swVals
+              .map(
+                s =>
+                  `<span class="chip-ro ${s.v ? '' : 'off'}"><span class="dot"></span>${s.label}</span>`
+              )
+              .join('')}</div>`,
+            `<div class="edit-switches">${swVals
+              .map(
+                s =>
+                  `<label class="switch"><input type="checkbox" data-edit="sw_${s.k}" ${s.v ? 'checked' : ''}/> ${s.label}</label>`
+              )
+              .join('')}</div>`,
+            'multi'
+          ),
+        ].join('');
+
+        // Model rows (physical only)
+        const modelRows = !planned
+          ? [
+              row(
+                'Name',
+                null,
+                r.modelName || '—',
+                `<input class="input" data-edit="modelName" value="${r.modelName || ''}" placeholder="e.g. Volvo 7900 Hybrid"/>`
+              ),
+              row(
+                'Presentation',
+                null,
+                r.brandingId
+                  ? nxid({ codespace: 'NMR', type: 'Branding', id: r.brandingId })
+                  : '<span style="color:var(--text-neutral-alt)">No presentation linked</span>',
+                r.brandingId
+                  ? nxid({ codespace: 'NMR', type: 'Branding', id: r.brandingId })
+                  : '<span style="color:var(--text-neutral-alt)">No presentation linked</span>'
+              ),
+            ].join('')
+          : '';
+
+        body.innerHTML = `
+    <div class="edit-pane">
+      ${editBarHTML}
+      <div class="edit-grid">
+        ${groupLabel(planned ? 'Passenger capacity · ranges' : 'Passenger capacity')}
+        ${capRows}
+        ${groupLabel('Propulsion & performance')}
+        ${propRows}
+        ${groupLabel(planned ? 'Dimensions · ranges' : 'Dimensions')}
+        ${dimRows}
+        ${!planned ? groupLabel('Model') + modelRows : ''}
+      </div>
+    </div>`;
+
+        if (editing) {
+          document.getElementById('edit-edit-cancel').addEventListener('click', () => {
+            typesEdit.editing = false;
+            renderEditPane(r);
+          });
+          document.getElementById('edit-edit-save').addEventListener('click', () => {
+            const get = k => body.querySelector(`[data-edit="${k}"]`);
+            const num = el => (el && el.value !== '' ? Number(el.value) : null);
+            const str = el => (el ? el.value : null);
+            const chk = el => (el ? !!el.checked : false);
+
+            if (planned) {
+              r.cap = {
+                seats: { min: num(get('cap_seatsMin')), max: num(get('cap_seatsMax')) },
+                stand: { min: num(get('cap_standMin')), max: num(get('cap_standMax')) },
+                total: { min: num(get('cap_totalMin')), max: num(get('cap_totalMax')) },
+              };
+              r.dims = {
+                L: { min: num(get('dim_LMin')), max: num(get('dim_LMax')) },
+                W: { min: num(get('dim_WMin')), max: num(get('dim_WMax')) },
+                H: { min: num(get('dim_HMin')), max: num(get('dim_HMax')) },
+              };
+            } else {
+              r.cap = {
+                seats: { v: num(get('cap_seats')) },
+                stand: { v: num(get('cap_stand')) },
+                total: { v: num(get('cap_total')) },
+              };
+              r.dims = {
+                L: { v: num(get('dim_L')) },
+                W: { v: num(get('dim_W')) },
+                H: { v: num(get('dim_H')) },
+              };
+              r.modelName = str(get('modelName')) || r.modelName;
+            }
+            r.propulsion = str(get('propulsion'));
+            r.fuel = str(get('fuel'));
+            r.euro = str(get('euro'));
+            r.vmax = num(get('vmax'));
+            r.rmax = num(get('rmax'));
+            r.selfPropelled = chk(get('sw_selfPropelled'));
+            r.reversing = chk(get('sw_reversing'));
+            r.lowFloor = chk(get('sw_lowFloor'));
+
+            typesEdit.editing = false;
+            renderEditPane(r);
+          });
+          const first = body.querySelector('input, select');
+          if (first) {
+            first.focus();
+            if (first.select) first.select();
+          }
+        } else {
+          const btn = document.getElementById('edit-edit-btn');
+          if (btn)
+            btn.addEventListener('click', () => {
+              typesEdit.editing = true;
+              renderEditPane(r);
+            });
+        }
+      }
+
       // Environmental tab — view/edit with shared pane-edit-bar pattern.
       // Friendly labels map to NeTEx field names; ranges apply to planned types.
       const typesEnv = { editing: false };
@@ -4301,9 +4688,9 @@
          <button class="btn primary" id="env-edit-save">Save changes</button>
        </div>`
           : `<div class="pane-edit-bar">
-         <button class="btn" id="env-edit-btn">
+         <button class="btn edit-idle" id="env-edit-btn" type="button" aria-label="Edit" title="Edit">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-           Edit
+           <span class="lbl">Edit</span>
          </button>
        </div>`;
 
@@ -4447,6 +4834,7 @@
         if (!r) return;
         state.selected = id;
         typesEnv.editing = false;
+        typesEdit.editing = false;
         document.getElementById('split').classList.add('detail-open');
         document
           .querySelectorAll('#tbody tr')
@@ -4482,81 +4870,16 @@
   `;
 
         // Tab visibility
-        document.getElementById('d-tab-vehicles').textContent =
-          r.flavour === 'planned' ? `Vehicles (${r.vehicles})` : `Vehicles (1)`;
-        const linkedCount =
-          r.flavour === 'planned' ? r.physicals.length : r.plannedRefs?.length || 0;
-        document.getElementById('d-tab-planned').textContent = `Linked types (${linkedCount})`;
+        document.getElementById('d-tab-vehicles').textContent = 'Vehicles';
+        document.getElementById('d-tab-planned').textContent = 'Links';
 
         // Deck-plan tab: plain-text label "DeckPlan:<id>" (no widget)
         const deckId = r.deck.replace('DP:', '');
         document.getElementById('d-tab-deck').innerHTML =
           `<span class="deck-tab-label">DeckPlan<span class="sep">:</span>${deckId}</span>`;
 
-        // Edit fields (Identity section removed; name edits inline via h2, mode via dropdown)
-        document.getElementById('f-vmax').value = r.vmax || '';
-        document.getElementById('f-rmax').value = r.rmax || '';
-
-        // Dimensions
-        const dimBody = document.getElementById('d-dim-body');
-        const dimTag = document.getElementById('d-dim-tag');
-        if (r.flavour === 'planned') {
-          dimTag.textContent = 'range values';
-          dimBody.innerHTML = ['L', 'W', 'H']
-            .map(k => {
-              const d = r.dims[k];
-              return `<div class="field"><label>${k} (mm)</label><div class="range-input"><input class="input" value="${d.min}"/><span class="dash">—</span><input class="input" value="${d.max}"/></div></div>`;
-            })
-            .join('');
-        } else {
-          dimTag.textContent = '';
-          dimBody.innerHTML = ['L', 'W', 'H']
-            .map(
-              k =>
-                `<div class="field"><label>${k} (mm)</label><input class="input" value="${r.dims[k].v}"/></div>`
-            )
-            .join('');
-        }
-
-        // Capacity
-        const capBody = document.getElementById('d-cap-body');
-        const capTag = document.getElementById('d-cap-tag');
-        if (r.flavour === 'planned') {
-          capTag.textContent = 'range values';
-          capBody.innerHTML = [
-            ['seats', 'Seats'],
-            ['stand', 'Standing'],
-            ['total', 'Total'],
-          ]
-            .map(([k, l]) => {
-              const c = r.cap[k];
-              return `<div class="field"><label>${l}</label><div class="range-input"><input class="input" value="${c.min}"/><span class="dash">—</span><input class="input" value="${c.max}"/></div></div>`;
-            })
-            .join('');
-        } else {
-          capTag.textContent = '';
-          capBody.innerHTML = [
-            ['seats', 'Seats'],
-            ['stand', 'Standing'],
-            ['total', 'Total'],
-          ]
-            .map(
-              ([k, l]) =>
-                `<div class="field"><label>${l}</label><input class="input" value="${r.cap[k].v}"/></div>`
-            )
-            .join('');
-        }
-
-        // Model (physical only)
-        const modelSec = document.getElementById('d-model-sec');
-        modelSec.style.display = r.flavour === 'physical' ? '' : 'none';
-        if (r.flavour === 'physical') {
-          document.getElementById('f-model-name').value = r.modelName || '';
-          const presSlot = document.getElementById('f-model-pres');
-          presSlot.innerHTML = r.brandingId
-            ? nxid({ codespace: 'NMR', type: 'Branding', id: r.brandingId })
-            : `<span style="color:var(--text-neutral-alt);font-size:12px">No presentation linked</span>`;
-        }
+        // Edit pane (capacity / propulsion / dimensions / model)
+        renderEditPane(r);
 
         // Environmental tab
         renderEnvironmentalPane(r);
@@ -4587,7 +4910,7 @@
       ${vehicles
         .map(
           v => `<tr data-vid="${v.id}" style="cursor:pointer;" title="Open in Vehicles">
-        <td>${nxid({ codespace: 'NMR', type: 'Vehicle', id: v.id })}</td>
+        <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-dark)">${v.id}</td>
         <td style="font-family:var(--font-mono);font-size:11px;color:var(--text-dark)">${v.regno || v.reg}</td>
         <td class="name">${v.name}</td>
         <td style="text-align:right"><button class="remove" title="Unassign" onclick="event.stopPropagation()">✕</button></td>
@@ -4599,41 +4922,7 @@
         // Linked-types tab — shows the counter-part:
         //   physical record  → list of planned types it fulfills
         //   planned record   → list of physical types that fulfill it
-        const plTbl = document.getElementById('pl-tbl');
-        const plHead = document.getElementById('d-pl-head');
-        const plBtn = document.getElementById('pl-add-btn');
-        const plCombo = document.getElementById('pl-add-combo');
-        if (r.flavour === 'physical') {
-          plHead.innerHTML = `Linked planned types <span class="tag" id="d-pl-tag">${r.plannedRefs.length} linked</span>`;
-          plBtn.textContent = '+ Link planned type';
-          plCombo.innerHTML = `<input class="input" placeholder="Search planned types…" style="font-family:inherit;font-size:12px;padding:5px 10px;background:#fff;border:1px solid var(--stroke-neutral);border-radius:14px;width:220px"/>`;
-          plTbl.innerHTML =
-            r.plannedRefs
-              .map(
-                ref => `<tr>
-      <td style="width:40px">${nxid({ codespace: 'NMR', type: 'VehicleType', id: ref.id, size: 'sm' })}</td>
-      <td class="name">${ref.name}</td>
-      <td style="text-align:right"><button class="remove" title="Remove link">✕</button></td>
-    </tr>`
-              )
-              .join('') ||
-            `<tr><td colspan="3" style="text-align:center;color:var(--text-neutral-alt);font-size:11px;padding:18px">No linked planned types</td></tr>`;
-        } else {
-          plHead.innerHTML = `Physical types fulfilling this <span class="tag" id="d-pl-tag">${r.physicals.length} linked</span>`;
-          plBtn.textContent = '+ Link physical type';
-          plCombo.innerHTML = `<input class="input" placeholder="Search physical types…" style="font-family:inherit;font-size:12px;padding:5px 10px;background:#fff;border:1px solid var(--stroke-neutral);border-radius:14px;width:220px"/>`;
-          plTbl.innerHTML =
-            r.physicals
-              .map(
-                ph => `<tr>
-      <td style="width:40px">${nxid({ codespace: 'NMR', type: 'VehicleType', id: ph.id, size: 'sm' })}</td>
-      <td class="name">${ph.name}</td>
-      <td style="text-align:right"><button class="remove" title="Unlink">✕</button></td>
-    </tr>`
-              )
-              .join('') ||
-            `<tr><td colspan="3" style="text-align:center;color:var(--text-neutral-alt);font-size:11px;padding:18px">No physical types link to this</td></tr>`;
-        }
+        renderLinkedTypesPane(r);
 
         // Deck-plan tab body — one row per physical deck on this vehicle type.
         // Each deck lists the individual deck id, its conventional name, and spot count.
@@ -4643,6 +4932,198 @@
         const xml = buildXml(r);
         document.getElementById('xml-pre').textContent = xml;
       }
+
+      /* Linked-types tab rendering + interaction.
+   Physical records reference planned types via plannedRefs (as stored in data).
+   Planned records derive their physicals list from the reverse index (computed
+   after every link/unlink). Link + Unlink actions mutate both sides so the
+   table + chips on both records stay in sync. */
+      function recomputePhysicalsIndex() {
+        for (const p of DATA.filter(d => d.flavour === 'planned')) {
+          p.physicals = DATA.filter(
+            d => d.flavour === 'physical' && d.plannedRefs?.some(x => x.id === p.id)
+          );
+        }
+      }
+
+      function renderLinkedTypesPane(r) {
+        const plTbl = document.getElementById('pl-tbl');
+        const plHead = document.getElementById('d-pl-head');
+        const plBtn = document.getElementById('pl-add-btn');
+        const plCombo = document.getElementById('pl-add-combo');
+        plCombo.innerHTML = ''; // we use a popover anchored to the button instead
+
+        if (r.flavour === 'physical') {
+          plHead.innerHTML = `Linked planned types <span class="tag" id="d-pl-tag">${r.plannedRefs.length} linked</span>`;
+          plBtn.textContent = '+ Link planned type';
+          plTbl.innerHTML =
+            r.plannedRefs
+              .map(
+                ref => `<tr data-ref-id="${ref.id}">
+      <td style="width:40px">${nxid({ codespace: 'NMR', type: 'VehicleType', id: ref.id, size: 'sm' })}</td>
+      <td class="name">${ref.name}</td>
+      <td style="text-align:right"><button class="remove" data-unlink="${ref.id}" title="Remove link">✕</button></td>
+    </tr>`
+              )
+              .join('') ||
+            `<tr><td colspan="3" style="text-align:center;color:var(--text-neutral-alt);font-size:11px;padding:18px">No linked planned types</td></tr>`;
+        } else {
+          plHead.innerHTML = `Physical types fulfilling this <span class="tag" id="d-pl-tag">${r.physicals.length} linked</span>`;
+          plBtn.textContent = '+ Link physical type';
+          plTbl.innerHTML =
+            r.physicals
+              .map(
+                ph => `<tr data-ref-id="${ph.id}">
+      <td style="width:40px">${nxid({ codespace: 'NMR', type: 'VehicleType', id: ph.id, size: 'sm' })}</td>
+      <td class="name">${ph.name}</td>
+      <td style="text-align:right"><button class="remove" data-unlink="${ph.id}" title="Unlink">✕</button></td>
+    </tr>`
+              )
+              .join('') ||
+            `<tr><td colspan="3" style="text-align:center;color:var(--text-neutral-alt);font-size:11px;padding:18px">No physical types link to this</td></tr>`;
+        }
+      }
+
+      /* Create a single candidate link between a planned record (plannedId) and a
+   physical record (physicalId). Idempotent — adding an existing link is a
+   no-op. After mutation the reverse index is rebuilt and the table is
+   re-rendered (both lists + the header chip + the sidebar sum-chip column). */
+      function addLink(plannedId, physicalId) {
+        const planned = DATA.find(d => d.id === plannedId && d.flavour === 'planned');
+        const physical = DATA.find(d => d.id === physicalId && d.flavour === 'physical');
+        if (!planned || !physical) return;
+        if (!physical.plannedRefs.some(x => x.id === planned.id)) {
+          physical.plannedRefs.push({ id: planned.id, name: planned.name });
+        }
+        recomputePhysicalsIndex();
+      }
+
+      function removeLink(plannedId, physicalId) {
+        const physical = DATA.find(d => d.id === physicalId && d.flavour === 'physical');
+        if (!physical) return;
+        physical.plannedRefs = physical.plannedRefs.filter(x => x.id !== plannedId);
+        recomputePhysicalsIndex();
+      }
+
+      /* Popover: search + pick-a-candidate list anchored under the + Link button. */
+      function openLinkPopover() {
+        closeLinkPopover();
+        const r = DATA.find(x => x.id === state.selected);
+        if (!r) return;
+        const linkingPlanned = r.flavour === 'physical'; // picking planned candidates
+        const alreadyLinkedIds = new Set(
+          linkingPlanned ? r.plannedRefs.map(x => x.id) : r.physicals.map(x => x.id)
+        );
+        const candidates = DATA.filter(d =>
+          linkingPlanned ? d.flavour === 'planned' : d.flavour === 'physical'
+        ).filter(d => !alreadyLinkedIds.has(d.id));
+
+        const pop = document.createElement('div');
+        pop.className = 'link-pop';
+        pop.id = 'link-pop';
+        pop.innerHTML = `
+    <input class="link-pop-search" placeholder="${linkingPlanned ? 'Search planned types…' : 'Search physical types…'}" />
+    <div class="link-pop-list"></div>
+  `;
+        document.body.appendChild(pop);
+
+        const btn = document.getElementById('pl-add-btn');
+        const rect = btn.getBoundingClientRect();
+        // Open upward so it doesn't fall out of the viewport (the + Link button is
+        // near the bottom of the detail pane). Align right edge with the button.
+        pop.style.left = rect.right - 300 + 'px';
+        pop.style.top = rect.top - 8 + 'px';
+        pop.style.transform = 'translateY(-100%)';
+
+        const listEl = pop.querySelector('.link-pop-list');
+        const searchEl = pop.querySelector('.link-pop-search');
+
+        function renderList(q) {
+          const term = (q || '').toLowerCase().trim();
+          const matched = candidates.filter(
+            c =>
+              !term ||
+              c.name.toLowerCase().includes(term) ||
+              c.id.toLowerCase().includes(term) ||
+              (c.short || '').toLowerCase().includes(term)
+          );
+          if (!matched.length) {
+            listEl.innerHTML = `<div class="link-pop-empty">${candidates.length ? 'No matches' : linkingPlanned ? 'No unlinked planned types' : 'No unlinked physical types'}</div>`;
+            return;
+          }
+          listEl.innerHTML = matched
+            .map(
+              c => `
+      <button class="link-pop-item" data-link-id="${c.id}">
+        <span class="link-pop-id">${nxid({ codespace: 'NMR', type: 'VehicleType', id: c.id, size: 'sm' })}</span>
+        <span class="link-pop-name">${c.name}</span>
+        <span class="link-pop-mode">${c.mode}</span>
+      </button>
+    `
+            )
+            .join('');
+        }
+        renderList('');
+        searchEl.addEventListener('input', e => renderList(e.target.value));
+        searchEl.focus();
+
+        listEl.addEventListener('click', e => {
+          const item = e.target.closest('[data-link-id]');
+          if (!item) return;
+          const pickedId = item.dataset.linkId;
+          if (linkingPlanned) {
+            addLink(pickedId, r.id); // r is physical; picked is planned
+          } else {
+            addLink(r.id, pickedId); // r is planned; picked is physical
+          }
+          closeLinkPopover();
+          // Re-render the linked list + the sidebar sub-count + the main table cell.
+          renderLinkedTypesPane(r);
+          const sub = document.getElementById('d-sub');
+          // refresh the header counts via full openDetail re-entry (cheap)
+          openDetail(r.id);
+          rerender();
+        });
+      }
+
+      function closeLinkPopover() {
+        const el = document.getElementById('link-pop');
+        if (el) el.remove();
+      }
+
+      // Outside-click / Esc to close the link popover
+      document.addEventListener('click', e => {
+        const pop = document.getElementById('link-pop');
+        if (!pop) return;
+        if (pop.contains(e.target)) return;
+        if (e.target.closest('#pl-add-btn')) return;
+        closeLinkPopover();
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeLinkPopover();
+      });
+
+      // + Link button → open popover
+      document.addEventListener('click', e => {
+        if (e.target.closest('#pl-add-btn')) {
+          e.stopPropagation();
+          if (document.getElementById('link-pop')) closeLinkPopover();
+          else openLinkPopover();
+        }
+      });
+
+      // ✕ remove a link (delegated from the linked-types table)
+      document.getElementById('pl-tbl').addEventListener('click', e => {
+        const btn = e.target.closest('[data-unlink]');
+        if (!btn) return;
+        const r = DATA.find(x => x.id === state.selected);
+        if (!r) return;
+        const otherId = btn.dataset.unlink;
+        if (r.flavour === 'physical') removeLink(otherId, r.id);
+        else removeLink(r.id, otherId);
+        openDetail(r.id);
+        rerender();
+      });
 
       /* Deck-plan decks — synthesise 1–3 deck rows per vehicle type.
    Real deck plans describe the physical layout of each deck (lower, upper,
@@ -4890,6 +5371,13 @@ ${ind}${dims}${physProps}${refs}
             const r = DATA.find(x => x.id === state.selected);
             if (r) renderEnvironmentalPane(r);
           }
+          // Reset edit-tab editing state when leaving
+          if (key !== 'edit' && typesEdit.editing) {
+            typesEdit.editing = false;
+            const r = DATA.find(x => x.id === state.selected);
+            if (r) renderEditPane(r);
+          }
+          // Also reset edit-tab editing state when switching records is handled in openDetail.
         })
       );
 
@@ -5227,9 +5715,9 @@ ${ind}${dims}${physProps}${refs}
          <button class="btn primary" id="veh-edit-save">Save changes</button>
        </div>`
           : `<div class="pane-edit-bar">
-         <button class="btn" id="veh-edit-btn">
+         <button class="btn edit-idle" id="veh-edit-btn" type="button" aria-label="Edit" title="Edit">
            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-           Edit
+           <span class="lbl">Edit</span>
          </button>
        </div>`;
 
