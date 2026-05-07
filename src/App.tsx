@@ -8,10 +8,10 @@ import { useAppTheme } from './hooks/useAppTheme';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
-import VehicleTypeView from './pages/VehicleTypeView.tsx';
-import VehicleTypeDetails from './pages/VehicleTypeDetails.tsx';
-import DeckPlanView from './pages/DeckPlanView.tsx';
-import DeckPlanDetailsView from './pages/DeckPlanDetailsView.tsx';
+import VehicleTypeView from './data/vehicle-types/VehicleTypeView.tsx';
+import VehicleTypeDetails from './data/vehicle-types/VehicleTypeDetails.tsx';
+import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
+import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();

@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TextareaAutosize } from '@mui/material';
-import LoadingPage from '../components/common/LoadingPage';
-import ErrorPage from '../components/common/ErrorPage';
-import { useAuth } from '../auth';
-import { useConfig } from '../contexts/configContext';
-import {
-  fetchDeckPlanDetails,
-  saveDeckPlanAsNetexToBackend,
-} from '../data/deck-plans/deckPlanDetailsService';
-import GenericDetailsPage from './GenericDetailsPage';
+import LoadingPage from '../../components/common/LoadingPage';
+import ErrorPage from '../../components/common/ErrorPage';
+import { useAuth } from '../../auth';
+import { useConfig } from '../../contexts/configContext';
+import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService';
+import GenericDetailsPage from '../../pages/GenericDetailsPage';
 
 const DeckPlanDetailsView = () => {
   const { id } = useParams();

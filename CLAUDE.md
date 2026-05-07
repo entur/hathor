@@ -42,7 +42,7 @@ The core architectural pattern is a reusable data table system:
 
 1. **ViewConfig** (`src/types/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
 2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
-3. **Page component** (e.g. `src/pages/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
+3. **Page component** (e.g. `src/data/vehicle-types/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
 
 To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. See `DEV_GUIDE.md` for the detailed tutorial.
 
@@ -61,7 +61,7 @@ Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehic
 ### Backend Integration
 
 - **GraphQL**: `graphql-request` library, queries in `src/graphql/vehicles/queries/`
-- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.tsx`
+- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.ts`
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
 
@@ -79,7 +79,7 @@ i18next with English (`src/locales/en/`) and Norwegian Bokmål (`src/locales/nb/
 
 ### Theming
 
-JSON-based theme config loaded at runtime. Custom icons system with `defaultIcons` vs `customIcons` directories in `public/assets/`. See README for details.
+JSON-based theme config loaded at runtime. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`. See `DEV_GUIDE.md` for details.
 
 ## E2E Testing (Playwright)
 
@@ -142,17 +142,13 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 
 ## Legacy Cleanup TODO
 
-Remaining Tiamat/stop-place traces and dead code from the fork that still need attention:
+Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a PR. *Design-level* ambiguities (couplings, naming leaks, filter shape) live in [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) instead.
 
-- **StopPlace naming in search layer** — `useDataViewSearch.ts` params (`allFetchedStopPlaces`, `stopPlacesLoading`, `searchStopPlaceData`) and `searchTypes.ts` type `StopPlaceTypeFilter` (used in `SearchContext.tsx`) still use Tiamat domain names.
 - **Commented-out code** — `useDataViewSearch.ts:14-27` (Tiamat filter logic with `ParentStopPlace`/`stopPlaceType`), `DesktopSearchBar.tsx` and `MobileSearchBar.tsx` (disabled `SearchAutocomplete` rendering), `Header.tsx` (unused `useTranslation` and mobile search callback).
 - **Unused translation keys** — ~49 dead keys across `en/translation.json` and `nb/translation.json`, including `data.table.*`, `map.*`, `types.*` (stop-place types), `session.expired.message`, `product.*`.
 - **Unused map infrastructure** — `useLayerVisibility.ts` hook never imported; `'map'` variant in `SearchContextViewType` never used.
 - **Dead auth export** — `AuthProvider` exported from `src/auth/index.ts` but never consumed.
 - **Stub component** — `WorkAreaContent.tsx` accepts `onSave`/`onCancel`/`onDetailsOpen` props but ignores them; `handleSave()` is empty.
-- **Non-functional filters** — `vehicleTypeViewConfig.tsx:84-93` defines filters with stop-place categories (Train, Bus, Tram, etc.) but filtering is never wired up.
-- **Misplaced hook** — `useDataViewSearch.ts` is in global `src/hooks/` but only used by VehicleType; belongs in `src/data/vehicle-types/`.
-- **Typo** — `vehicleImportServices.tsx:33`: `"Error impor vehicle data"` (missing "t").
 
 ## Key Files
 
@@ -163,7 +159,7 @@ Remaining Tiamat/stop-place traces and dead code from the fork that still need a
 | `src/types/viewConfigTypes.ts` | Core ViewConfig type definitions |
 | `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
 | `src/components/search/SearchContext.tsx` | Search state management |
-| `src/contexts/ConfigContext.tsx` | Runtime config types and context |
+| `src/contexts/configContext.ts` | Runtime config types and context |
 | `public/config.json` | Runtime API/OIDC configuration |
 | `.github/environments/` | Environment-specific config files |
 | `playwright.config.ts` | Playwright config (suite selection, browsers, workers) |
