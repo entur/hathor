@@ -8,7 +8,7 @@ description: Guide for adding new data table pages, customizing themes/icons, an
 Hathor uses a **Generic Data View Pattern**: a reusable data table system where each entity page is assembled from a `ViewConfig` object passed to `GenericDataViewPage`.
 
 Key files:
-- `src/types/viewConfigTypes.ts` — ViewConfig type definitions
+- `src/pages/viewConfigTypes.ts` — ViewConfig type definitions
 - `src/pages/GenericDataViewPage.tsx` — reusable data table page
 - `src/components/search/SearchContext.tsx` — global search state
 - `src/contexts/EditingContext.tsx` — sidebar editor state
@@ -158,7 +158,7 @@ Icon resolution via `src/data/iconLoaderUtils.ts` → `getIconUrl(name)`:
 
 ### Extending Theme TypeScript
 
-Add custom properties in `src/types/theme-config.d.ts`:
+Add custom properties in `src/theme/theme-config.d.ts`:
 - Extend `ThemeConfig` interface
 - Add module augmentation for `@mui/material/styles` (`Theme` and `ThemeOptions`)
 - Properties are then available via `useTheme()` in components

@@ -40,7 +40,7 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 The core architectural pattern is a reusable data table system:
 
-1. **ViewConfig** (`src/types/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
+1. **ViewConfig** (`src/pages/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
 2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
 3. **Page component** (e.g. `src/data/vehicle-types/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
 
@@ -156,7 +156,7 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
 | `src/main.tsx` | Entry point, wraps app in context providers |
-| `src/types/viewConfigTypes.ts` | Core ViewConfig type definitions |
+| `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
 | `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
 | `src/components/search/SearchContext.tsx` | Search state management |
 | `src/contexts/configContext.ts` | Runtime config types and context |

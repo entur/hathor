@@ -17,7 +17,7 @@ const fetchDeckPlansGQL = gql`
   }
 `;
 
-import type { PageVars } from '../../../types/paginationTypes.ts';
+import type { PageVars } from '../../paginationTypes.ts';
 
 export type DeckPlanVars = PageVars;
 

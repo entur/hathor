@@ -16,7 +16,7 @@ import DataTableRow from './DataTableRow.tsx';
 import { useTranslation } from 'react-i18next';
 import type { Order, ColumnDefinition } from './dataTableTypes.ts';
 import MobileDetailRow from './MobileDetailRow.tsx';
-import type { UrlFilterInfo } from '../../types/viewConfigTypes.ts';
+import type { UrlFilterInfo } from '../../pages/viewConfigTypes.ts';
 
 const COMPACT_VIEW_THRESHOLD = 700;
 

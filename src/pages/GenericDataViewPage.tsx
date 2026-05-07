@@ -7,7 +7,7 @@ import { Sidebar } from '../components/sidebar/Sidebar.tsx';
 import { ToggleButton } from '../components/sidebar/ToggleButton.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
-import type { ViewConfig, UrlFilterInfo } from '../types/viewConfigTypes.ts';
+import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
 interface GenericDataViewPageProps<T, K extends string> {
   viewConfig: ViewConfig<T, K>;

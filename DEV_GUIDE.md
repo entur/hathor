@@ -23,7 +23,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 - `hooks/` — global hooks shared across features.
 - `pages/` — generic infrastructure (`GenericDataViewPage`, `GenericDataEditPage`, `GenericDetailsPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
 - `utils/` — domain-neutral helpers (`iconLoaderUtils.ts`).
-- `types/` — shared type modules (`viewConfigTypes.ts`, `paginationTypes.ts`).
+- `types/` — **deprecated.**
 - `contexts/` — top-level React contexts not yet hosted in feature folders (`configContext`, `CustomizationContext`, `EditingContext`, `SessionContext`).
 - `static/` — static assets.
 
@@ -32,7 +32,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 - New entity (data-table backed) → `data/<feature>/`. Data hook, view config, editor, cells, types, and the View component live together. Add a route in `App.tsx`.
 - New non-entity routed page → `pages/`.
 - New hook used by ≥2 features → `hooks/`. Single-feature hook → next to its caller in `data/<feature>/`.
-- New `*Types.ts` file → feature-specific types live next to their implementation (`vehicleTypeTypes.ts`, `dataTableTypes.ts`, `searchTypes.ts`); cross-cutting types shared by multiple features stay in `src/types/` (`viewConfigTypes.ts`, `paginationTypes.ts`).
+- New `*Types.ts` file → next to its primary consumer. Feature types under `data/<feature>/`; types that pair with shared infrastructure go with that infra (e.g. `pages/viewConfigTypes.ts`, `graphql/paginationTypes.ts`, `components/data/dataTableTypes.ts`). Don't recreate `src/types/`.
 - JSX → `.tsx`. No JSX → `.ts`.
 
 Some contexts (`configContext`, `CustomizationContext`) and a few hooks haven't migrated to their feature folders yet — see [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) for tracked design ambiguities.
