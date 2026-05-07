@@ -4,14 +4,6 @@ These are known design ambiguities in the current code. They're tracked here so 
 
 Each entry describes the problem and points to the relevant code; resolutions are intentionally left open.
 
-## `StopPlace`-typed shared search hook
-
-`src/hooks/useDataViewSearch.ts` exposes a search-registration helper named `searchStopPlaceData` that's ostensibly generic but still carries stop-place-era naming. Its only caller today is the VehicleType view, which raises two separate questions: should the hook be domain-neutral and live in `hooks/`, or should it move into `data/vehicle-types/` until a second caller appears? The commented-out block at lines 14–27 (`__typename === 'ParentStopPlace'` filter logic) is dead but documents what the hook used to do — keeping it as a comment vs. deleting outright is also unsettled.
-
-## `StopPlaceTypeFilter` in supposedly-generic search types
-
-`src/components/search/searchTypes.ts` exports `type StopPlaceTypeFilter = string` and uses it across `SearchContextProps`, `setActiveFilters`, etc. The shape (`string`) is generic but the name leaks the original Tiamat domain. Renaming to `SearchFilterValue` (or similar) would clarify intent, but the name is referenced in `SearchContext.tsx` and the search bar components — so it's a small but cross-cutting rename.
-
 ## Orphan `src/types/`
 
 `src/types/` holds two files: `viewConfigTypes.ts` (the data-view contract) and `paginationTypes.ts` (pagination shape). Most other `*Types.ts` files in the codebase live next to their implementation (`vehicleTypeTypes.ts`, `dataTableTypes.ts`, `searchTypes.ts`, `deckPlanTypes.ts`). The folder's purpose — generic-shared types only? — is not documented. If `viewConfigTypes.ts` belongs with the GenericDataViewPage infrastructure and `paginationTypes.ts` belongs with the GraphQL layer, this folder may not need to exist.

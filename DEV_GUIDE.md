@@ -32,7 +32,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 - New entity (data-table backed) → `data/<feature>/`. Data hook, view config, editor, cells, types, and the View component live together. Add a route in `App.tsx`.
 - New non-entity routed page → `pages/`.
 - New hook used by ≥2 features → `hooks/`. Single-feature hook → next to its caller in `data/<feature>/`.
-- New `*Types.ts` file → next to its implementation (existing pattern: `vehicleTypeTypes.ts`, `dataTableTypes.ts`, `searchTypes.ts`, `paginationTypes.ts`).
+- New `*Types.ts` file → feature-specific types live next to their implementation (`vehicleTypeTypes.ts`, `dataTableTypes.ts`, `searchTypes.ts`); cross-cutting types shared by multiple features stay in `src/types/` (`viewConfigTypes.ts`, `paginationTypes.ts`).
 - JSX → `.tsx`. No JSX → `.ts`.
 
 Some contexts (`configContext`, `CustomizationContext`) and a few hooks haven't migrated to their feature folders yet — see [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) for tracked design ambiguities.
@@ -114,17 +114,19 @@ The application's icon loader resolves custom and default icons based on the **E
 
     1. If custom features enabled:
 
-        * `public/static/customIcons/[name].svg` or `.png`
+        * `src/static/customIcons/[name].svg` or `.png`
     2. Otherwise or not found:
 
-        * `public/static/defaultIcons/[name].svg` or `.png`
+        * `src/static/defaultIcons/[name].svg` or `.png`
     3. Fallback to `default.svg` / `default.png` in `defaultIcons`.
+
+Icons are bundled at build time via `import.meta.glob('../static/...')` — they live under `src/`, not `public/`. Vite hashes them and `getIconUrl` returns the bundled URL. Files placed in `public/` are not seen by the loader.
 
 ## Steps to add/override icons
 
 * **Prepare icons** in SVG or PNG.
 
-* **Place in `public/static/customIcons/`:**
+* **Place in `src/static/customIcons/`:**
 
     * Override: same filename as default.
     * Add new: unique filename (e.g., `analytics.svg`).
