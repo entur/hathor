@@ -9,6 +9,7 @@ import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { OrderBy } from './useVehicleTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 import type { VehicleType } from './vehicleTypeTypes.ts';
+import { getVehicleTypeSortValue } from './vehicleTypeSortValue.ts';
 
 const fmtDim = (v: VehicleType) => {
   const parts = [
@@ -73,21 +74,6 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
 
 const getVehicleTypeFilterKey = (item: VehicleType): string => {
   return item.id;
-};
-
-const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string | number => {
-  switch (key) {
-    case 'name':
-      return item.name?.value || '';
-    case 'id':
-      return item.id;
-    case 'dimensions':
-      return item.length;
-    case 'deckPlanName':
-      return item.deckPlan?.name?.value || '';
-    default:
-      return '';
-  }
 };
 
 const vehicleTypeFilters: FilterDefinition[] = [

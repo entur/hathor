@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../contexts/configContext.ts';
 import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
 import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
+import { getVehicleTypeSortValue } from './vehicleTypeSortValue.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 
@@ -73,10 +74,17 @@ export function useVehicleTypes() {
   };
 
   const sorted = [...data].sort((a, b) => {
-    const v1 = orderBy === 'name' ? a.name?.value?.toLowerCase() || '' : a.id.toLowerCase();
-    const v2 = orderBy === 'name' ? b.name?.value?.toLowerCase() || '' : b.id.toLowerCase();
-    if (v1 < v2) return order === 'asc' ? -1 : 1;
-    if (v1 > v2) return order === 'asc' ? 1 : -1;
+    const va = getVehicleTypeSortValue(a, orderBy);
+    const vb = getVehicleTypeSortValue(b, orderBy);
+    const aEmpty = va === '' || va == null;
+    const bEmpty = vb === '' || vb == null;
+    if (aEmpty && bEmpty) return 0;
+    if (aEmpty) return 1;
+    if (bEmpty) return -1;
+    const ca = typeof va === 'string' ? va.toLowerCase() : va;
+    const cb = typeof vb === 'string' ? vb.toLowerCase() : vb;
+    if (ca < cb) return order === 'asc' ? -1 : 1;
+    if (ca > cb) return order === 'asc' ? 1 : -1;
     return 0;
   });
 
