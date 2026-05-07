@@ -1,8 +1,41 @@
-<!-- Copied from the Inanna project README -->
-
 # Hathor Developer Guide
 
-A guide to customizing and extending Hathor — theming, icons, TypeScript theme extensions, and adding new data table pages.
+A guide to customizing and extending Hathor — project layout, theming, icons, TypeScript theme extensions, and adding new data table pages.
+
+---
+
+## Folder semantics (today)
+
+Hathor's `src/` mixes two organizational styles. Before adding files, know which one you're touching.
+
+**Vertical (feature) folders:**
+
+- `auth/` — OIDC bootstrap, ProtectedRoute, login flow, auth utilities.
+- `config/` — runtime config fetch (`fetchConfig.ts`).
+- `theme/` — `createThemeFromConfig`, MUI theme module augmentation (`theme-config.d.ts`).
+- `data/<feature>/` — production domain folders (`vehicle-types/`, `deck-plans/`, `vehicle-imports/`). Each holds the data hook, view config, editor, cells, types, and View + Details components for one entity.
+- `graphql/` — GraphQL operations grouped by feature.
+- `locales/` — i18next translation files (`en/`, `nb/`).
+
+**Horizontal (file-kind) folders:**
+
+- `components/` — UI components grouped by sub-area (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`, `external-inputs/`).
+- `hooks/` — global hooks shared across features.
+- `pages/` — generic infrastructure (`GenericDataViewPage`, `GenericDataEditPage`, `GenericDetailsPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
+- `utils/` — domain-neutral helpers (`iconLoaderUtils.ts`).
+- `types/` — **deprecated.**
+- `contexts/` — top-level React contexts not yet hosted in feature folders (`configContext`, `CustomizationContext`, `EditingContext`, `SessionContext`).
+- `static/` — static assets.
+
+**Where new files go:**
+
+- New entity (data-table backed) → `data/<feature>/`. Data hook, view config, editor, cells, types, and the View component live together. Add a route in `App.tsx`.
+- New non-entity routed page → `pages/`.
+- New hook used by ≥2 features → `hooks/`. Single-feature hook → next to its caller in `data/<feature>/`.
+- New `*Types.ts` file → next to its primary consumer. Feature types under `data/<feature>/`; types that pair with shared infrastructure go with that infra (e.g. `pages/viewConfigTypes.ts`, `graphql/paginationTypes.ts`, `components/data/dataTableTypes.ts`). Don't recreate `src/types/`.
+- JSX → `.tsx`. No JSX → `.ts`.
+
+Some contexts (`configContext`, `CustomizationContext`) and a few hooks haven't migrated to their feature folders yet — see [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) for tracked design ambiguities.
 
 ---
 
@@ -24,7 +57,7 @@ Your application can switch between a default theme and a custom theme. This beh
 
 * **`public/custom-theme-config.json`:** Define or override any MUI theme options here.
 
-* **`src/utils/createThemeFromConfig.ts`:** Converts the JSON configuration into an MUI theme object.
+* **`src/theme/createThemeFromConfig.ts`:** Converts the JSON configuration into an MUI theme object.
 
 ## Steps to customize your theme
 
@@ -77,21 +110,23 @@ The application's icon loader resolves custom and default icons based on the **E
 
 ## How it works
 
-* **`src/data/iconLoaderUtils.ts`** – `getIconUrl(name: string)` checks:
+* **`src/utils/iconLoaderUtils.ts`** – `getIconUrl(name: string)` checks:
 
     1. If custom features enabled:
 
-        * `public/static/customIcons/[name].svg` or `.png`
+        * `src/static/customIcons/[name].svg` or `.png`
     2. Otherwise or not found:
 
-        * `public/static/defaultIcons/[name].svg` or `.png`
+        * `src/static/defaultIcons/[name].svg` or `.png`
     3. Fallback to `default.svg` / `default.png` in `defaultIcons`.
+
+Icons are bundled at build time via `import.meta.glob('../static/...')` — they live under `src/`, not `public/`. Vite hashes them and `getIconUrl` returns the bundled URL. Files placed in `public/` are not seen by the loader.
 
 ## Steps to add/override icons
 
 * **Prepare icons** in SVG or PNG.
 
-* **Place in `public/static/customIcons/`:**
+* **Place in `src/static/customIcons/`:**
 
     * Override: same filename as default.
     * Add new: unique filename (e.g., `analytics.svg`).
@@ -99,7 +134,7 @@ The application's icon loader resolves custom and default icons based on the **E
 * **Use in components:**
 
   ```tsx
-  import { getIconUrl } from '../data/iconLoader';
+  import { getIconUrl } from '../utils/iconLoaderUtils';
   import { Box } from '@mui/material';
 
   const analyticsIconUrl = getIconUrl('analytics');
@@ -120,7 +155,7 @@ The application's icon loader resolves custom and default icons based on the **E
 
 ## 3. Expanding Theming with TypeScript Definitions
 
-Extend MUI's theme object in `src/types/theme-config.d.ts` for additional custom properties.
+Extend MUI's theme object in `src/theme/theme-config.d.ts` for additional custom properties.
 
 ## How it works
 
@@ -130,7 +165,7 @@ Extend MUI's theme object in `src/types/theme-config.d.ts` for additional custom
 
 ## Steps to extend the theme
 
-* **Define new properties** in `src/types/theme-config.d.ts`:
+* **Define new properties** in `src/theme/theme-config.d.ts`:
 
   ```ts
   import type { ThemeOptions } from '@mui/material/styles';
@@ -217,7 +252,7 @@ Extend MUI's theme object in `src/types/theme-config.d.ts` for additional custom
   export default MyCustomComponent;
   ```
 
-The `createThemeFromConfig` utility in `src/utils/createThemeFromConfig.ts` will automatically include all custom properties defined in your theme configs.
+The `createThemeFromConfig` utility in `src/theme/createThemeFromConfig.ts` will automatically include all custom properties defined in your theme configs.
 
 ---
 
@@ -480,4 +515,4 @@ export default function ProductView() {
 Finally, add a route for your new page in your main router (e.g., App.tsx) and a link to it in the main menu (e.g., Menu.tsx).
 By following these steps, you can quickly and cleanly add new data views to the application, leveraging the reusable architecture to minimize boilerplate and ensure consistency.
 
-A fully functioning version of the Product example can be found in /src/data/products/ . Alongside another example under /src/data/stop-places.
+Real-world examples in this codebase: `src/data/vehicle-types/` (full pattern: GraphQL data hook, view config, editor, cells, View, Details) and `src/data/deck-plans/` (similar pattern with NeTEx XML import).

@@ -4,7 +4,7 @@ import type {
   SearchContextViewType,
   SearchResultItem,
   SearchFunction,
-  StopPlaceTypeFilter,
+  SearchFilterValue,
   FilterDefinition,
 } from './searchTypes.ts';
 
@@ -32,7 +32,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [suggestionResults, setSuggestionResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
-  const [activeFilters, setActiveFilters] = useState<StopPlaceTypeFilter[]>([]);
+  const [activeFilters, setActiveFilters] = useState<SearchFilterValue[]>([]);
   const [filterConfig, setFilterConfig] = useState<FilterDefinition[]>([]);
 
   const searchFunctionsRef = useRef<
@@ -74,7 +74,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   );
 
   const executeSearch = useCallback(
-    async (query: string, filters: StopPlaceTypeFilter[]): Promise<SearchResultItem[]> => {
+    async (query: string, filters: SearchFilterValue[]): Promise<SearchResultItem[]> => {
       if (!query.trim() || !activeSearchContext) return [];
       const searchFunc = searchFunctionsRef.current[activeSearchContext];
       if (!searchFunc) {
@@ -156,7 +156,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     [activeSearchContext, performLiveSearch, performSuggestionOnlySearch]
   );
 
-  const updateFilters = useCallback((newFilters: StopPlaceTypeFilter[]) => {
+  const updateFilters = useCallback((newFilters: SearchFilterValue[]) => {
     setActiveFilters(newFilters);
   }, []);
 

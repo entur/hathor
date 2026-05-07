@@ -2,8 +2,8 @@ import type { AccessToken } from '../../auth/index.ts';
 import { fetchDeckPlansRequest } from '../../graphql/vehicles/queries/fetchDeckPlans.ts';
 import type { DeckPlanContext } from './deckPlanTypes.ts';
 import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
-import type { Page } from '../../types/paginationTypes.ts';
-import { FETCH_ALL_SIZE } from '../../types/paginationTypes.ts';
+import type { Page } from '../../graphql/paginationTypes.ts';
+import { FETCH_ALL_SIZE } from '../../graphql/paginationTypes.ts';
 
 export const fetchDeckPlans = async (
   applicationBaseUrl: string,

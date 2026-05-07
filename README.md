@@ -41,4 +41,6 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 
 ## Customization
 
-See [DEV_GUIDE.md](DEV_GUIDE.md) for theming, custom icons, and adding new data table pages.
+See [DEV_GUIDE.md](DEV_GUIDE.md) for project layout, theming, custom icons, and adding new data table pages.
+
+Known design ambiguities are tracked in [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).

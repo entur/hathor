@@ -9,38 +9,23 @@ export function useDataViewSearch<T extends { id: string; name?: Name }>(
 ) {
   const { setActiveSearchContext, registerSearchFunction } = useSearch();
 
-  const searchStopPlaceData = useCallback(async (): Promise<SearchResultItem[]> => {
+  const searchData = useCallback(async (): Promise<SearchResultItem[]> => {
     if (itemsLoading || !allFetchedItems) return [];
-    // const lowerQuery = query.toLowerCase();
-    return (
-      allFetchedItems
-        // .filter(sp => {
-        //   const textMatch =
-        //     sp.name.value.toLowerCase().includes(lowerQuery) ||
-        //     sp.id.toLowerCase().includes(lowerQuery);
-
-        //   const typeKey =
-        //     sp.__typename === 'ParentStopPlace' ? 'parentStopPlace' : sp.stopPlaceType;
-        //   const typeMatch = filters.length === 0 || filters.includes(typeKey);
-
-        //   return textMatch && typeMatch;
-        // })
-        .map(sp => ({
-          id: sp.id,
-          name: sp.name?.value,
-          type: 'data' as const,
-          originalData: sp,
-        }))
-    );
+    return allFetchedItems.map(item => ({
+      id: item.id,
+      name: item.name?.value,
+      type: 'data' as const,
+      originalData: item,
+    }));
   }, [itemsLoading, allFetchedItems]);
 
   useEffect(() => {
     const context: SearchContextViewType = 'data';
     setActiveSearchContext(context);
-    registerSearchFunction(context, searchStopPlaceData);
+    registerSearchFunction(context, searchData);
 
     return () => {
       registerSearchFunction(context, null);
     };
-  }, [setActiveSearchContext, registerSearchFunction, searchStopPlaceData]);
+  }, [setActiveSearchContext, registerSearchFunction, searchData]);
 }

@@ -1,8 +1,8 @@
 import { fetchVehicleTypesRequest } from '../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 import type { VehicleTypeContext, VehicleType } from './vehicleTypeTypes.ts';
 import type { AccessToken } from '../../auth';
-import type { Page } from '../../types/paginationTypes.ts';
-import { FETCH_ALL_SIZE } from '../../types/paginationTypes.ts';
+import type { Page } from '../../graphql/paginationTypes.ts';
+import { FETCH_ALL_SIZE } from '../../graphql/paginationTypes.ts';
 
 export const fetchVehicleTypes = async (
   applicationBaseUrl: string,

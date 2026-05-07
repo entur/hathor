@@ -8,7 +8,7 @@ description: Guide for adding new data table pages, customizing themes/icons, an
 Hathor uses a **Generic Data View Pattern**: a reusable data table system where each entity page is assembled from a `ViewConfig` object passed to `GenericDataViewPage`.
 
 Key files:
-- `src/types/viewConfigTypes.ts` — ViewConfig type definitions
+- `src/pages/viewConfigTypes.ts` — ViewConfig type definitions
 - `src/pages/GenericDataViewPage.tsx` — reusable data table page
 - `src/components/search/SearchContext.tsx` — global search state
 - `src/contexts/EditingContext.tsx` — sidebar editor state
@@ -145,20 +145,20 @@ export default function FeatureView() {
 - `public/custom-theme-config.json` — custom overrides
 - Toggle: **Enable Custom Theme & Icons** in settings dialog
 - `CustomizationContext.tsx` manages the `useCustomFeatures` state
-- `src/utils/createThemeFromConfig.ts` converts JSON to MUI theme
+- `src/theme/createThemeFromConfig.ts` converts JSON to MUI theme
 
 Theme JSON supports all MUI ThemeOptions plus custom fields: `applicationName`, `companyName`, `logoUrl`, `logoHeight`.
 
 ### Custom Icons
 
-Icon resolution via `src/data/iconLoaderUtils.ts` → `getIconUrl(name)`:
-1. If custom features enabled: `public/static/customIcons/[name].svg|png`
-2. Fallback: `public/static/defaultIcons/[name].svg|png`
+Icon resolution via `src/utils/iconLoaderUtils.ts` → `getIconUrl(name)`. Icons are bundled at build time via `import.meta.glob('../static/...')` — they live under `src/`, not `public/`:
+1. If custom features enabled: `src/static/customIcons/[name].svg|png`
+2. Fallback: `src/static/defaultIcons/[name].svg|png`
 3. Final fallback: `default.svg|png` in defaultIcons
 
 ### Extending Theme TypeScript
 
-Add custom properties in `src/types/theme-config.d.ts`:
+Add custom properties in `src/theme/theme-config.d.ts`:
 - Extend `ThemeConfig` interface
 - Add module augmentation for `@mui/material/styles` (`Theme` and `ThemeOptions`)
 - Properties are then available via `useTheme()` in components

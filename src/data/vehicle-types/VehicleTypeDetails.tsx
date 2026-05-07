@@ -4,15 +4,15 @@ import { Paper, Typography } from '@mui/material';
 import { Editor, validate, serialize, normalizeGraphQL } from '@entur/vtype-details';
 import type { VehicleType as EditorVehicleType, ExtraTab } from '@entur/vtype-details';
 import { DataViewTable, type ColumnDefinition } from '@entur/data-view-table';
-import { useAuth } from '../auth/authUtils';
-import { useConfig } from '../contexts/configContext';
-import { importAsNetexToBackend } from '../data/vehicle-imports/vehicleImportServices';
-import { wrapInPublicationDelivery } from '../data/vehicle-imports/xmlUtils';
-import { useVehicleType } from '../data/vehicle-types/useVehicleType';
-import type { Vehicle, DeckPlan } from '../data/vehicle-types/vehicleTypeTypes';
-import LoadingPage from '../components/common/LoadingPage';
-import ErrorPage from '../components/common/ErrorPage';
-import GenericDetailsPage from './GenericDetailsPage';
+import { useAuth } from '../../auth/authUtils';
+import { useConfig } from '../../contexts/configContext';
+import { importAsNetexToBackend } from '../vehicle-imports/vehicleImportServices';
+import { wrapInPublicationDelivery } from '../vehicle-imports/xmlUtils';
+import { useVehicleType } from './useVehicleType';
+import type { Vehicle, DeckPlan } from './vehicleTypeTypes';
+import LoadingPage from '../../components/common/LoadingPage';
+import ErrorPage from '../../components/common/ErrorPage';
+import GenericDetailsPage from '../../pages/GenericDetailsPage';
 
 type VehicleSortKey = 'id' | 'registrationNumber';
 
