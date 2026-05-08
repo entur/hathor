@@ -13,6 +13,11 @@ const MOCK_VEHICLE_TYPES = JSON.parse(
   fs.readFileSync(path.join(fixturesDir, 'vehicle-types-mock.json'), 'utf-8')
 );
 
+/** Mock deck plans (mixed named + null-name rows) for the issue #63 sort regression spec */
+const MOCK_DECK_PLANS = JSON.parse(
+  fs.readFileSync(path.join(fixturesDir, 'deck-plans-mock.json'), 'utf-8')
+);
+
 /**
  * Intercept the GraphQL vehicleTypes query and return mock data.
  * Required for tests that load /vehicle-type without a real backend.
@@ -27,6 +32,29 @@ export async function interceptVehicleTypesQuery(page: import('@playwright/test'
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(MOCK_VEHICLE_TYPES),
+      });
+    } else {
+      await route.continue();
+    }
+  });
+}
+
+/**
+ * Intercept the GraphQL DeckPlans query and return mock data.
+ * Required for tests that load /deck-plan without a real backend.
+ *
+ * @param page Playwright Page instance.
+ */
+export async function interceptDeckPlansQuery(page: import('@playwright/test').Page) {
+  await page.route('**/graphql', async route => {
+    const request = route.request();
+    const postData = request.postDataJSON();
+
+    if (postData?.query?.includes('DeckPlans')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(MOCK_DECK_PLANS),
       });
     } else {
       await route.continue();
