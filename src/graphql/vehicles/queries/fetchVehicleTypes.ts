@@ -23,7 +23,6 @@ const fetchVehicleTypesGQL = gql`
         versionComment
         deckPlan {
           id
-          description
           name {
             value
           }

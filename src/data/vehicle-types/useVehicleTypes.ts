@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../contexts/configContext.ts';
 import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
 import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
+import { compareVehicleTypes } from './vehicleTypeSortValue.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 
@@ -72,13 +73,7 @@ export function useVehicleTypes() {
     setOrderBy(property);
   };
 
-  const sorted = [...data].sort((a, b) => {
-    const v1 = orderBy === 'name' ? a.name?.value?.toLowerCase() || '' : a.id.toLowerCase();
-    const v2 = orderBy === 'name' ? b.name?.value?.toLowerCase() || '' : b.id.toLowerCase();
-    if (v1 < v2) return order === 'asc' ? -1 : 1;
-    if (v1 > v2) return order === 'asc' ? 1 : -1;
-    return 0;
-  });
+  const sorted = [...data].sort(compareVehicleTypes(orderBy, order));
 
   const paginated = sorted.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
