@@ -5,13 +5,13 @@
         { "id": "NMR:DeckPlan:1", "name": { "value": "Plan Bravo" } },
         { "id": "NMR:DeckPlan:2", "name": null },
         { "id": "NMR:DeckPlan:3", "name": { "value": "Plan Echo" } },
-        { "id": "NMR:DeckPlan:4", "name": null },
+        { "id": "NMR:DeckPlan:4", "name": { "value": "\n                " } },
         { "id": "NMR:DeckPlan:5", "name": { "value": "Plan Alpha" } },
-        { "id": "NMR:DeckPlan:6", "name": null },
+        { "id": "NMR:DeckPlan:6", "name": { "value": "   " } },
         { "id": "NMR:DeckPlan:7", "name": { "value": "Plan Delta" } },
         { "id": "NMR:DeckPlan:8", "name": null },
         { "id": "NMR:DeckPlan:9", "name": { "value": "Plan Charlie" } },
-        { "id": "NMR:DeckPlan:10", "name": null }
+        { "id": "NMR:DeckPlan:10", "name": { "value": "\t\n " } }
       ],
       "totalElements": 10,
       "page": 0,

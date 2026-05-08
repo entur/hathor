@@ -1,5 +1,12 @@
 import type { Order } from '../components/data/dataTableTypes.ts';
 
+// TEMP WORKAROUND: Sobek currently serializes empty NeTEx Name elements as
+// whitespace strings (e.g. "\n     ") rather than null/empty. Trim strings
+// before the empty check so blank-name rows still sort last. Drop the trim
+// once Sobek emits null/"" for empty Name values.
+const isEmpty = (v: string | number | null | undefined): boolean =>
+  v == null || (typeof v === 'string' && v.trim() === '');
+
 /**
  * Build a generic comparator that keeps rows with empty/nullish sort values
  * at the end regardless of asc/desc direction. Closes over a feature-specific
@@ -14,8 +21,8 @@ export const compareWithEmptyLast =
   (a: T, b: T): number => {
     const va = getSortValue(a, orderBy);
     const vb = getSortValue(b, orderBy);
-    const aEmpty = va === '' || va == null;
-    const bEmpty = vb === '' || vb == null;
+    const aEmpty = isEmpty(va);
+    const bEmpty = isEmpty(vb);
     if (aEmpty && bEmpty) return 0;
     if (aEmpty) return 1;
     if (bEmpty) return -1;
