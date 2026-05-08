@@ -7,6 +7,7 @@ import { useAuth } from '../../auth/authUtils.ts';
 import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
 import type { DeckPlanContext } from './deckPlanTypes.ts';
 import { fetchDeckPlans } from './fetchDeckPlans.ts';
+import { compareDeckPlans } from './deckPlanSortValue.ts';
 
 export type OrderBy = 'name' | 'id';
 
@@ -73,13 +74,7 @@ export function useDeckPlans() {
     setOrderBy(property);
   };
 
-  const sorted = [...data].sort((a, b) => {
-    const v1 = orderBy === 'name' ? a.name?.value?.toLowerCase() || '' : a.id.toLowerCase();
-    const v2 = orderBy === 'name' ? b.name?.value?.toLowerCase() || '' : b.id.toLowerCase();
-    if (v1 < v2) return order === 'asc' ? -1 : 1;
-    if (v1 > v2) return order === 'asc' ? 1 : -1;
-    return 0;
-  });
+  const sorted = [...data].sort(compareDeckPlans(orderBy, order));
 
   const paginated = sorted.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
