@@ -16,8 +16,10 @@ export const getDeckPlanSortValue = (item: DeckPlan, key: OrderBy): string | num
       return item.name?.value || '';
     case 'id':
       return item.id;
-    default:
-      return '';
+    default: {
+      const _exhaustive: never = key;
+      return _exhaustive;
+    }
   }
 };
 

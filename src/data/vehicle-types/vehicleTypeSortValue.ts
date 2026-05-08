@@ -12,8 +12,10 @@ export const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string
       return item.length;
     case 'deckPlanName':
       return item.deckPlan?.name?.value || '';
-    default:
-      return '';
+    default: {
+      const _exhaustive: never = key;
+      return _exhaustive;
+    }
   }
 };
 
