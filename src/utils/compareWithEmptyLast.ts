@@ -1,10 +1,18 @@
 import type { Order } from '../components/data/dataTableTypes.ts';
 
-// TEMP WORKAROUND: Sobek currently serializes empty NeTEx Name elements as
-// whitespace strings (e.g. "\n     ") rather than null/empty. Trim strings
-// before the empty check so blank-name rows still sort last. Drop the trim
-// once Sobek emits null/"" for empty Name values.
-const isEmpty = (v: string | number | null | undefined): boolean =>
+/**
+ * Returns true for null/undefined or — for strings — visually blank values
+ * (incl. whitespace-only).
+ *
+ * TEMP WORKAROUND tied to entur/sobek#121: Sobek currently serializes empty
+ * NeTEx Name elements as whitespace strings (e.g. "\n     ") rather than
+ * null/empty, so any "is this blank?" check in hathor must trim. Once Sobek
+ * emits null/"" the `.trim()` branch can be dropped.
+ *
+ * @param v Sortable string or number (or nullish).
+ * @returns true if the value should sort to the end.
+ */
+export const isEmpty = (v: string | number | null | undefined): boolean =>
   v == null || (typeof v === 'string' && v.trim() === '');
 
 /**
@@ -28,7 +36,8 @@ export const compareWithEmptyLast =
     if (bEmpty) return -1;
     const ca = typeof va === 'string' ? va.toLowerCase() : va;
     const cb = typeof vb === 'string' ? vb.toLowerCase() : vb;
-    if (ca < cb) return order === 'asc' ? -1 : 1;
-    if (ca > cb) return order === 'asc' ? 1 : -1;
+    const dir = order === 'asc' ? 1 : -1;
+    if (ca < cb) return -dir;
+    if (ca > cb) return dir;
     return 0;
   };

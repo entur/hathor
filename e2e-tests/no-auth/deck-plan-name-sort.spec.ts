@@ -19,7 +19,6 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
     }
 
     await page.goto('/deck-plan');
-    await page.waitForLoadState('networkidle');
 
     await expect(page.locator('table')).toBeVisible();
     await expect(page.getByTestId('total-entries')).toHaveAttribute('data-count', '10');
