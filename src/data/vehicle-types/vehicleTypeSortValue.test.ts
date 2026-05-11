@@ -69,6 +69,17 @@ describe('compareVehicleTypes', () => {
     const sorted = [...rows].sort(compareVehicleTypes('deckPlanName', 'asc'));
     expect(sorted.map(r => r.id)).toEqual(['c', 'b', 'a']);
   });
+
+  it('treats whitespace-only Name as empty (regression: Sobek returns "\\n  " for empty Name)', () => {
+    const rows = [
+      mk({ id: 'ws-1', name: { value: '\n                ' } }),
+      mk({ id: 'aa', name: { value: 'aa' } }),
+      mk({ id: 'ws-2', name: { value: '   ' } }),
+      mk({ id: 'zz', name: { value: 'zz' } }),
+    ];
+    const sorted = [...rows].sort(compareVehicleTypes('name', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['aa', 'zz', 'ws-1', 'ws-2']);
+  });
 });
 
 describe('getVehicleTypeSortValue', () => {

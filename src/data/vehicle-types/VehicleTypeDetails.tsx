@@ -10,6 +10,8 @@ import { importAsNetexToBackend } from '../vehicle-imports/vehicleImportServices
 import { wrapInPublicationDelivery } from '../vehicle-imports/xmlUtils';
 import { useVehicleType } from './useVehicleType';
 import type { Vehicle, DeckPlan } from './vehicleTypeTypes';
+import { getDeckPlanSortValue } from '../deck-plans/deckPlanSortValue';
+import type { OrderBy as DeckPlanSortKey } from '../deck-plans/useDeckPlans';
 import LoadingPage from '../../components/common/LoadingPage';
 import ErrorPage from '../../components/common/ErrorPage';
 import GenericDetailsPage from '../../pages/GenericDetailsPage';
@@ -30,8 +32,6 @@ const vehicleCols: ColumnDefinition<Vehicle, VehicleSortKey>[] = [
 const vehicleSortVal = (v: Vehicle, k: VehicleSortKey) =>
   k === 'id' ? v.id : v.registrationNumber;
 
-type DeckPlanSortKey = 'id' | 'name';
-
 const deckPlanCols: ColumnDefinition<DeckPlan, DeckPlanSortKey>[] = [
   { id: 'id', headerLabel: 'ID', isSortable: true, renderCell: d => d.id, display: 'always' },
   {
@@ -42,9 +42,6 @@ const deckPlanCols: ColumnDefinition<DeckPlan, DeckPlanSortKey>[] = [
     display: 'always',
   },
 ];
-
-const deckPlanSortVal = (d: DeckPlan, k: DeckPlanSortKey) =>
-  k === 'id' ? d.id : (d.name?.value ?? '');
 
 export default function VehicleTypeDetails() {
   const { id } = useParams();
@@ -103,7 +100,7 @@ export default function VehicleTypeDetails() {
         <DataViewTable
           data={[vtype.deckPlan]}
           columns={deckPlanCols}
-          getSortValue={deckPlanSortVal}
+          getSortValue={getDeckPlanSortValue}
           defaultSort={{ order: 'asc', orderBy: 'name' }}
         />
       ),

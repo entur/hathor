@@ -8,6 +8,7 @@ import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
 import { useNavigate } from 'react-router-dom';
+import { getDeckPlanSortValue } from './deckPlanSortValue.ts';
 
 /**
  * Defines the columns for the DeckPlan data table.
@@ -50,19 +51,6 @@ const getDeckPlanFilterKey = (item: DeckPlan): string => {
   return item.id;
 };
 
-/**
- * A function to get the specific value from a DeckPlan for sorting.
- */
-const getDeckPlanSortValue = (item: DeckPlan, key: OrderBy): string | number => {
-  switch (key) {
-    case 'name':
-      return item.name?.value || '';
-    case 'id':
-      return item.id;
-    default:
-      return '';
-  }
-};
 const DeckPlanFilters: FilterDefinition[] = [
   { id: 'parentDeckPlan', labelKey: 'types.parent', defaultLabel: 'Parent Vehicle Type' },
   { id: 'railVehicle', labelKey: 'types.train', defaultLabel: 'Train' },
