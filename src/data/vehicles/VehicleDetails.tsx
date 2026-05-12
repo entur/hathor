@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Box, Typography, Button, Chip, Divider, Stack, TextField, Alert } from '@mui/material';
+import { Box, Typography, Button, Chip, Divider, Stack, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useEditing } from '../../contexts/EditingContext.tsx';
-import { useVehicles } from './useVehicles.ts';
-import type { Vehicle } from './vehicleTypes.ts';
+import { transportModeLabelKey } from '../netex/transportMode.ts';
+import type { VehicleRow } from './vehicleTypes.ts';
 
-const FIELD_LABEL_KEYS: { key: keyof Vehicle; labelKey: string; defaultLabel: string }[] = [
+const FIELD_LABEL_KEYS: { key: keyof VehicleRow; labelKey: string; defaultLabel: string }[] = [
   { key: 'id', labelKey: 'vehicles.field.id', defaultLabel: 'ID' },
   {
     key: 'registrationNumber',
@@ -26,24 +26,31 @@ const FIELD_LABEL_KEYS: { key: keyof Vehicle; labelKey: string; defaultLabel: st
 ];
 
 interface VehicleDetailsProps {
-  itemId: string;
+  vehicle: VehicleRow;
 }
 
 /**
  * Sidebar editor for a Vehicle row. Mounts via `EditingContext` when the user
- * clicks the row's details icon.
+ * clicks a row's details trigger. The full `VehicleRow` is passed via closure
+ * from `RowClickCell` — no second GraphQL request to look it up.
  *
- * Iteration 1: read-only by default; an "Edit" Chip toggles to a form view
- * with prefilled `TextField`s. There is intentionally **no Save button** —
- * save (XML mapping, POST/PUT) is gated on layout approval.
+ * Read-only by default; an "Edit" Chip toggles to a form view with prefilled
+ * `TextField`s. Save is intentionally not wired in this iteration (no XML
+ * mapping / POST/PUT) — fields remain `readOnly` regardless of mode.
  */
-export default function VehicleDetails({ itemId }: VehicleDetailsProps) {
+export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   const { t } = useTranslation();
   const { setEditingItem } = useEditing();
-  const { allData, loading } = useVehicles();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
-  const vehicle = allData.find((v: Vehicle) => v.id === itemId);
+  const fieldValue = (key: keyof VehicleRow): string => {
+    const raw = vehicle[key];
+    if (raw == null || raw === '') return '—';
+    if (key === 'parentTransportMode' && typeof raw === 'string') {
+      return t(transportModeLabelKey(raw as VehicleRow['parentTransportMode'] & string), raw);
+    }
+    return String(raw);
+  };
 
   return (
     <Box sx={{ p: 2 }}>
@@ -63,47 +70,29 @@ export default function VehicleDetails({ itemId }: VehicleDetailsProps) {
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
-      {loading && !vehicle && (
-        <Typography variant="body2">{t('data.loading', 'Loading data...')}</Typography>
-      )}
-      {!loading && !vehicle && (
-        <Alert severity="warning">
-          {t('vehicles.notFound', 'Vehicle not found')}: {itemId}
-        </Alert>
-      )}
-
-      {vehicle && (
-        <Stack spacing={mode === 'edit' ? 2 : 1.25}>
-          {FIELD_LABEL_KEYS.map(({ key, labelKey, defaultLabel }) =>
-            mode === 'view' ? (
-              <Box key={key}>
-                <Typography variant="caption" color="text.secondary">
-                  {t(labelKey, defaultLabel)}
-                </Typography>
-                <Typography variant="body2">{String(vehicle[key] ?? '—')}</Typography>
-              </Box>
-            ) : (
-              <TextField
-                key={key}
-                label={t(labelKey, defaultLabel)}
-                value={vehicle[key] ?? ''}
-                size="small"
-                fullWidth
-                // iter 1: read-only form fields. Save will be wired in iter 2 once
-                // layout is approved (XML mapping + POST/PUT).
-                slotProps={{ input: { readOnly: true } }}
-              />
-            )
-          )}
-        </Stack>
-      )}
+      <Stack spacing={mode === 'edit' ? 2 : 1.25}>
+        {FIELD_LABEL_KEYS.map(({ key, labelKey, defaultLabel }) =>
+          mode === 'view' ? (
+            <Box key={key}>
+              <Typography variant="caption" color="text.secondary">
+                {t(labelKey, defaultLabel)}
+              </Typography>
+              <Typography variant="body2">{fieldValue(key)}</Typography>
+            </Box>
+          ) : (
+            <TextField
+              key={key}
+              label={t(labelKey, defaultLabel)}
+              value={vehicle[key] ?? ''}
+              size="small"
+              fullWidth
+              slotProps={{ input: { readOnly: true } }}
+            />
+          )
+        )}
+      </Stack>
 
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        {mode === 'edit' && (
-          <Button variant="text" onClick={() => setMode('view')}>
-            {t('cancel', 'Cancel')}
-          </Button>
-        )}
         <Button variant="outlined" onClick={() => setEditingItem(null)}>
           {t('close', 'Close')}
         </Button>

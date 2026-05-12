@@ -3,7 +3,7 @@ import { ClientError } from 'graphql-request';
 import { useConfig } from '../../contexts/configContext.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
-import type { Vehicle, VehicleColumnKey } from './vehicleTypes.ts';
+import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
 import { fetchVehicles } from './fetchVehicles.ts';
 import { compareVehicles } from './vehicleSortValue.ts';
 
@@ -13,7 +13,7 @@ import { compareVehicles } from './vehicleSortValue.ts';
  * `applicationBaseUrl` change.
  */
 export function useVehicles() {
-  const [data, setData] = useState<Vehicle[]>([]);
+  const [data, setData] = useState<VehicleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

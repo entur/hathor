@@ -3,18 +3,19 @@ import type { TransportMode } from '../netex/transportMode.ts';
 /**
  * Flat Vehicle row as displayed in the `/vehicle` list.
  *
- * Iteration 1 sources rows by flattening `vehicleTypes.vehicles[]` across the
- * existing `fetchVehicleTypes` query. Enrichment fields prefixed `parent*`
- * carry over from the parent VehicleType during the flatten in
- * `fetchVehicles.ts` — they let the list show context (parent name, transport
- * mode) without a second request, and let the shared TransportMode chip filter
- * narrow rows client-side.
+ * Named `VehicleRow` (not `Vehicle`) to avoid collision with
+ * `vehicle-types/vehicleTypeTypes.ts::Vehicle`, which is the wire shape nested
+ * under VehicleType. `VehicleRow` extends that shape with optional `parent*`
+ * enrichment fields populated during flatten in `fetchVehicles.ts` — they let
+ * the list show context (parent name, transport mode) without a second
+ * request and let the shared TransportMode chip filter narrow rows
+ * client-side.
  *
  * Once Sobek exposes a dedicated `vehicles(filter)` query, this shape
- * generalises naturally — top-level fields stay; `parent*` either remain
- * optional enrichment or get replaced by a proper Ref<'VehicleType'> link.
+ * generalises — top-level fields stay; `parent*` either remain optional
+ * enrichment or get replaced by a proper Ref<'VehicleType'> link.
  */
-export interface Vehicle {
+export interface VehicleRow {
   id: string;
   registrationNumber: string;
   version: number;

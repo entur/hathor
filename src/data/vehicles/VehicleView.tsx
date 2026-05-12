@@ -1,6 +1,6 @@
 import { vehicleViewConfig } from './vehicleViewConfig.tsx';
 import GenericDataViewPage from '../../pages/GenericDataViewPage.tsx';
-import type { Vehicle, VehicleColumnKey } from './vehicleTypes.ts';
+import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
 
 /**
  * `/vehicle` route entry point — hands the assembled `vehicleViewConfig` to
@@ -9,5 +9,5 @@ import type { Vehicle, VehicleColumnKey } from './vehicleTypes.ts';
  * pushdown listed in GH #24.
  */
 export default function VehicleView() {
-  return <GenericDataViewPage<Vehicle, VehicleColumnKey> viewConfig={vehicleViewConfig} />;
+  return <GenericDataViewPage<VehicleRow, VehicleColumnKey> viewConfig={vehicleViewConfig} />;
 }

@@ -2,18 +2,17 @@ import { IconButton, Tooltip } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useTranslation } from 'react-i18next';
 import { useEditing } from '../../../contexts/EditingContext.tsx';
-import type { Vehicle } from '../vehicleTypes.ts';
 import VehicleDetails from '../VehicleDetails.tsx';
+import type { VehicleRow } from '../vehicleTypes.ts';
 
 interface RowClickCellProps {
-  item: Vehicle;
+  item: VehicleRow;
 }
 
 /**
  * Per-row trigger that opens the Vehicle details panel in the existing
- * `EditingContext`-driven sidebar. Mirrors
- * `vehicle-types/cells/EditActionCell.tsx`. Iteration 2 may switch this to a
- * whole-row click once `DataTable` grows an `onRowClick` prop.
+ * `EditingContext`-driven sidebar. The `EditorComponent` closure captures the
+ * row data, so the sidebar renders without re-fetching the dataset.
  */
 export default function RowClickCell({ item }: RowClickCellProps) {
   const { setEditingItem } = useEditing();
@@ -22,7 +21,12 @@ export default function RowClickCell({ item }: RowClickCellProps) {
   return (
     <Tooltip title={t('vehicles.detailsTooltip', 'View details')}>
       <IconButton
-        onClick={() => setEditingItem({ id: item.id, EditorComponent: VehicleDetails })}
+        onClick={() =>
+          setEditingItem({
+            id: item.id,
+            EditorComponent: () => <VehicleDetails vehicle={item} />,
+          })
+        }
         color="primary"
         size="small"
       >

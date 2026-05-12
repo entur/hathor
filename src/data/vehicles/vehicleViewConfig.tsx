@@ -1,15 +1,16 @@
-import { Chip, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useVehicles } from './useVehicles.ts';
 import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../components/data/DataPageContent.tsx';
 import RowClickCell from './cells/RowClickCell.tsx';
+import TransportModeChip from './cells/TransportModeChip.tsx';
 import { getVehicleSortValue } from './vehicleSortValue.ts';
 import { transportModeFilters } from '../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
-import type { Vehicle, VehicleColumnKey } from './vehicleTypes.ts';
+import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
 
-const vehicleColumns: ColumnDefinition<Vehicle, VehicleColumnKey>[] = [
+const vehicleColumns: ColumnDefinition<VehicleRow, VehicleColumnKey>[] = [
   {
     id: 'registrationNumber',
     headerLabel: 'Registration Number',
@@ -32,12 +33,7 @@ const vehicleColumns: ColumnDefinition<Vehicle, VehicleColumnKey>[] = [
     id: 'parentTransportMode',
     headerLabel: 'Transport Mode',
     isSortable: true,
-    renderCell: item =>
-      item.parentTransportMode ? (
-        <Chip label={item.parentTransportMode} size="small" variant="outlined" />
-      ) : (
-        '—'
-      ),
+    renderCell: item => <TransportModeChip mode={item.parentTransportMode} />,
     display: 'desktop-only',
   },
   {
@@ -56,13 +52,8 @@ const vehicleColumns: ColumnDefinition<Vehicle, VehicleColumnKey>[] = [
   },
 ];
 
-/**
- * Derives the chip-filter key for a Vehicle row. Returns the vehicle's parent
- * TransportMode (inherited from its VehicleType during flatten). The
- * `useDataViewTableLogic` hook matches this against the user's active filter
- * ids (multi-select-OR).
- */
-const getVehicleFilterKey = (item: Vehicle): string => item.parentTransportMode ?? '';
+/** Chip-filter key for a row — the inherited parent TransportMode. */
+const getVehicleFilterKey = (item: VehicleRow): string => item.parentTransportMode ?? '';
 
 export const vehicleViewConfig = {
   useData: useVehicles,
