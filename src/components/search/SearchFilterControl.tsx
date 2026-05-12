@@ -47,7 +47,12 @@ export default function SearchFilterControl() {
 
   return (
     <>
-      <IconButton onClick={handleClick} aria-describedby={id} color="inherit">
+      <IconButton
+        onClick={handleClick}
+        aria-describedby={id}
+        color="inherit"
+        data-testid="search-filter-button"
+      >
         <Badge color="secondary" variant="dot" invisible={activeFilters.length === 0}>
           <FilterListIcon />
         </Badge>
