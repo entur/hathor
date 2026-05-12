@@ -1,0 +1,75 @@
+{
+  "data": {
+    "vehicleTypes": {
+      "content": [
+        {
+          "id": "NMR:VehicleType:rail",
+          "version": 1,
+          "name": { "value": "Rail Type" },
+          "shortName": null,
+          "transportMode": "rail",
+          "length": 100,
+          "width": 3,
+          "height": 4,
+          "created": null,
+          "changed": null,
+          "changedBy": null,
+          "versionComment": null,
+          "deckPlan": null,
+          "vehicles": [
+            { "id": "NMR:Vehicle:rail-1", "registrationNumber": "RAIL-001", "version": 1 },
+            { "id": "NMR:Vehicle:rail-2", "registrationNumber": "RAIL-002", "version": 1 },
+            { "id": "NMR:Vehicle:rail-3", "registrationNumber": "RAIL-003", "version": 1 },
+            { "id": "NMR:Vehicle:rail-4", "registrationNumber": "RAIL-004", "version": 1 },
+            { "id": "NMR:Vehicle:rail-5", "registrationNumber": "RAIL-005", "version": 1 },
+            { "id": "NMR:Vehicle:rail-6", "registrationNumber": "RAIL-006", "version": 1 },
+            { "id": "NMR:Vehicle:rail-7", "registrationNumber": "RAIL-007", "version": 1 },
+            { "id": "NMR:Vehicle:rail-8", "registrationNumber": "RAIL-008", "version": 1 },
+            { "id": "NMR:Vehicle:rail-9", "registrationNumber": "RAIL-009", "version": 1 },
+            { "id": "NMR:Vehicle:rail-10", "registrationNumber": "RAIL-010", "version": 1 },
+            { "id": "NMR:Vehicle:rail-11", "registrationNumber": "RAIL-011", "version": 1 },
+            { "id": "NMR:Vehicle:rail-12", "registrationNumber": "RAIL-012", "version": 1 }
+          ]
+        },
+        {
+          "id": "NMR:VehicleType:bus",
+          "version": 1,
+          "name": { "value": "Bus Type" },
+          "shortName": null,
+          "transportMode": "bus",
+          "length": 12,
+          "width": 2.5,
+          "height": 3,
+          "created": null,
+          "changed": null,
+          "changedBy": null,
+          "versionComment": null,
+          "deckPlan": null,
+          "vehicles": [
+            { "id": "NMR:Vehicle:bus-1", "registrationNumber": "BUS-001", "version": 1 },
+            { "id": "NMR:Vehicle:bus-2", "registrationNumber": "BUS-002", "version": 1 }
+          ]
+        },
+        {
+          "id": "NMR:VehicleType:unknown",
+          "version": 1,
+          "name": { "value": "Mystery Type" },
+          "shortName": null,
+          "transportMode": "someUnknownNetexValue",
+          "length": 0,
+          "width": 0,
+          "height": 0,
+          "created": null,
+          "changed": null,
+          "changedBy": null,
+          "versionComment": null,
+          "deckPlan": null,
+          "vehicles": [{ "id": "NMR:Vehicle:unk-1", "registrationNumber": "UNK-001", "version": 1 }]
+        }
+      ],
+      "totalElements": 3,
+      "page": 0,
+      "size": 10000
+    }
+  }
+}
