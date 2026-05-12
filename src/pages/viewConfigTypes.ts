@@ -169,4 +169,18 @@ export interface ViewConfig<T, K extends string> {
    * Useful for a MUI `SpeedDial`, `Fab`, or similar overlay component.
    */
   floatingAction?: ReactNode;
+  /**
+   * Optional hook fired by {@link GenericDataViewPage} after data is loaded
+   * and table-logic has produced `dataForTable`. Lets a page reconcile URL
+   * state (e.g. `?selected=` deep links) with editor state and pagination
+   * without lifting that wiring into the generic page itself. See
+   * `useVehicleUrlSelection.ts` for the canonical consumer.
+   */
+  useUrlEffect?: (params: {
+    allData: T[] | null;
+    dataForTable: T[];
+    rowsPerPage: number;
+    setPage: (page: number) => void;
+    loading: boolean;
+  }) => void;
 }

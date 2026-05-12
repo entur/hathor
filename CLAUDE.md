@@ -10,6 +10,8 @@ Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjon
 
 - **`README.md`** — brief project overview, tech stack, quick start, scripts.
 - **`DEV_GUIDE.md`** — the main developer guide: theming, custom icons, TypeScript theme extensions, and a step-by-step tutorial for adding new data table pages. This is where customization and extension documentation lives. Keep it up to date when the architecture or patterns change.
+- **`FORK_DECISIONS.md`** — ADR-style log of resolved design decisions on this fork. Add a section when making a non-obvious design call.
+- **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
 ## Commands
 

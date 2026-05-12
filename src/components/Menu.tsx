@@ -35,6 +35,7 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
 const menuItems = [
   { textKey: 'home', path: '/', iconKey: 'home' },
   { textKey: 'Vehicle Types', path: '/vehicle-type', iconKey: 'data' },
+  { textKey: 'Vehicles', path: '/vehicle', iconKey: 'data' },
   { textKey: 'Deck Plans', path: '/deck-plan', iconKey: 'data' },
 ];
 

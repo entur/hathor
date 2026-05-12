@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { ClientError } from 'graphql-request';
 import { useConfig } from '../../contexts/configContext.ts';
 import { useAuth } from '../../auth/authUtils.ts';
@@ -69,7 +69,14 @@ export function useVehicles() {
     setOrderBy(property);
   };
 
-  const sorted = [...data].sort(compareVehicles(orderBy, order));
+  // Memoized so that `allData` is a stable reference across renders. The
+  // /vehicle URL effect (`useVehicleUrlSelection`) depends on `allData` —
+  // without memoisation a fresh array each render would re-fire the effect
+  // continuously, remounting the slider editor and wiping its `mode` state.
+  const sorted = useMemo(
+    () => [...data].sort(compareVehicles(orderBy, order)),
+    [data, orderBy, order]
+  );
 
   return {
     allData: sorted,

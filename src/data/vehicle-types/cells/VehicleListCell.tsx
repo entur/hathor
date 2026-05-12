@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Box, Chip, Link } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { vehicleSelectedHref } from '../../vehicles/vehicleUrlParams.ts';
 import type { Vehicle } from '../vehicleTypeTypes.ts';
 
 const MAX_VISIBLE = 5;
@@ -13,9 +15,9 @@ export default function VehicleListCell({ vehicles }: VehicleListCellProps) {
 
   if (vehicles.length === 0) return null;
 
-  const visible = vehicles.slice(0, MAX_VISIBLE);
   const hidden = vehicles.slice(MAX_VISIBLE);
   const hasMore = hidden.length > 0;
+  const shown = expanded ? vehicles : vehicles.slice(0, MAX_VISIBLE);
 
   return (
     <Box>
@@ -26,10 +28,17 @@ export default function VehicleListCell({ vehicles }: VehicleListCellProps) {
           gap: 0.5,
         }}
       >
-        {visible.map(v => (
-          <Chip key={v.id} label={v.registrationNumber} size="small" />
+        {shown.map(v => (
+          <Chip
+            key={v.id}
+            component={RouterLink}
+            to={vehicleSelectedHref(v.id)}
+            label={v.registrationNumber}
+            size="small"
+            variant="outlined"
+            clickable
+          />
         ))}
-        {expanded && hidden.map(v => <Chip key={v.id} label={v.registrationNumber} size="small" />)}
       </Box>
       {hasMore && (
         <Link

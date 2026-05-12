@@ -6,6 +6,7 @@ import DataPageContent from '../../components/data/DataPageContent.tsx';
 import RowClickCell from './cells/RowClickCell.tsx';
 import TransportModeChip from './cells/TransportModeChip.tsx';
 import { getVehicleSortValue } from './vehicleSortValue.ts';
+import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
 import { transportModeFilters } from '../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
@@ -65,4 +66,5 @@ export const vehicleViewConfig = {
   getSortValue: getVehicleSortValue,
   filters: transportModeFilters,
   title: 'Vehicles',
+  useUrlEffect: useVehicleUrlSelection,
 };

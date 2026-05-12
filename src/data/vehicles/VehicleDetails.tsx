@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Box, Typography, Button, Chip, Divider, Stack, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useEditing } from '../../contexts/EditingContext.tsx';
+import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
+import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
 import type { VehicleRow } from './vehicleTypes.ts';
 
 const FIELD_LABEL_KEYS: { key: keyof VehicleRow; labelKey: string; defaultLabel: string }[] = [
@@ -26,22 +27,53 @@ const FIELD_LABEL_KEYS: { key: keyof VehicleRow; labelKey: string; defaultLabel:
 ];
 
 interface VehicleDetailsProps {
-  vehicle: VehicleRow;
+  /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
+  vehicle: VehicleRow | null;
 }
 
 /**
- * Sidebar editor for a Vehicle row. Mounts via `EditingContext` when the user
- * clicks a row's details trigger. The full `VehicleRow` is passed via closure
- * from `RowClickCell` — no second GraphQL request to look it up.
- *
- * Read-only by default; an "Edit" Chip toggles to a form view with prefilled
- * `TextField`s. Save is intentionally not wired in this iteration (no XML
- * mapping / POST/PUT) — fields remain `readOnly` regardless of mode.
+ * Sidebar editor for a Vehicle row, driven by the `?selected=…` URL param.
+ * Save is intentionally not wired in this iteration (no XML mapping /
+ * POST/PUT) — fields remain `readOnly` regardless of mode.
  */
 export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   const { t } = useTranslation();
-  const { setEditingItem } = useEditing();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+
+  const closeSlider = () =>
+    setSearchParams(
+      params => {
+        params.delete(VEHICLE_SELECTED_PARAM);
+        return params;
+      },
+      { replace: true }
+    );
+
+  if (!vehicle) {
+    const requestedId = searchParams.get(VEHICLE_SELECTED_PARAM);
+    return (
+      <Box sx={{ p: 2 }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+          <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
+        </Stack>
+        <Divider sx={{ mb: 2 }} />
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          {t('vehicles.notFound', 'Vehicle not found')}
+        </Typography>
+        {requestedId && (
+          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+            {requestedId}
+          </Typography>
+        )}
+        <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+          <Button variant="outlined" onClick={closeSlider}>
+            {t('close', 'Close')}
+          </Button>
+        </Stack>
+      </Box>
+    );
+  }
 
   const fieldValue = (key: keyof VehicleRow): string => {
     const raw = vehicle[key];
@@ -93,7 +125,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       </Stack>
 
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        <Button variant="outlined" onClick={() => setEditingItem(null)}>
+        <Button variant="outlined" onClick={closeSlider}>
           {t('close', 'Close')}
         </Button>
       </Stack>

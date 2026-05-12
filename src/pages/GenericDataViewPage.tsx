@@ -9,6 +9,9 @@ import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
+/** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
+const noopUrlEffect = () => {};
+
 interface GenericDataViewPageProps<T, K extends string> {
   viewConfig: ViewConfig<T, K>;
   urlFilterInfo?: UrlFilterInfo;
@@ -91,14 +94,27 @@ export default function GenericDataViewPage<T, K extends string>({
     getSortValue,
   });
 
-  // This logic now correctly checks if a new item is being edited
+  // Optional per-page URL→state reconciler (e.g. `/vehicle?selected=…`).
+  // Pages that don't opt in pass `useUrlEffect: undefined`; the no-op fallback
+  // keeps hook order stable across renders.
+  (viewConfig.useUrlEffect ?? noopUrlEffect)({
+    allData,
+    dataForTable,
+    rowsPerPage,
+    setPage,
+    loading: dataLoading,
+  });
+
+  // Open the sidebar when a new editor is set; collapse it when the editor
+  // is cleared (e.g. the editor's Close button → `setEditingItem(null)`, or
+  // a URL-driven page like `/vehicle?selected=…` dropping its param).
   useEffect(() => {
-    if (editingItem && editingItem.id !== prevEditingIdRef.current) {
-      if (sidebarCollapsed) {
-        toggleSidebar();
-      }
+    const prevId = prevEditingIdRef.current;
+    if (editingItem && editingItem.id !== prevId) {
+      if (sidebarCollapsed) toggleSidebar();
+    } else if (!editingItem && prevId !== null) {
+      if (!sidebarCollapsed) toggleSidebar();
     }
-    // Update the ref with the current item's ID
     prevEditingIdRef.current = editingItem?.id ?? null;
   }, [editingItem, sidebarCollapsed, toggleSidebar]);
 
