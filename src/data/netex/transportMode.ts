@@ -45,3 +45,20 @@ export const transportModeFilters: FilterDefinition[] = [
   { id: 'lift', labelKey: 'transportMode.lift', defaultLabel: 'Lift' },
   { id: 'snowAndIce', labelKey: 'transportMode.snowAndIce', defaultLabel: 'Snow & ice' },
 ];
+
+const TRANSPORT_MODE_SET: ReadonlySet<TransportMode> = new Set(
+  transportModeFilters.map(f => f.id as TransportMode)
+);
+
+/**
+ * Runtime guard — narrows an unknown string to a NeTEx `TransportMode`. Use at
+ * boundaries (GraphQL responses, URL params) to keep unknown backend values
+ * out of the typed surface. Unknown values become `undefined`, which lets the
+ * chip column render "—" and the chip filter silently exclude the row rather
+ * than throwing.
+ */
+export const isTransportMode = (s: string | null | undefined): s is TransportMode =>
+  typeof s === 'string' && TRANSPORT_MODE_SET.has(s as TransportMode);
+
+/** Map a `TransportMode` to its i18n key. */
+export const transportModeLabelKey = (mode: TransportMode): string => `transportMode.${mode}`;
