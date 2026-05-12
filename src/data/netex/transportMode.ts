@@ -2,13 +2,19 @@
  * NeTEx TransportModeEnumeration — shared by all vehicle-domain views.
  *
  * Single source of truth for the chip filter set used on Vehicle, VehicleType,
- * and DeckPlan lists (see GH #24). The id strings here are the verbatim NeTEx
- * enum values, so they can be used both as filter keys *and* as the typed value
- * of `transportMode` fields on domain types.
+ * and DeckPlan lists (see GH #24). The id strings are the verbatim NeTEx enum
+ * values plus a synthetic `'unknown'` member that absorbs any value the
+ * backend may emit that doesn't match the NeTEx vocabulary. Surfacing
+ * `'unknown'` rather than `undefined` keeps the typed surface total and lets
+ * downstream code drop optional-handling cruft.
  */
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 
-/** NeTEx TransportModeEnumeration — keep in lockstep with the schema. */
+/**
+ * NeTEx TransportModeEnumeration + synthetic `'unknown'`. Keep in lockstep
+ * with the schema; `'unknown'` is the catch-all for missing or unrecognised
+ * values from the backend.
+ */
 export type TransportMode =
   | 'bus'
   | 'tram'
@@ -22,13 +28,16 @@ export type TransportMode =
   | 'funicular'
   | 'lift'
   | 'trolleyBus'
-  | 'snowAndIce';
+  | 'snowAndIce'
+  | 'unknown';
 
 /**
  * Shared chip-filter set for any list view that filters by TransportMode.
  *
- * Order matches the rough frequency in Norwegian PT data (rail/metro/tram/bus
- * first). i18n keys live under `transportMode.*` in both `en` and `nb`.
+ * `'unknown'` is intentionally omitted here — chip filters are for
+ * specific known modes; rows with `'unknown'` simply don't match any chip
+ * and are hidden when any chip is active (which is the desired UX). i18n
+ * keys live under `transportMode.*` in both `en` and `nb`.
  */
 export const transportModeFilters: FilterDefinition[] = [
   { id: 'rail', labelKey: 'transportMode.rail', defaultLabel: 'Rail' },
@@ -46,19 +55,41 @@ export const transportModeFilters: FilterDefinition[] = [
   { id: 'snowAndIce', labelKey: 'transportMode.snowAndIce', defaultLabel: 'Snow & ice' },
 ];
 
-const TRANSPORT_MODE_SET: ReadonlySet<TransportMode> = new Set(
+const KNOWN_TRANSPORT_MODES: ReadonlySet<TransportMode> = new Set(
   transportModeFilters.map(f => f.id as TransportMode)
 );
 
+const ALL_TRANSPORT_MODES: ReadonlySet<TransportMode> = new Set<TransportMode>([
+  ...KNOWN_TRANSPORT_MODES,
+  'unknown',
+]);
+
 /**
- * Runtime guard — narrows an unknown string to a NeTEx `TransportMode`. Use at
- * boundaries (GraphQL responses, URL params) to keep unknown backend values
- * out of the typed surface. Unknown values become `undefined`, which lets the
- * chip column render "—" and the chip filter silently exclude the row rather
- * than throwing.
+ * Runtime guard — narrows an unknown string to a NeTEx `TransportMode`
+ * (including the synthetic `'unknown'`). Use when you need a typed *or
+ * nothing* result; prefer {@link toTransportMode} when you want a total
+ * mapping.
  */
 export const isTransportMode = (s: string | null | undefined): s is TransportMode =>
-  typeof s === 'string' && TRANSPORT_MODE_SET.has(s as TransportMode);
+  typeof s === 'string' && ALL_TRANSPORT_MODES.has(s as TransportMode);
+
+/**
+ * Total mapping from an arbitrary backend value to a `TransportMode`.
+ * Unknown / missing / null become `'unknown'` rather than `undefined`, so
+ * callers can treat the result as a non-optional union member.
+ */
+export const toTransportMode = (s: string | null | undefined): TransportMode =>
+  typeof s === 'string' && KNOWN_TRANSPORT_MODES.has(s as TransportMode)
+    ? (s as TransportMode)
+    : 'unknown';
 
 /** Map a `TransportMode` to its i18n key. */
 export const transportModeLabelKey = (mode: TransportMode): string => `transportMode.${mode}`;
+
+/**
+ * Sort key for a `TransportMode`. `'unknown'` returns `''` so it sinks to
+ * the end via {@link compareWithEmptyLast}; others sort alphabetically by
+ * their enum id.
+ */
+export const transportModeSortValue = (mode: TransportMode): string =>
+  mode === 'unknown' ? '' : mode;

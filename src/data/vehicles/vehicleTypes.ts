@@ -21,7 +21,8 @@ export interface VehicleRow {
   version: number;
   parentVehicleTypeId?: string;
   parentVehicleTypeName?: string;
-  parentTransportMode?: TransportMode;
+  /** Always defined; `'unknown'` when the backend value is missing or unrecognised. */
+  parentTransportMode: TransportMode;
 }
 
 export type VehicleColumnKey =

@@ -53,7 +53,7 @@ const vehicleColumns: ColumnDefinition<VehicleRow, VehicleColumnKey>[] = [
 ];
 
 /** Chip-filter key for a row — the inherited parent TransportMode. */
-const getVehicleFilterKey = (item: VehicleRow): string => item.parentTransportMode ?? '';
+const getVehicleFilterKey = (item: VehicleRow): string => item.parentTransportMode;
 
 export const vehicleViewConfig = {
   useData: useVehicles,

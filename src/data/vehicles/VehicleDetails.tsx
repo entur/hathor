@@ -45,10 +45,10 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
 
   const fieldValue = (key: keyof VehicleRow): string => {
     const raw = vehicle[key];
-    if (raw == null || raw === '') return '—';
-    if (key === 'parentTransportMode' && typeof raw === 'string') {
-      return t(transportModeLabelKey(raw as VehicleRow['parentTransportMode'] & string), raw);
+    if (key === 'parentTransportMode') {
+      return t(transportModeLabelKey(vehicle.parentTransportMode), vehicle.parentTransportMode);
     }
+    if (raw == null || raw === '') return '—';
     return String(raw);
   };
 

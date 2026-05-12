@@ -93,6 +93,7 @@
   "transportMode.funicular": "Funicular",
   "transportMode.lift": "Lift",
   "transportMode.snowAndIce": "Snow & ice",
+  "transportMode.unknown": "Unknown",
 
   "vehicles": "Vehicles",
   "vehicles.title": "Vehicles",

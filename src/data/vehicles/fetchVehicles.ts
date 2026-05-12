@@ -1,5 +1,5 @@
 import { fetchVehicleTypes } from '../vehicle-types/fetchVehicleTypes.ts';
-import { isTransportMode } from '../netex/transportMode.ts';
+import { toTransportMode } from '../netex/transportMode.ts';
 import type { VehicleRow } from './vehicleTypes.ts';
 import type { AccessToken } from '../../auth';
 
@@ -10,8 +10,8 @@ import type { AccessToken } from '../../auth';
  * GraphQL query. Each row is enriched with parent VehicleType context so the
  * list view can display name/transportMode and so the shared TransportMode
  * chip filter (GH #24) can narrow rows client-side without a Sobek change.
- * Unknown backend transport-mode values are dropped (`undefined`) rather than
- * cast — see `isTransportMode`.
+ * Unknown/missing backend transport-mode values collapse to `'unknown'` via
+ * `toTransportMode` — see `netex/transportMode.ts`.
  *
  * @param applicationBaseUrl Sobek base URL.
  * @param token OIDC access token (bearer).
@@ -28,7 +28,7 @@ export async function fetchVehicles(
       version: v.version,
       parentVehicleTypeId: vt.id,
       parentVehicleTypeName: vt.name?.value,
-      parentTransportMode: isTransportMode(vt.transportMode) ? vt.transportMode : undefined,
+      parentTransportMode: toTransportMode(vt.transportMode),
     }))
   );
 }

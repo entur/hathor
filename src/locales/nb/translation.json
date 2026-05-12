@@ -93,6 +93,7 @@
   "transportMode.funicular": "Taubane",
   "transportMode.lift": "Heis",
   "transportMode.snowAndIce": "Snø og is",
+  "transportMode.unknown": "Ukjent",
 
   "vehicles": "Kjøretøy",
   "vehicles.title": "Kjøretøy",

@@ -1,5 +1,6 @@
 import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
 import { compareWithEmptyLast } from '../../utils/compareWithEmptyLast.ts';
+import { transportModeSortValue } from '../netex/transportMode.ts';
 
 /**
  * Resolve a sortable value for a VehicleRow + column key.
@@ -16,7 +17,7 @@ export const getVehicleSortValue = (item: VehicleRow, key: VehicleColumnKey): st
     case 'parentVehicleTypeName':
       return item.parentVehicleTypeName || '';
     case 'parentTransportMode':
-      return item.parentTransportMode || '';
+      return transportModeSortValue(item.parentTransportMode);
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

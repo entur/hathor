@@ -6,6 +6,7 @@ const mk = (over: Partial<VehicleRow>): VehicleRow => ({
   id: 'NMR:Vehicle:x',
   registrationNumber: 'AA-00000',
   version: 1,
+  parentTransportMode: 'unknown',
   ...over,
 });
 
@@ -68,9 +69,9 @@ describe('compareVehicles', () => {
     expect(sorted.map(r => r.id)).toEqual(['aa', 'zz', 'ws-1', 'ws-2']);
   });
 
-  it('sorts by parentTransportMode and parks rows without one at the end', () => {
+  it("sorts by parentTransportMode and parks 'unknown' rows at the end", () => {
     const rows = [
-      mk({ id: 'a', parentTransportMode: undefined }),
+      mk({ id: 'a', parentTransportMode: 'unknown' }),
       mk({ id: 'b', parentTransportMode: 'tram' }),
       mk({ id: 'c', parentTransportMode: 'bus' }),
     ];
@@ -80,8 +81,8 @@ describe('compareVehicles', () => {
 });
 
 describe('getVehicleSortValue', () => {
-  it('returns empty string for missing optional fields', () => {
-    const r = mk({ parentVehicleTypeName: undefined, parentTransportMode: undefined });
+  it("returns empty string for missing parent name and for 'unknown' transport mode", () => {
+    const r = mk({ parentVehicleTypeName: undefined, parentTransportMode: 'unknown' });
     expect(getVehicleSortValue(r, 'parentVehicleTypeName')).toBe('');
     expect(getVehicleSortValue(r, 'parentTransportMode')).toBe('');
   });
