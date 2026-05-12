@@ -75,12 +75,18 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
     );
   }
 
-  const fieldValue = (key: keyof VehicleRow): string => {
-    const raw = vehicle[key];
+  /**
+   * Single display path for view + edit modes — keeps the localised
+   * TransportMode label from drifting between the two. `missing` differs
+   * by context: view mode shows an em-dash, edit mode shows an empty
+   * TextField.
+   */
+  const fieldDisplay = (key: keyof VehicleRow, missing: string): string => {
     if (key === 'parentTransportMode') {
       return t(transportModeLabelKey(vehicle.parentTransportMode), vehicle.parentTransportMode);
     }
-    if (raw == null || raw === '') return '—';
+    const raw = vehicle[key];
+    if (raw == null || raw === '') return missing;
     return String(raw);
   };
 
@@ -109,13 +115,13 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
               <Typography variant="caption" color="text.secondary">
                 {t(labelKey, defaultLabel)}
               </Typography>
-              <Typography variant="body2">{fieldValue(key)}</Typography>
+              <Typography variant="body2">{fieldDisplay(key, '—')}</Typography>
             </Box>
           ) : (
             <TextField
               key={key}
               label={t(labelKey, defaultLabel)}
-              value={vehicle[key] ?? ''}
+              value={fieldDisplay(key, '')}
               size="small"
               fullWidth
               slotProps={{ input: { readOnly: true } }}
