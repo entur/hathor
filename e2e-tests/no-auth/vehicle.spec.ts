@@ -72,18 +72,25 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
     await expect(page.getByRole('heading', { name: 'Vehicle Details' })).toBeVisible();
   });
 
-  test('Edit chip toggles to TextFields, TransportMode stays localised', async ({ page }) => {
-    // ↳ Regression for commit 3 (VehicleDetails.tsx). FAILS today: edit-mode
-    //   TextField writes `vehicle[key]` directly, surfacing the raw NeTEx enum
-    //   ('bus') instead of the localised label ('Bus') shown in view mode.
+  test('TransportMode renders localised in read-only context, regardless of mode', async ({
+    page,
+  }) => {
+    // Post phase-2 refactor (issue #69): the sidebar splits VehicleRow
+    // enrichment (id, version, parent VehicleType name, TransportMode)
+    // into a read-only context panel, while editable Vehicle/VehicleModel
+    // fields move into the shared VehicleEditForm. TransportMode is no
+    // longer editable, so the previous regression (raw enum surfacing in
+    // edit-mode TextField) no longer applies. This test pins the new
+    // contract: localised label, present in both view and edit modes.
     await page.goto('/vehicle?selected=NMR:Vehicle:bus-1');
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { name: 'Vehicle Details' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Edit' }).click();
+    const context = page.getByTestId('vehicle-context');
+    await expect(context).toContainText('Bus');
 
-    const transportField = page.getByLabel('Transport Mode');
-    await expect(transportField).toHaveValue('Bus');
+    await page.getByRole('button', { name: 'Edit' }).click();
+    await expect(context).toContainText('Bus');
   });
 
   test('Close button drops ?selected= and collapses the sidebar', async ({ page }) => {
