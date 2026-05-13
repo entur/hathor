@@ -1,92 +1,36 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Divider,
-  Snackbar,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
 import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
 import type { VehicleRow } from './vehicleTypes.ts';
 import VehicleEditForm, { type VehicleEditFormValue } from './VehicleEditForm.tsx';
+import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
+import { BLANK_FORM, hydrateFromRow } from './vehicleFormDefaults.ts';
 import { useVehiclePairSave } from './useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
-
-/** Placeholder id for the inline VehicleModel side (see issue #69). */
-const INLINE_MODEL_ID = 'INLINE:VehicleModel:1' as const;
-
-/**
- * Hydrate `{ vehicle, model }` form state from a partial `VehicleRow`. Edit
- * mode is partial today: only the 4 fields persisted on the list row are
- * pre-filled. The remaining Vehicle/VehicleModel fields start blank and the
- * user can either fill them or leave them empty. Full hydration arrives
- * with the deferred `/netex/vehicles/{id}` read (memory:
- * project_vehicle_details_route_hathor).
- */
-function hydrateFromRow(row: VehicleRow): VehicleEditFormValue {
-  return {
-    vehicle: {
-      $id: row.id,
-      $version: String(row.version),
-      RegistrationNumber: row.registrationNumber,
-      TransportTypeRef: row.parentVehicleTypeId,
-      VehicleModelRef: INLINE_MODEL_ID,
-    },
-    model: { $id: INLINE_MODEL_ID },
-  };
-}
-
-const emptyForm: VehicleEditFormValue = {
-  vehicle: { VehicleModelRef: INLINE_MODEL_ID },
-  model: { $id: INLINE_MODEL_ID },
-};
 
 interface VehicleDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
   vehicle: VehicleRow | null;
 }
 
-/**
- * Sidebar editor for a Vehicle row, driven by the `?selected=…` URL param.
- * Renders the shared `VehicleEditForm` for the editable Vehicle +
- * VehicleModel fields, with a read-only context panel above for the
- * VehicleRow-only enrichment (id, version, parent VehicleType name,
- * localised transport mode).
- *
- * Save (edit mode): builds a Vehicle + VehicleModel pair into a
- * PublicationDelivery via `useVehiclePairSave`, POSTs to Sobek `/import`,
- * and on success closes the sidebar (removes `?selected=` from URL). List
- * refresh is deferred: today the list shows what's in `useVehicles`'s cache
- * until the user re-navigates. A proper refetch handle on the sidebar is a
- * follow-up (the page-level `useVehicles().refetch` is not yet plumbed
- * through `EditingContext` to the editor closure).
- *
- * NOTE: pending #68 — `modification="new|revise"` policy is unresolved;
- * the save handler does not set the attribute today.
- */
 export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
-  const [form, setForm] = useState<VehicleEditFormValue>(emptyForm);
+  const [form, setForm] = useState<VehicleEditFormValue>(BLANK_FORM);
   const { save, saving, error, clearError } = useVehiclePairSave();
 
   const initialFormKey = useMemo(
-    () => JSON.stringify(vehicle ? hydrateFromRow(vehicle) : emptyForm),
+    () => JSON.stringify(vehicle ? hydrateFromRow(vehicle) : BLANK_FORM),
     [vehicle]
   );
-  const isDirty = JSON.stringify(form) !== initialFormKey;
-  useDirtyFormBlock(isDirty);
+  useDirtyFormBlock(JSON.stringify(form) !== initialFormKey);
 
   useEffect(() => {
-    setForm(vehicle ? hydrateFromRow(vehicle) : emptyForm);
+    setForm(vehicle ? hydrateFromRow(vehicle) : BLANK_FORM);
   }, [vehicle]);
 
   const closeSlider = () =>
@@ -99,14 +43,8 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
     );
 
   const handleSave = async () => {
-    try {
-      await save(form);
-      closeSlider();
-    } catch {
-      // useVehiclePairSave already captured the message into `error`;
-      // Snackbar below surfaces it. Keep the form open so the user can fix
-      // and retry without losing what they typed.
-    }
+    const result = await save(form);
+    if (!result.error) closeSlider();
   };
 
   if (!vehicle) {
@@ -134,20 +72,22 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
     );
   }
 
+  const isEdit = mode === 'edit';
+  const isDirty = JSON.stringify(form) !== initialFormKey;
+
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
         <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
         <Chip
-          label={
-            mode === 'view'
-              ? t('vehicles.editChipLabel', 'Edit')
-              : t('vehicles.viewChipLabel', 'View')
-          }
-          onClick={() => setMode(mode === 'view' ? 'edit' : 'view')}
-          color={mode === 'edit' ? 'primary' : 'default'}
+          label={t(
+            isEdit ? 'vehicles.viewChipLabel' : 'vehicles.editChipLabel',
+            isEdit ? 'View' : 'Edit'
+          )}
+          onClick={() => setMode(isEdit ? 'view' : 'edit')}
+          color={isEdit ? 'primary' : 'default'}
           size="small"
-          variant={mode === 'edit' ? 'filled' : 'outlined'}
+          variant={isEdit ? 'filled' : 'outlined'}
         />
       </Stack>
       <Divider sx={{ mb: 2 }} />
@@ -172,7 +112,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       <VehicleEditForm value={form} onChange={setForm} mode={mode} />
 
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        {mode === 'edit' && (
+        {isEdit && (
           <Button
             variant="contained"
             color="primary"
@@ -189,16 +129,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
         </Button>
       </Stack>
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={clearError}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={clearError} variant="filled">
-          {error}
-        </Alert>
-      </Snackbar>
+      <SaveErrorSnackbar error={error} onClose={clearError} />
     </Box>
   );
 }

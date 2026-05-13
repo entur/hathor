@@ -3,15 +3,6 @@ import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './Vehicle';
 import type { VehicleModel } from './VehicleModel';
 
-/**
- * Combined Vehicle + VehicleModel form state. Vehicle and VehicleModel are
- * persisted server-side as a 1-to-1 pair; in the UI we treat them as one
- * logical entity with two underlying typed objects.
- *
- * VehicleModel emits only its unique fields on save (per issue #69);
- * overlap fields (Name, Description, TransportTypeRef, BrandingRef,
- * ValidBetween) live on the Vehicle side only.
- */
 export interface VehicleEditFormValue {
   vehicle: Vehicle;
   model: VehicleModel;
@@ -23,26 +14,13 @@ interface VehicleEditFormProps {
   mode: 'view' | 'edit';
 }
 
-/** First element's `.value` from a TextType[], or '' when missing. */
 const firstText = (arr?: { value?: string }[]): string => arr?.[0]?.value ?? '';
 
-/** Wrap a plain string as TextType[]; empty string → undefined (omit from XML). */
 const toTextArr = (s: string): { value: string }[] | undefined =>
   s.length === 0 ? undefined : [{ value: s }];
 
-/** Empty string → undefined so optional fields aren't serialised as ''. */
 const orUndef = (s: string): string | undefined => (s.length === 0 ? undefined : s);
 
-/**
- * Shared form for create (`/vehicle/new`) and edit (sidebar) flows. Renders
- * Vehicle fields and the VehicleModel-unique fields in one column; mode
- * toggles between view (disabled inputs) and edit. Save logic lives in the
- * hosting page/component, not here.
- *
- * Deferred (per issue #69): date pickers for BuildDate/RegistrationDate,
- * ref pickers for TransportTypeRef/BrandingRef, ValidBetween editor,
- * CustomerServiceContactDetails block.
- */
 export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFormProps) {
   const { t } = useTranslation();
   const v = value.vehicle;

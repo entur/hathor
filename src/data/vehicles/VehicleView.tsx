@@ -4,10 +4,8 @@ import NewVehicleFab from './NewVehicleFab.tsx';
 import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
 
 /**
- * `/vehicle` route entry point — hands the assembled `vehicleViewConfig` to
- * the generic data view page. The `+ New Vehicle` FAB navigates to
- * `/vehicle/new` (per issue #69). URL-filter affordances will arrive with
- * the Sobek `vehicles(filter)` pushdown listed in GH #24.
+ * `/vehicle` route entry point. URL-filter affordances will arrive with
+ * the Sobek `vehicles(filter)` pushdown (GH #24).
  */
 export default function VehicleView() {
   return (

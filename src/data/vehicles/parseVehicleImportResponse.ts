@@ -1,22 +1,15 @@
-import { XMLParser } from 'fast-xml-parser';
-
-const parser = new XMLParser({ ignoreAttributes: false });
+import { xmlParser } from '../vehicle-imports/xmlUtils';
 
 /**
- * Extract the persisted `Vehicle/@id` from an /import response body that
- * echoes the saved NeTEx. Returns `null` when the response is empty, not
- * XML, or doesn't contain a Vehicle in either layout (CompositeFrame-wrapped
- * or flat ResourceFrame).
- *
- * Used by the create-flow after-save to deep-link `/vehicle?selected=<id>`.
- * The D3 fallback (issue #69) is caller-side refetch + locate by
- * `RegistrationNumber` when this returns `null`.
+ * Extracts `Vehicle/@id` from an /import response body, supporting both
+ * CompositeFrame-wrapped and flat ResourceFrame layouts. Returns null when
+ * the response is empty, not XML, or has no Vehicle.
  */
 export function parseVehicleImportResponse(body: string): string | null {
   if (!body || !body.trim()) return null;
   let parsed: Record<string, unknown>;
   try {
-    parsed = parser.parse(body) as Record<string, unknown>;
+    parsed = xmlParser.parse(body) as Record<string, unknown>;
   } catch {
     return null;
   }

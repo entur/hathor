@@ -3,11 +3,6 @@ import { Fab, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-/**
- * Floating action button on `/vehicle` that navigates to `/vehicle/new`.
- * Mounted via `GenericDataViewPage`'s `floatingAction` slot — same pattern
- * as `AutosysImportFloatingMenu` on `/vehicle-type`.
- */
 export default function NewVehicleFab() {
   const { t } = useTranslation();
   const navigate = useNavigate();

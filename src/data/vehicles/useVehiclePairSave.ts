@@ -6,26 +6,18 @@ import { buildVehiclePairXml } from './buildVehiclePairXml';
 import { parseVehicleImportResponse } from './parseVehicleImportResponse';
 import type { VehicleEditFormValue } from './VehicleEditForm';
 
+interface SaveResult {
+  newId: string | null;
+  error: string | null;
+}
+
 interface UseVehiclePairSaveResult {
-  /** Build XML, POST to /import, parse response. Resolves with the new id or null. */
-  save: (form: VehicleEditFormValue) => Promise<{ newId: string | null }>;
+  save: (form: VehicleEditFormValue) => Promise<SaveResult>;
   saving: boolean;
   error: string | null;
   clearError: () => void;
 }
 
-/**
- * Lifecycle hook for the combined Vehicle + VehicleModel save: builds the
- * PublicationDelivery XML, POSTs it to Sobek's `/import` endpoint, and tries
- * to parse the new `Vehicle/@id` from the response body for after-save
- * navigation.
- *
- * Does not navigate or refetch — that lives in the caller (create page
- * navigates to `/vehicle?selected=<newId>`; sidebar closes itself).
- *
- * NOTE: pending #68 — `modification="new|revise"` client policy is
- * unresolved; the handler does not set the attribute today.
- */
 export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl } = useConfig();
@@ -33,11 +25,11 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const [error, setError] = useState<string | null>(null);
 
   const save = useCallback(
-    async (form: VehicleEditFormValue): Promise<{ newId: string | null }> => {
+    async (form: VehicleEditFormValue): Promise<SaveResult> => {
       if (!applicationImportBaseUrl) {
-        const msg = 'Application import base URL is not configured';
-        setError(msg);
-        throw new Error(msg);
+        const message = 'Application import base URL is not configured';
+        setError(message);
+        return { newId: null, error: message };
       }
       setSaving(true);
       setError(null);
@@ -45,11 +37,11 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         const xml = buildVehiclePairXml(form);
         const token = await getAccessToken();
         const body = await importAsNetexToBackend(applicationImportBaseUrl, xml, token);
-        return { newId: parseVehicleImportResponse(body) };
+        return { newId: parseVehicleImportResponse(body), error: null };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setError(message);
-        throw err;
+        return { newId: null, error: message };
       } finally {
         setSaving(false);
       }
