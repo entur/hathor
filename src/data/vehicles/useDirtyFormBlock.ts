@@ -1,25 +1,25 @@
 import { useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
 
 /**
- * Prompt before in-app navigation when `isDirty` is true. Uses
- * `window.confirm`; for a custom modal, factor the confirm step out to
- * a UI component and wire it to `blocker.proceed()` / `blocker.reset()`.
+ * Prompt before page unload (tab close, refresh, URL bar) when `isDirty` is
+ * true. Modern browsers ignore custom messages and show their own native
+ * dialog — we only need to set `returnValue` for the prompt to appear.
  *
- * Blocks only cross-pathname navigation; same-route changes (e.g.
- * `?selected=` toggling) are allowed without a prompt — the sidebar's
- * own form state shadows the URL there, not the other way around.
+ * **Limitation:** does not block in-app React Router navigation. A proper
+ * in-app guard requires `react-router-dom`'s `useBlocker`, which only
+ * works under data routers (`createBrowserRouter`). The app currently
+ * mounts the legacy `<BrowserRouter>` component, so `useBlocker` throws
+ * an invariant at render time. A follow-up can migrate the router and
+ * upgrade this hook in one go.
  */
-export function useDirtyFormBlock(isDirty: boolean, message?: string): void {
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
-  );
-
+export function useDirtyFormBlock(isDirty: boolean): void {
   useEffect(() => {
-    if (blocker.state !== 'blocked') return;
-    const ok = window.confirm(message ?? 'You have unsaved changes. Discard?');
-    if (ok) blocker.proceed();
-    else blocker.reset();
-  }, [blocker, message]);
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 }
