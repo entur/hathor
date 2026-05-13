@@ -20,6 +20,26 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+    },
+  },
+  {
+    // netex-ts-gen output: machine-generated, regenerated on schema bumps.
+    // Loosen the two rules whose violations are intrinsic to the emission
+    // (Extensions?: any in entity interfaces; intentionally-unused Reshape
+    // params in mapping helpers). Upstream fix tracked separately.
+    files: [
+      'src/data/vehicles/Vehicle.ts',
+      'src/data/vehicles/Vehicle-mapping.ts',
+      'src/data/vehicles/VehicleModel.ts',
+      'src/data/vehicles/VehicleModel-mapping.ts',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   }
 );
