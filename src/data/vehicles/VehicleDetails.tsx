@@ -74,7 +74,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   if (!vehicle) {
     const requestedId = searchParams.get(VEHICLE_SELECTED_PARAM);
     return (
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
           <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
         </Stack>
@@ -97,7 +97,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   }
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
         <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
         <Chip
