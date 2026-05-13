@@ -1,11 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Box, Typography, Button, Chip, Divider, Stack } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  Snackbar,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
 import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
 import type { VehicleRow } from './vehicleTypes.ts';
 import VehicleEditForm, { type VehicleEditFormValue } from './VehicleEditForm.tsx';
+import { useVehiclePairSave } from './useVehiclePairSave.ts';
+import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 
 /** Placeholder id for the inline VehicleModel side (see issue #69). */
 const INLINE_MODEL_ID = 'INLINE:VehicleModel:1' as const;
@@ -48,15 +60,30 @@ interface VehicleDetailsProps {
  * VehicleRow-only enrichment (id, version, parent VehicleType name,
  * localised transport mode).
  *
- * Save is stubbed in this commit; commit 5 (per issue #69) adds the Save
- * button + wires `buildPublicationDeliveryXml` + `importAsNetexToBackend`,
- * after-save navigation, toast on error, and `useBlocker` nav guard.
+ * Save (edit mode): builds a Vehicle + VehicleModel pair into a
+ * PublicationDelivery via `useVehiclePairSave`, POSTs to Sobek `/import`,
+ * and on success closes the sidebar (removes `?selected=` from URL). List
+ * refresh is deferred: today the list shows what's in `useVehicles`'s cache
+ * until the user re-navigates. A proper refetch handle on the sidebar is a
+ * follow-up (the page-level `useVehicles().refetch` is not yet plumbed
+ * through `EditingContext` to the editor closure).
+ *
+ * NOTE: pending #68 — `modification="new|revise"` policy is unresolved;
+ * the save handler does not set the attribute today.
  */
 export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [form, setForm] = useState<VehicleEditFormValue>(emptyForm);
+  const { save, saving, error, clearError } = useVehiclePairSave();
+
+  const initialFormKey = useMemo(
+    () => JSON.stringify(vehicle ? hydrateFromRow(vehicle) : emptyForm),
+    [vehicle]
+  );
+  const isDirty = JSON.stringify(form) !== initialFormKey;
+  useDirtyFormBlock(isDirty);
 
   useEffect(() => {
     setForm(vehicle ? hydrateFromRow(vehicle) : emptyForm);
@@ -71,10 +98,21 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       { replace: true }
     );
 
+  const handleSave = async () => {
+    try {
+      await save(form);
+      closeSlider();
+    } catch {
+      // useVehiclePairSave already captured the message into `error`;
+      // Snackbar below surfaces it. Keep the form open so the user can fix
+      // and retry without losing what they typed.
+    }
+  };
+
   if (!vehicle) {
     const requestedId = searchParams.get(VEHICLE_SELECTED_PARAM);
     return (
-      <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
+      <Box sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
           <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
         </Stack>
@@ -134,10 +172,33 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       <VehicleEditForm value={form} onChange={setForm} mode={mode} />
 
       <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        <Button variant="outlined" onClick={closeSlider}>
+        {mode === 'edit' && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            disabled={saving || !isDirty}
+            startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
+            data-testid="vehicle-sidebar-save"
+          >
+            {saving ? t('saving', 'Saving…') : t('save', 'Save')}
+          </Button>
+        )}
+        <Button variant="outlined" onClick={closeSlider} disabled={saving}>
           {t('close', 'Close')}
         </Button>
       </Stack>
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={clearError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={clearError} variant="filled">
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
