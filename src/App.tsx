@@ -13,6 +13,7 @@ import VehicleTypeDetails from './data/vehicle-types/VehicleTypeDetails.tsx';
 import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/VehicleView.tsx';
+import VehicleCreatePage from './pages/VehicleCreatePage.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -40,6 +41,10 @@ export default function App() {
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
                   />
                   <Route path="/vehicle" element={<ProtectedRoute element={<VehicleView />} />} />
+                  <Route
+                    path="/vehicle/new"
+                    element={<ProtectedRoute element={<VehicleCreatePage />} />}
+                  />
                   <Route
                     path="/deck-plan"
                     element={<ProtectedRoute element={<DeckPlanView />} />}
