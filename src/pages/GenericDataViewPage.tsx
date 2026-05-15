@@ -10,6 +10,8 @@ import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
 const DETAILS_PANE_INIT_WIDTH = Math.round(window.innerWidth / 4);
+const DETAILS_PANE_SIDE = 'right' as const;
+const DETAILS_PANE_MARGIN = DETAILS_PANE_SIDE === 'right' ? 'marginRight' : 'marginLeft';
 
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
@@ -42,7 +44,7 @@ export default function GenericDataViewPage<T, K extends string>({
     collapsed: sidebarCollapsed,
     setIsResizing: setIsSidebarResizing,
     toggle: toggleSidebar,
-  } = useResizableSidebar(DETAILS_PANE_INIT_WIDTH, true);
+  } = useResizableSidebar(DETAILS_PANE_INIT_WIDTH, true, DETAILS_PANE_SIDE);
 
   // Change is here: use `editingItem` from the context
   const { editingItem } = useEditing();
@@ -144,19 +146,21 @@ export default function GenericDataViewPage<T, K extends string>({
         onMouseDownResize={() => setIsSidebarResizing(true)}
         theme={theme}
         toggleCollapse={toggleSidebar}
+        side={DETAILS_PANE_SIDE}
       />
       <ToggleButton
         collapsed={sidebarCollapsed}
         sidebarWidth={sidebarWidth}
         onClick={toggleSidebar}
+        side={DETAILS_PANE_SIDE}
       />
       <Box
         className="data-overview-content"
         sx={{
           flexGrow: 1,
           height: '100%',
-          marginLeft: sidebarCollapsed ? '0px' : `${sidebarWidth + 4}px`,
-          transition: 'margin-left 0.2s ease',
+          [DETAILS_PANE_MARGIN]: sidebarCollapsed ? '0px' : `${sidebarWidth + 4}px`,
+          transition: 'margin 0.2s ease',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
