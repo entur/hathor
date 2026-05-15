@@ -78,3 +78,30 @@ Delete `src/pages/GenericDataEditPage.tsx`. If inline-cell editing is ever wante
 ### Consequences
 
 `GenericDataViewPage` becomes the single chrome page for list+sidebar workflows. Future layout or tunable changes (e.g. the right-side details pane introduced in the next commit) touch one file, not two.
+
+---
+
+## Horizontal form rows via CSS Grid + `<FieldRow>` _(2026-05-15)_
+
+### Context
+
+`VehicleEditForm.tsx` originally stacked 12 `<TextField>`s with floating labels — each row burned ~56px vertical and the sidebar pane scrolled. We wanted label-on-left / input-on-right to reclaim vertical space without giving up i18n-safe label widths, MUI theming, or accessibility wiring.
+
+### Decision
+
+Switch the form to a single CSS-Grid container with two columns (`minmax(8rem, 12rem) 1fr`) and introduce a tiny `<FieldRow id label alignTop?>` helper that uses `display: contents` so its `<InputLabel>` and `<TextField>` become direct grid items of the parent. Bubbled-up consts (`LABEL_COL_MIN`, `LABEL_COL_MAX`, `COL_GAP`, `ROW_GAP`) keep the layout tunable from one place. `size="small"` on every TextField drops row height ~56→40px. Section dividers/headers span both columns via `sx={{ gridColumn: '1 / -1' }}`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **`<Stack direction="row">` + `<Typography>` label** | Typography isn't a `<label>` — a11y wiring is manual. Each row is its own flex container, so label widths drift across rows under i18n. |
+| **MUI Grid v2 two-column** | ~2× the JSX per row (explicit `<Grid size={...}>` cells), and the Grid items don't share a single grid context across rows — same alignment drift as Stack. CSS Grid gives the cross-row alignment for free. |
+| **`<FormControlLabel labelPlacement="start">`** | Designed for Switch/Radio/Checkbox; label widths still drift across rows; future readers will assume a checkbox. |
+
+### Consequences
+
+- `<FieldRow>` lives inline in `VehicleEditForm.tsx` for now; extract to `src/components/form/FieldRow.tsx` when a second form needs it.
+- A11y is native: `<InputLabel htmlFor={id}>` paired with `<TextField id={id}>` — screen readers announce the label on focus, clicking the label focuses the input. Each field needs a stable `id`.
+- Responsive fallback: `gridTemplateColumns: { xs: '1fr', sm: '...' }` collapses to single-column at the `xs` breakpoint. The sidebar pane default (~480 px on FHD) stays in 2-col; the fallback only kicks in for the mobile drawer mode.
+- Dirty/error indicators have two clean placement options: the TextField's own `error`/`helperText` props (render inside the field, don't disturb grid alignment), or a third grid column for a per-row status dot.

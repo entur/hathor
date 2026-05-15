@@ -1,7 +1,13 @@
-import { Stack, TextField, Typography, Divider } from '@mui/material';
+import type { ReactNode } from 'react';
+import { Box, InputLabel, TextField, Typography, Divider } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './Vehicle';
 import type { VehicleModel } from './VehicleModel';
+
+const LABEL_COL_MIN = '8rem';
+const LABEL_COL_MAX = '12rem';
+const COL_GAP = 2;
+const ROW_GAP = 1.25;
 
 export interface VehicleEditFormValue {
   vehicle: Vehicle;
@@ -21,6 +27,40 @@ const toTextArr = (s: string): { value: string }[] | undefined =>
 
 const orUndef = (s: string): string | undefined => (s.length === 0 ? undefined : s);
 
+interface FieldRowProps {
+  id: string;
+  label: string;
+  alignTop?: boolean;
+  children: ReactNode;
+}
+
+/**
+ * Two-column form row using CSS Grid `display: contents` so the InputLabel
+ * and the input become direct grid items of the parent grid. Keeps label↔input
+ * pairing explicit in JSX while letting a single parent grid guarantee column
+ * alignment across all rows.
+ */
+function FieldRow({ id, label, alignTop, children }: FieldRowProps) {
+  return (
+    <Box sx={{ display: 'contents' }}>
+      <InputLabel
+        htmlFor={id}
+        sx={{
+          alignSelf: alignTop ? 'start' : 'center',
+          pt: alignTop ? 1 : 0,
+          mb: 0,
+          fontSize: '0.875rem',
+          color: 'text.primary',
+          whiteSpace: 'normal',
+        }}
+      >
+        {label}
+      </InputLabel>
+      {children}
+    </Box>
+  );
+}
+
 export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFormProps) {
   const { t } = useTranslation();
   const v = value.vehicle;
@@ -30,103 +70,168 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setM = (patch: Partial<VehicleModel>) => onChange({ ...value, model: { ...m, ...patch } });
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="overline">{t('vehicles.form.vehicleSection', 'Vehicle')}</Typography>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr` },
+        columnGap: COL_GAP,
+        rowGap: ROW_GAP,
+        alignItems: 'center',
+      }}
+    >
+      <Typography variant="overline" sx={{ gridColumn: '1 / -1' }}>
+        {t('vehicles.form.vehicleSection', 'Vehicle')}
+      </Typography>
 
-      <TextField
-        label={t('vehicles.field.name', 'Name')}
-        value={firstText(v.Name)}
-        onChange={e => setV({ Name: toTextArr(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.shortName', 'Short Name')}
-        value={firstText(v.ShortName)}
-        onChange={e => setV({ ShortName: toTextArr(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.description', 'Description')}
-        value={firstText(v.Description)}
-        onChange={e => setV({ Description: toTextArr(e.target.value) })}
-        disabled={ro}
-        fullWidth
-        multiline
-        minRows={2}
-      />
-      <TextField
+      <FieldRow id="vehicle-name" label={t('vehicles.field.name', 'Name')}>
+        <TextField
+          id="vehicle-name"
+          value={firstText(v.Name)}
+          onChange={e => setV({ Name: toTextArr(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow
+        id="vehicle-registration-number"
         label={t('vehicles.field.registrationNumber', 'Registration Number')}
-        value={v.RegistrationNumber ?? ''}
-        onChange={e => setV({ RegistrationNumber: orUndef(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.chassisNumber', 'Chassis Number')}
-        value={v.ChassisNumber ?? ''}
-        onChange={e => setV({ ChassisNumber: orUndef(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.buildDate', 'Build Date (YYYY-MM-DD)')}
-        value={v.BuildDate ?? ''}
-        onChange={e => setV({ BuildDate: orUndef(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.registrationDate', 'Registration Date (YYYY-MM-DD)')}
-        value={v.RegistrationDate ?? ''}
-        onChange={e => setV({ RegistrationDate: orUndef(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
+      >
+        <TextField
+          id="vehicle-registration-number"
+          value={v.RegistrationNumber ?? ''}
+          onChange={e => setV({ RegistrationNumber: orUndef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow
+        id="vehicle-operational-number"
         label={t('vehicles.field.operationalNumber', 'Operational Number')}
-        value={v.OperationalNumber ?? ''}
-        onChange={e => setV({ OperationalNumber: orUndef(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
+      >
+        <TextField
+          id="vehicle-operational-number"
+          value={v.OperationalNumber ?? ''}
+          onChange={e => setV({ OperationalNumber: orUndef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow
+        id="vehicle-chassis-number"
+        label={t('vehicles.field.chassisNumber', 'Chassis Number')}
+      >
+        <TextField
+          id="vehicle-chassis-number"
+          value={v.ChassisNumber ?? ''}
+          onChange={e => setV({ ChassisNumber: orUndef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow
+        id="vehicle-build-date"
+        label={t('vehicles.field.buildDate', 'Build Date (YYYY-MM-DD)')}
+      >
+        <TextField
+          id="vehicle-build-date"
+          value={v.BuildDate ?? ''}
+          onChange={e => setV({ BuildDate: orUndef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow
+        id="vehicle-registration-date"
+        label={t('vehicles.field.registrationDate', 'Registration Date (YYYY-MM-DD)')}
+      >
+        <TextField
+          id="vehicle-registration-date"
+          value={v.RegistrationDate ?? ''}
+          onChange={e => setV({ RegistrationDate: orUndef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow id="vehicle-description" label={t('vehicles.field.description', 'Description')}>
+        <TextField
+          id="vehicle-description"
+          value={firstText(v.Description)}
+          onChange={e => setV({ Description: toTextArr(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow
+        id="vehicle-transport-type-ref"
         label={t('vehicles.field.transportTypeRef', 'Transport Type Ref')}
-        value={v.TransportTypeRef ?? ''}
-        onChange={e => setV({ TransportTypeRef: orUndef(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
+      >
+        <TextField
+          id="vehicle-transport-type-ref"
+          value={v.TransportTypeRef ?? ''}
+          onChange={e => setV({ TransportTypeRef: orUndef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
 
-      <Divider />
-      <Typography variant="overline">{t('vehicles.form.modelSection', 'Vehicle Model')}</Typography>
+      <Divider sx={{ gridColumn: '1 / -1', my: 0.5 }} />
+      <Typography variant="overline" sx={{ gridColumn: '1 / -1' }}>
+        {t('vehicles.form.modelSection', 'Model')}
+      </Typography>
 
-      <TextField
-        label={t('vehicles.field.manufacturer', 'Manufacturer')}
-        value={firstText(m.Manufacturer)}
-        onChange={e => setM({ Manufacturer: toTextArr(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.range', 'Range')}
-        type="number"
-        value={m.Range ?? ''}
-        onChange={e => setM({ Range: e.target.value === '' ? undefined : Number(e.target.value) })}
-        disabled={ro}
-        fullWidth
-      />
-      <TextField
-        label={t('vehicles.field.fullCharge', 'Full Charge')}
-        type="number"
-        value={m.FullCharge ?? ''}
-        onChange={e =>
-          setM({ FullCharge: e.target.value === '' ? undefined : Number(e.target.value) })
-        }
-        disabled={ro}
-        fullWidth
-      />
-    </Stack>
+      <FieldRow id="model-manufacturer" label={t('vehicles.field.manufacturer', 'Manufacturer')}>
+        <TextField
+          id="model-manufacturer"
+          value={firstText(m.Manufacturer)}
+          onChange={e => setM({ Manufacturer: toTextArr(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow id="model-range" label={t('vehicles.field.range', 'Range')}>
+        <TextField
+          id="model-range"
+          type="number"
+          value={m.Range ?? ''}
+          onChange={e =>
+            setM({ Range: e.target.value === '' ? undefined : Number(e.target.value) })
+          }
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+
+      <FieldRow id="model-full-charge" label={t('vehicles.field.fullCharge', 'Full Charge')}>
+        <TextField
+          id="model-full-charge"
+          type="number"
+          value={m.FullCharge ?? ''}
+          onChange={e =>
+            setM({ FullCharge: e.target.value === '' ? undefined : Number(e.target.value) })
+          }
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+    </Box>
   );
 }
