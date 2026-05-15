@@ -1,9 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
+import type { Side } from '../components/sidebar/Sidebar.tsx';
+
+const MIN_W = 100,
+  MAX_W_RATIO = 0.8;
 
 export function useResizableSidebar(
   initialWidth = 300,
   initialCollapsed = false,
-  side: 'left' | 'right' = 'left'
+  side: Side = 'left'
 ) {
   const [width, setWidth] = useState<number>(initialWidth);
   const [isResizing, setIsResizing] = useState<boolean>(false);
@@ -13,9 +17,8 @@ export function useResizableSidebar(
     (e: MouseEvent) => {
       if (!isResizing || collapsed) return;
       const newW = side === 'left' ? e.clientX : window.innerWidth - e.clientX;
-      const min = 100;
-      const max = window.innerWidth * 0.8;
-      if (newW > min && newW < max) setWidth(newW);
+      const max = window.innerWidth * MAX_W_RATIO;
+      if (newW > MIN_W && newW < max) setWidth(newW);
     },
     [isResizing, collapsed, side]
   );

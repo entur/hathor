@@ -1,11 +1,12 @@
 import { Box, IconButton, useTheme } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import type { Side } from './Sidebar.tsx';
 
 interface ToggleButtonProps {
   collapsed: boolean;
   sidebarWidth: number;
   onClick: () => void;
-  side?: 'left' | 'right';
+  side?: Side;
 }
 
 export function ToggleButton({

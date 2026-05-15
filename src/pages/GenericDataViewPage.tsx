@@ -3,15 +3,17 @@ import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
 import { useEditing } from '../contexts/EditingContext.tsx';
-import { Sidebar } from '../components/sidebar/Sidebar.tsx';
+import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
 import { ToggleButton } from '../components/sidebar/ToggleButton.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
-const DETAILS_PANE_INIT_WIDTH = Math.round(window.innerWidth / 4);
-const DETAILS_PANE_SIDE = 'right' as const;
+const DETAILS_PANE_WIDTH_FACTOR = 0.25;
+const DETAILS_PANE_GUTTER_PX = 4;
+const DETAILS_PANE_SIDE: Side = 'right';
 const DETAILS_PANE_MARGIN = DETAILS_PANE_SIDE === 'right' ? 'marginRight' : 'marginLeft';
+const MARGIN_TRANSITION = `${DETAILS_PANE_MARGIN} 0.2s ease`;
 
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
@@ -39,14 +41,14 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const theme = useTheme();
 
+  const initWidth = Math.round(window.innerWidth * DETAILS_PANE_WIDTH_FACTOR);
   const {
     width: sidebarWidth,
     collapsed: sidebarCollapsed,
     setIsResizing: setIsSidebarResizing,
     toggle: toggleSidebar,
-  } = useResizableSidebar(DETAILS_PANE_INIT_WIDTH, true, DETAILS_PANE_SIDE);
+  } = useResizableSidebar(initWidth, true, DETAILS_PANE_SIDE);
 
-  // Change is here: use `editingItem` from the context
   const { editingItem } = useEditing();
   const prevEditingIdRef = useRef<string | null>(null);
 
@@ -159,8 +161,10 @@ export default function GenericDataViewPage<T, K extends string>({
         sx={{
           flexGrow: 1,
           height: '100%',
-          [DETAILS_PANE_MARGIN]: sidebarCollapsed ? '0px' : `${sidebarWidth + 4}px`,
-          transition: 'margin 0.2s ease',
+          [DETAILS_PANE_MARGIN]: sidebarCollapsed
+            ? '0px'
+            : `${sidebarWidth + DETAILS_PANE_GUTTER_PX}px`,
+          transition: MARGIN_TRANSITION,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',

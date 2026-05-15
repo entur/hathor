@@ -4,13 +4,15 @@ import type { Theme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
+export type Side = 'left' | 'right';
+
 interface SidebarProps {
   width: number;
   collapsed: boolean;
   onMouseDownResize: () => void;
   theme: Theme;
   toggleCollapse: () => void;
-  side?: 'left' | 'right';
+  side?: Side;
 }
 
 export function Sidebar({
@@ -23,6 +25,7 @@ export function Sidebar({
 }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const innerEdge = side === 'left' ? 'borderRight' : 'borderLeft';
+  const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
 
   if (isMobile) {
     return (
@@ -52,7 +55,7 @@ export function Sidebar({
           }}
         >
           <IconButton onClick={toggleCollapse} color="inherit" aria-label="close sidebar">
-            {side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            {closeIcon}
           </IconButton>
         </Toolbar>
         <SidebarContent />
