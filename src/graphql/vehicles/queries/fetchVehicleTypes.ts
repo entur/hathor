@@ -43,7 +43,7 @@ const fetchVehicleTypesGQL = gql`
 import type { PageVars } from '../../paginationTypes.ts';
 
 export type VehicleTypeVars = PageVars & {
-  filter?: { ids?: string[]; transportMode?: string };
+  filter?: { ids?: string[]; transportModes?: string[] };
 };
 
 export const fetchVehicleTypesRequest = (
