@@ -10,6 +10,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@entur/vtype-details': resolve(__dirname, 'packages/vtype-details/src/index.ts'),
+      '@entur/data-view-table': resolve(__dirname, 'packages/data-view-table/src/index.ts'),
+      '@opentrainticketing/netex-deckplan-editor': resolve(
+        __dirname,
+        'packages/deckplan-editor/netex-deckplan-editor.es.js'
+      ),
+      '@/assets': resolve(__dirname, 'public/assets'),
     },
   },
   server: {

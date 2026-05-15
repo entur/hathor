@@ -30,9 +30,10 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@entur/vtype-details": ["./packages/vtype-details/src/index.ts"],
-      "@entur/data-view-table": ["./packages/data-view-table/src/index.ts"]
+      "@entur/data-view-table": ["./packages/data-view-table/src/index.ts"],
+      "@opentrainticketing/netex-deckplan-editor": ["./packages/deckplan-editor/index.d.ts"]
     }
   },
-  "include": ["src", "src/**/*.json", "packages/*/src"],
+  "include": ["src", "src/**/*.json", "global.d.ts", "packages/*/src"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }

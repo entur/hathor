@@ -15,6 +15,7 @@ public/theme-*.json
 
 # Ignore vendored/generated bundles
 public/deckplan-editor
+packages/deckplan-editor
 
 # Ignore other files
 .claude

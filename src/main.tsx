@@ -10,6 +10,8 @@ import { CustomizationProvider } from './contexts/CustomizationContext.tsx';
 import './i18n';
 import { SessionProvider } from './contexts/SessionContext.tsx';
 
+import '@opentrainticketing/netex-deckplan-editor';
+
 fetchConfig().then(config => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

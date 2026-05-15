@@ -7,12 +7,16 @@ import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext';
 import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService';
 import GenericDetailsPage from '../../pages/GenericDetailsPage';
+import { DeckPlanEditor } from '../../components/deckplan/DeckPlanEditor';
+import dpe from '@opentrainticketing/netex-deckplan-editor';
+import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 
 const DeckPlanDetailsView = () => {
   const { id } = useParams();
   const [data, setData] = useState('');
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<Error | null>(null);
+  const [myDeck, setMyDeck] = useState<Deck | null>(null);
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl } = useConfig();
   const navigate = useNavigate();
@@ -39,6 +43,25 @@ const DeckPlanDetailsView = () => {
     fetchData();
   }, [id, applicationImportBaseUrl, getAccessToken]);
 
+  useEffect(() => {
+    if (!data) {
+      setMyDeck(null);
+      return;
+    }
+    const pd = dpe.parseNeTEx(data);
+    const deckPlan = pd.length > 0 ? pd[0] : undefined;
+    if (!deckPlan) {
+      setMyDeck(null);
+      return;
+    }
+    const decks = deckPlan.decks;
+    if (!Array.isArray(decks) || decks.length === 0) {
+      setMyDeck(null);
+      return;
+    }
+    setMyDeck(decks[0] ?? null);
+  }, [data]);
+
   if (loading) {
     return <LoadingPage />;
   }
@@ -60,6 +83,7 @@ const DeckPlanDetailsView = () => {
       onSave={handleSave}
       saveDisabled={!applicationImportBaseUrl}
     >
+      {myDeck && <DeckPlanEditor deck={myDeck} />}
       <TextareaAutosize
         aria-label="deck plan data"
         value={data}

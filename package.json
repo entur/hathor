@@ -54,7 +54,9 @@
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2",
     "react-oidc-context": "^3.3.0",
-    "react-router-dom": "^6.30.0"
+    "react-router-dom": "^6.30.0",
+    "vue": "^3.5.32",
+    "@tailwindcss/vite": "^4.1.18"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
