@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './Vehicle';
 import type { VehicleModel } from './VehicleModel';
 
-const LABEL_COL_MIN = '8rem';
-const LABEL_COL_MAX = '12rem';
-const COL_GAP = 2;
+export const LABEL_COL_MIN = '8rem';
+export const LABEL_COL_MAX = '12rem';
+export const COL_GAP = 2;
 const ROW_GAP = 1.25;
+const DATE_PLACEHOLDER = 'YYYY-MM-DD';
 
 export interface VehicleEditFormValue {
   vehicle: Vehicle;
@@ -136,10 +137,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow
-        id="vehicle-build-date"
-        label={t('vehicles.field.buildDate', 'Build Date (YYYY-MM-DD)')}
-      >
+      <FieldRow id="vehicle-build-date" label={t('vehicles.field.buildDate', 'Build Date')}>
         <TextField
           id="vehicle-build-date"
           value={v.BuildDate ?? ''}
@@ -147,12 +145,13 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           disabled={ro}
           size="small"
           fullWidth
+          placeholder={DATE_PLACEHOLDER}
         />
       </FieldRow>
 
       <FieldRow
         id="vehicle-registration-date"
-        label={t('vehicles.field.registrationDate', 'Registration Date (YYYY-MM-DD)')}
+        label={t('vehicles.field.registrationDate', 'Registration Date')}
       >
         <TextField
           id="vehicle-registration-date"
@@ -161,6 +160,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           disabled={ro}
           size="small"
           fullWidth
+          placeholder={DATE_PLACEHOLDER}
         />
       </FieldRow>
 
@@ -169,20 +169,6 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           id="vehicle-description"
           value={firstText(v.Description)}
           onChange={e => setV({ Description: toTextArr(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
-
-      <FieldRow
-        id="vehicle-transport-type-ref"
-        label={t('vehicles.field.transportTypeRef', 'Transport Type Ref')}
-      >
-        <TextField
-          id="vehicle-transport-type-ref"
-          value={v.TransportTypeRef ?? ''}
-          onChange={e => setV({ TransportTypeRef: orUndef(e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth

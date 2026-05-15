@@ -1,11 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Box, Button, Chip, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
+import NetexId from '../netex/NetexId.tsx';
 import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
 import type { VehicleRow } from './vehicleTypes.ts';
-import VehicleEditForm, { type VehicleEditFormValue } from './VehicleEditForm.tsx';
+import VehicleEditForm, {
+  type VehicleEditFormValue,
+  LABEL_COL_MIN,
+  LABEL_COL_MAX,
+  COL_GAP,
+} from './VehicleEditForm.tsx';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import { BLANK_FORM, hydrateFromRow } from './vehicleFormDefaults.ts';
 import { useVehiclePairSave } from './useVehiclePairSave.ts';
@@ -92,20 +98,38 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
-      <Stack spacing={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
-        <ContextRow label={t('vehicles.field.id', 'ID')} value={vehicle.id} />
-        <ContextRow
-          label={t('vehicles.field.version', 'Version')}
-          value={String(vehicle.version)}
-        />
-        <ContextRow
-          label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}
-          value={vehicle.parentVehicleTypeName ?? '—'}
-        />
-        <ContextRow
-          label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
-          value={t(transportModeLabelKey(vehicle.parentTransportMode), vehicle.parentTransportMode)}
-        />
+      <Stack spacing={1.5} sx={{ mb: 2 }} alignItems="flex-start" data-testid="vehicle-context">
+        <NetexId id={vehicle.id} version={vehicle.version} />
+        <Box
+          sx={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
+            },
+            columnGap: COL_GAP,
+            rowGap: 0.5,
+            alignItems: 'center',
+          }}
+        >
+          <ContextRow
+            label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}
+            value={
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                <span>{vehicle.parentVehicleTypeName ?? '—'}</span>
+                {vehicle.parentVehicleTypeId && <NetexId id={vehicle.parentVehicleTypeId} />}
+              </Stack>
+            }
+          />
+          <ContextRow
+            label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
+            value={t(
+              transportModeLabelKey(vehicle.parentTransportMode),
+              vehicle.parentTransportMode
+            )}
+          />
+        </Box>
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
@@ -134,13 +158,13 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   );
 }
 
-function ContextRow({ label, value }: { label: string; value: string }) {
+function ContextRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <Box>
-      <Typography variant="caption" color="text.secondary">
-        {label}
+    <Box sx={{ display: 'contents' }}>
+      <Typography sx={{ fontSize: '0.875rem', color: 'text.primary' }}>{label}</Typography>
+      <Typography variant="body2" component="div">
+        {value}
       </Typography>
-      <Typography variant="body2">{value}</Typography>
     </Box>
   );
 }

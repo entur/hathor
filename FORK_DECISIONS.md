@@ -105,3 +105,27 @@ Switch the form to a single CSS-Grid container with two columns (`minmax(8rem, 1
 - A11y is native: `<InputLabel htmlFor={id}>` paired with `<TextField id={id}>` — screen readers announce the label on focus, clicking the label focuses the input. Each field needs a stable `id`.
 - Responsive fallback: `gridTemplateColumns: { xs: '1fr', sm: '...' }` collapses to single-column at the `xs` breakpoint. The sidebar pane default (~480 px on FHD) stays in 2-col; the fallback only kicks in for the mobile drawer mode.
 - Dirty/error indicators have two clean placement options: the TextField's own `error`/`helperText` props (render inside the field, don't disturb grid alignment), or a third grid column for a per-row status dot.
+
+---
+
+## `<NetexId>` chip component for read-only NeTEx ids _(2026-05-15)_
+
+### Context
+
+NeTEx ids appear in multiple read-only surfaces in the vehicle details pane: the vehicle's own id at the top, and now the parent VehicleType's ref alongside its name. Rendering them as plain text strings buried the structure of the id (`CODESPACE:TYPE:VALUE`) and required ad-hoc label/version pairs at every consumer.
+
+### Decision
+
+Introduce `src/data/netex/NetexId.tsx` — a small chip component that:
+
+- Parses the id via a local `partsFor(id)` helper into `{ code, type, value }`.
+- Renders `code:type:`**`value`** with the VALUE segment bold (`<strong>`) so the actual identifier stands out from the structural prefix.
+- Substitutes `???` for any missing or empty CODESPACE / TYPE segment so malformed ids stay legible. The rightmost segment is always treated as VALUE (e.g. `abc-123` → `???:???:abc-123`); colons inside VALUE are preserved.
+- Surfaces an optional `version` as a nested small filled chip inside the outer outlined chip, labelled `vN`. Absent version → no nested chip.
+- Uses a monospace font family on both chips for ID-shaped legibility.
+
+### Consequences
+
+- `VehicleDetails` no longer carries a separate ID + Version `ContextRow` pair; one chip conveys both.
+- The "Vehicle Type" read-only row now shows the parent name *and* a `<NetexId>` chip of `parentVehicleTypeId`, so users see the canonical NeTEx ref without an extra labelled row. The duplicate `TransportTypeRef` edit field was removed from `VehicleEditForm`.
+- Reusable across other NeTEx-id surfaces (e.g. deck-plan refs, transport-type chips) when those views need the same treatment.
