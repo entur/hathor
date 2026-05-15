@@ -9,6 +9,8 @@ import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
+const DETAILS_PANE_INIT_WIDTH = Math.round(window.innerWidth / 4);
+
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
 
@@ -40,7 +42,7 @@ export default function GenericDataViewPage<T, K extends string>({
     collapsed: sidebarCollapsed,
     setIsResizing: setIsSidebarResizing,
     toggle: toggleSidebar,
-  } = useResizableSidebar(250, true);
+  } = useResizableSidebar(DETAILS_PANE_INIT_WIDTH, true);
 
   // Change is here: use `editingItem` from the context
   const { editingItem } = useEditing();

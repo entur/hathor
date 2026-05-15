@@ -62,3 +62,19 @@ Concrete contract:
 - Encoding sort/filter state in the URL alongside `?selected=`.
 - Generalizing `?selected=` to `/vehicle-type` and `/deck-plan`.
 - Refactoring sibling routes to share the deep-link slider model.
+
+---
+
+## Collapse unused `GenericDataEditPage` scaffold _(2026-05-15)_
+
+### Context
+
+Inanna's initial scaffold shipped two near-twin list-chrome pages: `src/pages/GenericDataViewPage.tsx` and `src/pages/GenericDataEditPage.tsx`. The latter exposes `addRow`/`updateRow` callbacks for an inline-cell editing mode but has never been imported anywhere in this fork's git history. Carrying it forward forced any chrome-level change to be applied twice and bled noise into bubbled-up tunables (e.g. `DETAILS_PANE_INIT_WIDTH` had to live in both files).
+
+### Decision
+
+Delete `src/pages/GenericDataEditPage.tsx`. If inline-cell editing is ever wanted, reintroduce it as a deliberate feature on top of `GenericDataViewPage`, not as a parallel page. Follows the inanna-fork skill's "collapse duplicates" precedent — see `OPEN_QUESTIONS.md` Q7 for the analogous `src/map/` ↔ `src/components/map/` split.
+
+### Consequences
+
+`GenericDataViewPage` becomes the single chrome page for list+sidebar workflows. Future layout or tunable changes (e.g. the right-side details pane introduced in the next commit) touch one file, not two.
