@@ -3,6 +3,7 @@ import { Box, InputLabel, TextField, Typography, Divider } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './Vehicle';
 import type { VehicleModel } from './VehicleModel';
+import { firstText } from '../netex/multilingualString.ts';
 
 export const LABEL_COL_MIN = '8rem';
 export const LABEL_COL_MAX = '12rem';
@@ -20,8 +21,6 @@ interface VehicleEditFormProps {
   onChange: (next: VehicleEditFormValue) => void;
   mode: 'view' | 'edit';
 }
-
-const firstText = (arr?: { value?: string }[]): string => arr?.[0]?.value ?? '';
 
 const toTextArr = (s: string): { value: string }[] | undefined =>
   s.length === 0 ? undefined : [{ value: s }];
@@ -80,10 +79,6 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         alignItems: 'center',
       }}
     >
-      <Typography variant="overline" sx={{ gridColumn: '1 / -1' }}>
-        {t('vehicles.form.vehicleSection', 'Vehicle')}
-      </Typography>
-
       <FieldRow id="vehicle-name" label={t('vehicles.field.name', 'Name')}>
         <TextField
           id="vehicle-name"

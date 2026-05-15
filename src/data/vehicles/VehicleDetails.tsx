@@ -12,10 +12,13 @@ import VehicleEditForm, {
   LABEL_COL_MAX,
   COL_GAP,
 } from './VehicleEditForm.tsx';
+import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import { BLANK_FORM, hydrateFromRow } from './vehicleFormDefaults.ts';
 import { useVehiclePairSave } from './useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
+
+const BLANK_NAME = 'unnamed';
 
 interface VehicleDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
@@ -80,11 +83,38 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
 
   const isEdit = mode === 'edit';
   const isDirty = JSON.stringify(form) !== initialFormKey;
+  const trimmedName = firstText(form.vehicle.Name).trim();
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-        <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 1, gap: 1 }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flex: 1 }}>
+          <Typography variant="h6" noWrap data-testid="vehicle-details-title" sx={{ minWidth: 0 }}>
+            {trimmedName || (
+              <>
+                {'[ '}
+                <Box
+                  component="span"
+                  sx={{
+                    color: 'text.disabled',
+                    fontStyle: 'italic',
+                    fontWeight: 400,
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {BLANK_NAME}
+                </Box>
+                {' ]'}
+              </>
+            )}
+          </Typography>
+          <NetexId id={vehicle.id} version={vehicle.version} />
+        </Stack>
         <Chip
           label={t(
             isEdit ? 'vehicles.viewChipLabel' : 'vehicles.editChipLabel',
@@ -98,39 +128,35 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
-      <Stack spacing={1.5} sx={{ mb: 2 }} alignItems="flex-start" data-testid="vehicle-context">
-        <NetexId id={vehicle.id} version={vehicle.version} />
-        <Box
-          sx={{
-            width: '100%',
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
-            },
-            columnGap: COL_GAP,
-            rowGap: 0.5,
-            alignItems: 'center',
-          }}
-        >
-          <ContextRow
-            label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}
-            value={
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-                <span>{vehicle.parentVehicleTypeName ?? '—'}</span>
-                {vehicle.parentVehicleTypeId && <NetexId id={vehicle.parentVehicleTypeId} />}
-              </Stack>
-            }
-          />
-          <ContextRow
-            label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
-            value={t(
-              transportModeLabelKey(vehicle.parentTransportMode),
-              vehicle.parentTransportMode
-            )}
-          />
-        </Box>
-      </Stack>
+      <Box
+        sx={{
+          mb: 2,
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
+          },
+          columnGap: COL_GAP,
+          rowGap: 0.5,
+          alignItems: 'center',
+        }}
+        data-testid="vehicle-context"
+      >
+        <ContextRow
+          label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}
+          value={
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+              <span>{vehicle.parentVehicleTypeName ?? '—'}</span>
+              {vehicle.parentVehicleTypeId && <NetexId id={vehicle.parentVehicleTypeId} />}
+            </Stack>
+          }
+        />
+        <ContextRow
+          label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
+          value={t(transportModeLabelKey(vehicle.parentTransportMode), vehicle.parentTransportMode)}
+        />
+      </Box>
       <Divider sx={{ mb: 2 }} />
 
       <VehicleEditForm value={form} onChange={setForm} mode={mode} />

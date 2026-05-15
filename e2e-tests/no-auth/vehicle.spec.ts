@@ -69,7 +69,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
     await row.getByRole('button').click();
 
     await expect(page).toHaveURL(/selected=NMR%3AVehicle%3Abus-1/);
-    await expect(page.getByRole('heading', { name: 'Vehicle Details' })).toBeVisible();
+    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
   });
 
   test('TransportMode renders localised in read-only context, regardless of mode', async ({
@@ -84,7 +84,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
     // contract: localised label, present in both view and edit modes.
     await page.goto('/vehicle?selected=NMR:Vehicle:bus-1');
     await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { name: 'Vehicle Details' })).toBeVisible();
+    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
     const context = page.getByTestId('vehicle-context');
     await expect(context).toContainText('Bus');
@@ -96,13 +96,13 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
   test('Close button drops ?selected= and collapses the sidebar', async ({ page }) => {
     await page.goto('/vehicle?selected=NMR:Vehicle:bus-1');
     await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { name: 'Vehicle Details' })).toBeVisible();
+    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
     await page.getByRole('button', { name: /^close$/i }).click();
 
     await expect(page).toHaveURL(/\/vehicle(\?|$)/);
     await expect(page).not.toHaveURL(/selected=/);
-    await expect(page.getByRole('heading', { name: 'Vehicle Details' })).not.toBeVisible();
+    await expect(page.getByTestId('vehicle-details-title')).not.toBeVisible();
   });
 
   test('deep-link auto-paginates to the page containing the selected row', async ({ page }) => {
@@ -111,7 +111,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
     await page.goto('/vehicle?selected=NMR:Vehicle:rail-9');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByRole('heading', { name: 'Vehicle Details' })).toBeVisible();
+    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
     // Pagination text should now read "11–15 of 15" (page 1).
     await expect(page.getByTestId('pagination-displayed-rows')).toContainText('11');
     await expect(page.locator('table').getByText('RAIL-009')).toBeVisible();
