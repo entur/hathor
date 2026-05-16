@@ -6,9 +6,22 @@ const mk = (over: Partial<VehicleGQLShaped>): VehicleGQLShaped => ({
   id: 'NMR:Vehicle:x',
   registrationNumber: 'AA-00000',
   version: 1,
-  parentTransportMode: 'unknown',
   ...over,
 });
+
+const withTType = (
+  base: Partial<VehicleGQLShaped>,
+  tt: Partial<NonNullable<VehicleGQLShaped['transportType']>>
+): VehicleGQLShaped =>
+  mk({
+    ...base,
+    transportType: {
+      id: 'NMR:VehicleType:x',
+      version: 1,
+      transportMode: 'unknown',
+      ...tt,
+    },
+  });
 
 describe('compareVehicles', () => {
   it('asc by registrationNumber keeps rows with empty regNo at the end', () => {
@@ -48,42 +61,43 @@ describe('compareVehicles', () => {
     expect(sorted.map(r => r.id)).toEqual(['zero', 'one']);
   });
 
-  it('sorts by parentVehicleTypeName and parks rows without a parent at the end', () => {
+  it('sorts by transportType name and parks rows without a transportType at the end', () => {
     const rows = [
-      mk({ id: 'a', parentVehicleTypeName: undefined }),
-      mk({ id: 'b', parentVehicleTypeName: 'Zulu' }),
-      mk({ id: 'c', parentVehicleTypeName: 'Alpha' }),
+      mk({ id: 'a' }),
+      withTType({ id: 'b' }, { name: 'Zulu' }),
+      withTType({ id: 'c' }, { name: 'Alpha' }),
     ];
-    const sorted = [...rows].sort(compareVehicles('parentVehicleTypeName', 'asc'));
+    const sorted = [...rows].sort(compareVehicles('transportTypeName', 'asc'));
     expect(sorted.map(r => r.id)).toEqual(['c', 'b', 'a']);
   });
 
-  it('treats whitespace-only parentVehicleTypeName as empty (Sobek #121 regression)', () => {
+  it('treats whitespace-only transportType name as empty (Sobek #121 regression)', () => {
     const rows = [
-      mk({ id: 'ws-1', parentVehicleTypeName: '\n                ' }),
-      mk({ id: 'aa', parentVehicleTypeName: 'aa' }),
-      mk({ id: 'ws-2', parentVehicleTypeName: '   ' }),
-      mk({ id: 'zz', parentVehicleTypeName: 'zz' }),
+      withTType({ id: 'ws-1' }, { name: '\n                ' }),
+      withTType({ id: 'aa' }, { name: 'aa' }),
+      withTType({ id: 'ws-2' }, { name: '   ' }),
+      withTType({ id: 'zz' }, { name: 'zz' }),
     ];
-    const sorted = [...rows].sort(compareVehicles('parentVehicleTypeName', 'asc'));
+    const sorted = [...rows].sort(compareVehicles('transportTypeName', 'asc'));
     expect(sorted.map(r => r.id)).toEqual(['aa', 'zz', 'ws-1', 'ws-2']);
   });
 
-  it("sorts by parentTransportMode and parks 'unknown' rows at the end", () => {
+  it("sorts by transportType mode and parks 'unknown' / missing rows at the end", () => {
     const rows = [
-      mk({ id: 'a', parentTransportMode: 'unknown' }),
-      mk({ id: 'b', parentTransportMode: 'tram' }),
-      mk({ id: 'c', parentTransportMode: 'bus' }),
+      withTType({ id: 'a' }, { transportMode: 'unknown' }),
+      withTType({ id: 'b' }, { transportMode: 'tram' }),
+      withTType({ id: 'c' }, { transportMode: 'bus' }),
+      mk({ id: 'd' }),
     ];
-    const sorted = [...rows].sort(compareVehicles('parentTransportMode', 'asc'));
-    expect(sorted.map(r => r.id)).toEqual(['c', 'b', 'a']);
+    const sorted = [...rows].sort(compareVehicles('transportTypeMode', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['c', 'b', 'a', 'd']);
   });
 });
 
 describe('getVehicleSortValue', () => {
-  it("returns empty string for missing parent name and for 'unknown' transport mode", () => {
-    const r = mk({ parentVehicleTypeName: undefined, parentTransportMode: 'unknown' });
-    expect(getVehicleSortValue(r, 'parentVehicleTypeName')).toBe('');
-    expect(getVehicleSortValue(r, 'parentTransportMode')).toBe('');
+  it("returns empty string for missing transportType and for 'unknown' mode", () => {
+    const r = mk({});
+    expect(getVehicleSortValue(r, 'transportTypeName')).toBe('');
+    expect(getVehicleSortValue(r, 'transportTypeMode')).toBe('');
   });
 });

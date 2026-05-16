@@ -24,17 +24,17 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     display: 'always',
   },
   {
-    id: 'parentVehicleTypeName',
+    id: 'transportTypeName',
     headerLabel: 'Vehicle Type',
     isSortable: true,
-    renderCell: item => item.parentVehicleTypeName ?? '—',
+    renderCell: item => item.transportType?.name ?? '—',
     display: 'always',
   },
   {
-    id: 'parentTransportMode',
+    id: 'transportTypeMode',
     headerLabel: 'Transport Mode',
     isSortable: true,
-    renderCell: item => <TransportModeChip mode={item.parentTransportMode} />,
+    renderCell: item => <TransportModeChip mode={item.transportType?.transportMode ?? 'unknown'} />,
     display: 'desktop-only',
   },
   {
@@ -53,8 +53,9 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   },
 ];
 
-/** Chip-filter key for a row — the inherited parent TransportMode. */
-const getVehicleFilterKey = (item: VehicleGQLShaped): string => item.parentTransportMode;
+/** Chip-filter key for a row — the joined transportType mode, or `'unknown'`. */
+const getVehicleFilterKey = (item: VehicleGQLShaped): string =>
+  item.transportType?.transportMode ?? 'unknown';
 
 export const vehicleViewConfig = {
   useData: useVehicles,

@@ -1,85 +1,131 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fetchVehicles } from './fetchVehicles.ts';
-import { fetchVehicleTypes } from '../../vehicle-types/fetchVehicleTypes.ts';
-import type { VehicleType } from '../../vehicle-types/vehicleTypeTypes.ts';
+import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 
-vi.mock('../../vehicle-types/fetchVehicleTypes.ts', () => ({
-  fetchVehicleTypes: vi.fn(),
+vi.mock('../../../graphql/vehicles/queries/fetchVehicles.ts', () => ({
+  fetchVehiclesRequest: vi.fn(),
 }));
 
-const mockedFetchVehicleTypes = vi.mocked(fetchVehicleTypes);
+const mockedRequest = vi.mocked(fetchVehiclesRequest);
 
-const mkVT = (over: Partial<VehicleType>): VehicleType => ({
-  id: 'NMR:VehicleType:default',
-  version: 1,
-  length: 10,
-  width: 2,
-  height: 3,
-  __typename: 'VehicleType',
-  ...over,
+const mkPage = (content: Array<Record<string, unknown>>, totalElements = content.length) => ({
+  vehicles: { content, totalElements, page: 0, size: content.length },
 });
 
 describe('fetchVehicles', () => {
   beforeEach(() => {
-    mockedFetchVehicleTypes.mockReset();
+    mockedRequest.mockReset();
   });
 
-  it('returns an empty array when there are no vehicleTypes', async () => {
-    mockedFetchVehicleTypes.mockResolvedValue({ vehicleTypes: [] });
+  it('returns an empty array when content is empty', async () => {
+    mockedRequest.mockResolvedValue(mkPage([]));
     expect(await fetchVehicles('http://x', null)).toEqual([]);
   });
 
-  it('contributes zero rows for a VehicleType with no vehicles array', async () => {
-    mockedFetchVehicleTypes.mockResolvedValue({
-      vehicleTypes: [mkVT({ vehicles: undefined })],
-    });
-    expect(await fetchVehicles('http://x', null)).toEqual([]);
-  });
-
-  it('inherits parentVehicleTypeId / Name / TransportMode on every flattened row', async () => {
-    mockedFetchVehicleTypes.mockResolvedValue({
-      vehicleTypes: [
-        mkVT({
-          id: 'NMR:VehicleType:rail',
-          name: { value: 'Rail Type' },
-          transportMode: 'rail',
-          vehicles: [
-            { id: 'V1', registrationNumber: 'RAIL-001', version: 2 },
-            { id: 'V2', registrationNumber: 'RAIL-002', version: 1 },
-          ],
-        }),
-      ],
-    });
+  it('projects a vehicle with a full transportType into the nested row shape', async () => {
+    mockedRequest.mockResolvedValue(
+      mkPage([
+        {
+          id: 'NMR:Vehicle:1',
+          version: 2,
+          registrationNumber: 'RAIL-001',
+          operationalNumber: 'OP-77',
+          transportType: {
+            id: 'NMR:VehicleType:rail',
+            version: 3,
+            name: { value: 'Rail Type' },
+            transportMode: 'rail',
+          },
+        },
+      ])
+    );
     expect(await fetchVehicles('http://x', null)).toEqual([
       {
-        id: 'V1',
-        registrationNumber: 'RAIL-001',
+        id: 'NMR:Vehicle:1',
         version: 2,
-        parentVehicleTypeId: 'NMR:VehicleType:rail',
-        parentVehicleTypeName: 'Rail Type',
-        parentTransportMode: 'rail',
-      },
-      {
-        id: 'V2',
-        registrationNumber: 'RAIL-002',
-        version: 1,
-        parentVehicleTypeId: 'NMR:VehicleType:rail',
-        parentVehicleTypeName: 'Rail Type',
-        parentTransportMode: 'rail',
+        registrationNumber: 'RAIL-001',
+        operationalNumber: 'OP-77',
+        transportType: {
+          id: 'NMR:VehicleType:rail',
+          version: 3,
+          name: 'Rail Type',
+          transportMode: 'rail',
+        },
       },
     ]);
   });
 
-  it("collapses an unrecognised parent transportMode to 'unknown'", async () => {
-    mockedFetchVehicleTypes.mockResolvedValue({
-      vehicleTypes: [
-        mkVT({
-          transportMode: 'someUnknownNetexValue',
-          vehicles: [{ id: 'V1', registrationNumber: 'X', version: 1 }],
-        }),
-      ],
+  it('omits transportType on the row when the server returns transportType: null', async () => {
+    mockedRequest.mockResolvedValue(
+      mkPage([
+        {
+          id: 'V1',
+          version: 1,
+          registrationNumber: 'X-1',
+          transportType: null,
+        },
+      ])
+    );
+    const [row] = await fetchVehicles('http://x', null);
+    expect(row.transportType).toBeUndefined();
+  });
+
+  it("collapses an unrecognised transportType.transportMode to 'unknown'", async () => {
+    mockedRequest.mockResolvedValue(
+      mkPage([
+        {
+          id: 'V1',
+          version: 1,
+          registrationNumber: 'X-1',
+          transportType: {
+            id: 'NMR:VehicleType:weird',
+            version: 1,
+            transportMode: 'someUnknownNetexValue',
+          },
+        },
+      ])
+    );
+    const [row] = await fetchVehicles('http://x', null);
+    expect(row.transportType?.transportMode).toBe('unknown');
+  });
+
+  it('omits operationalNumber on the row when the server returns null', async () => {
+    mockedRequest.mockResolvedValue(
+      mkPage([
+        {
+          id: 'V1',
+          version: 1,
+          registrationNumber: 'X-1',
+          operationalNumber: null,
+        },
+      ])
+    );
+    const [row] = await fetchVehicles('http://x', null);
+    expect(row.operationalNumber).toBeUndefined();
+  });
+
+  describe('truncation canary', () => {
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     });
-    const rows = await fetchVehicles('http://x', null);
-    expect(rows[0].parentTransportMode).toBe('unknown');
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    it('warns when content.length < totalElements', async () => {
+      mockedRequest.mockResolvedValue(
+        mkPage([{ id: 'V1', version: 1, registrationNumber: 'A' }], /* totalElements */ 42)
+      );
+      await fetchVehicles('http://x', null);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy.mock.calls[0][0]).toMatch(/truncated/);
+    });
+
+    it('does not warn when content.length === totalElements', async () => {
+      mockedRequest.mockResolvedValue(mkPage([]));
+      await fetchVehicles('http://x', null);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
   });
 });

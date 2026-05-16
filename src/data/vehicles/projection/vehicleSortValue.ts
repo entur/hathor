@@ -17,10 +17,10 @@ export const getVehicleSortValue = (
       return item.registrationNumber || '';
     case 'version':
       return item.version;
-    case 'parentVehicleTypeName':
-      return item.parentVehicleTypeName || '';
-    case 'parentTransportMode':
-      return transportModeSortValue(item.parentTransportMode);
+    case 'transportTypeName':
+      return item.transportType?.name || '';
+    case 'transportTypeMode':
+      return transportModeSortValue(item.transportType?.transportMode ?? 'unknown');
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

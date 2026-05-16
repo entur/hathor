@@ -129,16 +129,19 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
           label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}
           value={
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-              <span>{vehicle.parentVehicleTypeName ?? '—'}</span>
-              {vehicle.parentVehicleTypeId && (
-                <NetexId id={vehicle.parentVehicleTypeId} copy="onHover" size="xsmall" />
+              <span>{vehicle.transportType?.name ?? '—'}</span>
+              {vehicle.transportType?.id && (
+                <NetexId id={vehicle.transportType.id} copy="onHover" size="xsmall" />
               )}
             </Stack>
           }
         />
         <ContextRow
           label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
-          value={t(transportModeLabelKey(vehicle.parentTransportMode), vehicle.parentTransportMode)}
+          value={t(
+            transportModeLabelKey(vehicle.transportType?.transportMode ?? 'unknown'),
+            vehicle.transportType?.transportMode ?? 'unknown'
+          )}
         />
       </Box>
       <Divider sx={{ mb: 2 }} />
