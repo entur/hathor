@@ -14,6 +14,7 @@ const DETAILS_PANE_GUTTER_PX = 4;
 const DETAILS_PANE_SIDE: Side = 'right';
 const DETAILS_PANE_MARGIN = DETAILS_PANE_SIDE === 'right' ? 'marginRight' : 'marginLeft';
 const MARGIN_TRANSITION = `${DETAILS_PANE_MARGIN} 0.2s ease`;
+const APP_HEADER_HEIGHT_PX = 64;
 
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
@@ -138,8 +139,10 @@ export default function GenericDataViewPage<T, K extends string>({
     <Box
       sx={{
         display: 'flex',
-        height: 'calc(100dvh - 64px)',
+        height: `calc(100dvh - ${APP_HEADER_HEIGHT_PX}px)`,
         position: 'relative',
+        '--sidebar-width': sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
+        '--app-header-height': `${APP_HEADER_HEIGHT_PX}px`,
       }}
     >
       <Sidebar
@@ -150,12 +153,14 @@ export default function GenericDataViewPage<T, K extends string>({
         toggleCollapse={toggleSidebar}
         side={DETAILS_PANE_SIDE}
       />
-      <ToggleButton
-        collapsed={sidebarCollapsed}
-        sidebarWidth={sidebarWidth}
-        onClick={toggleSidebar}
-        side={DETAILS_PANE_SIDE}
-      />
+      {sidebarCollapsed && (
+        <ToggleButton
+          collapsed={sidebarCollapsed}
+          sidebarWidth={sidebarWidth}
+          onClick={toggleSidebar}
+          side={DETAILS_PANE_SIDE}
+        />
+      )}
       <Box
         className="data-overview-content"
         sx={{

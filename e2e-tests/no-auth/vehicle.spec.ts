@@ -98,7 +98,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
     await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
-    await page.getByRole('button', { name: /^close$/i }).click();
+    await page.getByTestId('editor-rail-collapse').click();
 
     await expect(page).toHaveURL(/\/vehicle(\?|$)/);
     await expect(page).not.toHaveURL(/selected=/);

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Box, Button, Chip, CircularProgress, Divider, Stack, Typography } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
 import NetexId from '../netex/NetexId.tsx';
+import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
 import type { VehicleRow } from './vehicleTypes.ts';
 import VehicleEditForm, {
@@ -19,6 +20,7 @@ import { useVehiclePairSave } from './useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 
 const BLANK_NAME = 'unnamed';
+const RAIL_SIDE = 'right' as const;
 
 interface VehicleDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
@@ -59,72 +61,52 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   if (!vehicle) {
     const requestedId = searchParams.get(VEHICLE_SELECTED_PARAM);
     return (
-      <Box sx={{ p: 2 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-          <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
-        </Stack>
-        <Divider sx={{ mb: 2 }} />
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {t('vehicles.notFound', 'Vehicle not found')}
-        </Typography>
-        {requestedId && (
-          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-            {requestedId}
+      <>
+        <Box sx={{ p: 2 }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+            <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
+          </Stack>
+          <Divider sx={{ mb: 2 }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {t('vehicles.notFound', 'Vehicle not found')}
           </Typography>
-        )}
-        <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-          <Button variant="outlined" onClick={closeSlider}>
-            {t('close', 'Close')}
-          </Button>
-        </Stack>
-      </Box>
+          {requestedId && (
+            <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+              {requestedId}
+            </Typography>
+          )}
+        </Box>
+        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
+      </>
     );
   }
 
-  const isEdit = mode === 'edit';
   const isDirty = JSON.stringify(form) !== initialFormKey;
   const trimmedName = firstText(form.vehicle.Name).trim();
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ mb: 1, gap: 1 }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="h6" noWrap data-testid="vehicle-details-title" sx={{ minWidth: 0 }}>
-            {trimmedName || (
-              <>
-                {'[ '}
-                <Box
-                  component="span"
-                  sx={{
-                    color: 'text.disabled',
-                    fontStyle: 'italic',
-                    fontWeight: 400,
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  {BLANK_NAME}
-                </Box>
-                {' ]'}
-              </>
-            )}
-          </Typography>
-          <NetexId id={vehicle.id} version={vehicle.version} />
-        </Stack>
-        <Chip
-          label={t(
-            isEdit ? 'vehicles.viewChipLabel' : 'vehicles.editChipLabel',
-            isEdit ? 'View' : 'Edit'
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, mb: 1 }}>
+        <Typography variant="h6" noWrap data-testid="vehicle-details-title" sx={{ minWidth: 0 }}>
+          {trimmedName || (
+            <>
+              {'[ '}
+              <Box
+                component="span"
+                sx={{
+                  color: 'text.disabled',
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {BLANK_NAME}
+              </Box>
+              {' ]'}
+            </>
           )}
-          onClick={() => setMode(isEdit ? 'view' : 'edit')}
-          color={isEdit ? 'primary' : 'default'}
-          size="small"
-          variant={isEdit ? 'filled' : 'outlined'}
-        />
+        </Typography>
+        <NetexId id={vehicle.id} version={vehicle.version} />
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
@@ -161,25 +143,20 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
 
       <VehicleEditForm value={form} onChange={setForm} mode={mode} />
 
-      <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
-        {isEdit && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            disabled={saving || !isDirty}
-            startIcon={saving ? <CircularProgress size={16} color="inherit" /> : undefined}
-            data-testid="vehicle-sidebar-save"
-          >
-            {saving ? t('saving', 'Saving…') : t('save', 'Save')}
-          </Button>
-        )}
-        <Button variant="outlined" onClick={closeSlider} disabled={saving}>
-          {t('close', 'Close')}
-        </Button>
-      </Stack>
-
       <SaveErrorSnackbar error={error} onClose={clearError} />
+      <EditorRail
+        side={RAIL_SIDE}
+        onCollapse={closeSlider}
+        mode={mode}
+        onEnterEdit={() => setMode('edit')}
+        onCancelEdit={() => {
+          setForm(hydrateFromRow(vehicle));
+          setMode('view');
+        }}
+        onSave={handleSave}
+        isDirty={isDirty}
+        saving={saving}
+      />
     </Box>
   );
 }
