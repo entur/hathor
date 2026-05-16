@@ -25,7 +25,6 @@ import type { Side } from './Sidebar.tsx';
 
 const SEGMENT_SIZE = 40;
 const SPINNER_SIZE = 18;
-const RESIZER_WIDTH_PX = 3;
 const DIVIDER_OPACITY = 0.35;
 
 interface EditorRailProps {
@@ -48,11 +47,10 @@ interface EditorRailProps {
 /**
  * Composite sidebar-edge control: vertical segmented rail anchored at the
  * sidebar's content-facing edge. View mode shows collapse + pen; edit mode
- * shows collapse + cancel + save. Replaces the standalone chrome
- * ToggleButton + per-feature Edit chip + Save button + Close button trio.
- * Reads `--sidebar-width` and `--app-header-height` CSS variables (set by
- * the chrome) to position itself outside the sidebar's overflow context via
- * `position: fixed`.
+ * shows collapse + cancel + save. Replaces the per-feature Edit chip +
+ * Save button + Close button trio. Reads `--sidebar-width` and
+ * `--app-header-height` CSS variables (set by the chrome) to position
+ * itself outside the sidebar's overflow context via `position: fixed`.
  */
 export default function EditorRail({
   onCollapse,
@@ -110,11 +108,14 @@ export default function EditorRail({
         sx={{
           position: 'fixed',
           top: 'var(--app-header-height, 64px)',
-          [side]: `calc(var(--sidebar-width, 0px) + ${RESIZER_WIDTH_PX}px)`,
+          [side]: 'var(--sidebar-width, 0px)',
           display: 'flex',
           flexDirection: 'column',
           bgcolor: 'background.paper',
-          boxShadow: theme.shadows[3],
+          boxShadow:
+            side === 'right'
+              ? '-3px 3px 6px rgba(0,0,0,0.12), -1px 1px 2px rgba(0,0,0,0.08)'
+              : '3px 3px 6px rgba(0,0,0,0.12), 1px 1px 2px rgba(0,0,0,0.08)',
           borderRadius: side === 'right' ? '6px 0 0 6px' : '0 6px 6px 0',
           overflow: 'hidden',
           zIndex: theme.zIndex.fab,
@@ -139,7 +140,13 @@ export default function EditorRail({
                 onClick={onEnterEdit}
                 aria-label={t('edit', 'Edit')}
                 data-testid="editor-rail-edit"
-                sx={{ width: SEGMENT_SIZE, height: SEGMENT_SIZE, borderRadius: 0 }}
+                sx={{
+                  width: SEGMENT_SIZE,
+                  height: SEGMENT_SIZE,
+                  borderRadius: 0,
+                  color: 'primary.main',
+                  '&:hover': { color: 'primary.dark' },
+                }}
               >
                 <EditIcon />
               </IconButton>
@@ -155,7 +162,13 @@ export default function EditorRail({
                 onClick={handleCancelClick}
                 aria-label={t('vehicles.rail.cancelAria', 'Cancel edit')}
                 data-testid="editor-rail-cancel"
-                sx={{ width: SEGMENT_SIZE, height: SEGMENT_SIZE, borderRadius: 0 }}
+                sx={{
+                  width: SEGMENT_SIZE,
+                  height: SEGMENT_SIZE,
+                  borderRadius: 0,
+                  color: isDirty ? 'primary.main' : 'inherit',
+                  '&:hover': { color: isDirty ? 'primary.dark' : undefined },
+                }}
               >
                 <CancelIcon />
               </IconButton>
@@ -173,7 +186,13 @@ export default function EditorRail({
                   aria-label={saveLabel}
                   data-testid="editor-rail-save"
                   disabled={!isDirty || saving}
-                  sx={{ width: SEGMENT_SIZE, height: SEGMENT_SIZE, borderRadius: 0 }}
+                  sx={{
+                    width: SEGMENT_SIZE,
+                    height: SEGMENT_SIZE,
+                    borderRadius: 0,
+                    color: isDirty && !saving ? 'primary.main' : 'inherit',
+                    '&:hover': { color: isDirty && !saving ? 'primary.dark' : undefined },
+                  }}
                 >
                   {saving ? <CircularProgress size={SPINNER_SIZE} color="inherit" /> : <SaveIcon />}
                 </IconButton>

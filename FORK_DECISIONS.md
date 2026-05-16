@@ -129,3 +129,58 @@ Introduce `src/data/netex/NetexId.tsx` — a small chip component that:
 - `VehicleDetails` no longer carries a separate ID + Version `ContextRow` pair; one chip conveys both.
 - The "Vehicle Type" read-only row now shows the parent name *and* a `<NetexId>` chip of `parentVehicleTypeId`, so users see the canonical NeTEx ref without an extra labelled row. The duplicate `TransportTypeRef` edit field was removed from `VehicleEditForm`.
 - Reusable across other NeTEx-id surfaces (e.g. deck-plan refs, transport-type chips) when those views need the same treatment.
+
+---
+
+## Composite `EditorRail` for sidebar-edge controls _(2026-05-16)_
+
+### Context
+
+`VehicleDetails` originally carried four scattered controls for managing the slider: an in-header `View/Edit` chip, an in-form `Save` button, an in-form `Close` button, and — on the page chrome — a separate `ToggleButton` (the `<` chevron used to expand a collapsed sidebar). Each was its own component, each had its own placement, and the relationships between them ("Save closes; Close discards when dirty; toggling out of Edit doesn't discard") were implicit and easy to misread. Adding a NeTEx-id chip + horizontal field grid (see [Horizontal form rows](#horizontal-form-rows-via-css-grid--fieldrow-2026-05-15)) made the header cramped and the trailing button row felt detached from the content above it.
+
+### Decision
+
+Introduce `src/components/sidebar/EditorRail.tsx` — a vertical, segmented rail anchored at the sidebar's content-facing edge that consolidates the slider's control surface into one place.
+
+Concrete contract:
+
+- **Position**: `position: fixed`, anchored via `--sidebar-width` and `--app-header-height` CSS variables set by `GenericDataViewPage` (so the chrome owns the geometry; the rail is layout-agnostic to its host).
+- **Segments by mode**:
+  - **View:** collapse `«`, edit-pen `✏`.
+  - **Edit:** collapse `«`, cancel `⊗`, save `💾`.
+- **Color highlights**: pen is always `primary.main` (the only call-to-action in view mode); cancel and save fill `primary.main` when `isDirty`, neutral otherwise. Icons fill — no background swatches. Save also stays disabled (gray) when `!isDirty || saving`.
+- **Discard flow**: collapse-or-cancel while dirty opens a single reusable confirm dialog (Cancel / Discard / Save). Internal state tracks `confirming: 'collapse' | 'cancel' | null` so Discard knows whether to revert-and-go-to-view (cancel) or close the pane (collapse).
+- **Side awareness**: a `side?: 'left' | 'right'` prop drives chevron direction, border-radius, and shadow casting. Box-shadow is directional — for `side='right'` the rail casts only leftward and downward (into the content area), never onto the sidebar surface, so the rail reads as part of the details panel rather than a floating chip.
+
+Two enabling chrome changes shipped alongside the rail:
+
+- **`Sidebar.tsx` z-index 20 → 30.** The sidebar Box and the resizer Box were both at `zIndex: 20` since Inanna's initial scaffold (see memory note `project_sidebar_zindex_inanna.md`). Equal z-indices made the DOM-later resizer paint atop the sidebar's stacking context — which now contains the position:fixed rail at `theme.zIndex.fab`. Bumping the sidebar one tier lifts its whole stacking context (rail included) above the resizer. Latent bug, exposed by the rail.
+- **Inner-edge divider line removed.** `Sidebar.tsx` previously rendered `1px solid theme.palette.divider` on the content-facing edge. With the rail flush against that edge, the 1 px gray seam ran straight through the rail's right side, breaking the "rail is part of details" illusion. Removed — the rail's paper bg now flows seamlessly into the sidebar's.
+
+`ToggleButton.tsx` is deleted. With selection-driven slider state already in place (row click → `editingItem` → chrome's effect at `GenericDataViewPage.tsx:118` calls `toggleSidebar()`), the manual expand affordance is redundant. The rail handles close-while-open; selection handles open-when-closed.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Single FAB-style action button** (one icon, opens a popover with Save / Cancel / View toggle) | Two-click for the primary action (save). Discoverability worse — users have to open the popover to learn what's available. Loses the "icons reflect mode" affordance. |
+| **Keep `ToggleButton` + add the rail** (two collapse mechanisms) | Redundant: selection always opens the sidebar, so the manual chevron is never the only path. Adding the rail's `«` alongside ToggleButton's `<` doubled the surface area for the same job. |
+| **Render rail via `React.createPortal` to `<body>`** (bypass the sidebar's stacking context entirely) | Loses CSS variable inheritance — `--sidebar-width` lives on the chrome Box and propagates by DOM ancestry. Portaling to body forces either prop-drilling or a Context provider just for layout values. The z-index bump on the existing parent is cheaper. |
+| **MUI `theme.shadows[3]` symmetric shadow** | Bleeds shadow onto the sidebar's paper surface, making the rail look like a detached floating chip rather than an extension of the details panel. Directional shadow fixes this. |
+| **Eye icon for the view-mode toggle** (shipped in the rail's first iteration) | `View` doesn't imply `discard`, but switching from edit-mode → view-mode while dirty would orphan unsaved edits with no visible warning. Replaced by an explicit cancel (`⊗`) that reverts the form via `hydrateFromRow(vehicle)` and confirms when dirty. |
+| **Per-feature inline trio (status quo)** | The original layout. The trio took permanent space in the form, fought the new horizontal field grid for header room, and forced every feature using the slider to re-implement the same close/save/discard wiring. |
+
+### Consequences
+
+- Sidebar collapse/expand is now **selection-driven across all pages**. The empty sidebar is unreachable — there is no manual "toggle sidebar" affordance once `ToggleButton` is gone. This is fine for current consumers (every page opens the sidebar via row click), but a future feature that needs a hand-toggled empty sidebar will need to bring its own affordance.
+- The discard dialog lives **inside the rail** rather than the host feature. `VehicleDetails` no longer renders any Dialog — it just supplies `onCollapse`, `onEnterEdit`, `onCancelEdit`, `onSave`, `isDirty`, `saving`, and `mode`.
+- `EditorRail` is presently consumed only by `VehicleDetails`. Other data views (`vehicle-types`, `deck-plans`) keep their existing `WorkAreaContent`-style trio. Lifting the rail to other consumers is a deliberate follow-up — see below.
+- `theme.zIndex.fab` (1050) is the rail's z-index. Modals/dialogs at z-1300+ still paint above it, so the discard dialog renders correctly even though it's rendered from inside the rail.
+- The directional shadow is hand-rolled (`'-3px 3px 6px ... , -1px 1px 2px ...'`); if MUI ever ships a directional `theme.shadows` API, swap to that.
+
+### Out of scope
+
+- Per-segment keyboard shortcuts (e.g. `Esc` → collapse, `Cmd+S` → save).
+- Adapting `vehicle-types` and `deck-plans` to render `EditorRail` instead of their current trios.
+- Showing a drag-handle hint inside the rail to compensate for the resizer being hidden behind the rail in their vertical overlap.
+- Animating segment additions/removals when mode flips between view and edit.

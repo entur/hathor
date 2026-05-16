@@ -24,7 +24,6 @@ export function Sidebar({
   side = 'left',
 }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const innerEdge = side === 'left' ? 'borderRight' : 'borderLeft';
   const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
 
   if (isMobile) {
@@ -75,8 +74,7 @@ export function Sidebar({
           width: collapsed ? 0 : width,
           minWidth: collapsed ? 0 : 100,
           backgroundColor: theme.palette.background.paper,
-          [innerEdge]: collapsed ? 'none' : `1px solid ${theme.palette.divider}`,
-          zIndex: 20,
+          zIndex: 30,
           overflow: 'hidden',
         }}
       >

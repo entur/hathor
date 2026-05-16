@@ -4,7 +4,6 @@ import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
 import { useEditing } from '../contexts/EditingContext.tsx';
 import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
-import { ToggleButton } from '../components/sidebar/ToggleButton.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
@@ -153,14 +152,6 @@ export default function GenericDataViewPage<T, K extends string>({
         toggleCollapse={toggleSidebar}
         side={DETAILS_PANE_SIDE}
       />
-      {sidebarCollapsed && (
-        <ToggleButton
-          collapsed={sidebarCollapsed}
-          sidebarWidth={sidebarWidth}
-          onClick={toggleSidebar}
-          side={DETAILS_PANE_SIDE}
-        />
-      )}
       <Box
         className="data-overview-content"
         sx={{
