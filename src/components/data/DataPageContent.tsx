@@ -35,6 +35,7 @@ interface DataPageContentProps<T, K extends string> {
   columns: ColumnDefinition<T, K>[];
   title?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  onRowClick?: (item: T) => void;
   floatingAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
 }
@@ -56,6 +57,7 @@ export default function DataPageContent<
   columns,
   title,
   handleColumnEvent,
+  onRowClick,
   floatingAction,
   urlFilterInfo,
 }: DataPageContentProps<T, K>) {
@@ -124,6 +126,7 @@ export default function DataPageContent<
                 detailColumns={detailColumns}
                 colSpan={colSpan}
                 handleColumnEvent={handleColumnEvent}
+                onRowClick={onRowClick}
               />
             ))}
             {data.length === 0 && !loading && (

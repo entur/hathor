@@ -18,6 +18,9 @@ const APP_HEADER_HEIGHT_PX = 64;
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
 
+/** Stable no-op so `useRowClick` can be invoked unconditionally — keeps hook order intact. */
+const noopRowClick = () => undefined;
+
 interface GenericDataViewPageProps<T, K extends string> {
   viewConfig: ViewConfig<T, K>;
   urlFilterInfo?: UrlFilterInfo;
@@ -111,6 +114,8 @@ export default function GenericDataViewPage<T, K extends string>({
     loading: dataLoading,
   });
 
+  const onRowClick = (viewConfig.useRowClick ?? noopRowClick)();
+
   // Open the sidebar when a new editor is set; collapse it when the editor
   // is cleared (e.g. the editor's Close button → `setEditingItem(null)`, or
   // a URL-driven page like `/vehicle?selected=…` dropping its param).
@@ -181,6 +186,7 @@ export default function GenericDataViewPage<T, K extends string>({
           columns={columns}
           title={viewConfig.title}
           handleColumnEvent={viewConfig.handleColumnEvent}
+          onRowClick={onRowClick}
           floatingAction={floatingAction}
           urlFilterInfo={urlFilterInfo}
         />

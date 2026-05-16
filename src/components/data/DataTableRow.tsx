@@ -17,6 +17,7 @@ interface Props<T, K extends string> {
   detailColumns: ColumnDefinition<T, K>[];
   colSpan: number;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  onRowClick?: (item: T) => void;
 }
 
 export default function DataTableRow<T, K extends string>({
@@ -27,16 +28,18 @@ export default function DataTableRow<T, K extends string>({
   detailColumns,
   colSpan,
   handleColumnEvent,
+  onRowClick,
 }: Props<T, K>) {
   const [open, setOpen] = useState(false);
+  const rowOnClick = useCompactView
+    ? () => setOpen(o => !o)
+    : onRowClick
+      ? () => onRowClick(item)
+      : undefined;
 
   return (
     <>
-      <TableRow
-        hover
-        onClick={useCompactView ? () => setOpen(o => !o) : undefined}
-        sx={{ cursor: useCompactView ? 'pointer' : 'inherit' }}
-      >
+      <TableRow hover onClick={rowOnClick} sx={{ cursor: rowOnClick ? 'pointer' : 'inherit' }}>
         {useCompactView && (
           <TableCell padding="none">
             <IconButton

@@ -32,7 +32,7 @@ Concrete contract:
 - **Resolver:** `VehicleView` runs an effect on `searchParams.selected` change. After `useVehicles().loading` flips false, it does `allData.find(v => v.id === selected)`:
   - **Found:** opens slider via `setEditingItem(...)` and pages the table to the row's index in the currently-sorted+filtered dataset (`setPage(Math.floor(idx / rowsPerPage))`). If the row is filtered out, slider opens but pagination stays put.
   - **Not found:** opens slider with a not-found body using existing translation key `vehicles.notFound`. `VehicleDetails` accepts `vehicle: VehicleRow | null`.
-- **Writers:** `RowClickCell` and the `/vehicle-type` chips both `navigate('/vehicle?selected=...')` (push). The `Close` button in `VehicleDetails` calls `setSearchParams({}, { replace: true })`.
+- **Writers:** whole-row click on `/vehicle` (wired via `vehicleViewConfig.useRowClick`) and the `/vehicle-type` chips both `navigate('/vehicle?selected=...')` (push). The `Close` button in `VehicleDetails` calls `setSearchParams({}, { replace: true })`.
 - **History:** push-on-open / replace-on-close. Switching between vehicles via row click also pushes (back-button walks the chain). Closing is a dismissal, not navigation, so it doesn't pollute history.
 - **Cleanup:** `VehicleView` unmount returns `setEditingItem(null)` so slider state doesn't leak across routes (`EditingProvider` is global per `src/App.tsx`).
 - **Chips on `/vehicle-type`:** `<Chip component={Link} to={...} clickable size="small" variant="outlined">`, mirroring the existing VehicleType ID chip pattern at `vehicleTypeViewConfig.tsx:30-37`.
@@ -53,7 +53,7 @@ Concrete contract:
 
 - This URL↔state model is **local to `VehicleView`**. Other pages (`vehicle-types`, `deck-plans`) keep their direct `setEditingItem` writes. If we want to retrofit them later, the wiring can be lifted into `GenericDataViewPage` — the contract here was kept page-local on purpose to avoid forcing a redesign on every consumer.
 - `VehicleDetails`'s prop becomes `vehicle: VehicleRow | null`, gaining a not-found branch.
-- `RowClickCell` no longer touches `EditingContext`; it only navigates.
+- The row-trigger affordance is generic: `GenericDataViewPage` accepts a `useRowClick` hook on `ViewConfig` that returns a `(item) => void` handler, plumbed to `DataTableRow`'s `onClick` in non-compact mode. Vehicles wires it to `navigate(vehicleSelectedHref(item.id))`; other pages can opt in for whole-row click without re-implementing the chain. Compact (mobile) mode keeps its tap-to-expand behaviour and ignores `onRowClick`.
 - `useVehicles()` still single-fetches the entire list. Per memory note `project_vehicle_details_route_hathor.md`, a Sobek `/netex/vehicles/{id}` endpoint is the prerequisite for ever switching to a per-id fetch — until that exists, "deep link" still means "wait for the list, then look up".
 
 ### Out of scope

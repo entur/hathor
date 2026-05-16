@@ -125,6 +125,8 @@ export interface PageContentComponentProps<T, K extends string> {
   title?: string;
   /** Callback fired when a column-level action is triggered (e.g. inline edit). */
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  /** Optional whole-row click handler (non-compact mode only). */
+  onRowClick?: (item: T) => void;
   /** Optional floating action (e.g. SpeedDial) rendered in the bottom bar beside pagination. */
   floatingAction?: ReactNode;
   /** Optional URL filter info for displaying a filter indicator chip. */
@@ -183,4 +185,11 @@ export interface ViewConfig<T, K extends string> {
     setPage: (page: number) => void;
     loading: boolean;
   }) => void;
+  /**
+   * Optional hook that returns a whole-row click handler. Invoked inside
+   * {@link GenericDataViewPage} so the handler may safely use React/router
+   * context (e.g. `useNavigate`). Non-compact mode only — compact mode keeps
+   * its built-in tap-to-expand behaviour.
+   */
+  useRowClick?: () => (item: T) => void;
 }

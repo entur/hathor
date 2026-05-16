@@ -1,12 +1,13 @@
 import { Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useVehicles } from './useVehicles.ts';
 import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../../components/data/DataPageContent.tsx';
-import RowClickCell from './cells/RowClickCell.tsx';
 import TransportModeChip from './cells/TransportModeChip.tsx';
 import { getVehicleSortValue } from './vehicleSortValue.ts';
 import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
+import { vehicleSelectedHref } from './vehicleUrlParams.ts';
 import { transportModeFilters } from '../../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
 import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './vehicleGqlShaped.ts';
@@ -58,16 +59,14 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     renderCell: item => item.version,
     display: 'desktop-only',
   },
-  {
-    id: 'actions',
-    headerLabel: '',
-    isSortable: false,
-    renderCell: item => <RowClickCell item={item} />,
-    display: 'always',
-  },
 ];
 
 const getVehicleFilterKey = (item: VehicleGQLShaped): string => vehicleMode(item);
+
+const useVehicleRowClick = () => {
+  const navigate = useNavigate();
+  return (item: VehicleGQLShaped) => navigate(vehicleSelectedHref(item.id));
+};
 
 export const vehicleViewConfig = {
   useData: useVehicles,
@@ -80,4 +79,5 @@ export const vehicleViewConfig = {
   filters: transportModeFilters,
   title: 'Vehicles',
   useUrlEffect: useVehicleUrlSelection,
+  useRowClick: useVehicleRowClick,
 };
