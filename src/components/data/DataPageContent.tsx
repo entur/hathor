@@ -154,6 +154,22 @@ export default function DataPageContent<
               setRowsPerPage(parseInt(event.target.value, 10));
               setPage(0);
             }}
+            labelRowsPerPage={t('data.pagination.rowsPerPage', 'Rows per page:')}
+            labelDisplayedRows={({ from, to, count }) =>
+              count === -1
+                ? t('data.pagination.displayedRowsOfMore', {
+                    from,
+                    to,
+                    count: to,
+                    defaultValue: '{{from}}–{{to}} of more than {{count}}',
+                  })
+                : t('data.pagination.displayedRows', {
+                    from,
+                    to,
+                    count,
+                    defaultValue: '{{from}}–{{to}} of {{count}}',
+                  })
+            }
             data-testid="table-pagination"
             slotProps={{
               displayedRows: {

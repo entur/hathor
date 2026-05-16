@@ -15,7 +15,7 @@ import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './veh
 const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   {
     id: 'registrationNumber',
-    headerLabel: 'Registration Number',
+    headerLabel: 'vehicles.field.registrationNumber',
     isSortable: true,
     renderCell: item => (
       <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
@@ -26,7 +26,7 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   },
   {
     id: 'operationalNumber',
-    headerLabel: 'Operational Number',
+    headerLabel: 'vehicles.field.operationalNumber',
     isSortable: true,
     renderCell: item =>
       item.operationalNumber ? (
@@ -40,21 +40,21 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   },
   {
     id: 'transportTypeName',
-    headerLabel: 'Vehicle Type',
+    headerLabel: 'vehicles.field.parentVehicleType',
     isSortable: true,
     renderCell: item => item.transportType?.name ?? '—',
     display: 'always',
   },
   {
     id: 'transportTypeMode',
-    headerLabel: 'Transport Mode',
+    headerLabel: 'vehicles.field.parentTransportMode',
     isSortable: true,
     renderCell: item => <TransportModeChip mode={vehicleMode(item)} />,
     display: 'desktop-only',
   },
   {
     id: 'version',
-    headerLabel: 'Version',
+    headerLabel: 'vehicles.field.version',
     isSortable: true,
     renderCell: item => item.version,
     display: 'desktop-only',
