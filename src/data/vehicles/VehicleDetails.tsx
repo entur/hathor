@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Box, Divider, Stack, Typography } from '@mui/material';
+import { Box, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
@@ -15,7 +15,10 @@ import VehicleEditForm, {
 } from './VehicleEditForm.tsx';
 import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
-import { BLANK_FORM, hydrateFromRow } from './vehicleFormDefaults.ts';
+import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
+import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults.ts';
+import { useVehicle } from './useVehicle.ts';
+import type { Vehicle } from './xml/Vehicle';
 import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 
@@ -32,17 +35,20 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [form, setForm] = useState<VehicleEditFormValue>(BLANK_FORM);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
 
+  const { data: xmlVehicle, loading: xmlLoading, error: xmlError } = useVehicle(vehicle?.id);
+
   const initialFormKey = useMemo(
-    () => JSON.stringify(vehicle ? hydrateFromRow(vehicle) : BLANK_FORM),
-    [vehicle]
+    () => JSON.stringify(xmlVehicle ? hydrateFromXml(xmlVehicle) : BLANK_FORM),
+    [xmlVehicle]
   );
   useDirtyFormBlock(JSON.stringify(form) !== initialFormKey);
 
   useEffect(() => {
-    setForm(vehicle ? hydrateFromRow(vehicle) : BLANK_FORM);
-  }, [vehicle]);
+    setForm(xmlVehicle ? hydrateFromXml(xmlVehicle) : BLANK_FORM);
+  }, [xmlVehicle]);
 
   const closeSlider = () =>
     setSearchParams(
@@ -55,7 +61,10 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
 
   const handleSave = async () => {
     const result = await save(form);
-    if (!result.error) closeSlider();
+    if (!result.error) {
+      setSavedAt(Date.now());
+      setMode('view');
+    }
   };
 
   if (!vehicle) {
@@ -144,16 +153,34 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       </Box>
       <Divider sx={{ mb: 2 }} />
 
-      <VehicleEditForm value={form} onChange={setForm} mode={mode} />
+      {xmlLoading && (
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ py: 2 }}>
+          <CircularProgress size={16} />
+          <Typography variant="body2" color="text.secondary">
+            {t('vehicles.loading', 'Loading vehicle…')}
+          </Typography>
+        </Stack>
+      )}
+      {!xmlLoading && xmlError && (
+        <Typography variant="body2" color="error" sx={{ py: 2 }}>
+          {xmlError}
+        </Typography>
+      )}
+      {!xmlLoading && !xmlError && <VehicleEditForm value={form} onChange={setForm} mode={mode} />}
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
+      <SaveSuccessSnackbar
+        open={savedAt !== null}
+        message={t('vehicles.saveSuccess', 'Vehicle saved')}
+        onClose={() => setSavedAt(null)}
+      />
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
         onEnterEdit={() => setMode('edit')}
         onCancelEdit={() => {
-          setForm(hydrateFromRow(vehicle));
+          setForm(xmlVehicle ? hydrateFromXml(xmlVehicle) : BLANK_FORM);
           setMode('view');
         }}
         onSave={handleSave}
@@ -162,6 +189,10 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
       />
     </Box>
   );
+}
+
+function hydrateFromXml(xml: Partial<Vehicle>): VehicleEditFormValue {
+  return { vehicle: xml, model: MISSING_MODEL };
 }
 
 function ContextRow({ label, value }: { label: string; value: ReactNode }) {

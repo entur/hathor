@@ -101,6 +101,8 @@
   "vehicles.editChipLabel": "Edit",
   "vehicles.viewChipLabel": "View",
   "vehicles.notFound": "Vehicle not found",
+  "vehicles.loading": "Loading vehicle…",
+  "vehicles.saveSuccess": "Vehicle saved",
   "vehicles.field.id": "ID",
   "vehicles.field.name": "Name",
   "vehicles.field.registrationNumber": "Registration Number",

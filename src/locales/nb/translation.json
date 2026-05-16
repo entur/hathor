@@ -101,6 +101,8 @@
   "vehicles.editChipLabel": "Rediger",
   "vehicles.viewChipLabel": "Vis",
   "vehicles.notFound": "Kjøretøy ikke funnet",
+  "vehicles.loading": "Laster kjøretøy…",
+  "vehicles.saveSuccess": "Kjøretøy lagret",
   "vehicles.field.id": "ID",
   "vehicles.field.name": "Navn",
   "vehicles.field.registrationNumber": "Registreringsnummer",
