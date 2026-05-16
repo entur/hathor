@@ -22,7 +22,7 @@ export default function VehicleCreatePage() {
     if (result.error) return;
     // TODO: clear active ?search= filter before deep-link — a filter may
     // otherwise hide the new row (issue #24 brings filter UX).
-    navigate(result.newId ? `/vehicle?selected=${encodeURIComponent(result.newId)}` : '/vehicle');
+    navigate(result.newId ? `/vehicles?selected=${encodeURIComponent(result.newId)}` : '/vehicles');
   };
 
   return (

@@ -14,11 +14,11 @@ interface UrlSelectionParams {
 }
 
 /**
- * Reconciles the `/vehicle?selected=<id>` URL param with `EditingContext` and
+ * Reconciles the `/vehicles?selected=<id>` URL param with `EditingContext` and
  * pagination.
  *
  * **Wait for the initial fetch.** Cross-page nav (e.g. a chip on
- * `/vehicle-type` linking to `/vehicle?selected=…`) lands here while
+ * `/vehicle-types` linking to `/vehicles?selected=…`) lands here while
  * `loading` is still `true` and `allData` is `[]`. Committing in that window
  * captures `vehicle=null` in the editor closure, and the idempotence guard
  * below then locks the slider on the not-found body forever.

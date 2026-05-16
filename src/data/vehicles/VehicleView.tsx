@@ -4,7 +4,7 @@ import NewVehicleFab from './NewVehicleFab.tsx';
 import type { VehicleGQLShaped, VehicleColumnKey } from './projection/vehicleGqlShaped.ts';
 
 /**
- * `/vehicle` route entry point. URL-filter affordances will arrive with
+ * `/vehicles` route entry point. URL-filter affordances will arrive with
  * the Sobek `vehicles(filter)` pushdown (GH #24).
  */
 export default function VehicleView() {

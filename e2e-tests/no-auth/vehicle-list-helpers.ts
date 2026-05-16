@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 
 /**
- * Mock `vehicleTypes` query payload tailored to `/vehicle` scenarios — richer
+ * Mock `vehicleTypes` query payload tailored to `/vehicles` scenarios — richer
  * than the shared `vehicle-types-mock.json` so we can exercise TransportMode
  * variety (rail / bus / unknown-from-backend) and a 15-row dataset that
  * spans two pages at the default `rowsPerPage=10`.
@@ -24,7 +24,7 @@ const MOCK_VEHICLES_LIST: unknown = JSON.parse(
  *
  * Mirrors the `interceptVehicleTypesQuery` helper in `autosys-helpers.ts` but
  * binds a different fixture — keep the two in parallel rather than sharing,
- * since `/vehicle-type` tests rely on the leaner shape.
+ * since `/vehicle-types` tests rely on the leaner shape.
  */
 export const interceptVehicleListQuery = (page: Page) =>
   page.route('**/graphql', async route => {

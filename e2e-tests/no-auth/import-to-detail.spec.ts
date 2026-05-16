@@ -14,7 +14,7 @@ test.describe('Import → detail page navigation', () => {
   test(`import "${REG_NR}", click VehicleType ID, navigate to detail`, async ({ page }) => {
     await interceptAutosysQuery(page);
 
-    await page.goto('/vehicle-type');
+    await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
 
     // Open the multi-import dialog
@@ -63,7 +63,7 @@ test.describe('Import → detail page navigation', () => {
     }
 
     // Navigate to list and find the first VehicleType ID link
-    await page.goto('/vehicle-type');
+    await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
 
     const firstIdLink = page.locator('table tbody tr').first().getByRole('link');

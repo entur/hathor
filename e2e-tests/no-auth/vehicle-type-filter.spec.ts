@@ -12,7 +12,7 @@ test.describe('Vehicle type URL filtering', () => {
       await interceptVehicleTypesQuery(page);
     }
 
-    await page.goto('/vehicle-type');
+    await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
 
     // Wait for table to load
@@ -38,7 +38,7 @@ test.describe('Vehicle type URL filtering', () => {
       await interceptVehicleTypesQuery(page);
     }
 
-    await page.goto('/vehicle-type?filter=NMR:VehicleType:2');
+    await page.goto('/vehicle-types?filter=NMR:VehicleType:2');
     await page.waitForLoadState('networkidle');
 
     // Wait for table to load
@@ -66,7 +66,7 @@ test.describe('Vehicle type URL filtering', () => {
     }
 
     const filterParam = encodeURIComponent('NMR:VehicleType:1,NMR:VehicleType:3');
-    await page.goto(`/vehicle-type?filter=${filterParam}`);
+    await page.goto(`/vehicle-types?filter=${filterParam}`);
     await page.waitForLoadState('networkidle');
 
     // Wait for table to load
@@ -94,7 +94,7 @@ test.describe('Vehicle type URL filtering', () => {
       await interceptVehicleTypesQuery(page);
     }
 
-    await page.goto('/vehicle-type?filter=NMR:VehicleType:1');
+    await page.goto('/vehicle-types?filter=NMR:VehicleType:1');
     await page.waitForLoadState('networkidle');
 
     // Wait for filter chip to appear (indicates filter has been applied)
@@ -126,7 +126,7 @@ test.describe('Vehicle type URL filtering', () => {
       await interceptVehicleTypesQuery(page);
     }
 
-    await page.goto('/vehicle-type?filter=NMR:VehicleType:999');
+    await page.goto('/vehicle-types?filter=NMR:VehicleType:999');
     await page.waitForLoadState('networkidle');
 
     // Wait for table to load

@@ -10,10 +10,10 @@ const fixturesDir = path.join(__dirname, '..', 'fixtures');
 const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 
 /**
- * Navigate to /vehicle-type and return locators for the protected content area.
+ * Navigate to /vehicle-types and return locators for the protected content area.
  */
 async function openProtectedRoute(page: Page) {
-  await page.goto('/vehicle-type');
+  await page.goto('/vehicle-types');
   await page.waitForLoadState('domcontentloaded');
   return {
     appContent: page.locator('.app-content'),

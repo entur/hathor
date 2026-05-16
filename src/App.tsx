@@ -37,28 +37,28 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route
-                    path="/vehicle-type"
+                    path="/vehicle-types"
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
                   />
-                  <Route path="/vehicle" element={<ProtectedRoute element={<VehicleView />} />} />
+                  <Route path="/vehicles" element={<ProtectedRoute element={<VehicleView />} />} />
                   <Route
-                    path="/vehicle/new"
+                    path="/vehicles/new"
                     element={<ProtectedRoute element={<VehicleCreatePage />} />}
                   />
                   <Route
-                    path="/deck-plan"
+                    path="/deck-plans"
                     element={<ProtectedRoute element={<DeckPlanView />} />}
                   />
                   <Route
-                    path="/deck-plan/:id"
+                    path="/deck-plans/:id"
                     element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                   />
                   <Route
-                    path="/vehicle-type/new"
+                    path="/vehicle-types/new"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
                   <Route
-                    path="/vehicle-type/:id"
+                    path="/vehicle-types/:id"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
                 </Routes>

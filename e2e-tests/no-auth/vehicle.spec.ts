@@ -15,7 +15,7 @@ const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 // a failure in one shouldn't mask coverage of the others. The no-auth project
 // still uses `workers: 1` for shared dev-server safety.
 
-test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => {
+test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () => {
   test.beforeAll(() => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
   });
@@ -27,7 +27,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
   });
 
   test('list renders 15 rows with localised TransportMode chips', async ({ page }) => {
-    await page.goto('/vehicle');
+    await page.goto('/vehicles');
     await page.waitForLoadState('networkidle');
 
     const table = page.locator('table');
@@ -47,7 +47,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
   });
 
   test('Rail chip filter narrows rows to rail-mode only', async ({ page }) => {
-    await page.goto('/vehicle');
+    await page.goto('/vehicles');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
@@ -59,7 +59,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
   });
 
   test('row action opens sidebar and writes ?selected= to URL', async ({ page }) => {
-    await page.goto('/vehicle');
+    await page.goto('/vehicles');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
@@ -82,7 +82,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
     // longer editable, so the previous regression (raw enum surfacing in
     // edit-mode TextField) no longer applies. This test pins the new
     // contract: localised label, present in both view and edit modes.
-    await page.goto('/vehicle?selected=NMR:Vehicle:bus-1');
+    await page.goto('/vehicles?selected=NMR:Vehicle:bus-1');
     await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
@@ -94,7 +94,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
   });
 
   test('Close button drops ?selected= and collapses the sidebar', async ({ page }) => {
-    await page.goto('/vehicle?selected=NMR:Vehicle:bus-1');
+    await page.goto('/vehicles?selected=NMR:Vehicle:bus-1');
     await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
@@ -108,7 +108,7 @@ test.describe('/vehicle list, sidebar, deep-link, chip filter (no-auth)', () => 
   test('deep-link auto-paginates to the page containing the selected row', async ({ page }) => {
     // RAIL-009 is index 10 in the sorted set (BUS-001, BUS-002, RAIL-001..012, UNK-001),
     // so it lives on page 1 (0-based) at the default rowsPerPage=10.
-    await page.goto('/vehicle?selected=NMR:Vehicle:rail-9');
+    await page.goto('/vehicles?selected=NMR:Vehicle:rail-9');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();

@@ -50,14 +50,14 @@ const MOCK_DECK_PLANS = loadFixture('deck-plans-mock.json');
 
 /**
  * Intercept the GraphQL vehicleTypes query and return mock data.
- * Required for tests that load /vehicle-type without a real backend.
+ * Required for tests that load /vehicle-types without a real backend.
  */
 export const interceptVehicleTypesQuery = (page: import('@playwright/test').Page) =>
   interceptGraphQLQuery(page, 'vehicleTypes', MOCK_VEHICLE_TYPES);
 
 /**
  * Intercept the GraphQL DeckPlans query and return mock data.
- * Required for tests that load /deck-plan without a real backend.
+ * Required for tests that load /deck-plans without a real backend.
  */
 export const interceptDeckPlansQuery = (page: import('@playwright/test').Page) =>
   interceptGraphQLQuery(page, 'DeckPlans', MOCK_DECK_PLANS);

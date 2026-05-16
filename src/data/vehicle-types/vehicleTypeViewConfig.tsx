@@ -29,7 +29,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
       <Chip
         label={item.id}
         component={Link}
-        to={`/vehicle-type/${encodeURIComponent(item.id)}`}
+        to={`/vehicle-types/${encodeURIComponent(item.id)}`}
         clickable
         size="small"
         variant="outlined"

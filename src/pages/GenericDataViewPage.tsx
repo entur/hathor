@@ -103,7 +103,7 @@ export default function GenericDataViewPage<T, K extends string>({
     getSortValue,
   });
 
-  // Optional per-page URL→state reconciler (e.g. `/vehicle?selected=…`).
+  // Optional per-page URL→state reconciler (e.g. `/vehicles?selected=…`).
   // Pages that don't opt in pass `useUrlEffect: undefined`; the no-op fallback
   // keeps hook order stable across renders.
   (viewConfig.useUrlEffect ?? noopUrlEffect)({
@@ -118,7 +118,7 @@ export default function GenericDataViewPage<T, K extends string>({
 
   // Open the sidebar when a new editor is set; collapse it when the editor
   // is cleared (e.g. the editor's Close button → `setEditingItem(null)`, or
-  // a URL-driven page like `/vehicle?selected=…` dropping its param).
+  // a URL-driven page like `/vehicles?selected=…` dropping its param).
   useEffect(() => {
     const prevId = prevEditingIdRef.current;
     if (editingItem && editingItem.id !== prevId) {

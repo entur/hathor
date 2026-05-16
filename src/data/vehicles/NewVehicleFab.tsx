@@ -12,7 +12,7 @@ export default function NewVehicleFab() {
       <Fab
         size="small"
         color="primary"
-        onClick={() => navigate('/vehicle/new')}
+        onClick={() => navigate('/vehicles/new')}
         data-testid="create-vehicle-fab"
         aria-label={label}
       >

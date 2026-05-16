@@ -8,7 +8,7 @@ import { fetchVehicles } from './fetchVehicles.ts';
 import { compareVehicles } from './vehicleSortValue.ts';
 
 /**
- * Data hook for the `/vehicle` list. Mirrors `useVehicleTypes` — single fetch
+ * Data hook for the `/vehicles` list. Mirrors `useVehicleTypes` — single fetch
  * of the full set, client-side sort + pagination. Refetch on
  * `applicationBaseUrl` change.
  */
@@ -70,7 +70,7 @@ export function useVehicles() {
   };
 
   // Memoized so that `allData` is a stable reference across renders. The
-  // /vehicle URL effect (`useVehicleUrlSelection`) depends on `allData` —
+  // /vehicles URL effect (`useVehicleUrlSelection`) depends on `allData` —
   // without memoisation a fresh array each render would re-fire the effect
   // continuously, remounting the slider editor and wiping its `mode` state.
   const sorted = useMemo(
