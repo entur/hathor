@@ -96,8 +96,26 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, mb: 1 }}>
-        <Typography variant="h6" noWrap data-testid="vehicle-details-title" sx={{ minWidth: 0 }}>
+      <Box
+        sx={{
+          mb: 1,
+          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
+          },
+          columnGap: COL_GAP,
+          alignItems: 'center',
+        }}
+      >
+        <Typography
+          variant="h6"
+          noWrap
+          title={trimmedName || undefined}
+          data-testid="vehicle-details-title"
+          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+        >
           {trimmedName || (
             <>
               {'[ '}
@@ -116,8 +134,14 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
             </>
           )}
         </Typography>
-        <NetexId id={vehicle.id} version={vehicle.version} copy="onHover" size="xsmall" />
-      </Stack>
+        <NetexId
+          id={vehicle.id}
+          version={vehicle.version}
+          copy="onHover"
+          size="small"
+          sx={{ justifySelf: 'start' }}
+        />
+      </Box>
       <Divider sx={{ mb: 2 }} />
 
       <Box
@@ -141,7 +165,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
               <span>{vehicle.transportType?.name ?? '—'}</span>
               {vehicle.transportType?.id && (
-                <NetexId id={vehicle.transportType.id} copy="onHover" size="xsmall" />
+                <NetexId id={vehicle.transportType.id} copy="onHover" size="small" />
               )}
             </Stack>
           }

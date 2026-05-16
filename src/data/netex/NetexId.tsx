@@ -53,14 +53,6 @@ const SIZES: Record<NetexIdSize, SizeSpec> = {
   large: { idFont: '1rem', verFont: '0.8125rem', outer: 40, ver: 26, btn: 26, icon: 17, gap: 1 },
 };
 
-const CHIP_GRADIENT_LIGHT = 'linear-gradient(180deg, #ffffff 0%, #f0f1f3 55%, #e3e5e9 100%)';
-const CHIP_GRADIENT_DARK =
-  'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 55%, rgba(0,0,0,0.18) 100%)';
-const CHIP_SHADOW_LIGHT =
-  'inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.12)';
-const CHIP_SHADOW_DARK =
-  'inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.5)';
-
 interface NetexParts {
   code: string;
   type: string;
@@ -204,9 +196,6 @@ export default function NetexId({
         fontFamily: 'monospace',
         fontSize: dim.idFont,
         maxWidth: '100%',
-        background: theme =>
-          theme.palette.mode === 'dark' ? CHIP_GRADIENT_DARK : CHIP_GRADIENT_LIGHT,
-        boxShadow: theme => (theme.palette.mode === 'dark' ? CHIP_SHADOW_DARK : CHIP_SHADOW_LIGHT),
         '& .MuiChip-label': { display: 'flex', alignItems: 'center' },
         ...hoverSx,
         ...sx,
