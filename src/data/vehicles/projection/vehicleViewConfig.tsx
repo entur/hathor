@@ -24,6 +24,20 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     display: 'always',
   },
   {
+    id: 'operationalNumber',
+    headerLabel: 'Operational Number',
+    isSortable: true,
+    renderCell: item =>
+      item.operationalNumber ? (
+        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+          {item.operationalNumber}
+        </Typography>
+      ) : (
+        '—'
+      ),
+    display: 'desktop-only',
+  },
+  {
     id: 'transportTypeName',
     headerLabel: 'Vehicle Type',
     isSortable: true,

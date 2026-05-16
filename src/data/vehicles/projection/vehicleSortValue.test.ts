@@ -45,6 +45,17 @@ describe('compareVehicles', () => {
     expect(sorted.map(r => r.id)).toEqual(['b', 'd', 'a']);
   });
 
+  it('sorts by operationalNumber and parks rows without one at the end', () => {
+    const rows = [
+      mk({ id: 'a', operationalNumber: undefined }),
+      mk({ id: 'b', operationalNumber: 'OP-200' }),
+      mk({ id: 'c', operationalNumber: undefined }),
+      mk({ id: 'd', operationalNumber: 'OP-100' }),
+    ];
+    const sorted = [...rows].sort(compareVehicles('operationalNumber', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['d', 'b', 'a', 'c']);
+  });
+
   it('sorts version numerically (regression: never falls through to id)', () => {
     const rows = [
       mk({ id: 'big', version: 20 }),

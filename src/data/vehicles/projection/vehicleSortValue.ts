@@ -15,6 +15,8 @@ export const getVehicleSortValue = (
   switch (key) {
     case 'registrationNumber':
       return item.registrationNumber || '';
+    case 'operationalNumber':
+      return item.operationalNumber || '';
     case 'version':
       return item.version;
     case 'transportTypeName':
