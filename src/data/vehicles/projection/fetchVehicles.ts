@@ -20,11 +20,7 @@ interface VehicleWire {
 /**
  * Fetch the full Vehicle list from Sobek's `vehicles(...)` GraphQL query and
  * project each entry into the camelCase row shape consumed by the list view.
- *
- * Bulk-fetches up to `FETCH_ALL_SIZE` and warns when the response is
- * truncated — see #72 for the follow-up that switches to server-side paging.
- * Unknown/missing `transportMode` values collapse to `'unknown'` via
- * `toTransportMode`.
+ * Warns once when the response is truncated past `FETCH_ALL_SIZE`.
  *
  * @param applicationBaseUrl Sobek base URL.
  * @param token OIDC access token (bearer).
@@ -48,16 +44,14 @@ export async function fetchVehicles(
     id: v.id,
     version: v.version,
     registrationNumber: v.registrationNumber,
-    ...(v.operationalNumber ? { operationalNumber: v.operationalNumber } : {}),
-    ...(v.transportType
+    operationalNumber: v.operationalNumber ?? undefined,
+    transportType: v.transportType
       ? {
-          transportType: {
-            id: v.transportType.id,
-            version: v.transportType.version,
-            ...(v.transportType.name?.value ? { name: v.transportType.name.value } : {}),
-            transportMode: toTransportMode(v.transportType.transportMode ?? undefined),
-          },
+          id: v.transportType.id,
+          version: v.transportType.version,
+          name: v.transportType.name?.value,
+          transportMode: toTransportMode(v.transportType.transportMode),
         }
-      : {}),
+      : undefined,
   }));
 }

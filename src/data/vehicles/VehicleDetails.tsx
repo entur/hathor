@@ -6,7 +6,7 @@ import { transportModeLabelKey } from '../netex/transportMode.ts';
 import NetexId from '../netex/NetexId.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
-import type { VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
+import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
 import VehicleEditForm, {
   type VehicleEditFormValue,
   LABEL_COL_MIN,
@@ -83,6 +83,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
 
   const isDirty = JSON.stringify(form) !== initialFormKey;
   const trimmedName = firstText(form.vehicle.Name).trim();
+  const tmode = vehicleMode(vehicle);
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -138,10 +139,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
         />
         <ContextRow
           label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
-          value={t(
-            transportModeLabelKey(vehicle.transportType?.transportMode ?? 'unknown'),
-            vehicle.transportType?.transportMode ?? 'unknown'
-          )}
+          value={t(transportModeLabelKey(tmode), tmode)}
         />
       </Box>
       <Divider sx={{ mb: 2 }} />

@@ -9,7 +9,7 @@ import { getVehicleSortValue } from './vehicleSortValue.ts';
 import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
 import { transportModeFilters } from '../../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
-import type { VehicleGQLShaped, VehicleColumnKey } from './vehicleGqlShaped.ts';
+import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './vehicleGqlShaped.ts';
 
 const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   {
@@ -34,7 +34,7 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     id: 'transportTypeMode',
     headerLabel: 'Transport Mode',
     isSortable: true,
-    renderCell: item => <TransportModeChip mode={item.transportType?.transportMode ?? 'unknown'} />,
+    renderCell: item => <TransportModeChip mode={vehicleMode(item)} />,
     display: 'desktop-only',
   },
   {
@@ -53,9 +53,7 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   },
 ];
 
-/** Chip-filter key for a row — the joined transportType mode, or `'unknown'`. */
-const getVehicleFilterKey = (item: VehicleGQLShaped): string =>
-  item.transportType?.transportMode ?? 'unknown';
+const getVehicleFilterKey = (item: VehicleGQLShaped): string => vehicleMode(item);
 
 export const vehicleViewConfig = {
   useData: useVehicles,

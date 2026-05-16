@@ -15,6 +15,8 @@ import type { FilterDefinition } from '../../components/search/searchTypes.ts';
  * with the schema; `'unknown'` is the catch-all for missing or unrecognised
  * values from the backend.
  */
+export const UNKNOWN_TRANSPORT_MODE = 'unknown' as const;
+
 export type TransportMode =
   | 'bus'
   | 'tram'
@@ -29,7 +31,7 @@ export type TransportMode =
   | 'lift'
   | 'trolleyBus'
   | 'snowAndIce'
-  | 'unknown';
+  | typeof UNKNOWN_TRANSPORT_MODE;
 
 /**
  * Shared chip-filter set for any list view that filters by TransportMode.
@@ -61,7 +63,7 @@ const KNOWN_TRANSPORT_MODES: ReadonlySet<TransportMode> = new Set(
 
 const ALL_TRANSPORT_MODES: ReadonlySet<TransportMode> = new Set<TransportMode>([
   ...KNOWN_TRANSPORT_MODES,
-  'unknown',
+  UNKNOWN_TRANSPORT_MODE,
 ]);
 
 /**
@@ -81,7 +83,7 @@ export const isTransportMode = (s: string | null | undefined): s is TransportMod
 export const toTransportMode = (s: string | null | undefined): TransportMode =>
   typeof s === 'string' && KNOWN_TRANSPORT_MODES.has(s as TransportMode)
     ? (s as TransportMode)
-    : 'unknown';
+    : UNKNOWN_TRANSPORT_MODE;
 
 /** Map a `TransportMode` to its i18n key. */
 export const transportModeLabelKey = (mode: TransportMode): string => `transportMode.${mode}`;
@@ -92,4 +94,4 @@ export const transportModeLabelKey = (mode: TransportMode): string => `transport
  * their enum id.
  */
 export const transportModeSortValue = (mode: TransportMode): string =>
-  mode === 'unknown' ? '' : mode;
+  mode === UNKNOWN_TRANSPORT_MODE ? '' : mode;

@@ -1,4 +1,4 @@
-import type { VehicleGQLShaped, VehicleColumnKey } from './vehicleGqlShaped.ts';
+import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './vehicleGqlShaped.ts';
 import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
 import { transportModeSortValue } from '../../netex/transportMode.ts';
 
@@ -20,7 +20,7 @@ export const getVehicleSortValue = (
     case 'transportTypeName':
       return item.transportType?.name || '';
     case 'transportTypeMode':
-      return transportModeSortValue(item.transportType?.transportMode ?? 'unknown');
+      return transportModeSortValue(vehicleMode(item));
     default: {
       const _exhaustive: never = key;
       return _exhaustive;
