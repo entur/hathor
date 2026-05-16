@@ -3,10 +3,10 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { vehicleSelectedHref } from '../vehicleUrlParams.ts';
-import type { VehicleRow } from '../vehicleTypes.ts';
+import type { VehicleGQLShaped } from '../vehicleGqlShaped.ts';
 
 interface RowClickCellProps {
-  item: VehicleRow;
+  item: VehicleGQLShaped;
 }
 
 /**

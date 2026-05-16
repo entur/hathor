@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
-import { useAuth } from '../../auth/authUtils';
-import { useConfig } from '../../contexts/configContext';
-import { importAsNetexToBackend } from '../vehicle-imports/vehicleImportServices';
+import { useAuth } from '../../../auth/authUtils';
+import { useConfig } from '../../../contexts/configContext';
+import { importAsNetexToBackend } from '../../vehicle-imports/vehicleImportServices';
 import { buildVehiclePairXml } from './buildVehiclePairXml';
 import { parseVehicleImportResponse } from './parseVehicleImportResponse';
-import type { VehicleEditFormValue } from './VehicleEditForm';
+import type { VehicleEditFormValue } from '../VehicleEditForm';
 
 interface SaveResult {
   newId: string | null;

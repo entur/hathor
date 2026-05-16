@@ -1,7 +1,7 @@
-import { vehicleViewConfig } from './vehicleViewConfig.tsx';
+import { vehicleViewConfig } from './projection/vehicleViewConfig.tsx';
 import GenericDataViewPage from '../../pages/GenericDataViewPage.tsx';
 import NewVehicleFab from './NewVehicleFab.tsx';
-import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
+import type { VehicleGQLShaped, VehicleColumnKey } from './projection/vehicleGqlShaped.ts';
 
 /**
  * `/vehicle` route entry point. URL-filter affordances will arrive with
@@ -9,7 +9,7 @@ import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
  */
 export default function VehicleView() {
   return (
-    <GenericDataViewPage<VehicleRow, VehicleColumnKey>
+    <GenericDataViewPage<VehicleGQLShaped, VehicleColumnKey>
       viewConfig={{ ...vehicleViewConfig, floatingAction: <NewVehicleFab /> }}
     />
   );

@@ -1,4 +1,4 @@
-import { xmlParser } from '../vehicle-imports/xmlUtils';
+import { xmlParser } from '../../vehicle-imports/xmlUtils';
 
 /**
  * Extracts `Vehicle/@id` from an /import response body, supporting both

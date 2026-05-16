@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchVehicles } from './fetchVehicles.ts';
-import { fetchVehicleTypes } from '../vehicle-types/fetchVehicleTypes.ts';
-import type { VehicleType } from '../vehicle-types/vehicleTypeTypes.ts';
+import { fetchVehicleTypes } from '../../vehicle-types/fetchVehicleTypes.ts';
+import type { VehicleType } from '../../vehicle-types/vehicleTypeTypes.ts';
 
-vi.mock('../vehicle-types/fetchVehicleTypes.ts', () => ({
+vi.mock('../../vehicle-types/fetchVehicleTypes.ts', () => ({
   fetchVehicleTypes: vi.fn(),
 }));
 

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Box, InputLabel, TextField, Typography, Divider } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import type { Vehicle } from './Vehicle';
-import type { VehicleModel } from './VehicleModel';
+import type { Vehicle } from './xml/Vehicle';
+import type { VehicleModel } from './xml/VehicleModel';
 import { firstText } from '../netex/multilingualString.ts';
 
 export const LABEL_COL_MIN = '8rem';

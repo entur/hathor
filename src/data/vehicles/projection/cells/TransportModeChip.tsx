@@ -1,7 +1,7 @@
 import { Chip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { transportModeLabelKey } from '../../netex/transportMode.ts';
-import type { TransportMode } from '../../netex/transportMode.ts';
+import { transportModeLabelKey } from '../../../netex/transportMode.ts';
+import type { TransportMode } from '../../../netex/transportMode.ts';
 
 interface TransportModeChipProps {
   mode: TransportMode;

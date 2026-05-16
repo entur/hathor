@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { ClientError } from 'graphql-request';
-import { useConfig } from '../../contexts/configContext.ts';
-import { useAuth } from '../../auth/authUtils.ts';
-import type { Order } from '../../components/data/dataTableTypes.ts';
-import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
+import { useConfig } from '../../../contexts/configContext.ts';
+import { useAuth } from '../../../auth/authUtils.ts';
+import type { Order } from '../../../components/data/dataTableTypes.ts';
+import type { VehicleGQLShaped, VehicleColumnKey } from './vehicleGqlShaped.ts';
 import { fetchVehicles } from './fetchVehicles.ts';
 import { compareVehicles } from './vehicleSortValue.ts';
 
@@ -13,7 +13,7 @@ import { compareVehicles } from './vehicleSortValue.ts';
  * `applicationBaseUrl` change.
  */
 export function useVehicles() {
-  const [data, setData] = useState<VehicleRow[]>([]);
+  const [data, setData] = useState<VehicleGQLShaped[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

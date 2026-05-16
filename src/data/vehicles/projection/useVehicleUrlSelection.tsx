@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useEditing } from '../../contexts/EditingContext.tsx';
-import VehicleDetails from './VehicleDetails.tsx';
+import { useEditing } from '../../../contexts/EditingContext.tsx';
+import VehicleDetails from '../VehicleDetails.tsx';
 import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
-import type { VehicleRow } from './vehicleTypes.ts';
+import type { VehicleGQLShaped } from './vehicleGqlShaped.ts';
 
 interface UrlSelectionParams {
-  allData: VehicleRow[] | null;
-  dataForTable: VehicleRow[];
+  allData: VehicleGQLShaped[] | null;
+  dataForTable: VehicleGQLShaped[];
   rowsPerPage: number;
   setPage: (page: number) => void;
   loading: boolean;

@@ -1,10 +1,10 @@
-import { fetchVehicleTypes } from '../vehicle-types/fetchVehicleTypes.ts';
-import { toTransportMode } from '../netex/transportMode.ts';
-import type { VehicleRow } from './vehicleTypes.ts';
-import type { AccessToken } from '../../auth';
+import { fetchVehicleTypes } from '../../vehicle-types/fetchVehicleTypes.ts';
+import { toTransportMode } from '../../netex/transportMode.ts';
+import type { VehicleGQLShaped } from './vehicleGqlShaped.ts';
+import type { AccessToken } from '../../../auth';
 
 /**
- * Flatten all `vehicleType.vehicles[]` arrays into a single `VehicleRow[]`.
+ * Flatten all `vehicleType.vehicles[]` arrays into a single `VehicleGQLShaped[]`.
  *
  * Delegates to the existing `fetchVehicleTypes` request — no duplicated
  * GraphQL query. Each row is enriched with parent VehicleType context so the
@@ -19,10 +19,10 @@ import type { AccessToken } from '../../auth';
 export async function fetchVehicles(
   applicationBaseUrl: string,
   token: AccessToken
-): Promise<VehicleRow[]> {
+): Promise<VehicleGQLShaped[]> {
   const { vehicleTypes } = await fetchVehicleTypes(applicationBaseUrl, token);
   return vehicleTypes.flatMap(vt =>
-    (vt.vehicles ?? []).map<VehicleRow>(v => ({
+    (vt.vehicles ?? []).map<VehicleGQLShaped>(v => ({
       id: v.id,
       registrationNumber: v.registrationNumber,
       version: v.version,

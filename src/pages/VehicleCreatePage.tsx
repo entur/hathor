@@ -5,7 +5,7 @@ import GenericDetailsPage from './GenericDetailsPage';
 import VehicleEditForm, { type VehicleEditFormValue } from '../data/vehicles/VehicleEditForm';
 import SaveErrorSnackbar from '../data/vehicles/SaveErrorSnackbar';
 import { BLANK_FORM } from '../data/vehicles/vehicleFormDefaults';
-import { useVehiclePairSave } from '../data/vehicles/useVehiclePairSave';
+import { useVehiclePairSave } from '../data/vehicles/xml/useVehiclePairSave';
 import { useDirtyFormBlock } from '../data/vehicles/useDirtyFormBlock';
 
 const BLANK_FORM_KEY = JSON.stringify(BLANK_FORM);

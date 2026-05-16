@@ -5,8 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
 import NetexId from '../netex/NetexId.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
-import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
-import type { VehicleRow } from './vehicleTypes.ts';
+import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
+import type { VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
 import VehicleEditForm, {
   type VehicleEditFormValue,
   LABEL_COL_MIN,
@@ -16,7 +16,7 @@ import VehicleEditForm, {
 import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import { BLANK_FORM, hydrateFromRow } from './vehicleFormDefaults.ts';
-import { useVehiclePairSave } from './useVehiclePairSave.ts';
+import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 
 const BLANK_NAME = 'unnamed';
@@ -24,7 +24,7 @@ const RAIL_SIDE = 'right' as const;
 
 interface VehicleDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
-  vehicle: VehicleRow | null;
+  vehicle: VehicleGQLShaped | null;
 }
 
 export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {

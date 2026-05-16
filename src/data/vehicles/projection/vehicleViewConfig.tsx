@@ -1,17 +1,17 @@
 import { Typography } from '@mui/material';
 import { useVehicles } from './useVehicles.ts';
-import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
-import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
-import DataPageContent from '../../components/data/DataPageContent.tsx';
+import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
+import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
+import DataPageContent from '../../../components/data/DataPageContent.tsx';
 import RowClickCell from './cells/RowClickCell.tsx';
 import TransportModeChip from './cells/TransportModeChip.tsx';
 import { getVehicleSortValue } from './vehicleSortValue.ts';
 import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
-import { transportModeFilters } from '../netex/transportMode.ts';
-import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
-import type { VehicleRow, VehicleColumnKey } from './vehicleTypes.ts';
+import { transportModeFilters } from '../../netex/transportMode.ts';
+import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
+import type { VehicleGQLShaped, VehicleColumnKey } from './vehicleGqlShaped.ts';
 
-const vehicleColumns: ColumnDefinition<VehicleRow, VehicleColumnKey>[] = [
+const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   {
     id: 'registrationNumber',
     headerLabel: 'Registration Number',
@@ -54,7 +54,7 @@ const vehicleColumns: ColumnDefinition<VehicleRow, VehicleColumnKey>[] = [
 ];
 
 /** Chip-filter key for a row — the inherited parent TransportMode. */
-const getVehicleFilterKey = (item: VehicleRow): string => item.parentTransportMode;
+const getVehicleFilterKey = (item: VehicleGQLShaped): string => item.parentTransportMode;
 
 export const vehicleViewConfig = {
   useData: useVehicles,
