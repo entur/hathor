@@ -1,10 +1,17 @@
 /**
- * NOTE — workaround for sobek#125. The Sobek `vehicles(...)` GraphQL query
- * returns the **outer** `Vehicle.id` as a full NeTEx id (`CODESPACE:Type:value`)
- * but the **nested** `transportType.id` falls back to the default fetcher and
- * returns the DB row id. Until that lands, we reconstruct the missing prefix
- * client-side by lifting the codespace off a sibling NeTEx id (typically the
- * outer entity in the same frame). Mirrors the historical hardcoded
+ * NOTE — workaround for sobek#125. Two nested NeTEx-id fields fall back to
+ * the default fetcher and return the bare DB row id instead of the full
+ * `CODESPACE:Type:value` form:
+ *
+ *   - `vehicles(...) { content { transportType { id } } }` — used by the
+ *     `/vehicles` list and details TransportTypeRef.
+ *   - `vehicleTypes(...) { content { vehicles { id } } }` — used by the
+ *     "vehicles" column on `/vehicle-types` for the deep-link to
+ *     `/vehicles/:id`.
+ *
+ * Until the Sobek fix lands, we reconstruct the missing prefix client-side
+ * by lifting the codespace off a sibling NeTEx id (typically the outer
+ * entity in the same frame). Mirrors the historical hardcoded
  * `NMR:Vehicle:` workaround that PR entur/sobek#123 retired.
  *
  * Remove `restructNetexId` once sobek#125 ships — the pass-through guard means

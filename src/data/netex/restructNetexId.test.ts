@@ -20,4 +20,10 @@ describe('restructNetexId', () => {
   it('preserves codespaces beyond the default NMR', () => {
     expect(restructNetexId('FOO:Vehicle:V1', 'VehicleType', '7')).toBe('FOO:VehicleType:7');
   });
+
+  it('works in the reverse direction (parent VehicleType → nested Vehicle row id)', () => {
+    // sobek#125 also affects vehicleTypes(...) { vehicles { id } } — use the
+    // outer VehicleType id as the donor for the missing Vehicle prefix.
+    expect(restructNetexId('NMR:VehicleType:rail', 'Vehicle', '42')).toBe('NMR:Vehicle:42');
+  });
 });
