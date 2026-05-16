@@ -108,6 +108,9 @@
   "vehicles.field.parentVehicleType": "Kjøretøytype",
   "vehicles.field.parentTransportMode": "Transportform",
 
+  "netex.copyId": "Kopier id",
+  "netex.copied": "Kopiert!",
+
   "session.expired.title": "Økten er utløpt",
   "session.expired.message": "Økten din har utløpt. For å beskytte informasjonen din, har du blitt logget ut. Vennligst logg inn igjen for å fortsette.",
   "session.expired.reloginButton": "Logg inn igjen",

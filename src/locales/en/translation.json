@@ -108,6 +108,9 @@
   "vehicles.field.parentVehicleType": "Vehicle Type",
   "vehicles.field.parentTransportMode": "Transport Mode",
 
+  "netex.copyId": "Copy id",
+  "netex.copied": "Copied!",
+
   "session.expired.title": "Session Expired",
   "session.expired.message": "Your session has expired. To protect your information, you have been logged out. Please log in again to continue.",
   "session.expired.reloginButton": "Log In Again",

@@ -106,7 +106,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
             </>
           )}
         </Typography>
-        <NetexId id={vehicle.id} version={vehicle.version} />
+        <NetexId id={vehicle.id} version={vehicle.version} copy="onHover" size="xsmall" />
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
@@ -130,7 +130,9 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
           value={
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
               <span>{vehicle.parentVehicleTypeName ?? '—'}</span>
-              {vehicle.parentVehicleTypeId && <NetexId id={vehicle.parentVehicleTypeId} />}
+              {vehicle.parentVehicleTypeId && (
+                <NetexId id={vehicle.parentVehicleTypeId} copy="onHover" size="xsmall" />
+              )}
             </Stack>
           }
         />
