@@ -89,6 +89,25 @@ describe('fetchVehicles', () => {
     expect(row.transportType?.transportMode).toBe('unknown');
   });
 
+  it('reconstructs a bare transportType.id into a full NeTEx id (sobek#125 bridge)', async () => {
+    mockedRequest.mockResolvedValue(
+      mkPage([
+        {
+          id: 'NMR:Vehicle:V1',
+          version: 1,
+          registrationNumber: 'X-1',
+          transportType: {
+            id: '42',
+            version: 1,
+            transportMode: 'bus',
+          },
+        },
+      ])
+    );
+    const [row] = await fetchVehicles('http://x', null);
+    expect(row.transportType?.id).toBe('NMR:VehicleType:42');
+  });
+
   it('omits operationalNumber on the row when the server returns null', async () => {
     mockedRequest.mockResolvedValue(
       mkPage([

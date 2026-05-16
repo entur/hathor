@@ -1,5 +1,6 @@
 import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 import { toTransportMode } from '../../netex/transportMode.ts';
+import { restructNetexId } from '../../netex/restructNetexId.ts';
 import { FETCH_ALL_SIZE, type Page } from '../../../graphql/paginationTypes.ts';
 import type { VehicleGQLShaped } from './vehicleGqlShaped.ts';
 import type { AccessToken } from '../../../auth';
@@ -47,7 +48,9 @@ export async function fetchVehicles(
     operationalNumber: v.operationalNumber ?? undefined,
     transportType: v.transportType
       ? {
-          id: v.transportType.id,
+          // NOTE: nested transportType.id falls back to DB row id pending sobek#125 —
+          // reconstruct full NeTEx id from outer Vehicle.id codespace.
+          id: restructNetexId(v.id, 'VehicleType', v.transportType.id),
           version: v.transportType.version,
           name: v.transportType.name?.value,
           transportMode: toTransportMode(v.transportType.transportMode),
