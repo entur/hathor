@@ -38,6 +38,9 @@ interface DataPageContentProps<T, K extends string> {
   onRowClick?: (item: T) => void;
   floatingAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
+  /** Forwarded to {@link DataTableHeader}; when true, every sortable header
+   *  is dimmed, click is suppressed, and hover shows the lock tooltip. */
+  sortLocked?: boolean;
 }
 
 export default function DataPageContent<
@@ -60,6 +63,7 @@ export default function DataPageContent<
   onRowClick,
   floatingAction,
   urlFilterInfo,
+  sortLocked,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -114,6 +118,7 @@ export default function DataPageContent<
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
             columns={visibleColumns}
+            sortLocked={sortLocked}
           />
           <TableBody>
             {data.map(item => (

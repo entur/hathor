@@ -138,6 +138,14 @@ export interface PageContentComponentProps<T, K extends string> {
   floatingAction?: ReactNode;
   /** Optional URL filter info for displaying a filter indicator chip. */
   urlFilterInfo?: UrlFilterInfo;
+  /**
+   * When true, sortable column headers render as locked: dimmed, click is a
+   * no-op, hover surfaces a tooltip explaining why. Used by
+   * {@link GenericDataViewPage} to disable sort while the sidebar editor
+   * holds a selection — sort under an open selection caused observable
+   * URL→editor→setPage flicker.
+   */
+  sortLocked?: boolean;
 }
 
 /**

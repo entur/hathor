@@ -191,6 +191,7 @@ export default function GenericDataViewPage<T, K extends string>({
           onRowClick={onRowClick}
           floatingAction={floatingAction}
           urlFilterInfo={urlFilterInfo}
+          sortLocked={!!editingItem}
         />
       </Box>
     </Box>

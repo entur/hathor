@@ -23,6 +23,8 @@
   "data.pagination.displayedRows": "{{from}}–{{to}} of {{count}}",
   "data.pagination.displayedRowsOfMore": "{{from}}–{{to}} of more than {{count}}",
 
+  "data.table.sortLocked": "Close details to change sort",
+
   "data.table.header.name": "Name",
   "data.table.header.id": "ID",
   "data.table.header.longitude": "Longitude",

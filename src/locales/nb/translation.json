@@ -24,6 +24,8 @@
   "data.pagination.displayedRows": "{{from}}–{{to}} av {{count}}",
   "data.pagination.displayedRowsOfMore": "{{from}}–{{to}} av mer enn {{count}}",
 
+  "data.table.sortLocked": "Lukk detaljer for å endre sortering",
+
   "data.table.header.name": "Navn",
   "data.table.header.id": "ID",
   "data.table.header.longitude": "Lengdegrad",
