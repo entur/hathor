@@ -14,6 +14,7 @@ import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
 import { useVehicle } from './useVehicle.ts';
 import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
+import { commitSave } from './commitSave.ts';
 import {
   edit,
   hydrate,
@@ -30,9 +31,15 @@ const RAIL_SIDE = 'right' as const;
 interface VehicleDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
   vehicle: VehicleGQLShaped | null;
+  /**
+   * List-side refetch fired after a successful save so the row on `/vehicles`
+   * reflects the new registrationNumber/name/version before the success
+   * snackbar appears. Optional — callers without a list channel can omit.
+   */
+  onSaved?: () => Promise<void>;
 }
 
-export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
+export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
@@ -61,7 +68,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
     );
 
   const handleSave = async () => {
-    const result = await save(form);
+    const result = await commitSave(save, form, onSaved);
     if (!result.error) {
       setSavedAt(Date.now());
       setMode('view');

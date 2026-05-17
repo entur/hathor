@@ -52,6 +52,13 @@ export interface UseDataReturn<T, K extends string> {
   addRow?: (newRow: T) => void;
   /** Optimistically update an existing row in the local dataset. */
   updateRow?: (updatedRow: T, column: ColumnDefinition<T, K>) => void;
+  /**
+   * Re-run the dataset fetch. The returned promise must only resolve after
+   * the new data has been committed to local state (no fire-and-forget
+   * chains), so editor flows can `await refetch()` and observe fresh rows
+   * before signalling success to the user.
+   */
+  refetch?: () => Promise<void>;
 }
 
 /**
@@ -184,6 +191,8 @@ export interface ViewConfig<T, K extends string> {
     rowsPerPage: number;
     setPage: (page: number) => void;
     loading: boolean;
+    /** Re-fetch the dataset. Optional — pages without an editor that mutates can ignore. */
+    refetch?: () => Promise<void>;
   }) => void;
   /**
    * Optional hook that returns a whole-row click handler. Invoked inside

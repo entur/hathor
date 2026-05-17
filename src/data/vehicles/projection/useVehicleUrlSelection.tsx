@@ -11,6 +11,8 @@ interface UrlSelectionParams {
   rowsPerPage: number;
   setPage: (page: number) => void;
   loading: boolean;
+  /** List refetch, forwarded into `VehicleDetails` so a save can refresh the row. */
+  refetch?: () => Promise<void>;
 }
 
 /**
@@ -35,6 +37,7 @@ export function useVehicleUrlSelection({
   rowsPerPage,
   setPage,
   loading,
+  refetch,
 }: UrlSelectionParams): void {
   const [searchParams] = useSearchParams();
   const selected = searchParams.get(VEHICLE_SELECTED_PARAM);
@@ -59,7 +62,7 @@ export function useVehicleUrlSelection({
     if (lastCommittedIdRef.current !== selected) {
       setEditingItem({
         id: selected,
-        EditorComponent: () => <VehicleDetails vehicle={row} />,
+        EditorComponent: () => <VehicleDetails vehicle={row} onSaved={refetch} />,
       });
       lastCommittedIdRef.current = selected;
     }
@@ -67,7 +70,7 @@ export function useVehicleUrlSelection({
     if (idx >= 0 && !dataForTable.some(v => v.id === selected)) {
       setPage(Math.floor(idx / rowsPerPage));
     }
-  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem]);
+  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem, refetch]);
 
   useEffect(() => {
     return () => {

@@ -76,6 +76,7 @@ export default function GenericDataViewPage<T, K extends string>({
     rowsPerPage,
     setPage,
     setRowsPerPage,
+    refetch,
   } = useData();
 
   useSearchRegistration(allData, dataLoading);
@@ -112,6 +113,7 @@ export default function GenericDataViewPage<T, K extends string>({
     rowsPerPage,
     setPage,
     loading: dataLoading,
+    refetch,
   });
 
   const onRowClick = (viewConfig.useRowClick ?? noopRowClick)();

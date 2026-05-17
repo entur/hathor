@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { ClientError } from 'graphql-request';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
 import type { VehicleGQLShaped, VehicleColumnKey } from './vehicleGqlShaped.ts';
-import { fetchVehicles } from './fetchVehicles.ts';
+import { fetchVehiclesAndApply } from './fetchVehiclesAndApply.ts';
 import { compareVehicles } from './vehicleSortValue.ts';
 
 /**
@@ -29,34 +28,16 @@ export function useVehicles() {
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl) return;
     setLoading(true);
-    setError(null);
-    const token = await getAccessToken();
-    fetchVehicles(applicationBaseUrl, token)
-      .then(setData)
-      .catch((err: unknown) => {
-        if (err instanceof ClientError) {
-          const status = err.response.status;
-          switch (status) {
-            case 401:
-              setError('Not authenticated — please log in to access this data');
-              break;
-            case 403:
-              setError('Access denied — you do not have permission to view this data');
-              break;
-            default: {
-              const message = err.response.errors?.[0]?.message;
-              setError(message ?? `Server error (${status})`);
-            }
-          }
-        } else if (err instanceof TypeError) {
-          setError('Unable to reach server — check that the backend is running');
-        } else if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
-      })
-      .finally(() => setLoading(false));
+    try {
+      await fetchVehiclesAndApply({
+        applicationBaseUrl,
+        getAccessToken,
+        setData,
+        setError,
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [applicationBaseUrl, getAccessToken]);
 
   useEffect(() => {
