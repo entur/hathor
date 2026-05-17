@@ -18,7 +18,12 @@ export function useVehicle(id: string | undefined) {
   const { getAccessToken } = useAuth();
 
   const doFetch = useCallback(async () => {
-    if (!applicationImportBaseUrl || !id) return;
+    if (!id) return;
+    if (!applicationImportBaseUrl) {
+      setError('Application import base URL is not configured');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
