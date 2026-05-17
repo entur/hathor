@@ -208,6 +208,18 @@ Carve `src/data/vehicles/` into role-aligned subdirs:
 
 Companion rename in the same commit: `vehicleTypes.ts` → `projection/vehicleGqlShaped.ts`, and the row interface `VehicleRow` → `VehicleGQLShaped`. The new type name is honest about origin (GQL projection) and distinct from the NeTEx-shaped `Vehicle` in `xml/`. ESLint config's netex-ts-gen exemption paths follow the moves.
 
+### Usage rule
+
+**Projection types are read-side only.** `VehicleGQLShaped` (and any future sibling in `projection/`) exists to power **search, list, filter, sort, and other page-level view affordances**. It is a deliberately lossy GQL camelCase projection — joined display fields like `transportType.name` ride along, but most of the NeTEx body is absent by design.
+
+**Detail / edit / post workflows must use the NeTEx shape.** Anything that hydrates a sidebar form, mutates Vehicle/VehicleModel state, or POSTs to `/import` round-trips through `xml/Vehicle.ts` + `xml/VehicleModel.ts` (the netex-ts-gen output). Concretely:
+
+- The form's value type is `VehicleEditFormValue = { vehicle: Vehicle; model: VehicleModel }` — NeTEx types, not projection types.
+- The form is hydrated from `useVehicle(id)` → fetched NeTEx XML → parsed via `xml/Vehicle-parser`. **Never** from the GQL row's projection.
+- Save goes the other way: form → `xml/Vehicle-mapping` → `buildPublicationDeliveryXml` → `/import`. **Never** a GQL mutation off the projection shape.
+
+This boundary is what makes the round-trip honest. A projection row carries display-flattened data the import path doesn't recognise and is missing fields the import path requires; using it as a write source loses information silently.
+
 ### Alternatives considered
 
 | Option | Why rejected |
