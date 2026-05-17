@@ -1,6 +1,8 @@
-# Fork decisions
+# Fork decisions — Architecture Decision Records (ADR)
 
-A log of significant design decisions made on this Hathor fork — both at fork time and during ongoing development. Each entry captures the **decision**, the **alternatives considered**, and the **rationale**, so future contributors can understand *why* the code looks the way it does without spelunking commit history.
+This file **is** the ADR log for the Hathor fork. Each section is one Architecture Decision Record capturing the **context**, **decision**, **alternatives considered**, and **consequences** of a design choice, so future contributors can understand *why* the code looks the way it does without spelunking commit history.
+
+This is the **single home for design rationale.** `CLAUDE.md` describes *what* the patterns are (how to use ViewConfig, where state lives, etc.) and intentionally does not restate the *why* — that lives here. When adding a non-obvious design call, write a new ADR section in this file rather than expanding CLAUDE.md.
 
 Companion to [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md): that file holds *unresolved* design ambiguities; this file holds *resolved* ones.
 
