@@ -1,17 +1,6 @@
 import type { FramesByQueryRegNumber, ImportEntry, ParsedXml } from './types';
-import { XMLBuilder, XMLParser } from 'fast-xml-parser';
-
-/** Find ResourceFrame in parsed XML — supports both CompositeFrame-wrapped and flat layouts. */
-export function findResourceFrame(parsed: ParsedXml): ParsedXml | undefined {
-  const dataObjects = parsed.PublicationDelivery?.dataObjects;
-  return dataObjects?.CompositeFrame?.frames?.ResourceFrame ?? dataObjects?.ResourceFrame;
-}
-
-/** Normalise to array — handles single-element vs array in parsed XML. */
-export function toArray<T>(value: T | T[] | undefined): T[] {
-  if (value === undefined || value === null) return [];
-  return Array.isArray(value) ? value : [value];
-}
+import { XMLBuilder } from 'fast-xml-parser';
+import { findResourceFrame, toArray, xmlParser } from '../netex/xmlUtils';
 
 /** Collect and deduplicate entities by @_id from a path like `rf.vehicleTypes.VehicleType`. */
 function uniqueById(frames: ParsedXml[], section: string, element: string): ParsedXml[] {
@@ -102,8 +91,6 @@ export function pubDeliverySingleRcFrame(
   const xmlContent = builder.build(blueprintClone);
   return xmlContent;
 }
-
-export const xmlParser = new XMLParser({ ignoreAttributes: false });
 
 export function extractVehicleTypeIds(xml: string): string[] {
   const parsed = xmlParser.parse(xml);

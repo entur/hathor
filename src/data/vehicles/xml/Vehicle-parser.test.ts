@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseVehicleXml } from './parseVehicleXml';
+import { parseVehicleXml } from './Vehicle-parser';
 import { vehicleToXmlShape } from './Vehicle-mapping';
 import { buildPublicationDeliveryXml } from '../../netex/publicationDeliveryXml';
 import type { TextType } from './Vehicle';
@@ -104,6 +104,28 @@ describe('parseVehicleXml', () => {
     const single = parseVehicleXml(SEED_XML);
     expect(Array.isArray(single?.Name)).toBe(true);
     expect(single?.Name).toHaveLength(1);
+  });
+
+  it('round-trips Refs with domain→xml aliases (M1: TransportOrganisationRef ↔ <AuthorityRef>, VehicleModelProfileRef ↔ <CarModelProfileRef>)', () => {
+    // Vehicle-mapping.ts:36,41 emits domain keys under XML aliases:
+    //   TransportOrganisationRef  → <AuthorityRef ref="…"/>
+    //   VehicleModelProfileRef    → <CarModelProfileRef ref="…"/>
+    // parseVehicleXml must translate the XML aliases back, otherwise the
+    // round-trip drops the domain key names.
+    const input = {
+      $id: 'AKT:Vehicle:alias-1',
+      $version: '1',
+      Name: [{ value: 'Alias Vehicle', $lang: 'nb' }],
+      RegistrationNumber: 'ALI-0001',
+      TransportOrganisationRef: 'NMR:Authority:42',
+      VehicleModelProfileRef: 'NMR:VehicleModelProfile:7',
+    };
+    const xml = buildPublicationDeliveryXml({
+      vehicles: [vehicleToXmlShape(input as Record<string, unknown>)],
+    });
+    const parsed = parseVehicleXml(xml);
+    expect(parsed?.TransportOrganisationRef).toBe('NMR:Authority:42');
+    expect(parsed?.VehicleModelProfileRef).toBe('NMR:VehicleModelProfile:7');
   });
 
   it('round-trips: parse → vehicleToXmlShape → buildPublicationDeliveryXml → parse matches', () => {

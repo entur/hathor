@@ -1,12 +1,8 @@
 import { translateAutosysError } from './autosysErrorTranslator';
 import type { ParsedXml, FramesByQueryRegNumber } from './types';
 import type { MergedEntities } from './xmlUtils';
-import {
-  findResourceFrame,
-  mergeResourceFrames,
-  pubDeliverySingleRcFrame,
-  xmlParser,
-} from './xmlUtils';
+import { mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
+import { findResourceFrame, xmlParser } from '../netex/xmlUtils';
 
 /** Result of fetching a single vehicle from the Autosys registry.
  * On success `xml` contains the raw NeTEx XML and `error` is null.
