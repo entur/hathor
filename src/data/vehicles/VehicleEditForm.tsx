@@ -8,7 +8,7 @@ import { firstText } from '../netex/multilingualString.ts';
 export const LABEL_COL_MIN = '8rem';
 export const LABEL_COL_MAX = '12rem';
 export const COL_GAP = 2;
-const ROW_GAP = 1.25;
+export const ROW_GAP = 1.25;
 const DATE_PLACEHOLDER = 'YYYY-MM-DD';
 
 export interface VehicleEditFormValue {

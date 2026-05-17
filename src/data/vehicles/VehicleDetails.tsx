@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState, type ReactNode } from 'react';
-import { Box, CircularProgress, Divider, Stack, Typography } from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { transportModeLabelKey } from '../netex/transportMode.ts';
@@ -8,6 +8,7 @@ import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
 import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
 import VehicleEditForm, { LABEL_COL_MIN, LABEL_COL_MAX, COL_GAP } from './VehicleEditForm.tsx';
+import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
@@ -93,6 +94,15 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
             </Typography>
           )}
         </Box>
+        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
+      </>
+    );
+  }
+
+  if (xmlLoading) {
+    return (
+      <>
+        <VehicleDetailsSkeleton />
         <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
       </>
     );
@@ -184,20 +194,13 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
       </Box>
       <Divider sx={{ mb: 2 }} />
 
-      {xmlLoading && (
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ py: 2 }}>
-          <CircularProgress size={16} />
-          <Typography variant="body2" color="text.secondary">
-            {t('vehicles.loading', 'Loading vehicle…')}
-          </Typography>
-        </Stack>
-      )}
-      {!xmlLoading && xmlError && (
+      {xmlError ? (
         <Typography variant="body2" color="error" sx={{ py: 2 }}>
           {xmlError}
         </Typography>
+      ) : (
+        <VehicleEditForm value={form} onChange={setForm} mode={mode} />
       )}
-      {!xmlLoading && !xmlError && <VehicleEditForm value={form} onChange={setForm} mode={mode} />}
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
       <SaveSuccessSnackbar
