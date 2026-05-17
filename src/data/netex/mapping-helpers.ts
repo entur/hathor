@@ -2,6 +2,11 @@
  * Shared helpers for `Vehicle-mapping` + `VehicleModel-mapping`. Both
  * serializers project a `$`-prefixed domain object into the fast-xml-parser
  * builder shape: `$x → @_x`, `value → #text`, booleans stringified.
+ *
+ * NOTE: this hand-written parser/mapping mirror pair is the workaround
+ * tracked by entur/netex-typescript-model#49. Once the codegen tool emits
+ * bidirectional `Codec<T>` per entity (v2), this whole `netex/*-helpers.ts`
+ * pair is deleted and consumers swap to `fooCodec.encode/decode`.
  */
 
 export type Obj = Record<string, unknown>;

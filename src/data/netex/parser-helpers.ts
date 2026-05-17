@@ -6,6 +6,11 @@
  * via a per-caller `Map<xmlKey, domKey>` — NeTEx aliases like
  * `<AuthorityRef>` (domain `TransportOrganisationRef`) and
  * `<CarModelProfileRef>` (domain `VehicleModelProfileRef`) collapse cleanly.
+ *
+ * NOTE: this hand-written parser/mapping mirror pair is the workaround
+ * tracked by entur/netex-typescript-model#49. Once the codegen tool emits
+ * bidirectional `Codec<T>` per entity (v2), this whole `netex/*-helpers.ts`
+ * pair is deleted and consumers swap to `fooCodec.encode/decode`.
  */
 
 export type Obj = Record<string, unknown>;

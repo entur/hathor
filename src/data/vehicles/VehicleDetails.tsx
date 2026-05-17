@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useReducer, useState, type ReactNode } from 'react';
 import { Box, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -7,20 +7,22 @@ import NetexId from '../netex/NetexId.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
 import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
-import VehicleEditForm, {
-  type VehicleEditFormValue,
-  LABEL_COL_MIN,
-  LABEL_COL_MAX,
-  COL_GAP,
-} from './VehicleEditForm.tsx';
+import VehicleEditForm, { LABEL_COL_MIN, LABEL_COL_MAX, COL_GAP } from './VehicleEditForm.tsx';
 import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
-import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults.ts';
 import { useVehicle } from './useVehicle.ts';
-import type { Vehicle } from './xml/Vehicle';
 import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
+import {
+  edit,
+  hydrate,
+  initialFormState,
+  isDirty as isFormDirty,
+  type FormState,
+} from './vehicleFormState.ts';
+import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
+import type { Vehicle } from './xml/Vehicle';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
@@ -34,21 +36,20 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
-  const [form, setForm] = useState<VehicleEditFormValue>(BLANK_FORM);
+  const [formState, dispatch] = useReducer(formReducer, initialFormState);
+  const { form } = formState;
+  const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
 
   const { data: xmlVehicle, loading: xmlLoading, error: xmlError } = useVehicle(vehicle?.id);
 
-  const initialFormKey = useMemo(
-    () => JSON.stringify(xmlVehicle ? hydrateFromXml(xmlVehicle) : BLANK_FORM),
-    [xmlVehicle]
-  );
-  useDirtyFormBlock(JSON.stringify(form) !== initialFormKey);
-
   useEffect(() => {
-    setForm(xmlVehicle ? hydrateFromXml(xmlVehicle) : BLANK_FORM);
+    dispatch({ type: 'hydrate', xmlVehicle });
   }, [xmlVehicle]);
+
+  const isDirty = isFormDirty(formState);
+  useDirtyFormBlock(isDirty);
 
   const closeSlider = () =>
     setSearchParams(
@@ -90,7 +91,6 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
     );
   }
 
-  const isDirty = JSON.stringify(form) !== initialFormKey;
   const trimmedName = firstText(form.vehicle.Name).trim();
   const tmode = vehicleMode(vehicle);
 
@@ -204,7 +204,7 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
         mode={mode}
         onEnterEdit={() => setMode('edit')}
         onCancelEdit={() => {
-          setForm(xmlVehicle ? hydrateFromXml(xmlVehicle) : BLANK_FORM);
+          dispatch({ type: 'hydrate', xmlVehicle });
           setMode('view');
         }}
         onSave={handleSave}
@@ -215,8 +215,12 @@ export default function VehicleDetails({ vehicle }: VehicleDetailsProps) {
   );
 }
 
-function hydrateFromXml(xml: Partial<Vehicle>): VehicleEditFormValue {
-  return { vehicle: xml, model: MISSING_MODEL };
+type FormAction =
+  | { type: 'hydrate'; xmlVehicle: Partial<Vehicle> | null | undefined }
+  | { type: 'edit'; form: VehicleEditFormValue };
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  return action.type === 'hydrate' ? hydrate(state, action.xmlVehicle) : edit(state, action.form);
 }
 
 function ContextRow({ label, value }: { label: string; value: ReactNode }) {
