@@ -204,9 +204,9 @@ const runSortStabilityTests = (params: {
  *                     URL→editor→setPage cascade), so the UX call is to lock
  *                     sort while a row is being edited.
  *
- * Self-contained `vehicles(` intercept rather than the shared
- * `vehicle-list-helpers.ts` (still keyed on the legacy `vehicleTypes` query
- * shape) — keeps this spec independent of that drift.
+ * Uses a self-contained `vehicles(` intercept with a 3-row fixture (rather
+ * than the shared `vehicle-list-helpers.ts` 15-row mock) so each column's
+ * asc-leader is provably distinct from the default first row.
  */
 test.beforeAll(() => {
   fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);

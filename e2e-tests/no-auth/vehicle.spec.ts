@@ -58,15 +58,13 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     await expect(page.locator('table').getByText('BUS-001')).not.toBeVisible();
   });
 
-  test('row action opens sidebar and writes ?selected= to URL', async ({ page }) => {
+  test('row click opens sidebar and writes ?selected= to URL', async ({ page }) => {
     await page.goto('/vehicles');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
-    // Click the only action button on the BUS-001 row — MUI Tooltip doesn't
-    // wire its title as an accessible name, so locate by row + role=button.
-    const row = page.locator('table tr', { hasText: 'BUS-001' });
-    await row.getByRole('button').click();
+    // Whole-row click navigates via `useVehicleRowClick` (vehicleViewConfig).
+    await page.locator('table tr', { hasText: 'BUS-001' }).click();
 
     await expect(page).toHaveURL(/selected=NMR%3AVehicle%3Abus-1/);
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
@@ -100,7 +98,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
 
     await page.getByTestId('editor-rail-collapse').click();
 
-    await expect(page).toHaveURL(/\/vehicle(\?|$)/);
+    await expect(page).toHaveURL(/\/vehicles(\?|$)/);
     await expect(page).not.toHaveURL(/selected=/);
     await expect(page.getByTestId('vehicle-details-title')).not.toBeVisible();
   });

@@ -118,7 +118,7 @@ test.describe('Vehicle type URL filtering', () => {
     await expect(page.getByText('NMR:VehicleType:3')).toBeVisible();
 
     // URL should no longer have the filter param
-    await expect(page).toHaveURL(/\/vehicle-type$/);
+    await expect(page).toHaveURL(/\/vehicle-types$/);
   });
 
   test('with non-matching filter shows empty table', async ({ page }) => {
