@@ -37,7 +37,7 @@ const getDeckPlanColumns = (
     renderCell: item =>
       createElement(
         Button,
-        { variant: 'text', onClick: () => navigate(`/deck-plan/${encodeURIComponent(item.id)}`) },
+        { variant: 'text', onClick: () => navigate(`/deck-plans/${encodeURIComponent(item.id)}`) },
         'Edit'
       ),
     display: 'always',

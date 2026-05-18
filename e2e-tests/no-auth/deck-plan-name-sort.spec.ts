@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { fixturesDir, targetConfig, interceptDeckPlansQuery } from './autosys-helpers';
 
 /**
- * Regression spec for issue #63: /deck-plan must show rows with a NeTEx Name
+ * Regression spec for issue #63: /deck-plans must show rows with a NeTEx Name
  * before rows missing one, so the Name column isn't visually empty on first
  * load. The fix lives in src/data/deck-plans/deckPlanSortValue.ts via the
  * shared compareWithEmptyLast helper.
@@ -18,7 +18,7 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
       await interceptDeckPlansQuery(page);
     }
 
-    await page.goto('/deck-plan');
+    await page.goto('/deck-plans');
 
     await expect(page.locator('table')).toBeVisible();
     await expect(page.getByTestId('total-entries')).toHaveAttribute('data-count', '10');
@@ -42,7 +42,7 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
       await interceptDeckPlansQuery(page);
     }
 
-    await page.goto('/deck-plan');
+    await page.goto('/deck-plans');
     await page.waitForLoadState('networkidle');
 
     // Header label for the name column is "Deck Plan" (deckPlanViewConfig.ts:28).

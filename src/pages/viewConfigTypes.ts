@@ -52,6 +52,13 @@ export interface UseDataReturn<T, K extends string> {
   addRow?: (newRow: T) => void;
   /** Optimistically update an existing row in the local dataset. */
   updateRow?: (updatedRow: T, column: ColumnDefinition<T, K>) => void;
+  /**
+   * Re-run the dataset fetch. The returned promise must only resolve after
+   * the new data has been committed to local state (no fire-and-forget
+   * chains), so editor flows can `await refetch()` and observe fresh rows
+   * before signalling success to the user.
+   */
+  refetch?: () => Promise<void>;
 }
 
 /**
@@ -125,10 +132,20 @@ export interface PageContentComponentProps<T, K extends string> {
   title?: string;
   /** Callback fired when a column-level action is triggered (e.g. inline edit). */
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  /** Optional whole-row click handler (non-compact mode only). */
+  onRowClick?: (item: T) => void;
   /** Optional floating action (e.g. SpeedDial) rendered in the bottom bar beside pagination. */
   floatingAction?: ReactNode;
   /** Optional URL filter info for displaying a filter indicator chip. */
   urlFilterInfo?: UrlFilterInfo;
+  /**
+   * When true, sortable column headers render as locked: dimmed, click is a
+   * no-op, hover surfaces a tooltip explaining why. Used by
+   * {@link GenericDataViewPage} to disable sort while the sidebar editor
+   * holds a selection — sort under an open selection caused observable
+   * URL→editor→setPage flicker.
+   */
+  sortLocked?: boolean;
 }
 
 /**
@@ -169,4 +186,27 @@ export interface ViewConfig<T, K extends string> {
    * Useful for a MUI `SpeedDial`, `Fab`, or similar overlay component.
    */
   floatingAction?: ReactNode;
+  /**
+   * Optional hook fired by {@link GenericDataViewPage} after data is loaded
+   * and table-logic has produced `dataForTable`. Lets a page reconcile URL
+   * state (e.g. `?selected=` deep links) with editor state and pagination
+   * without lifting that wiring into the generic page itself. See
+   * `useVehicleUrlSelection.ts` for the canonical consumer.
+   */
+  useUrlEffect?: (params: {
+    allData: T[] | null;
+    dataForTable: T[];
+    rowsPerPage: number;
+    setPage: (page: number) => void;
+    loading: boolean;
+    /** Re-fetch the dataset. Optional — pages without an editor that mutates can ignore. */
+    refetch?: () => Promise<void>;
+  }) => void;
+  /**
+   * Optional hook that returns a whole-row click handler. Invoked inside
+   * {@link GenericDataViewPage} so the handler may safely use React/router
+   * context (e.g. `useNavigate`). Non-compact mode only — compact mode keeps
+   * its built-in tap-to-expand behaviour.
+   */
+  useRowClick?: () => (item: T) => void;
 }

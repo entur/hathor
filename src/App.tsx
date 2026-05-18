@@ -12,6 +12,8 @@ import VehicleTypeView from './data/vehicle-types/VehicleTypeView.tsx';
 import VehicleTypeDetails from './data/vehicle-types/VehicleTypeDetails.tsx';
 import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
+import VehicleView from './data/vehicles/VehicleView.tsx';
+import VehicleCreatePage from './pages/VehicleCreatePage.tsx';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -35,23 +37,28 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route
-                    path="/vehicle-type"
+                    path="/vehicle-types"
                     element={<ProtectedRoute element={<VehicleTypeView />} />}
                   />
+                  <Route path="/vehicles" element={<ProtectedRoute element={<VehicleView />} />} />
                   <Route
-                    path="/deck-plan"
+                    path="/vehicles/new"
+                    element={<ProtectedRoute element={<VehicleCreatePage />} />}
+                  />
+                  <Route
+                    path="/deck-plans"
                     element={<ProtectedRoute element={<DeckPlanView />} />}
                   />
                   <Route
-                    path="/deck-plan/:id"
+                    path="/deck-plans/:id"
                     element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                   />
                   <Route
-                    path="/vehicle-type/new"
+                    path="/vehicle-types/new"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
                   <Route
-                    path="/vehicle-type/:id"
+                    path="/vehicle-types/:id"
                     element={<ProtectedRoute element={<VehicleTypeDetails />} />}
                   />
                 </Routes>

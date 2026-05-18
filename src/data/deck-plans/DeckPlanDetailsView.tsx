@@ -51,7 +51,7 @@ const DeckPlanDetailsView = () => {
     if (!applicationImportBaseUrl) throw new Error('Import base URL not configured');
     const token = await getAccessToken();
     await saveDeckPlanAsNetexToBackend(applicationImportBaseUrl, data, token);
-    navigate('/deck-plan');
+    navigate('/deck-plans');
   };
 
   return (

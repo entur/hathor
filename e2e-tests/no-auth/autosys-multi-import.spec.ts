@@ -19,7 +19,7 @@ test.describe('Autosys multi-import dialog', () => {
       await interceptAutosysQuery(page);
     }
 
-    await page.goto('/vehicle-type');
+    await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
 
     // Open the multi-import dialog

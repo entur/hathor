@@ -26,7 +26,7 @@ test.describe('Authentication', () => {
     await expect(page.locator(APP_CSS_ID)).toBeVisible();
 
     // Verify OIDC is active: navigating to a protected route must trigger auth
-    await page.goto('/vehicle-type');
+    await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
@@ -47,7 +47,7 @@ test.describe('Authentication', () => {
 
   test('protected route requires authentication', async ({ page }) => {
     // Go directly to a protected route without authentication
-    await page.goto('/vehicle-type');
+    await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 

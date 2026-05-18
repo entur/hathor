@@ -36,13 +36,13 @@ export default function HomePage() {
       icon: <EmojiTransportation fontSize="large" color="primary" />,
       headlineKey: 'home.features.vehicletypes.headline',
       descriptionKey: 'home.features.vehicletypes.description',
-      path: '/vehicle-type',
+      path: '/vehicle-types',
     },
     {
       icon: <ViewInAr fontSize="large" color="primary" />,
       headlineKey: 'home.features.deckplans.headline',
       descriptionKey: 'home.features.deckplans.description',
-      path: '/deck-plan',
+      path: '/deck-plans',
     },
   ];
 
@@ -141,7 +141,7 @@ export default function HomePage() {
         </Box>
         <List disablePadding>
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="/vehicle-type/new">
+            <ListItemButton component={Link} to="/vehicle-types/new">
               <ListItemIcon>
                 <DirectionsBus fontSize="small" />
               </ListItemIcon>

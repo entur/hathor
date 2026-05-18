@@ -14,7 +14,7 @@ export default function AutosysImportFloatingMenu() {
     setOpen(false);
     if (vehicleTypeIds.length > 0) {
       const filterParam = vehicleTypeIds.join(',');
-      navigate(`/vehicle-type?filter=${encodeURIComponent(filterParam)}`, { replace: true });
+      navigate(`/vehicle-types?filter=${encodeURIComponent(filterParam)}`, { replace: true });
     }
   };
 

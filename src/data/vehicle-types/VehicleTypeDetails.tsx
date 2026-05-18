@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Paper, Typography } from '@mui/material';
-import { Editor, validate, serialize, normalizeGraphQL } from '@entur/vtype-details';
+import { Editor, validate, normalizeGraphQL, vehicleTypeToXmlShape } from '@entur/vtype-details';
 import type { VehicleType as EditorVehicleType, ExtraTab } from '@entur/vtype-details';
 import { DataViewTable, type ColumnDefinition } from '@entur/data-view-table';
 import { useAuth } from '../../auth/authUtils';
 import { useConfig } from '../../contexts/configContext';
 import { importAsNetexToBackend } from '../vehicle-imports/vehicleImportServices';
-import { wrapInPublicationDelivery } from '../vehicle-imports/xmlUtils';
+import { buildPublicationDeliveryXml } from '../netex/publicationDeliveryXml';
 import { useVehicleType } from './useVehicleType';
 import type { Vehicle, DeckPlan } from './vehicleTypeTypes';
 import { getDeckPlanSortValue } from '../deck-plans/deckPlanSortValue';
@@ -68,8 +68,9 @@ export default function VehicleTypeDetails() {
       throw new Error('Application import base URL is not configured');
     }
 
-    const fragment = serialize(value);
-    const xml = wrapInPublicationDelivery(fragment);
+    const xml = buildPublicationDeliveryXml({
+      vehicleTypes: [vehicleTypeToXmlShape(value as Record<string, unknown>)],
+    });
     const token = await getAccessToken();
     await importAsNetexToBackend(applicationImportBaseUrl, xml, token);
   };

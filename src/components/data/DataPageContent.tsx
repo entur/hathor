@@ -35,8 +35,12 @@ interface DataPageContentProps<T, K extends string> {
   columns: ColumnDefinition<T, K>[];
   title?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  onRowClick?: (item: T) => void;
   floatingAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
+  /** Forwarded to {@link DataTableHeader}; when true, every sortable header
+   *  is dimmed, click is suppressed, and hover shows the lock tooltip. */
+  sortLocked?: boolean;
 }
 
 export default function DataPageContent<
@@ -56,8 +60,10 @@ export default function DataPageContent<
   columns,
   title,
   handleColumnEvent,
+  onRowClick,
   floatingAction,
   urlFilterInfo,
+  sortLocked,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -112,6 +118,7 @@ export default function DataPageContent<
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
             columns={visibleColumns}
+            sortLocked={sortLocked}
           />
           <TableBody>
             {data.map(item => (
@@ -124,6 +131,7 @@ export default function DataPageContent<
                 detailColumns={detailColumns}
                 colSpan={colSpan}
                 handleColumnEvent={handleColumnEvent}
+                onRowClick={onRowClick}
               />
             ))}
             {data.length === 0 && !loading && (
@@ -151,6 +159,22 @@ export default function DataPageContent<
               setRowsPerPage(parseInt(event.target.value, 10));
               setPage(0);
             }}
+            labelRowsPerPage={t('data.pagination.rowsPerPage', 'Rows per page:')}
+            labelDisplayedRows={({ from, to, count }) =>
+              count === -1
+                ? t('data.pagination.displayedRowsOfMore', {
+                    from,
+                    to,
+                    count: to,
+                    defaultValue: '{{from}}–{{to}} of more than {{count}}',
+                  })
+                : t('data.pagination.displayedRows', {
+                    from,
+                    to,
+                    count,
+                    defaultValue: '{{from}}–{{to}} of {{count}}',
+                  })
+            }
             data-testid="table-pagination"
             slotProps={{
               displayedRows: {
