@@ -1,9 +1,25 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Box, InputLabel, TextField, Typography, Divider } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './xml/Vehicle';
 import type { VehicleModel } from './xml/VehicleModel';
 import { firstText } from '../netex/multilingualString.ts';
+import { MISSING_TEXT } from './vehicleFormDefaults';
+import { useVehicleTypes } from '../vehicle-types/useVehicleTypes.ts';
+
+const TRANSPORT_TYPE_PREFIX = 'NMR:VehicleType:';
+
+/** Strip the codespace+type prefix from a full netex ref for the bare numeric input. */
+const refToInt = (ref: string | undefined): string => {
+  if (!ref) return '';
+  const m = ref.match(/^NMR:VehicleType:(\d+)$/);
+  return m ? m[1] : '';
+};
+/** Splice the codespace+type prefix back when the user types a number. */
+const intToRef = (raw: string): string | undefined => {
+  const s = raw.trim();
+  return /^\d+$/.test(s) ? `${TRANSPORT_TYPE_PREFIX}${s}` : undefined;
+};
 
 export const LABEL_COL_MIN = '8rem';
 export const LABEL_COL_MAX = '12rem';
@@ -69,6 +85,22 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setV = (patch: Partial<Vehicle>) => onChange({ ...value, vehicle: { ...v, ...patch } });
   const setM = (patch: Partial<VehicleModel>) => onChange({ ...value, model: { ...m, ...patch } });
 
+  const { data: vehicleTypes } = useVehicleTypes();
+  const transportIdRange = useMemo<{ min: number; max: number } | null>(() => {
+    const ids = vehicleTypes
+      .map(vt =>
+        Number(
+          String(vt.id ?? '')
+            .split(':')
+            .pop()
+        )
+      )
+      .filter(n => Number.isFinite(n));
+    if (ids.length === 0) return null;
+    return { min: Math.min(...ids), max: Math.max(...ids) };
+  }, [vehicleTypes]);
+  const transportIntValue = refToInt(v.TransportTypeRef);
+
   return (
     <Box
       sx={{
@@ -101,6 +133,39 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           disabled={ro}
           size="small"
           fullWidth
+        />
+      </FieldRow>
+
+      {/* TEMP — bare numeric input until Sobek's VehicleTypeFilter gains a `name`
+       * field (PR #127 added output-only props; filter inputs unchanged). Once
+       * the backend supports it, swap this FieldRow for a TransportTypePicker
+       * built on MUI Autocomplete + a debounced async fetch. The on-write
+       * prefix splice in `intToRef` is the only piece tied to the temp shape —
+       * the rest of the form, the mapper, and the parser already round-trip
+       * the full netex id. */}
+      <FieldRow
+        id="vehicle-transport-type"
+        label={t('vehicles.field.transportType', 'Vehicle Type ID')}
+      >
+        <TextField
+          id="vehicle-transport-type"
+          type="number"
+          required
+          value={transportIntValue}
+          onChange={e => setV({ TransportTypeRef: intToRef(e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+          error={!ro && !transportIntValue}
+          helperText={
+            transportIdRange
+              ? t(
+                  'vehicles.field.transportType.range',
+                  'Valid range: {{min}}–{{max}}',
+                  transportIdRange
+                )
+              : undefined
+          }
         />
       </FieldRow>
 
@@ -183,6 +248,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           disabled={ro}
           size="small"
           fullWidth
+          placeholder={MISSING_TEXT}
         />
       </FieldRow>
 

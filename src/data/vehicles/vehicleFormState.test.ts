@@ -75,4 +75,9 @@ describe('vehicleFormState — dirty tracking through load/edit/cancel cycles', 
     expect(loaded.form.model).toEqual(MISSING_MODEL);
     expect(loaded.form.vehicle).toBe(aVehicle);
   });
+
+  it('#80 sect3: MISSING_MODEL leaves Manufacturer undefined so [missing] never round-trips', () => {
+    const loaded = hydrate(initialFormState, aVehicle);
+    expect(loaded.form.model.Manufacturer).toBeUndefined();
+  });
 });

@@ -44,12 +44,14 @@ export function useVehicleUrlSelection({
   const { setEditingItem } = useEditing();
 
   const lastCommittedIdRef = useRef<string | null>(null);
+  const lastCommittedRowRef = useRef<VehicleGQLShaped | null>(null);
 
   useEffect(() => {
     if (!selected) {
       if (lastCommittedIdRef.current !== null) {
         setEditingItem(null);
         lastCommittedIdRef.current = null;
+        lastCommittedRowRef.current = null;
       }
       return;
     }
@@ -59,12 +61,19 @@ export function useVehicleUrlSelection({
     const idx = allData.findIndex(v => v.id === selected);
     const row = idx >= 0 ? allData[idx] : null;
 
-    if (lastCommittedIdRef.current !== selected) {
+    // Re-commit when id changes (new deep-link) or when the resolved row's
+    // *content* changes (null → found after refetch, or fields updated).
+    // Reference equality wouldn't work — `allData` is a fresh memo on every
+    // sort change, so `row` is a new object each render even for the same id.
+    const idChanged = lastCommittedIdRef.current !== selected;
+    const rowContentChanged = rowSignature(row) !== rowSignature(lastCommittedRowRef.current);
+    if (idChanged || rowContentChanged) {
       setEditingItem({
         id: selected,
         EditorComponent: () => <VehicleDetails vehicle={row} onSaved={refetch} />,
       });
       lastCommittedIdRef.current = selected;
+      lastCommittedRowRef.current = row;
     }
 
     if (idx >= 0 && !dataForTable.some(v => v.id === selected)) {
@@ -78,3 +87,6 @@ export function useVehicleUrlSelection({
     };
   }, [setEditingItem]);
 }
+
+const rowSignature = (row: VehicleGQLShaped | null): string =>
+  row === null ? '' : JSON.stringify(row);

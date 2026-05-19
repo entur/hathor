@@ -43,3 +43,15 @@ export function edit(state: FormState, form: VehicleEditFormValue): FormState {
 export function isDirty(state: FormState): boolean {
   return keyOf(state.form) !== state.hydratedKey;
 }
+
+/** TEMP — the bare numeric input in VehicleEditForm writes the full netex id;
+ *  this gate enforces save-disabled until that id is present and well-formed.
+ *  Tighten/loosen alongside the picker swap (Sobek VehicleTypeFilter.name). */
+const TRANSPORT_TYPE_REF_PATTERN = /^NMR:VehicleType:\d+$/;
+
+/** True iff the form has the required TransportTypeRef in the canonical shape.
+ *  Drives `saveDisabled` on the create page; existing-vehicle edits already
+ *  carry a valid ref so the slider doesn't gate on this. */
+export function isComplete(form: VehicleEditFormValue): boolean {
+  return TRANSPORT_TYPE_REF_PATTERN.test(form.vehicle.TransportTypeRef ?? '');
+}
