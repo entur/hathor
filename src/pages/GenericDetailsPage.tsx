@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Container, Typography, Box, Button, CircularProgress, IconButton } from '@mui/material';
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Stack,
+} from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import ErrorPage from '../components/common/ErrorPage';
@@ -48,7 +56,7 @@ export default function GenericDetailsPage({
           gap: 2,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
           {onBack && (
             <IconButton
               onClick={onBack}
@@ -60,7 +68,7 @@ export default function GenericDetailsPage({
             </IconButton>
           )}
           <Typography variant="h4">{title}</Typography>
-        </Box>
+        </Stack>
         <Button
           variant="contained"
           color="primary"

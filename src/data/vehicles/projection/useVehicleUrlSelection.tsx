@@ -66,8 +66,8 @@ export function useVehicleUrlSelection({
     // Reference equality wouldn't work — `allData` is a fresh memo on every
     // sort change, so `row` is a new object each render even for the same id.
     const idChanged = lastCommittedIdRef.current !== selected;
-    const rowContentChanged = rowSignature(row) !== rowSignature(lastCommittedRowRef.current);
-    if (idChanged || rowContentChanged) {
+    const rowChanged = rowSig(row) !== rowSig(lastCommittedRowRef.current);
+    if (idChanged || rowChanged) {
       setEditingItem({
         id: selected,
         EditorComponent: () => <VehicleDetails vehicle={row} onSaved={refetch} />,
@@ -88,5 +88,12 @@ export function useVehicleUrlSelection({
   }, [setEditingItem]);
 }
 
-const rowSignature = (row: VehicleGQLShaped | null): string =>
-  row === null ? '' : JSON.stringify(row);
+/** O(1) signature over the slider-visible fields. Cheaper than JSON.stringify
+ *  on every effect run, and tight to the actual `<VehicleDetails>` props
+ *  surface — adding new visible fields here forces an explicit edit. */
+const rowSig = (row: VehicleGQLShaped | null): string =>
+  row === null
+    ? ''
+    : `${row.id}|${row.version}|${row.registrationNumber}|${row.operationalNumber ?? ''}|${
+        row.transportType?.id ?? ''
+      }|${row.transportType?.name ?? ''}|${row.transportType?.transportMode ?? ''}`;

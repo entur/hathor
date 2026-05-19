@@ -98,7 +98,10 @@ const makeExtraVehicle = (id: string) => ({
   },
 });
 
-const vehiclePublicationDelivery = (id: string, body = '') =>
+/** Minimal PublicationDelivery wrapping a single Vehicle. `body` is inserted
+ *  inside the `<Vehicle>` element — leave empty for a bare echo, or pass
+ *  e.g. "<Name>X</Name><RegistrationNumber>R</RegistrationNumber>". */
+export const vehiclePublicationDelivery = (id: string, body = '') =>
   `<?xml version="1.0" encoding="UTF-8"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex">
   <dataObjects>

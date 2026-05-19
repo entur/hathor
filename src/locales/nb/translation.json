@@ -108,7 +108,6 @@
   "vehicles.saveSuccess.viewInList": "Vis i liste",
   "vehicles.actions.back": "Tilbake til liste",
   "vehicles.field.transportType": "Kjøretøytype-ID",
-  "vehicles.field.transportType.range": "Gyldig område: {{min}}–{{max}}",
   "vehicles.field.id": "ID",
   "vehicles.field.name": "Navn",
   "vehicles.field.registrationNumber": "Registreringsnummer",

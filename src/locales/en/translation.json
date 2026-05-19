@@ -108,7 +108,6 @@
   "vehicles.saveSuccess.viewInList": "View in list",
   "vehicles.actions.back": "Back to list",
   "vehicles.field.transportType": "Vehicle Type ID",
-  "vehicles.field.transportType.range": "Valid range: {{min}}–{{max}}",
   "vehicles.field.id": "ID",
   "vehicles.field.name": "Name",
   "vehicles.field.registrationNumber": "Registration Number",

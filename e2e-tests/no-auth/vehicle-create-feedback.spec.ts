@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import {
   interceptStatefulVehicleListQuery,
   interceptVehicleNetexGet,
+  vehiclePublicationDelivery,
 } from './vehicle-list-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,12 +56,7 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/xml',
-        body: `<?xml version="1.0" encoding="UTF-8"?>
-<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
-  <dataObjects><ResourceFrame><vehicles>
-    <Vehicle id="${NEW_ID}" version="1"/>
-  </vehicles></ResourceFrame></dataObjects>
-</PublicationDelivery>`,
+        body: vehiclePublicationDelivery(NEW_ID),
       });
     });
     return list;

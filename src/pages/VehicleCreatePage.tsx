@@ -10,7 +10,7 @@ import DiscardDialog from '../components/dialogs/DiscardDialog';
 import { BLANK_FORM } from '../data/vehicles/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/xml/useVehiclePairSave';
 import { useDirtyFormBlock } from '../data/vehicles/useDirtyFormBlock';
-import { isComplete } from '../data/vehicles/vehicleFormState';
+import { canSubmit } from '../data/vehicles/vehicleFormState';
 import { waitForVehicleInList } from '../data/vehicles/waitForVehicleInList';
 import { vehicleSelectedHref } from '../data/vehicles/projection/vehicleUrlParams';
 import { useAuth } from '../auth/authUtils';
@@ -65,7 +65,7 @@ export default function VehicleCreatePage() {
       <GenericDetailsPage
         title="New Vehicle"
         onSave={handleSave}
-        saveDisabled={!isComplete(form)}
+        saveDisabled={!canSubmit(form)}
         onBack={handleBack}
       >
         <Paper sx={{ p: 3 }}>

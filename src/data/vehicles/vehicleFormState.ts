@@ -8,6 +8,7 @@
 import type { VehicleEditFormValue } from './VehicleEditForm';
 import type { Vehicle } from './xml/Vehicle';
 import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults';
+import { TRANSPORT_TYPE_REF_PATTERN } from './transportTypeRef';
 
 export interface FormState {
   form: VehicleEditFormValue;
@@ -44,14 +45,11 @@ export function isDirty(state: FormState): boolean {
   return keyOf(state.form) !== state.hydratedKey;
 }
 
-/** TEMP — the bare numeric input in VehicleEditForm writes the full netex id;
- *  this gate enforces save-disabled until that id is present and well-formed.
- *  Tighten/loosen alongside the picker swap (Sobek VehicleTypeFilter.name). */
-const TRANSPORT_TYPE_REF_PATTERN = /^NMR:VehicleType:\d+$/;
-
-/** True iff the form has the required TransportTypeRef in the canonical shape.
- *  Drives `saveDisabled` on the create page; existing-vehicle edits already
- *  carry a valid ref so the slider doesn't gate on this. */
-export function isComplete(form: VehicleEditFormValue): boolean {
+/** True iff the required fields needed for create-side save are present.
+ *  Today only TransportTypeRef gates Save — Sobek's `vehicles()` resolver
+ *  silently excludes refless vehicles from the list, so a create without
+ *  one is unrecoverable. Drives `saveDisabled` on /vehicles/new; the slider
+ *  edit doesn't gate since existing rows already carry the ref. */
+export function canSubmit(form: VehicleEditFormValue): boolean {
   return TRANSPORT_TYPE_REF_PATTERN.test(form.vehicle.TransportTypeRef ?? '');
 }
