@@ -181,8 +181,14 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
           value={
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
               <span>{vehicle.transportType?.name ?? '—'}</span>
-              {vehicle.transportType?.id && (
-                <NetexId id={vehicle.transportType.id} copy="onHover" size="small" />
+              {/* Source the id from the NeTEx XML — the GQL nested
+               * `transportType.id` resolves to a DB row id (sobek#125),
+               * and `restructNetexId` splices it into "NMR:VehicleType:<rowid>"
+               * which only coincidentally equals the real netexId. The XML's
+               * <TransportTypeRef ref="…"/> always carries the persisted
+               * netexId, which is also what the form below displays. */}
+              {xmlVehicle?.TransportTypeRef && (
+                <NetexId id={xmlVehicle.TransportTypeRef} copy="onHover" size="small" />
               )}
             </Stack>
           }
