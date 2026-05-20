@@ -98,9 +98,15 @@ const makeExtraVehicle = (id: string) => ({
   },
 });
 
+/** Sobek wraps every multilingual value in a nested `<Text>` element —
+ *  `<Name><Text>…</Text></Name>` (confirmed via live probe). Mirror that exact
+ *  shape in mocks so the parser is exercised against reality rather than a
+ *  friendlier invented `<Name>value</Name>` shape that masks round-trip bugs. */
+export const netexName = (value: string) => `<Name><Text>${value}</Text></Name>`;
+
 /** Minimal PublicationDelivery wrapping a single Vehicle. `body` is inserted
  *  inside the `<Vehicle>` element — leave empty for a bare echo, or pass
- *  e.g. "<Name>X</Name><RegistrationNumber>R</RegistrationNumber>". */
+ *  e.g. `${netexName('X')}<RegistrationNumber>R</RegistrationNumber>`. */
 export const vehiclePublicationDelivery = (id: string, body = '') =>
   `<?xml version="1.0" encoding="UTF-8"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex">
@@ -150,7 +156,7 @@ export const interceptVehicleNetexGet = (page: Page) =>
       contentType: 'application/xml',
       body: vehiclePublicationDelivery(
         id,
-        '<Name>Newly created</Name><RegistrationNumber>NEW-001</RegistrationNumber>'
+        `${netexName('Newly created')}<RegistrationNumber>NEW-001</RegistrationNumber>`
       ),
     });
   });

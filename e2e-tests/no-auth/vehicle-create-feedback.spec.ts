@@ -99,6 +99,50 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
     await expect(page.getByText('Vehicle not found')).toHaveCount(0);
   });
 
+  test('save → View in list resolves the slider on the assigned id (id-agnostic, backend-safe)', async ({
+    page,
+  }) => {
+    // Unlike the tests above, this one does not assume `NEW_ID` — it reads
+    // back whatever id the redirect produced. That makes it valid against a
+    // live Sobek (`E2E_BACKEND=true`), where the assigned id is unknown
+    // until the import POST responds.
+    await wireCreateFlow(page, { lag: 0 });
+    await page.goto('/vehicles/new');
+    await page.waitForLoadState('networkidle');
+
+    await fillRequiredFields(page);
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('button', { name: 'View in list' }).click();
+
+    await expect.poll(() => page.url(), { timeout: 15_000 }).toMatch(/[?&]selected=/);
+    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
+    await expect(page.getByText('Vehicle not found')).toHaveCount(0);
+  });
+
+  test('save with a Name → View in list → sidebar shows that Name (round-trip, backend-only)', async ({
+    page,
+  }) => {
+    // Backend-only: the mock single-vehicle GET returns a fixed body, so a
+    // name round-trip can only be proven against a live Sobek. End-to-end
+    // check for the #80 item-1 parser fix — a bare <Name> with no lang
+    // attribute must survive POST → persist → GET → parse → render.
+    test.skip(process.env.E2E_BACKEND !== 'true', 'backend-only — needs real name persistence');
+
+    const name = `E2E Name ${Date.now()}`;
+    await wireCreateFlow(page);
+    await page.goto('/vehicles/new');
+    await page.waitForLoadState('networkidle');
+
+    await page.locator('#vehicle-name').fill(name);
+    await fillRequiredFields(page);
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.getByRole('button', { name: 'View in list' }).click();
+
+    await expect.poll(() => page.url(), { timeout: 15_000 }).toMatch(/[?&]selected=/);
+    await expect(page.getByTestId('vehicle-details-title')).toHaveText(name);
+    await expect(page.getByText('Vehicle not found')).toHaveCount(0);
+  });
+
   test('action waits out replica lag, then slider resolves (poll-until-found)', async ({
     page,
   }) => {

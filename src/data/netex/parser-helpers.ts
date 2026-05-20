@@ -36,11 +36,24 @@ export function textArr(raw: Obj, key: string, out: Obj) {
   out[key] = arr.map(projectText);
 }
 
-function projectText(raw: Obj) {
+/**
+ * Normalise one NeTEx multilingual-text node to `{ value, $lang? }`. Three
+ * shapes occur in the wild and all must be handled:
+ *   - `<Name>Foo</Name>`              → primitive `'Foo'`     (attribute-less;
+ *      fast-xml-parser only emits `#text` for attribute-bearing elements)
+ *   - `<Name lang="no">Foo</Name>`    → `{ '#text', '@_lang' }`  (standard NeTEx)
+ *   - `<Name><Text>Foo</Text></Name>` → `{ Text: 'Foo' }`  (Sobek's exporter —
+ *      confirmed via live probe; this is what the single-vehicle GET returns)
+ */
+function projectText(raw: unknown) {
+  const node = raw && typeof raw === 'object' && 'Text' in raw ? (raw as Obj)['Text'] : raw;
+  if (node == null) return {};
+  if (typeof node !== 'object') return { value: String(node) };
+  const n = node as Obj;
   const t: { value?: string; $lang?: string; $textIdType?: string } = {};
-  if (raw['#text'] !== undefined) t.value = String(raw['#text']);
-  if (raw['@_lang'] !== undefined) t.$lang = String(raw['@_lang']);
-  if (raw['@_textIdType'] !== undefined) t.$textIdType = String(raw['@_textIdType']);
+  if (n['#text'] !== undefined) t.value = String(n['#text']);
+  if (n['@_lang'] !== undefined) t.$lang = String(n['@_lang']);
+  if (n['@_textIdType'] !== undefined) t.$textIdType = String(n['@_textIdType']);
   return t;
 }
 

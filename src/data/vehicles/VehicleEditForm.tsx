@@ -11,7 +11,6 @@ export const LABEL_COL_MIN = '8rem';
 export const LABEL_COL_MAX = '12rem';
 export const COL_GAP = 2;
 export const ROW_GAP = 1.25;
-const DATE_PLACEHOLDER = 'YYYY-MM-DD';
 
 export interface VehicleEditFormValue {
   vehicle: Vehicle;
@@ -157,12 +156,12 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
       <FieldRow id="vehicle-build-date" label={t('vehicles.field.buildDate', 'Build Date')}>
         <TextField
           id="vehicle-build-date"
-          value={v.BuildDate ?? ''}
+          type="date"
+          value={(v.BuildDate ?? '').slice(0, 10)}
           onChange={e => setV({ BuildDate: orUndef(e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
-          placeholder={DATE_PLACEHOLDER}
         />
       </FieldRow>
 
@@ -172,12 +171,12 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
       >
         <TextField
           id="vehicle-registration-date"
-          value={v.RegistrationDate ?? ''}
+          type="date"
+          value={(v.RegistrationDate ?? '').slice(0, 10)}
           onChange={e => setV({ RegistrationDate: orUndef(e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
-          placeholder={DATE_PLACEHOLDER}
         />
       </FieldRow>
 

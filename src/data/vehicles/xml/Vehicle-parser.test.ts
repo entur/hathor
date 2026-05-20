@@ -71,6 +71,36 @@ const MULTI_NAME_XML = `<?xml version="1.0" encoding="UTF-8"?>
   </dataObjects>
 </PublicationDelivery>`;
 
+const BARE_NAME_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">
+  <dataObjects>
+    <ResourceFrame id="X:RF:1" version="1">
+      <vehicles>
+        <Vehicle id="X:V:1" version="1">
+          <Name>Bare Name</Name>
+          <RegistrationNumber>BN-0001</RegistrationNumber>
+        </Vehicle>
+      </vehicles>
+    </ResourceFrame>
+  </dataObjects>
+</PublicationDelivery>`;
+
+const SOBEK_NAME_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">
+  <dataObjects>
+    <ResourceFrame id="X:RF:1" version="1">
+      <vehicles>
+        <Vehicle id="X:V:1" version="1">
+          <Name>
+            <Text>Sobek Wrapped Name</Text>
+          </Name>
+          <RegistrationNumber>SW-0001</RegistrationNumber>
+        </Vehicle>
+      </vehicles>
+    </ResourceFrame>
+  </dataObjects>
+</PublicationDelivery>`;
+
 describe('parseVehicleXml', () => {
   it('maps the seed fixture into the Vehicle domain shape', () => {
     const v = parseVehicleXml(SEED_XML);
@@ -104,6 +134,29 @@ describe('parseVehicleXml', () => {
     const single = parseVehicleXml(SEED_XML);
     expect(Array.isArray(single?.Name)).toBe(true);
     expect(single?.Name).toHaveLength(1);
+  });
+
+  it('parses a bare <Name> with no lang attribute (#80 — projectText dropped primitive text nodes)', () => {
+    const v = parseVehicleXml(BARE_NAME_XML);
+    expect(v?.Name?.[0]?.value).toBe('Bare Name');
+  });
+
+  it("parses Sobek's <Name><Text>…</Text></Name> export shape (#80 — the real single-vehicle GET shape)", () => {
+    const v = parseVehicleXml(SOBEK_NAME_XML);
+    expect(v?.Name?.[0]?.value).toBe('Sobek Wrapped Name');
+  });
+
+  it('round-trips a Name carrying no lang — hathor serializes attribute-less <Name>', () => {
+    const input = {
+      $id: 'X:V:1',
+      $version: '1',
+      Name: [{ value: 'No Lang Name' }],
+      RegistrationNumber: 'NL-0001',
+    };
+    const xml = buildPublicationDeliveryXml({
+      vehicles: [vehicleToXmlShape(input as Record<string, unknown>)],
+    });
+    expect(parseVehicleXml(xml)?.Name?.[0]?.value).toBe('No Lang Name');
   });
 
   it('round-trips Refs with domain→xml aliases (M1: TransportOrganisationRef ↔ <AuthorityRef>, VehicleModelProfileRef ↔ <CarModelProfileRef>)', () => {
