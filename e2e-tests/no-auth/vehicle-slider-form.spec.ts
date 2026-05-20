@@ -4,6 +4,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import {
   interceptVehicleListQuery,
+  interceptStatefulVehicleListQuery,
   netexName,
   vehiclePublicationDelivery,
 } from './vehicle-list-helpers';
@@ -31,7 +32,7 @@ const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
  * Mock-only — the asserted Name/date values are fixture-controlled, so this
  * spec is meaningless against a live backend.
  */
-test.describe('/vehicles slider — #80 form bug fixes (no-auth)', () => {
+test.describe('/vehicles slider form — parsing + post-save dirty baseline (no-auth)', () => {
   test.skip(process.env.E2E_BACKEND === 'true', 'mock-only regression spec');
 
   test.beforeAll(() => {
@@ -91,10 +92,14 @@ test.describe('/vehicles slider — #80 form bug fixes (no-auth)', () => {
   test('closing the slider after a successful save does not raise the discard dialog', async ({
     page,
   }) => {
-    await interceptVehicleListQuery(page);
+    // Stateful list: a successful save bumps the persisted row's `version`, so
+    // the post-save list refetch returns *changed* content for VEHICLE_ID.
+    // That exercises the `rowSig` re-commit path a byte-identical mock hides.
+    const list = await interceptStatefulVehicleListQuery(page);
     await routeVehicleXml(page, netexName('Oslo Tram 4'));
     await page.route('**/services/vehicles/netex', async route => {
       if (route.request().method() !== 'POST') return route.continue();
+      list.bumpVersion(VEHICLE_ID);
       await route.fulfill({
         status: 200,
         contentType: 'application/xml',

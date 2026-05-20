@@ -25,11 +25,14 @@ interface UrlSelectionParams {
  * captures `vehicle=null` in the editor closure, and the idempotence guard
  * below then locks the slider on the not-found body forever.
  *
- * **Idempotence guard.** Once committed, `setEditingItem` only re-fires when
- * the resolved id changes — without this, fresh `allData`/`dataForTable`
- * references each render (e.g. from an unmemoised client-side sort) replace
- * `editingItem.EditorComponent` with a new closure, remount `VehicleDetails`,
- * and wipe its internal view/edit `mode` state on every render.
+ * **Commit guard.** After the first commit, `setEditingItem` only re-fires
+ * when the resolved id changes (a new deep-link) or when a previously
+ * not-found row resolves to found on a later list refetch. Fresh
+ * `allData`/`dataForTable` references each render (e.g. from an unmemoised
+ * client-side sort) must NOT replace `editingItem.EditorComponent` — that
+ * remounts `VehicleDetails` and wipes its view/edit `mode`. It also does not
+ * re-fire on an already-found row's content change: a slider save bumps the
+ * row's `version`, and remounting there drops the in-flight success snackbar.
  */
 export function useVehicleUrlSelection({
   allData,
@@ -61,13 +64,14 @@ export function useVehicleUrlSelection({
     const idx = allData.findIndex(v => v.id === selected);
     const row = idx >= 0 ? allData[idx] : null;
 
-    // Re-commit when id changes (new deep-link) or when the resolved row's
-    // *content* changes (null → found after refetch, or fields updated).
-    // Reference equality wouldn't work — `allData` is a fresh memo on every
-    // sort change, so `row` is a new object each render even for the same id.
+    // Re-commit on a new deep-link, or when a row that was not-found resolves
+    // to found after a list refetch (recovers a stale-list cross-page deep-
+    // link). Deliberately NOT on an already-found row's content change — a
+    // slider save bumps the row's `version`, and remounting the editor there
+    // would wipe its view/edit `mode` and drop the in-flight success snackbar.
     const idChanged = lastCommittedIdRef.current !== selected;
-    const rowChanged = rowSig(row) !== rowSig(lastCommittedRowRef.current);
-    if (idChanged || rowChanged) {
+    const resolvedFromMissing = lastCommittedRowRef.current === null && row !== null;
+    if (idChanged || resolvedFromMissing) {
       setEditingItem({
         id: selected,
         EditorComponent: () => <VehicleDetails vehicle={row} onSaved={refetch} />,
@@ -87,13 +91,3 @@ export function useVehicleUrlSelection({
     };
   }, [setEditingItem]);
 }
-
-/** O(1) signature over the slider-visible fields. Cheaper than JSON.stringify
- *  on every effect run, and tight to the actual `<VehicleDetails>` props
- *  surface — adding new visible fields here forces an explicit edit. */
-const rowSig = (row: VehicleGQLShaped | null): string =>
-  row === null
-    ? ''
-    : `${row.id}|${row.version}|${row.registrationNumber}|${row.operationalNumber ?? ''}|${
-        row.transportType?.id ?? ''
-      }|${row.transportType?.name ?? ''}|${row.transportType?.transportMode ?? ''}`;

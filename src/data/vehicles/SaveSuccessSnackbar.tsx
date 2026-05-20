@@ -30,7 +30,12 @@ export default function SaveSuccessSnackbar({
     <Snackbar
       open={open}
       autoHideDuration={action ? null : 4000}
-      onClose={onClose}
+      onClose={(_, reason) => {
+        // With an action present, a stray outside click must not dismiss the
+        // affordance — only the action button or the explicit close button do.
+        if (action && reason === 'clickaway') return;
+        onClose();
+      }}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
       <Alert

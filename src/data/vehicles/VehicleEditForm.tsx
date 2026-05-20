@@ -70,7 +70,12 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setV = (patch: Partial<Vehicle>) => onChange({ ...value, vehicle: { ...v, ...patch } });
   const setM = (patch: Partial<VehicleModel>) => onChange({ ...value, model: { ...m, ...patch } });
 
+  const transportRef = v.TransportTypeRef ?? '';
   const transportIntValue = refToInt(v.TransportTypeRef);
+  // An existing ref the TEMP numeric input can't represent (non-numeric suffix
+  // or non-NMR codespace) — render it raw + read-only rather than as a blank/
+  // error field that invites accidental overwrite.
+  const rawTransportRef = transportRef !== '' && transportIntValue === '';
 
   return (
     <Box
@@ -107,22 +112,33 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      {/* TEMP: bare numeric until Sobek `VehicleTypeFilter.name` lands; swap for TransportTypePicker. */}
+      {/* TEMP: bare numeric until Sobek `VehicleTypeFilter.name` lands; swap for
+          TransportTypePicker. An existing non-numeric ref renders raw + read-only. */}
       <FieldRow
         id="vehicle-transport-type"
         label={t('vehicles.field.transportType', 'Vehicle Type ID')}
       >
-        <TextField
-          id="vehicle-transport-type"
-          type="number"
-          required
-          value={transportIntValue}
-          onChange={e => setV({ TransportTypeRef: intToRef(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-          error={!ro && !transportIntValue}
-        />
+        {rawTransportRef ? (
+          <TextField
+            id="vehicle-transport-type"
+            value={transportRef}
+            disabled
+            size="small"
+            fullWidth
+          />
+        ) : (
+          <TextField
+            id="vehicle-transport-type"
+            type="number"
+            required
+            value={transportIntValue}
+            onChange={e => setV({ TransportTypeRef: intToRef(e.target.value) })}
+            disabled={ro}
+            size="small"
+            fullWidth
+            error={!ro && !transportIntValue}
+          />
+        )}
       </FieldRow>
 
       <FieldRow

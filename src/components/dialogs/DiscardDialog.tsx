@@ -15,7 +15,8 @@ interface DiscardDialogProps {
   onCancel: () => void;
   /** Fired when the user accepts losing the in-progress edits. */
   onDiscard: () => void;
-  /** Optional: when provided, a Save button appears that fires this and closes. */
+  /** Optional: when provided, a Save button appears that fires this. The
+   *  dialog does not self-close — the caller closes it by flipping `open`. */
   onSave?: () => void;
 }
 

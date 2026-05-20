@@ -25,17 +25,22 @@ export default function VehicleCreatePage() {
   const { getAccessToken } = useAuth();
   const [form, setForm] = useState<VehicleEditFormValue>(BLANK_FORM);
   const [savedNewId, setSavedNewId] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [savedKey, setSavedKey] = useState(BLANK_FORM_KEY);
   const [confirmingBack, setConfirmingBack] = useState(false);
   const { save, error, clearError } = useVehiclePairSave();
 
-  const isDirty = JSON.stringify(form) !== BLANK_FORM_KEY;
-  // Suppress dirty-block while the success snackbar is up.
-  useDirtyFormBlock(savedNewId === null && isDirty);
+  // Baseline advances to the saved form on success, so a saved-then-untouched
+  // form reads as clean — no spurious discard dialog, no beforeunload block.
+  const isDirty = JSON.stringify(form) !== savedKey;
+  useDirtyFormBlock(isDirty);
 
   const handleSave = async () => {
     const result = await save(form);
     if (result.error) return;
+    setSavedKey(JSON.stringify(form));
     setSavedNewId(result.newId);
+    setSaved(true);
   };
 
   const handleBack = () => {
@@ -54,7 +59,7 @@ export default function VehicleCreatePage() {
       // next page resolves to a found row instead of the not-found body.
       await waitForVehicleInList(id, applicationBaseUrl, getAccessToken);
     }
-    setSavedNewId(null);
+    setSaved(false);
     // TODO: clear active ?search= filter before deep-link — a filter may
     // otherwise hide the new row (issue #24 brings filter UX).
     navigate(id ? vehicleSelectedHref(id) : '/vehicles');
@@ -79,13 +84,17 @@ export default function VehicleCreatePage() {
       />
       <SaveErrorSnackbar error={error} onClose={clearError} />
       <SaveSuccessSnackbar
-        open={savedNewId !== null}
+        open={saved}
         message={t('vehicles.saveSuccess', 'Vehicle saved')}
-        onClose={() => setSavedNewId(null)}
-        action={{
-          label: t('vehicles.saveSuccess.viewInList', 'View in list'),
-          onClick: handleViewInList,
-        }}
+        onClose={() => setSaved(false)}
+        action={
+          savedNewId
+            ? {
+                label: t('vehicles.saveSuccess.viewInList', 'View in list'),
+                onClick: handleViewInList,
+              }
+            : undefined
+        }
       />
     </>
   );

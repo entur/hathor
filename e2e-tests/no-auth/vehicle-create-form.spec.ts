@@ -126,4 +126,56 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
     await page.getByRole('button', { name: 'Discard' }).click();
     await expect(page).toHaveURL(/\/vehicles(\?|$)/);
   });
+
+  test('Back button after a successful save navigates without a discard dialog', async ({
+    page,
+  }) => {
+    await wireCreateFlow(page);
+    await page.goto('/vehicles/new');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByLabel('Registration Number').fill('NEW-001');
+    await page.getByLabel(/Vehicle Type ID/).fill(VT_ID_INT);
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByRole('button', { name: 'View in list' })).toBeVisible();
+
+    // Save re-baselines the form to clean — Back must navigate straight out
+    // with no discard dialog even though the fields are still filled.
+    await page.getByRole('button', { name: /Back/i }).click();
+    await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/vehicles(\?|$)/);
+    await expect(page).not.toHaveURL(/\/vehicles\/new/);
+  });
+
+  test('slider edit: an existing non-numeric TransportTypeRef shows raw + read-only', async ({
+    page,
+  }) => {
+    // The TEMP numeric input cannot represent a non-numeric ref — the form
+    // must fall back to a disabled raw display so the value is neither
+    // misrepresented as blank nor accidentally overwritten.
+    test.skip(process.env.E2E_BACKEND === 'true', 'mock-only — fixture-pinned ref shape');
+
+    const vehicleId = 'NMR:Vehicle:rail-1';
+    const rawRef = 'NMR:VehicleType:rail';
+    await interceptStatefulVehicleListQuery(page);
+    await page.route('**/services/vehicles/netex/vehicles/**', async route => {
+      if (route.request().method() !== 'GET') return route.continue();
+      const id = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop() ?? '');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/xml',
+        body: vehiclePublicationDelivery(id, `<TransportTypeRef ref="${rawRef}"/>`),
+      });
+    });
+
+    await page.goto(`/vehicles?selected=${encodeURIComponent(vehicleId)}`);
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
+
+    await page.getByTestId('editor-rail-edit').click();
+
+    const field = page.locator('#vehicle-transport-type');
+    await expect(field).toHaveValue(rawRef);
+    await expect(field).toBeDisabled();
+  });
 });
