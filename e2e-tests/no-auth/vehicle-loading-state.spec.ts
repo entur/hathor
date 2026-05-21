@@ -25,7 +25,7 @@ const MISSING_BASE_URL_ERROR = 'Application import base URL is not configured';
  * synchronously, surfacing the same message
  * `useVehiclePairSave` already emits for the save path.
  */
-test.describe('useVehicle (B1) — missing applicationImportBaseUrl never stops loading', () => {
+test.describe('useVehicle — missing applicationImportBaseUrl never stops loading (no-auth)', () => {
   test.beforeAll(() => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-import-baseurl.json'), targetConfig);
   });

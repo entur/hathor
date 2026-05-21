@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './xml/Vehicle';
 import type { VehicleModel } from './xml/VehicleModel';
 import { firstText } from '../netex/multilingualString.ts';
+import { MISSING_TEXT } from './vehicleFormDefaults';
+import { intToRef, refToInt } from './transportTypeRef';
 
 export const LABEL_COL_MIN = '8rem';
 export const LABEL_COL_MAX = '12rem';
 export const COL_GAP = 2;
 export const ROW_GAP = 1.25;
-const DATE_PLACEHOLDER = 'YYYY-MM-DD';
 
 export interface VehicleEditFormValue {
   vehicle: Vehicle;
@@ -69,6 +70,13 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setV = (patch: Partial<Vehicle>) => onChange({ ...value, vehicle: { ...v, ...patch } });
   const setM = (patch: Partial<VehicleModel>) => onChange({ ...value, model: { ...m, ...patch } });
 
+  const transportRef = v.TransportTypeRef ?? '';
+  const transportIntValue = refToInt(v.TransportTypeRef);
+  // An existing ref the TEMP numeric input can't represent (non-numeric suffix
+  // or non-NMR codespace) — render it raw + read-only rather than as a blank/
+  // error field that invites accidental overwrite.
+  const rawTransportRef = transportRef !== '' && transportIntValue === '';
+
   return (
     <Box
       sx={{
@@ -104,6 +112,35 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
+      {/* TEMP: bare numeric until Sobek `VehicleTypeFilter.name` lands; swap for
+          TransportTypePicker. An existing non-numeric ref renders raw + read-only. */}
+      <FieldRow
+        id="vehicle-transport-type"
+        label={t('vehicles.field.transportType', 'Vehicle Type ID')}
+      >
+        {rawTransportRef ? (
+          <TextField
+            id="vehicle-transport-type"
+            value={transportRef}
+            disabled
+            size="small"
+            fullWidth
+          />
+        ) : (
+          <TextField
+            id="vehicle-transport-type"
+            type="number"
+            required
+            value={transportIntValue}
+            onChange={e => setV({ TransportTypeRef: intToRef(e.target.value) })}
+            disabled={ro}
+            size="small"
+            fullWidth
+            error={!ro && !transportIntValue}
+          />
+        )}
+      </FieldRow>
+
       <FieldRow
         id="vehicle-operational-number"
         label={t('vehicles.field.operationalNumber', 'Operational Number')}
@@ -135,12 +172,12 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
       <FieldRow id="vehicle-build-date" label={t('vehicles.field.buildDate', 'Build Date')}>
         <TextField
           id="vehicle-build-date"
-          value={v.BuildDate ?? ''}
+          type="date"
+          value={(v.BuildDate ?? '').slice(0, 10)}
           onChange={e => setV({ BuildDate: orUndef(e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
-          placeholder={DATE_PLACEHOLDER}
         />
       </FieldRow>
 
@@ -150,12 +187,12 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
       >
         <TextField
           id="vehicle-registration-date"
-          value={v.RegistrationDate ?? ''}
+          type="date"
+          value={(v.RegistrationDate ?? '').slice(0, 10)}
           onChange={e => setV({ RegistrationDate: orUndef(e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
-          placeholder={DATE_PLACEHOLDER}
         />
       </FieldRow>
 
@@ -183,6 +220,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           disabled={ro}
           size="small"
           fullWidth
+          placeholder={MISSING_TEXT}
         />
       </FieldRow>
 

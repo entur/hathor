@@ -1,18 +1,6 @@
 import { useState } from 'react';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Tooltip,
-  useTheme,
-} from '@mui/material';
+import { Box, CircularProgress, Divider, IconButton, Tooltip, useTheme } from '@mui/material';
+import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
@@ -202,25 +190,12 @@ export default function EditorRail({
         )}
       </Box>
 
-      <Dialog open={confirming != null} onClose={() => setConfirming(null)}>
-        <DialogTitle>{t('vehicles.discardTitle', 'Discard unsaved changes?')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t('vehicles.discardBody', 'You have unsaved edits on this vehicle.')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirming(null)}>{t('cancel', 'Cancel')}</Button>
-          <Button color="error" onClick={handleDiscard}>
-            {t('discard', 'Discard')}
-          </Button>
-          {onSave && (
-            <Button variant="contained" onClick={handleSaveFromDialog}>
-              {t('save', 'Save')}
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+      <DiscardDialog
+        open={confirming != null}
+        onCancel={() => setConfirming(null)}
+        onDiscard={handleDiscard}
+        onSave={onSave ? handleSaveFromDialog : undefined}
+      />
     </>
   );
 }

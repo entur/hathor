@@ -8,6 +8,7 @@
 import type { VehicleEditFormValue } from './VehicleEditForm';
 import type { Vehicle } from './xml/Vehicle';
 import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults';
+import { TRANSPORT_TYPE_REF_PATTERN } from './transportTypeRef';
 
 export interface FormState {
   form: VehicleEditFormValue;
@@ -42,4 +43,13 @@ export function edit(state: FormState, form: VehicleEditFormValue): FormState {
 /** True iff the form has diverged from the last hydrated baseline. */
 export function isDirty(state: FormState): boolean {
   return keyOf(state.form) !== state.hydratedKey;
+}
+
+/** True iff the required fields needed for create-side save are present.
+ *  Today only TransportTypeRef gates Save — Sobek's `vehicles()` resolver
+ *  silently excludes refless vehicles from the list, so a create without
+ *  one is unrecoverable. Drives `saveDisabled` on /vehicles/new; the slider
+ *  edit doesn't gate since existing rows already carry the ref. */
+export function canSubmit(form: VehicleEditFormValue): boolean {
+  return TRANSPORT_TYPE_REF_PATTERN.test(form.vehicle.TransportTypeRef ?? '');
 }

@@ -50,7 +50,12 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
 
-  const { data: xmlVehicle, loading: xmlLoading, error: xmlError } = useVehicle(vehicle?.id);
+  const {
+    data: xmlVehicle,
+    loading: xmlLoading,
+    error: xmlError,
+    refetch: refetchXml,
+  } = useVehicle(vehicle?.id);
 
   useEffect(() => {
     dispatch({ type: 'hydrate', xmlVehicle });
@@ -71,6 +76,10 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
   const handleSave = async () => {
     const result = await commitSave(save, form, onSaved);
     if (!result.error) {
+      // Re-pull the persisted vehicle so the `hydrate` effect advances the
+      // dirty baseline (and picks up the bumped version). Without this the
+      // form stays dirty after save and `>>` wrongly raises the discard dialog.
+      await refetchXml();
       setSavedAt(Date.now());
       setMode('view');
     }
@@ -181,8 +190,14 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
           value={
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
               <span>{vehicle.transportType?.name ?? '—'}</span>
-              {vehicle.transportType?.id && (
-                <NetexId id={vehicle.transportType.id} copy="onHover" size="small" />
+              {/* Source the id from the NeTEx XML — the GQL nested
+               * `transportType.id` resolves to a DB row id (sobek#125),
+               * and `restructNetexId` splices it into "NMR:VehicleType:<rowid>"
+               * which only coincidentally equals the real netexId. The XML's
+               * <TransportTypeRef ref="…"/> always carries the persisted
+               * netexId, which is also what the form below displays. */}
+              {xmlVehicle?.TransportTypeRef && (
+                <NetexId id={xmlVehicle.TransportTypeRef} copy="onHover" size="small" />
               )}
             </Stack>
           }
