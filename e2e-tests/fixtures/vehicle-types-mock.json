@@ -14,10 +14,8 @@
           "created": null,
           "changed": null,
           "changedBy": null,
-          "versionComment": null,
           "deckPlan": {
             "id": "NMR:DeckPlan:1",
-            "description": "Single deck",
             "name": { "value": "Plan A" }
           },
           "vehicles": [{ "id": "NMR:Vehicle:101", "registrationNumber": "AA-101", "version": 1 }]
@@ -34,10 +32,8 @@
           "created": null,
           "changed": null,
           "changedBy": null,
-          "versionComment": null,
           "deckPlan": {
             "id": "NMR:DeckPlan:2",
-            "description": "Double deck",
             "name": { "value": "Plan B" }
           },
           "vehicles": [{ "id": "NMR:Vehicle:102", "registrationNumber": "BB-102", "version": 1 }]
@@ -54,10 +50,8 @@
           "created": null,
           "changed": null,
           "changedBy": null,
-          "versionComment": null,
           "deckPlan": {
             "id": "NMR:DeckPlan:3",
-            "description": "Articulated",
             "name": { "value": "Plan C" }
           },
           "vehicles": [{ "id": "NMR:Vehicle:103", "registrationNumber": "CC-103", "version": 1 }]

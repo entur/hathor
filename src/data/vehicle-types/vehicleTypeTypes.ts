@@ -27,7 +27,6 @@ export type VehicleType = {
   created?: string;
   changed?: string;
   changedBy?: string;
-  versionComment?: string;
   vehicles?: Vehicle[];
   __typename: string;
 };

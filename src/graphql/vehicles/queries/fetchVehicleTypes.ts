@@ -20,7 +20,6 @@ const fetchVehicleTypesGQL = gql`
         created
         changed
         changedBy
-        versionComment
         deckPlan {
           id
           name {
