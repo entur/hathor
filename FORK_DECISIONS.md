@@ -53,7 +53,7 @@ Concrete contract:
 
 ### Consequences
 
-- This URL↔state model is **local to `VehicleView`**. Other pages (`vehicle-types`, `deck-plans`) keep their direct `setEditingItem` writes. If we want to retrofit them later, the wiring can be lifted into `GenericDataViewPage` — the contract here was kept page-local on purpose to avoid forcing a redesign on every consumer.
+- This URL↔state model is **local to `VehicleView`**. Other pages (`vehicle-types`, `deck-plans`) kept their direct `setEditingItem` writes at capture time. **Superseded 2026-05-22:** the per-row `EditActionCell` edit-button convention has since been retired — `vehicle-types` and `deck-plans` navigate to full-page details routes (`/vehicle-types/:id`, `/deck-plans/:id`) and make no `setEditingItem` calls. See [Retire the `EditActionCell` per-row edit-button convention](#retire-the-editactioncell-per-row-edit-button-convention-retroactive-captured-2026-05-22).
 - `VehicleDetails`'s prop becomes `vehicle: VehicleRow | null`, gaining a not-found branch.
 - The row-trigger affordance is generic: `GenericDataViewPage` accepts a `useRowClick` hook on `ViewConfig` that returns a `(item) => void` handler, plumbed to `DataTableRow`'s `onClick` in non-compact mode. Vehicles wires it to `navigate(vehicleSelectedHref(item.id))`; other pages can opt in for whole-row click without re-implementing the chain. Compact (mobile) mode keeps its tap-to-expand behaviour and ignores `onRowClick`.
 - `useVehicles()` still single-fetches the entire list. Per memory note `project_vehicle_details_route_hathor.md`, a Sobek `/netex/vehicles/{id}` endpoint is the prerequisite for ever switching to a per-id fetch — until that exists, "deep link" still means "wait for the list, then look up".
@@ -244,3 +244,118 @@ This boundary is what makes the round-trip honest. A projection row carries disp
 - An ESLint rule enforcing the cross-subdir import direction.
 - Moving the bridge files into a third bucket.
 - Carving any other data feature (`vehicle-types/`, `deck-plans/`) the same way — they don't yet have a write-side worth separating.
+
+---
+
+## Retire the `EditActionCell` per-row edit-button convention _(retroactive, captured 2026-05-22)_
+
+### Context
+
+Inanna's scaffold shipped a single convention for "edit a row": every data table carried an `actions` column whose cell was an `EditActionCell` — a pencil `IconButton` that called `setEditingItem({ id, EditorComponent })`, opening a standalone editor component in the sidebar slot (`EditingContext` → `SidebarContent.tsx:7-8` renders `EditorComponent` with `itemId`). The old `DEV_GUIDE.md` "Adding a New Data Table Page" tutorial taught it as Step 3 (write a `<Feature>Editor.tsx` taking only `itemId`) + Step 4 (write a `cells/EditActionCell.tsx` wiring the row to it).
+
+Over the vehicle-feature work this convention was abandoned page by page, but never as a recorded decision. The fallout: `src/data/vehicle-types/cells/EditActionCell.tsx` and `src/data/vehicle-types/VehicleTypeEditor.tsx` sat as dead, unimported code, and the [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12)'s Consequences still asserted `vehicle-types`/`deck-plans` do direct `setEditingItem` writes — no longer true.
+
+### Decision
+
+The per-row `EditActionCell` → standalone `itemId`-editor convention is retired. A row's "open the editor" affordance is no longer one uniform cell type; each page picks the affordance matching its detail UX:
+
+- **`/vehicle-types`** — the **ID column** renders `<Chip component={Link} to={/vehicle-types/:id}>` (`vehicleTypeViewConfig.tsx:24-39`). Navigates to the full-page `VehicleTypeDetails` route.
+- **`/deck-plans`** — a dedicated **`edit` column** renders `<Button variant="text">Edit</Button>` whose `onClick` does `navigate('/deck-plans/:id')` (`deckPlanViewConfig.ts:33-44`). Navigates to the full-page `DeckPlanDetailsView` route.
+- **`/vehicles`** — **whole-row click** via `vehicleViewConfig.useRowClick` (`vehicleViewConfig.tsx:82`) → `navigate('/vehicles?selected=<id>')`. The param is reconciled into `EditingContext` by `useVehicleUrlSelection.tsx:75-77`, opening `VehicleDetails` in the sidebar slider — see the [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12).
+
+`EditActionCell.tsx` and `VehicleTypeEditor.tsx` are deleted as dead code (branch `cleanup/unused-removal`).
+
+`EditingContext` itself is **not** retired. It still backs the `/vehicles` slider — but its sole writer is now `useVehicleUrlSelection`, and the editor it commits is an inline closure `() => <VehicleDetails vehicle={row} onSaved={refetch} />`, not a standalone `itemId`-only component. The gap between that closure and the `EditorComponent: ComponentType<{ itemId: string }>` contract (`EditingContext.tsx:12`) is the live design question tracked in `OPEN_QUESTIONS.md`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep `EditActionCell` as the one uniform convention** | A pencil-button-to-sidebar works for a quick inline edit, but `vehicle-types` and `deck-plans` grew full-page details routes (`/vehicle-types/:id`, `/deck-plans/:id`) holding more than a slider can. Layering a pencil button onto a route the page already owns is two affordances for one job. |
+| **Make every page use whole-row click** | Fits `/vehicles` (slider, no route). For a page with a full details *route*, an explicit chip/button keeps the row's other interactions (text selection, the ID chip's own link target) unambiguous. Left per-page. |
+| **One details affordance shared by all three pages** | Would mean either dragging `/vehicles` onto a `/vehicles/:id` route (rejected in the `?selected=` ADR — no per-id endpoint) or dropping the deep-link slider. Not worth re-litigating a settled decision for cell-level uniformity. |
+| **Silently delete the dead files, no ADR** | The convention drop is exactly the non-obvious call this log exists for. Without it, a contributor reading the old tutorial pattern — or the stale `?selected=` consequence — has no signal it was deliberate. |
+
+### Consequences
+
+- `EditActionCell.tsx` and `VehicleTypeEditor.tsx` are removed; `cells/` under `vehicle-types/` keeps only `VehicleListCell.tsx`.
+- The `DEV_GUIDE.md` tutorial that taught the editor-component + `EditActionCell` steps is gone — `DEV_GUIDE.md` is now a stub pointing at the global `inanna-fork` skill, the maintained source for the data-table pattern.
+- **In-cell affordances are inconsistent by page:** `vehicle-types` puts a `<Link>` on the *ID* chip, `deck-plans` adds a separate *Edit* button column. Same destination shape (a `/<entity>/:id` route), two cell idioms. Converging them is a deliberate follow-up, not done here.
+- The [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12)'s line-56 Consequences bullet is corrected to mark this supersession.
+- `OPEN_QUESTIONS.md`'s entry that cited `EditActionCell.tsx:19` as the `{ id, EditorComponent }` contract exemplar has been reworded to drop the dead-file reference and describe the convention in the past tense; its underlying question — who owns slider selection — remains open.
+
+### Out of scope
+
+- Converging the `vehicle-types` ID-chip link and the `deck-plans` Edit-button column into one shared in-cell "go to details" affordance.
+- Resolving the `EditorComponent` closure-vs-`itemId` contract mismatch for `/vehicles` (tracked in `OPEN_QUESTIONS.md`).
+
+---
+
+## Relocate Autosys import UI into `data/vehicle-imports/components/` _(2026-05-22)_
+
+### Context
+
+`README.md`'s "Where new files go" rule splits `src/` into vertical feature folders
+(`data/<feature>/`, entity-specific) and horizontal file-kind folders (`components/`,
+generic/shared UI). An audit of `src/components/` on branch `cleanup/unused-removal`
+found one folder that sat on the wrong side of that line:
+
+- `components/external-inputs/autosys/` held the entire UI for the **vehicle-imports**
+  feature — a `MultiImport` stepper plus four step sub-components, and a dead
+  `SingleImport` workflow. Every file imported from `data/vehicle-imports/`, which
+  itself contained only the data/service layer (fetchers, parsers, assemblers, and
+  `__tests__/`) — a feature whose code lived in two places, split by file-kind rather
+  than feature.
+- `components/dialogs/AutosysImportFloatingMenu.tsx` — the FAB that launches the
+  `MultiImport` dialog — sat in the *generic* `dialogs/` sub-area despite being
+  import-specific and consumed by exactly one page (`VehicleTypeView`).
+
+`external-inputs/` was the only `components/` sub-area dedicated to a single feature's
+UI; the rest (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`)
+are genuinely cross-feature.
+
+### Decision
+
+Move the `MultiImport` stepper (5 files) and the launcher FAB into a new
+`src/data/vehicle-imports/components/` subdir, so the feature owns its UI alongside its
+data layer. Delete the dead `SingleImport`/`SingleImportQuery`/`SingleImportConfirm`
+trio — `SingleImport` was deactivated (it posts raw Autosys XML without injecting
+`OperationalNumber`) and had no importers. Drop `external-inputs/` from the
+`components/` sub-area list in `README.md`.
+
+The UI lands in a `components/` *subdir* of the feature folder rather than at the
+feature root: `data/vehicle-imports/` already carried 9 data-layer files plus
+`__tests__/`, and a `components/` subdir keeps UI separate from service code. This is
+the bulletproof-react feature-folder convention (an explicit `components/` dir for
+feature-scoped components) and reads consistently with the existing `cells/` subdir
+under `vehicle-types/`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep `external-inputs/` as a `components/` sub-area** | It only ever held one feature's UI. The README rule sends entity-specific files to `data/<feature>/`; honouring it removes a sub-area that never generalised. |
+| **Move the UI flat to the `data/vehicle-imports/` root** | Would interleave 6 UI files with 9 data-layer files + `__tests__/` in one directory, with no signal which serves which role — the same readability problem the `vehicles/` `projection/`+`xml/` split solved. |
+| **Name the subdir `ui/` instead of `components/`** | `components/` is the bulletproof-react convention and reads as the natural sibling of the existing `cells/` subdir. `ui/` invents a third term for "feature-scoped components". |
+| **Keep the FAB in `components/dialogs/`, move only the stepper** | Splits one feature's UI across two trees again. The FAB is the import flow's entry point and contains zero vehicle-type logic — it belongs with the flow it launches. |
+| **Delete only the dead files, leave the rest** | Addresses the `cleanup/unused-removal` branch theme but leaves the larger misfile (a feature's UI in a horizontal folder) in place. |
+
+### Consequences
+
+- `data/vehicle-imports/` now owns its UI; the feature is no longer split across
+  `data/` and `components/`.
+- `components/` no longer has an `external-inputs/` sub-area — every remaining sub-area
+  is cross-feature.
+- Introduces a third within-feature subdir idiom — `components/` — alongside
+  `vehicles/`'s `projection/`+`xml/` and `vehicle-types/`'s `cells/`. A feature folder
+  may now hold a `components/` subdir for its feature-scoped UI.
+- `VehicleTypeView` imports the FAB from `../vehicle-imports/components/` — a deliberate
+  cross-feature import: the vehicle-types page hosts the launcher for an import flow
+  that produces vehicle types.
+
+### Out of scope
+
+- `components/Menu.tsx`, which sits loose at the `components/` root rather than in a
+  sub-area — left as-is.
+- Renaming `AutosysImportFloatingMenu.tsx` or the `MultiImport*` files.
+- Carving any other `components/` sub-area; the rest is genuinely generic.

@@ -10,22 +10,13 @@ import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
-import {
-  type AutosysAssembledResult,
-  assembleAutosysResults,
-} from '../../../data/vehicle-imports/assembleAutosysResults';
-import { fetchAllWithConcurrency } from '../../../data/vehicle-imports/fetchAllWithConcurrency';
-import type { TableMeta } from '../../../data/vehicle-imports/inputTextAnalyzer';
-import {
-  type RegNumbersStatus,
-  deduplicateEntries,
-} from '../../../data/vehicle-imports/regNumbersTextTransformer';
-import type { ImportEntry } from '../../../data/vehicle-imports/types';
-import {
-  fetchVehicleFromAutosys,
-  importAsNetexToBackend,
-} from '../../../data/vehicle-imports/vehicleImportServices';
-import { extractVehicleTypeIds, mergeResourceFrames } from '../../../data/vehicle-imports/xmlUtils';
+import { type AutosysAssembledResult, assembleAutosysResults } from '../assembleAutosysResults';
+import { fetchAllWithConcurrency } from '../fetchAllWithConcurrency';
+import type { TableMeta } from '../inputTextAnalyzer';
+import { type RegNumbersStatus, deduplicateEntries } from '../regNumbersTextTransformer';
+import type { ImportEntry } from '../types';
+import { fetchVehicleFromAutosys, importAsNetexToBackend } from '../vehicleImportServices';
+import { extractVehicleTypeIds, mergeResourceFrames } from '../xmlUtils';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
