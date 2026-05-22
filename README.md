@@ -39,6 +39,12 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 | `npm run e2e:auth` | Playwright tests (auth enabled) |
 | `npm run e2e:no-auth` | Playwright tests (auth disabled) |
 
+## Architecture diagram
+
+[`docs/architecture.html`](docs/architecture.html) is a standalone, interactive diagram of the component architecture — from `App.tsx` down through the generic wrappers (`GenericDataViewPage`, `GenericDetailsPage`) to every feature view. Open it in a browser (it loads D3 from a CDN); click a widget chip to expand its detail.
+
+**Keeping it in sync:** the diagram is driven by `docs/architecture-data.js`, a generated metafile. When routes or views change in `src/App.tsx`, regenerate it with `npm run gen:arch`. See the **RUN** section of the JSDoc header in [`scripts/gen-arch-metafile.mjs`](scripts/gen-arch-metafile.mjs) for details.
+
 ## Folder semantics
 
 Hathor's `src/` mixes two organizational styles. Before adding files, know which one you're touching.

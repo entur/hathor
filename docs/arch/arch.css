@@ -1,0 +1,269 @@
+/* arch/arch.css — styling for the standalone architecture doc (architecture.html). */
+:root {
+  --bg: #eef1f5;
+  --card: #ffffff;
+  --ink: #1f2733;
+  --muted: #6b7787;
+  --line: #e2e8f0;
+  --l1: #6366f1;
+  --l2: #0d9488;
+  --l3: #d97706;
+  --l4: #3b82f6;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  font:
+    14px/1.5 -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+.doc-head {
+  padding: 16px 26px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+.doc-head h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 650;
+}
+.doc-head .sub {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.doc-head code {
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.doc-head .meta {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.doc-head .meta b {
+  color: var(--ink);
+}
+#canvas {
+  flex: 1;
+  width: 100%;
+  display: block;
+  cursor: grab;
+}
+#canvas:active {
+  cursor: grabbing;
+}
+.doc-foot {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding: 8px 26px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.dot.l1 {
+  background: var(--l1);
+}
+.dot.l2 {
+  background: var(--l2);
+}
+.dot.l3 {
+  background: var(--l3);
+}
+.dot.l4 {
+  background: var(--l4);
+}
+.doc-foot .gen {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* edges */
+.edge {
+  fill: none;
+  stroke: #c2cad6;
+  stroke-width: 1.6;
+}
+.edge-l3 {
+  stroke: var(--l3);
+  stroke-dasharray: 4 3;
+}
+
+/* node cards, rendered as HTML inside <foreignObject> */
+.card {
+  height: 100%;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.08);
+}
+.card.c1 {
+  border-top-color: var(--l1);
+}
+.card.c2 {
+  border-top-color: var(--l2);
+}
+.card.c3 {
+  border-top-color: var(--l3);
+}
+.card.c4 {
+  border-top-color: var(--l4);
+}
+.ttl {
+  font-weight: 650;
+  font-size: 14px;
+}
+.ttl.mono {
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+.path {
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  word-break: break-all;
+}
+.summary {
+  font-size: 12px;
+  color: #44525f;
+  margin-top: 6px;
+}
+.lbl {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 9px;
+  font-weight: 600;
+}
+.meta-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.pill {
+  background: #eef2ff;
+  color: var(--l1);
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.shell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.sx {
+  background: #f1f5f9;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 10px;
+  color: #475569;
+}
+.none {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+.on-list {
+  margin: 4px 0 0;
+  padding-left: 16px;
+}
+.on-list li {
+  font-size: 11.5px;
+  margin: 1px 0;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+.chip {
+  font:
+    11px 'SF Mono',
+    ui-monospace,
+    Menlo,
+    Consolas,
+    monospace;
+  cursor: pointer;
+  background: #f8fafc;
+  border: 1px solid #d6deea;
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: #334155;
+}
+.chip:hover {
+  border-color: var(--l3);
+}
+.chip.on {
+  background: var(--l3);
+  border-color: var(--l3);
+  color: #fff;
+}
+.type {
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--l3);
+  margin-top: 2px;
+}
+.desc {
+  font-size: 11.5px;
+  color: #44525f;
+  margin-top: 5px;
+}
+.routes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.rt {
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  background: #eff6ff;
+  color: var(--l4);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+.via {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}

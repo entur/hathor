@@ -16,6 +16,9 @@ public/theme-*.json
 # Ignore vendored/generated bundles
 public/deckplan-editor
 
+# Ignore generated architecture metafile
+docs/architecture-data.js
+
 # Ignore other files
 .claude
 .wolf
