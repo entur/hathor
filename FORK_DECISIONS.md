@@ -289,3 +289,74 @@ The per-row `EditActionCell` → standalone `itemId`-editor convention is retire
 - Converging the `vehicle-types` ID-chip link and the `deck-plans` Edit-button column into one shared in-cell "go to details" affordance.
 - Resolving the `EditorComponent` closure-vs-`itemId` contract mismatch for `/vehicles` (tracked in `OPEN_QUESTIONS.md`).
 - Rewording the `OPEN_QUESTIONS.md` entry that references the deleted `EditActionCell.tsx`.
+
+---
+
+## Relocate Autosys import UI into `data/vehicle-imports/components/` _(2026-05-22)_
+
+### Context
+
+`README.md`'s "Where new files go" rule splits `src/` into vertical feature folders
+(`data/<feature>/`, entity-specific) and horizontal file-kind folders (`components/`,
+generic/shared UI). An audit of `src/components/` on branch `cleanup/unused-removal`
+found one folder that sat on the wrong side of that line:
+
+- `components/external-inputs/autosys/` held the entire UI for the **vehicle-imports**
+  feature — a `MultiImport` stepper plus four step sub-components, and a dead
+  `SingleImport` workflow. Every file imported from `data/vehicle-imports/`, which
+  itself contained only the data/service layer (fetchers, parsers, assemblers, and
+  `__tests__/`) — a feature whose code lived in two places, split by file-kind rather
+  than feature.
+- `components/dialogs/AutosysImportFloatingMenu.tsx` — the FAB that launches the
+  `MultiImport` dialog — sat in the *generic* `dialogs/` sub-area despite being
+  import-specific and consumed by exactly one page (`VehicleTypeView`).
+
+`external-inputs/` was the only `components/` sub-area dedicated to a single feature's
+UI; the rest (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`)
+are genuinely cross-feature.
+
+### Decision
+
+Move the `MultiImport` stepper (5 files) and the launcher FAB into a new
+`src/data/vehicle-imports/components/` subdir, so the feature owns its UI alongside its
+data layer. Delete the dead `SingleImport`/`SingleImportQuery`/`SingleImportConfirm`
+trio — `SingleImport` was deactivated (it posts raw Autosys XML without injecting
+`OperationalNumber`) and had no importers. Drop `external-inputs/` from the
+`components/` sub-area list in `README.md`.
+
+The UI lands in a `components/` *subdir* of the feature folder rather than at the
+feature root: `data/vehicle-imports/` already carried 9 data-layer files plus
+`__tests__/`, and a `components/` subdir keeps UI separate from service code. This is
+the bulletproof-react feature-folder convention (an explicit `components/` dir for
+feature-scoped components) and reads consistently with the existing `cells/` subdir
+under `vehicle-types/`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep `external-inputs/` as a `components/` sub-area** | It only ever held one feature's UI. The README rule sends entity-specific files to `data/<feature>/`; honouring it removes a sub-area that never generalised. |
+| **Move the UI flat to the `data/vehicle-imports/` root** | Would interleave 6 UI files with 9 data-layer files + `__tests__/` in one directory, with no signal which serves which role — the same readability problem the `vehicles/` `projection/`+`xml/` split solved. |
+| **Name the subdir `ui/` instead of `components/`** | `components/` is the bulletproof-react convention and reads as the natural sibling of the existing `cells/` subdir. `ui/` invents a third term for "feature-scoped components". |
+| **Keep the FAB in `components/dialogs/`, move only the stepper** | Splits one feature's UI across two trees again. The FAB is the import flow's entry point and contains zero vehicle-type logic — it belongs with the flow it launches. |
+| **Delete only the dead files, leave the rest** | Addresses the `cleanup/unused-removal` branch theme but leaves the larger misfile (a feature's UI in a horizontal folder) in place. |
+
+### Consequences
+
+- `data/vehicle-imports/` now owns its UI; the feature is no longer split across
+  `data/` and `components/`.
+- `components/` no longer has an `external-inputs/` sub-area — every remaining sub-area
+  is cross-feature.
+- Introduces a third within-feature subdir idiom — `components/` — alongside
+  `vehicles/`'s `projection/`+`xml/` and `vehicle-types/`'s `cells/`. A feature folder
+  may now hold a `components/` subdir for its feature-scoped UI.
+- `VehicleTypeView` imports the FAB from `../vehicle-imports/components/` — a deliberate
+  cross-feature import: the vehicle-types page hosts the launcher for an import flow
+  that produces vehicle types.
+
+### Out of scope
+
+- `components/Menu.tsx`, which sits loose at the `components/` root rather than in a
+  sub-area — left as-is.
+- Renaming `AutosysImportFloatingMenu.tsx` or the `MultiImport*` files.
+- Carving any other `components/` sub-area; the rest is genuinely generic.

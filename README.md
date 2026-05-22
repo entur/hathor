@@ -54,7 +54,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 
 **Horizontal (file-kind) folders:**
 
-- `components/` — UI components grouped by sub-area (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`, `external-inputs/`).
+- `components/` — UI components grouped by sub-area (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`).
 - `hooks/` — global hooks shared across features.
 - `pages/` — generic infrastructure (`GenericDataViewPage`, `GenericDetailsPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
 - `utils/` — domain-neutral helpers (`iconLoaderUtils.ts`).
