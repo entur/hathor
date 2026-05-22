@@ -6,10 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
 
+Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Extending this codebase — new entity views, domain modelling, the Generic Data View pattern — follows the Inanna *extend-fork* workflow, documented in the global **`inanna-fork`** skill rather than in-repo. `FORK_DECISIONS.md` records the design choices specific to this fork.
+
 ## Key Documentation
 
-- **`README.md`** — brief project overview, tech stack, quick start, scripts.
-- **`DEV_GUIDE.md`** — the main developer guide: theming, custom icons, TypeScript theme extensions, and a step-by-step tutorial for adding new data table pages. This is where customization and extension documentation lives. Keep it up to date when the architecture or patterns change.
+- **`README.md`** — brief project overview, tech stack, quick start, scripts, and `src/` folder semantics (where new files go).
+- **`DEV_GUIDE.md`** — a stub pointer. Hathor is an Inanna fork; the developer guide for adding entity views and extending the app lives in the global **`inanna-fork`** skill (extend mode), not in-repo.
 - **`FORK_DECISIONS.md`** — the project's Architecture Decision Record (ADR) log. **Single source of truth for *why* design choices were made on this fork.** Each section captures one decision with its context, alternatives, and consequences. Add a new ADR section here for any non-obvious design call; do **not** restate the rationale in this file (CLAUDE.md describes *what* the patterns are; FORK_DECISIONS describes *why*).
 - **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
@@ -46,7 +48,7 @@ The core architectural pattern is a reusable data table system:
 2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
 3. **Page component** (e.g. `src/data/vehicle-types/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
 
-To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. See `DEV_GUIDE.md` for the detailed tutorial.
+To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
 
 ### State Management
 
@@ -81,7 +83,7 @@ i18next with English (`src/locales/en/`) and Norwegian Bokmål (`src/locales/nb/
 
 ### Theming
 
-JSON-based theme config loaded at runtime. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`. See `DEV_GUIDE.md` for details.
+JSON-based theme config loaded at runtime and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
 
 ## E2E Testing (Playwright)
 

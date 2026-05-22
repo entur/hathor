@@ -53,7 +53,7 @@ Concrete contract:
 
 ### Consequences
 
-- This URL↔state model is **local to `VehicleView`**. Other pages (`vehicle-types`, `deck-plans`) keep their direct `setEditingItem` writes. If we want to retrofit them later, the wiring can be lifted into `GenericDataViewPage` — the contract here was kept page-local on purpose to avoid forcing a redesign on every consumer.
+- This URL↔state model is **local to `VehicleView`**. Other pages (`vehicle-types`, `deck-plans`) kept their direct `setEditingItem` writes at capture time. **Superseded 2026-05-22:** the per-row `EditActionCell` edit-button convention has since been retired — `vehicle-types` and `deck-plans` navigate to full-page details routes (`/vehicle-types/:id`, `/deck-plans/:id`) and make no `setEditingItem` calls. See [Retire the `EditActionCell` per-row edit-button convention](#retire-the-editactioncell-per-row-edit-button-convention-retroactive-captured-2026-05-22).
 - `VehicleDetails`'s prop becomes `vehicle: VehicleRow | null`, gaining a not-found branch.
 - The row-trigger affordance is generic: `GenericDataViewPage` accepts a `useRowClick` hook on `ViewConfig` that returns a `(item) => void` handler, plumbed to `DataTableRow`'s `onClick` in non-compact mode. Vehicles wires it to `navigate(vehicleSelectedHref(item.id))`; other pages can opt in for whole-row click without re-implementing the chain. Compact (mobile) mode keeps its tap-to-expand behaviour and ignores `onRowClick`.
 - `useVehicles()` still single-fetches the entire list. Per memory note `project_vehicle_details_route_hathor.md`, a Sobek `/netex/vehicles/{id}` endpoint is the prerequisite for ever switching to a per-id fetch — until that exists, "deep link" still means "wait for the list, then look up".
@@ -244,3 +244,48 @@ This boundary is what makes the round-trip honest. A projection row carries disp
 - An ESLint rule enforcing the cross-subdir import direction.
 - Moving the bridge files into a third bucket.
 - Carving any other data feature (`vehicle-types/`, `deck-plans/`) the same way — they don't yet have a write-side worth separating.
+
+---
+
+## Retire the `EditActionCell` per-row edit-button convention _(retroactive, captured 2026-05-22)_
+
+### Context
+
+Inanna's scaffold shipped a single convention for "edit a row": every data table carried an `actions` column whose cell was an `EditActionCell` — a pencil `IconButton` that called `setEditingItem({ id, EditorComponent })`, opening a standalone editor component in the sidebar slot (`EditingContext` → `SidebarContent.tsx:7-8` renders `EditorComponent` with `itemId`). The old `DEV_GUIDE.md` "Adding a New Data Table Page" tutorial taught it as Step 3 (write a `<Feature>Editor.tsx` taking only `itemId`) + Step 4 (write a `cells/EditActionCell.tsx` wiring the row to it).
+
+Over the vehicle-feature work this convention was abandoned page by page, but never as a recorded decision. The fallout: `src/data/vehicle-types/cells/EditActionCell.tsx` and `src/data/vehicle-types/VehicleTypeEditor.tsx` sat as dead, unimported code, and the [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12)'s Consequences still asserted `vehicle-types`/`deck-plans` do direct `setEditingItem` writes — no longer true.
+
+### Decision
+
+The per-row `EditActionCell` → standalone `itemId`-editor convention is retired. A row's "open the editor" affordance is no longer one uniform cell type; each page picks the affordance matching its detail UX:
+
+- **`/vehicle-types`** — the **ID column** renders `<Chip component={Link} to={/vehicle-types/:id}>` (`vehicleTypeViewConfig.tsx:24-39`). Navigates to the full-page `VehicleTypeDetails` route.
+- **`/deck-plans`** — a dedicated **`edit` column** renders `<Button variant="text">Edit</Button>` whose `onClick` does `navigate('/deck-plans/:id')` (`deckPlanViewConfig.ts:33-44`). Navigates to the full-page `DeckPlanDetailsView` route.
+- **`/vehicles`** — **whole-row click** via `vehicleViewConfig.useRowClick` (`vehicleViewConfig.tsx:82`) → `navigate('/vehicles?selected=<id>')`. The param is reconciled into `EditingContext` by `useVehicleUrlSelection.tsx:75-77`, opening `VehicleDetails` in the sidebar slider — see the [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12).
+
+`EditActionCell.tsx` and `VehicleTypeEditor.tsx` are deleted as dead code (branch `cleanup/unused-removal`).
+
+`EditingContext` itself is **not** retired. It still backs the `/vehicles` slider — but its sole writer is now `useVehicleUrlSelection`, and the editor it commits is an inline closure `() => <VehicleDetails vehicle={row} onSaved={refetch} />`, not a standalone `itemId`-only component. The gap between that closure and the `EditorComponent: ComponentType<{ itemId: string }>` contract (`EditingContext.tsx:12`) is the live design question tracked in `OPEN_QUESTIONS.md`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep `EditActionCell` as the one uniform convention** | A pencil-button-to-sidebar works for a quick inline edit, but `vehicle-types` and `deck-plans` grew full-page details routes (`/vehicle-types/:id`, `/deck-plans/:id`) holding more than a slider can. Layering a pencil button onto a route the page already owns is two affordances for one job. |
+| **Make every page use whole-row click** | Fits `/vehicles` (slider, no route). For a page with a full details *route*, an explicit chip/button keeps the row's other interactions (text selection, the ID chip's own link target) unambiguous. Left per-page. |
+| **One details affordance shared by all three pages** | Would mean either dragging `/vehicles` onto a `/vehicles/:id` route (rejected in the `?selected=` ADR — no per-id endpoint) or dropping the deep-link slider. Not worth re-litigating a settled decision for cell-level uniformity. |
+| **Silently delete the dead files, no ADR** | The convention drop is exactly the non-obvious call this log exists for. Without it, a contributor reading the old tutorial pattern — or the stale `?selected=` consequence — has no signal it was deliberate. |
+
+### Consequences
+
+- `EditActionCell.tsx` and `VehicleTypeEditor.tsx` are removed; `cells/` under `vehicle-types/` keeps only `VehicleListCell.tsx`.
+- The `DEV_GUIDE.md` tutorial that taught the editor-component + `EditActionCell` steps is gone — `DEV_GUIDE.md` is now a stub pointing at the global `inanna-fork` skill, the maintained source for the data-table pattern.
+- **In-cell affordances are inconsistent by page:** `vehicle-types` puts a `<Link>` on the *ID* chip, `deck-plans` adds a separate *Edit* button column. Same destination shape (a `/<entity>/:id` route), two cell idioms. Converging them is a deliberate follow-up, not done here.
+- The [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12)'s line-56 Consequences bullet is corrected to mark this supersession.
+- `OPEN_QUESTIONS.md`'s entry citing `EditActionCell.tsx:19` as the "honours the `{ id, EditorComponent }` contract" exemplar now points at a deleted file; that entry needs rewording (its underlying question — who owns slider selection — remains open).
+
+### Out of scope
+
+- Converging the `vehicle-types` ID-chip link and the `deck-plans` Edit-button column into one shared in-cell "go to details" affordance.
+- Resolving the `EditorComponent` closure-vs-`itemId` contract mismatch for `/vehicles` (tracked in `OPEN_QUESTIONS.md`).
+- Rewording the `OPEN_QUESTIONS.md` entry that references the deleted `EditActionCell.tsx`.
