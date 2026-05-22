@@ -282,13 +282,12 @@ The per-row `EditActionCell` → standalone `itemId`-editor convention is retire
 - The `DEV_GUIDE.md` tutorial that taught the editor-component + `EditActionCell` steps is gone — `DEV_GUIDE.md` is now a stub pointing at the global `inanna-fork` skill, the maintained source for the data-table pattern.
 - **In-cell affordances are inconsistent by page:** `vehicle-types` puts a `<Link>` on the *ID* chip, `deck-plans` adds a separate *Edit* button column. Same destination shape (a `/<entity>/:id` route), two cell idioms. Converging them is a deliberate follow-up, not done here.
 - The [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12)'s line-56 Consequences bullet is corrected to mark this supersession.
-- `OPEN_QUESTIONS.md`'s entry citing `EditActionCell.tsx:19` as the "honours the `{ id, EditorComponent }` contract" exemplar now points at a deleted file; that entry needs rewording (its underlying question — who owns slider selection — remains open).
+- `OPEN_QUESTIONS.md`'s entry that cited `EditActionCell.tsx:19` as the `{ id, EditorComponent }` contract exemplar has been reworded to drop the dead-file reference and describe the convention in the past tense; its underlying question — who owns slider selection — remains open.
 
 ### Out of scope
 
 - Converging the `vehicle-types` ID-chip link and the `deck-plans` Edit-button column into one shared in-cell "go to details" affordance.
 - Resolving the `EditorComponent` closure-vs-`itemId` contract mismatch for `/vehicles` (tracked in `OPEN_QUESTIONS.md`).
-- Rewording the `OPEN_QUESTIONS.md` entry that references the deleted `EditActionCell.tsx`.
 
 ---
 

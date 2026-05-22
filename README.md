@@ -58,7 +58,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 - `hooks/` — global hooks shared across features.
 - `pages/` — generic infrastructure (`GenericDataViewPage`, `GenericDetailsPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
 - `utils/` — domain-neutral helpers (`iconLoaderUtils.ts`).
-- `types/` — **deprecated.**
+- `types/` — **deprecated.** No `src/types/` directory exists; don't create one (see "Where new files go").
 - `contexts/` — top-level React contexts not yet hosted in feature folders (`configContext`, `CustomizationContext`, `EditingContext`, `SessionContext`).
 - `static/` — static assets.
 
