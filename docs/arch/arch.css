@@ -9,6 +9,7 @@
   --l2: #0d9488;
   --l3: #d97706;
   --l4: #3b82f6;
+  --l5: #a855f7;
 }
 * {
   box-sizing: border-box;
@@ -101,6 +102,9 @@ body {
 .dot.l4 {
   background: var(--l4);
 }
+.dot.l5 {
+  background: var(--l5);
+}
 .doc-foot .gen {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
@@ -115,6 +119,14 @@ body {
 .edge-l3 {
   stroke: var(--l3);
   stroke-dasharray: 4 3;
+}
+.edge-l5 {
+  stroke: var(--l5);
+}
+.edge-bind {
+  stroke: var(--l5);
+  stroke-dasharray: 3 3;
+  opacity: 0.4;
 }
 
 /* node cards, rendered as HTML inside <foreignObject> */
@@ -139,6 +151,50 @@ body {
 }
 .card.c4 {
   border-top-color: var(--l4);
+}
+.card.c5 {
+  border-top-color: var(--l5);
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.card.c5 .ttl {
+  font-size: 13px;
+}
+.card.c5 .path {
+  margin-top: 4px;
+}
+.card.c5 .kind {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.card.c5 .kind-component {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+.card.c5 .kind-hook {
+  background: #dcfce7;
+  color: #15803d;
+}
+.card.c5 .kind-function {
+  background: #fef3c7;
+  color: #b45309;
+}
+.card.c5 .kind-inline {
+  background: #f1f5f9;
+  color: #64748b;
+  font-style: italic;
+}
+.card.c5 .for-view {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 6px;
 }
 .ttl {
   font-weight: 650;
@@ -236,6 +292,17 @@ body {
   background: var(--l3);
   border-color: var(--l3);
   color: #fff;
+}
+/* Structural slots (required by every view) — solid outline distinguishes them
+ * from opt-in chips. Coloured cue uses L5 hue since structural chips own L5
+ * bindings, tying the chip visually to the row of cards it expands. */
+.chip.structural {
+  border-color: var(--l5);
+  border-width: 1.5px;
+}
+.chip.structural.on {
+  background: var(--l5);
+  border-color: var(--l5);
 }
 .type {
   font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;

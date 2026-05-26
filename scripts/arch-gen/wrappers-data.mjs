@@ -38,6 +38,31 @@ export const WRAPPERS = [
     ],
     widgets: [
       {
+        key: 'PageContentComponent',
+        type: 'ComponentType<PageContentComponentProps<T,K>>',
+        desc: 'Concrete component rendering the table body. Today every view supplies DataPageContent.',
+        structural: true,
+      },
+      {
+        key: 'EditorComponent',
+        type: 'ComponentType<{itemId:string}>',
+        desc: 'Sidebar editor body for the selected row. Set via EditingContext.setEditingItem, not viewConfig.',
+        structural: true,
+        source: 'editing-context',
+      },
+      {
+        key: 'useData',
+        type: '() => UseDataReturn<T,K>',
+        desc: 'Per-entity dataset hook.',
+        structural: true,
+      },
+      {
+        key: 'useSearchRegistration',
+        type: '(allData, dataLoading) => void',
+        desc: 'Per-entity search-context wiring.',
+        structural: true,
+      },
+      {
         key: 'filters',
         type: 'FilterDefinition[]',
         desc: 'Filter chips in the search bar; registered via registerFilterConfig when defined.',
@@ -90,6 +115,13 @@ export const WRAPPERS = [
       'Inline error display on a failed save',
     ],
     widgets: [
+      {
+        key: 'detailsChildren',
+        type: 'ReactNode (JSX child)',
+        desc: 'Form / editor body the detail view passes as <GenericDetailsPage>…</GenericDetailsPage> child.',
+        structural: true,
+        source: 'jsx-child',
+      },
       {
         key: 'onBack',
         type: '() => void',

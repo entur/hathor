@@ -20,8 +20,16 @@ window.ArchGraph = window.ArchGraph || {};
   NS.render = function (root, model, frame, expanded, onToggle) {
     const visIds = new Set(frame.visible.map(n => n.id));
     drawEdges(sublayer(root, 'edges'), model, visIds);
+    if (showCrossEdges()) drawCrossEdges(sublayer(root, 'cross-edges'), model, visIds);
+    else sublayer(root, 'cross-edges').selectAll('*').remove();
     drawNodes(sublayer(root, 'nodes'), frame.visible, expanded, onToggle);
   };
+
+  /** L5 binding → L4 view cross-edges default on; disable with `?bindings=off`. */
+  function showCrossEdges() {
+    const p = new URLSearchParams(window.location.search);
+    return p.get('bindings') !== 'off';
+  }
 
   /** Get-or-create a named child <g> of the viewport. */
   function sublayer(root, cls) {
@@ -45,6 +53,29 @@ window.ArchGraph = window.ArchGraph || {};
       .duration(DUR)
       .style('opacity', 1)
       .attr('d', e => edgePath(model.byId.get(e.from), model.byId.get(e.to)));
+  }
+
+  /** Dashed binding → view cross-edges; idempotent with the same enter/exit pattern. */
+  function drawCrossEdges(g, model, visIds) {
+    const links = [];
+    for (const n of model.nodes) {
+      if (n.layer !== 5 || !visIds.has(n.id)) continue;
+      const view = model.byId.get(n.data.viewId);
+      if (view && visIds.has(view.id)) links.push({ id: n.id + '~' + view.id, from: n, to: view });
+    }
+    const sel = g.selectAll('path.edge-bind').data(links, e => e.id);
+    sel.exit().transition().duration(DUR).style('opacity', 0).remove();
+    sel
+      .enter()
+      .append('path')
+      .attr('class', 'edge edge-bind')
+      .attr('d', e => edgePath(e.from, e.to))
+      .style('opacity', 0)
+      .merge(sel)
+      .transition()
+      .duration(DUR)
+      .style('opacity', 1)
+      .attr('d', e => edgePath(e.from, e.to));
   }
 
   function drawNodes(g, visible, expanded, onToggle) {

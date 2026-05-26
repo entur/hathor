@@ -15,6 +15,7 @@ window.ArchGraph = window.ArchGraph || {};
     if (n.kind === 'app') return appCard(n.data);
     if (n.kind === 'wrapper') return wrapperCard(n, expanded);
     if (n.kind === 'widget') return widgetCard(n.data);
+    if (n.kind === 'binding') return bindingCard(n.data);
     return viewCard(n.data);
   };
 
@@ -42,14 +43,8 @@ window.ArchGraph = window.ArchGraph || {};
 
   function wrapperCard(n, expanded) {
     const w = n.data;
-    const chips = w.widgets
-      .map(function (x) {
-        const on = expanded.has(n.id + '::' + x.key) ? ' on' : '';
-        return (
-          '<button class="chip' + on + '" data-key="' + esc(x.key) + '">' + esc(x.key) + '</button>'
-        );
-      })
-      .join('');
+    const structural = w.widgets.filter(x => x.structural);
+    const optional = w.widgets.filter(x => !x.structural);
     return (
       '<div class="card c2">' +
       '<div class="ttl">' +
@@ -65,12 +60,32 @@ window.ArchGraph = window.ArchGraph || {};
       '<ul class="on-list">' +
       w.alwaysOn.map(s => '<li>' + esc(s) + '</li>').join('') +
       '</ul>' +
-      '<div class="lbl">opt-in widgets — click to expand</div>' +
-      '<div class="chips">' +
-      chips +
-      '</div>' +
+      chipSection(n, expanded, 'structural slots — every view fills these', structural) +
+      chipSection(n, expanded, 'opt-in widgets — click to expand', optional) +
       '</div>'
     );
+  }
+
+  /** A labelled row of widget chips, only emitted when non-empty. */
+  function chipSection(n, expanded, label, widgets) {
+    if (!widgets.length) return '';
+    const chips = widgets
+      .map(function (x) {
+        const on = expanded.has(n.id + '::' + x.key) ? ' on' : '';
+        const sx = x.structural ? ' structural' : '';
+        return (
+          '<button class="chip' +
+          on +
+          sx +
+          '" data-key="' +
+          esc(x.key) +
+          '">' +
+          esc(x.key) +
+          '</button>'
+        );
+      })
+      .join('');
+    return '<div class="lbl">' + esc(label) + '</div><div class="chips">' + chips + '</div>';
   }
 
   function widgetCard(x) {
@@ -92,6 +107,26 @@ window.ArchGraph = window.ArchGraph || {};
       '<div class="lbl">used by</div>' +
       '<div class="shell">' +
       used +
+      '</div>' +
+      '</div>'
+    );
+  }
+
+  function bindingCard(b) {
+    const fileLine = b.file ? '<div class="path">' + esc(b.file) + '</div>' : '';
+    return (
+      '<div class="card c5">' +
+      '<div class="ttl mono">' +
+      esc(b.value) +
+      '</div>' +
+      '<div class="kind kind-' +
+      esc(b.kind) +
+      '">' +
+      esc(b.kind) +
+      '</div>' +
+      fileLine +
+      '<div class="for-view">→ ' +
+      esc(b.viewId) +
       '</div>' +
       '</div>'
     );

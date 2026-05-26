@@ -66,6 +66,7 @@ import { fileURLToPath } from 'node:url';
 import { loadSourceFile, ExtractionError } from './arch-gen/ts-ast.mjs';
 import { parseRoutes, resolveRouteImports } from './arch-gen/extract-routes.mjs';
 import { detectWrapper, deriveWidgetUsage } from './arch-gen/extract-wrappers.mjs';
+import { deriveWidgetBindings } from './arch-gen/extract-bindings.mjs';
 import { WRAPPERS, APP_SHELL } from './arch-gen/wrappers-data.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -81,6 +82,7 @@ function extract() {
   const views = resolveRouteImports(routes, sf, text, appAbs, APP_REL, REPO_ROOT);
   for (const v of views) v.wrapperId = detectWrapper(v);
   const usage = deriveWidgetUsage(views);
+  const bindings = deriveWidgetBindings(views, REPO_ROOT);
 
   // A widget belongs to one wrapper; scope its `usedBy` to that wrapper's
   // views so a coarse token match (e.g. `title`, common to both wrappers)
@@ -102,10 +104,15 @@ function extract() {
       file: w.file,
       summary: w.summary,
       alwaysOn: w.alwaysOn,
-      widgets: w.widgets.map(x => ({
-        ...x,
-        usedBy: (usage.get(x.key) ?? []).filter(n => viewWrapper.get(n) === w.id),
-      })),
+      widgets: w.widgets.map(x => {
+        const bs = bindings.get(w.id + '::' + x.key) ?? [];
+        // `usedBy` ∪ binding viewIds — bindings are ground truth for slots
+        // filled outside the view/config files (e.g. EditorComponent via
+        // EditingContext, detailsChildren as JSX children).
+        const tokenUsage = (usage.get(x.key) ?? []).filter(n => viewWrapper.get(n) === w.id);
+        const combined = [...new Set([...tokenUsage, ...bs.map(b => b.viewId)])];
+        return { ...x, usedBy: combined, bindings: bs };
+      }),
     })),
     views: views.map(v => ({
       id: v.id,
