@@ -73,6 +73,10 @@ Localhost backend config (`.github/environments/config-localhost.json`) points t
 - **Sobek** at `http://127.0.0.1:37999/services/vehicles/` — GraphQL and NeTEx import
 - **Shepet** at `http://127.0.0.1:37998/services/autosys` — Autosys vehicle data (separate app/port)
 
+**IMPORTANT — GQL fixtures must stay in sync with the GQL fetcher code.** Every mock and fixture that simulates a Sobek GraphQL response (vitest mocks in `*.test.ts` files, Playwright fixtures under `e2e-tests/fixtures/*-mock.json`) must mirror the exact wire shape the corresponding query in `src/graphql/vehicles/queries/` requests. When a query selection changes (field rename, addition, removal, or aliasing), the matching mocks/fixtures **must** be updated in the same change — otherwise tests pass against stale shapes and silently mask runtime breakage against the real backend. Mock values must also reflect real Sobek semantics: e.g. NeTEx ids are full `Codespace:Type:Number` form, never bare DB row ids.
+
+When in doubt about whether a hathor query has drifted from Sobek's current schema, fetch the canonical schema with `curl -s https://entur.github.io/sobek/schema.graphqls` and grep for the type/field in question.
+
 ### Routing
 
 React Router v6 in `src/App.tsx`. Protected routes use `<ProtectedRoute>` which checks OIDC authentication.
