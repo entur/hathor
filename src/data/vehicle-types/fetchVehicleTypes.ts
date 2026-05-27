@@ -4,7 +4,7 @@ import type { AccessToken } from '../../auth';
 import type { Page } from '../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../graphql/paginationTypes.ts';
 
-interface VehicleTypeWire {
+export interface VehicleTypeWire {
   netexId: string;
   version: number;
   name?: Name | null;
@@ -20,7 +20,7 @@ interface VehicleTypeWire {
   vehicles?: { netexId: string; registrationNumber: string; version: number }[] | null;
 }
 
-const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
+export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
   name: vt.name ?? undefined,
