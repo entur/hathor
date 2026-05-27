@@ -5,4 +5,4 @@ export const fetchVehicleTypeRequest = (
   applicationBaseUrl: string,
   id: string,
   token: AccessToken
-) => fetchVehicleTypesRequest(applicationBaseUrl, token, { size: 1, filter: { ids: [id] } });
+) => fetchVehicleTypesRequest(applicationBaseUrl, token, { size: 1, filter: { netexIds: [id] } });

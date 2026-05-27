@@ -26,12 +26,12 @@ describe('fetchVehicles', () => {
     mockedRequest.mockResolvedValue(
       mkPage([
         {
-          id: 'NMR:Vehicle:1',
+          netexId: 'NMR:Vehicle:1',
           version: 2,
           registrationNumber: 'RAIL-001',
           operationalNumber: 'OP-77',
           transportType: {
-            id: 'NMR:VehicleType:rail',
+            netexId: 'NMR:VehicleType:rail',
             version: 3,
             name: { value: 'Rail Type' },
             transportMode: 'rail',
@@ -59,7 +59,7 @@ describe('fetchVehicles', () => {
     mockedRequest.mockResolvedValue(
       mkPage([
         {
-          id: 'V1',
+          netexId: 'NMR:Vehicle:V1',
           version: 1,
           registrationNumber: 'X-1',
           transportType: null,
@@ -74,11 +74,11 @@ describe('fetchVehicles', () => {
     mockedRequest.mockResolvedValue(
       mkPage([
         {
-          id: 'V1',
+          netexId: 'NMR:Vehicle:V1',
           version: 1,
           registrationNumber: 'X-1',
           transportType: {
-            id: 'NMR:VehicleType:weird',
+            netexId: 'NMR:VehicleType:weird',
             version: 1,
             transportMode: 'someUnknownNetexValue',
           },
@@ -89,30 +89,11 @@ describe('fetchVehicles', () => {
     expect(row.transportType?.transportMode).toBe('unknown');
   });
 
-  it('reconstructs a bare transportType.id into a full NeTEx id (sobek#125 bridge)', async () => {
-    mockedRequest.mockResolvedValue(
-      mkPage([
-        {
-          id: 'NMR:Vehicle:V1',
-          version: 1,
-          registrationNumber: 'X-1',
-          transportType: {
-            id: '42',
-            version: 1,
-            transportMode: 'bus',
-          },
-        },
-      ])
-    );
-    const [row] = await fetchVehicles('http://x', null);
-    expect(row.transportType?.id).toBe('NMR:VehicleType:42');
-  });
-
   it('omits operationalNumber on the row when the server returns null', async () => {
     mockedRequest.mockResolvedValue(
       mkPage([
         {
-          id: 'V1',
+          netexId: 'NMR:Vehicle:V1',
           version: 1,
           registrationNumber: 'X-1',
           operationalNumber: null,
@@ -134,7 +115,10 @@ describe('fetchVehicles', () => {
 
     it('warns when content.length < totalElements', async () => {
       mockedRequest.mockResolvedValue(
-        mkPage([{ id: 'V1', version: 1, registrationNumber: 'A' }], /* totalElements */ 42)
+        mkPage(
+          [{ netexId: 'NMR:Vehicle:V1', version: 1, registrationNumber: 'A' }],
+          /* totalElements */ 42
+        )
       );
       await fetchVehicles('http://x', null);
       expect(warnSpy).toHaveBeenCalledTimes(1);

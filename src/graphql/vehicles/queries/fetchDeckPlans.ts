@@ -5,7 +5,7 @@ const fetchDeckPlansGQL = gql`
   query DeckPlans($page: Int, $size: Int) {
     deckPlans(page: $page, size: $size) {
       content {
-        id
+        netexId
         name {
           value
         }

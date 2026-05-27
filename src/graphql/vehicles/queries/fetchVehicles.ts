@@ -6,12 +6,12 @@ const fetchVehiclesGQL = gql`
   query Vehicles($page: Int, $size: Int, $filter: VehicleFilter) {
     vehicles(page: $page, size: $size, filter: $filter) {
       content {
-        id
+        netexId
         version
         registrationNumber
         operationalNumber
         transportType {
-          id
+          netexId
           version
           name {
             value
@@ -27,7 +27,7 @@ const fetchVehiclesGQL = gql`
 `;
 
 export type VehicleVars = PageVars & {
-  filter?: { ids?: string[]; transportModes?: string[] };
+  filter?: { netexIds?: string[]; transportModes?: string[] };
 };
 
 export const fetchVehiclesRequest = (
