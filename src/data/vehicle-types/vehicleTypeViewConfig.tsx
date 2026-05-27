@@ -7,11 +7,10 @@ import DataPageContent from '../../components/data/DataPageContent.tsx';
 import VehicleListCell from './cells/VehicleListCell.tsx';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { OrderBy } from './useVehicleTypes.ts';
-import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 import type { VehicleType } from './vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from './vehicleTypeSortValue.ts';
 import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
-import { toTransportMode } from '../netex/transportMode.ts';
+import { toTransportMode, transportModeFilters } from '../netex/transportMode.ts';
 
 const fmtDim = (v: VehicleType) => {
   const parts = [
@@ -82,19 +81,17 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
   },
 ];
 
-const getVehicleTypeFilterKey = (item: VehicleType): string => {
-  return item.id;
-};
-
-const vehicleTypeFilters: FilterDefinition[] = [
-  { id: 'parentVehicleType', labelKey: 'types.parent', defaultLabel: 'Parent Vehicle Type' },
-  { id: 'railVehicle', labelKey: 'types.train', defaultLabel: 'Train' },
-  { id: 'metroVehicle', labelKey: 'types.metro', defaultLabel: 'Metro' },
-  { id: 'onstreetBus', labelKey: 'types.bus', defaultLabel: 'Bus' },
-  { id: 'onstreetTram', labelKey: 'types.tram', defaultLabel: 'Tram' },
-  { id: 'ferryStop', labelKey: 'types.ferry', defaultLabel: 'Ferry' },
-  { id: 'harbourPort', labelKey: 'types.harbour', defaultLabel: 'Harbour' },
-  { id: 'liftStation', labelKey: 'types.lift', defaultLabel: 'Lift' },
+/**
+ * Filter keys for a VehicleType row — both the full NeTEx id and the
+ * canonical TransportMode (normalised to `'unknown'` when missing or
+ * non-enum). The id covers URL-driven deep-link filtering
+ * (`?filter=NMR:VehicleType:2`, used by the import-result flow); the mode
+ * covers the header-dropdown chip set. The two filter dimensions coexist
+ * via `useDataViewTableLogic`'s any-match-wins predicate.
+ */
+const getVehicleTypeFilterKey = (item: VehicleType): readonly string[] => [
+  item.id,
+  toTransportMode(item.transportMode),
 ];
 
 export const vehicleTypeViewConfig = {
@@ -105,6 +102,6 @@ export const vehicleTypeViewConfig = {
   columns: vehicleTypeColumns,
   getFilterKey: getVehicleTypeFilterKey,
   getSortValue: getVehicleTypeSortValue,
-  filters: vehicleTypeFilters,
+  filters: transportModeFilters,
   title: 'Vehicle Types',
 };

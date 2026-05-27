@@ -91,7 +91,7 @@ export interface UseTableLogicParams<T, K extends string> {
   /** Currently active filter keys. */
   activeFilters: string[];
   /** Derives a filter key from an entity so it can be matched against {@link activeFilters}. */
-  getFilterKey?: (item: T) => string;
+  getFilterKey?: (item: T) => string | readonly string[];
   /** Derives a comparable value for a given column, used for client-side sorting. */
   getSortValue: (item: T, key: K) => string | number;
 }
@@ -174,7 +174,7 @@ export interface ViewConfig<T, K extends string> {
   /** Column definitions for the data table. */
   columns: ColumnDefinition<T, K>[];
   /** Derives a filter key from an entity for client-side filtering. */
-  getFilterKey?: (item: T) => string;
+  getFilterKey?: (item: T) => string | readonly string[];
   /** Derives a sortable value for a given column key. */
   getSortValue: (item: T, key: K) => string | number;
   /** Filter chips shown in the search bar. */

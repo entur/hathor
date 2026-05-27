@@ -65,4 +65,30 @@ test.describe('#23 — TransportMode column + filter-dropdown icons', () => {
       await expect(svg).toBeVisible();
     }
   });
+
+  test('Filter dropdown on /vehicle-types also shows transport-mode icons (regression: stop-place legacy filters retired)', async ({
+    page,
+  }) => {
+    if (process.env.E2E_BACKEND !== 'true') {
+      await interceptVehicleTypesQuery(page);
+    }
+
+    await page.goto('/vehicle-types');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('search-filter-button').click();
+
+    const labels = page.locator('label.MuiFormControlLabel-root');
+    await expect(labels.first()).toBeVisible();
+
+    // Each row should be a TransportMode filter — icon present, no stop-place
+    // legacy labels (Parent Vehicle Type, Harbour, …) survive the swap.
+    const labelCount = await labels.count();
+    expect(labelCount).toBeGreaterThan(0);
+    for (let i = 0; i < labelCount; i++) {
+      await expect(labels.nth(i).locator('svg[role="img"]')).toBeVisible();
+    }
+    await expect(page.getByText('Parent Vehicle Type')).not.toBeVisible();
+    await expect(page.getByText('Harbour')).not.toBeVisible();
+  });
 });
