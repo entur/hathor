@@ -10,6 +10,8 @@ import type { OrderBy } from './useVehicleTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 import type { VehicleType } from './vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from './vehicleTypeSortValue.ts';
+import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
+import { toTransportMode } from '../netex/transportMode.ts';
 
 const fmtDim = (v: VehicleType) => {
   const parts = [
@@ -42,6 +44,14 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     headerLabel: 'Name',
     isSortable: true,
     renderCell: item => item.name?.value,
+    display: 'always',
+  },
+  {
+    id: 'transportMode',
+    headerLabel: 'Transport Mode',
+    isSortable: true,
+    renderCell: item => <TransportModeIcon mode={toTransportMode(item.transportMode)} />,
+    align: 'center',
     display: 'always',
   },
   {
