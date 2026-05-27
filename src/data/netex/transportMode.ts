@@ -76,14 +76,40 @@ export const isTransportMode = (s: string | null | undefined): s is TransportMod
   typeof s === 'string' && ALL_TRANSPORT_MODES.has(s as TransportMode);
 
 /**
- * Total mapping from an arbitrary backend value to a `TransportMode`.
- * Unknown / missing / null become `'unknown'` rather than `undefined`, so
- * callers can treat the result as a non-optional union member.
+ * Normalised lookup key — strips underscores and lowercases. Lets a
+ * GraphQL-style `'TROLLEY_BUS'` enum, a NeTEx-canonical `'trolleyBus'`, and
+ * an aggressively-uppercased `'TROLLEYBUS'` all resolve to the same mode.
  */
-export const toTransportMode = (s: string | null | undefined): TransportMode =>
-  typeof s === 'string' && KNOWN_TRANSPORT_MODES.has(s as TransportMode)
-    ? (s as TransportMode)
-    : UNKNOWN_TRANSPORT_MODE;
+const normalizeKey = (s: string): string => s.replace(/_/g, '').toLowerCase();
+
+/**
+ * Map of normalised-key → canonical `TransportMode`. Built once at module
+ * init from {@link KNOWN_TRANSPORT_MODES} so backend value variants
+ * (`'bus'`, `'BUS'`, …) collapse to the canonical camelCase form used
+ * everywhere else in the codebase (i18n keys, sprite symbol ids, etc.).
+ */
+const NORMALIZED_TO_CANONICAL: ReadonlyMap<string, TransportMode> = new Map(
+  Array.from(KNOWN_TRANSPORT_MODES, m => [normalizeKey(m), m])
+);
+
+/**
+ * Total mapping from an arbitrary backend value to a canonical
+ * `TransportMode`. Case-insensitive and underscore-tolerant so:
+ *
+ * - `'bus'` (NeTEx XML) → `'bus'`
+ * - `'BUS'` (GraphQL enum) → `'bus'`
+ * - `'trolleyBus'` → `'trolleyBus'`
+ * - `'TROLLEY_BUS'` (GraphQL enum, snake-cased) → `'trolleyBus'`
+ * - `'TROLLEYBUS'` (aggressively uppercased) → `'trolleyBus'`
+ *
+ * Unknown / missing / null and anything outside the NeTEx enum become
+ * `'unknown'` rather than `undefined`, so callers can treat the result as
+ * a non-optional union member.
+ */
+export const toTransportMode = (s: string | null | undefined): TransportMode => {
+  if (typeof s !== 'string' || s.length === 0) return UNKNOWN_TRANSPORT_MODE;
+  return NORMALIZED_TO_CANONICAL.get(normalizeKey(s)) ?? UNKNOWN_TRANSPORT_MODE;
+};
 
 /** Map a `TransportMode` to its i18n key. */
 export const transportModeLabelKey = (mode: TransportMode): string => `transportMode.${mode}`;

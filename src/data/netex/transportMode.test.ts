@@ -23,8 +23,30 @@ describe('toTransportMode', () => {
 
   it("maps unrecognised backend strings to 'unknown'", () => {
     expect(toTransportMode('boat')).toBe('unknown');
-    expect(toTransportMode('TRAIN')).toBe('unknown'); // case-sensitive: NeTEx is camelCase
+    expect(toTransportMode('TRAIN')).toBe('unknown'); // 'train' is not a NeTEx mode
     expect(toTransportMode('underground')).toBe('unknown');
+  });
+
+  it('case-folds uppercase GraphQL-enum values onto the canonical NeTEx form', () => {
+    expect(toTransportMode('BUS')).toBe('bus');
+    expect(toTransportMode('RAIL')).toBe('rail');
+    expect(toTransportMode('TRAM')).toBe('tram');
+    expect(toTransportMode('METRO')).toBe('metro');
+    expect(toTransportMode('WATER')).toBe('water');
+    expect(toTransportMode('AIR')).toBe('air');
+    expect(toTransportMode('COACH')).toBe('coach');
+    expect(toTransportMode('TAXI')).toBe('taxi');
+    expect(toTransportMode('LIFT')).toBe('lift');
+  });
+
+  it('accepts GraphQL snake-cased enums for camelCase NeTEx modes', () => {
+    expect(toTransportMode('TROLLEY_BUS')).toBe('trolleyBus');
+    expect(toTransportMode('SNOW_AND_ICE')).toBe('snowAndIce');
+  });
+
+  it('accepts aggressively uppercased forms without separators', () => {
+    expect(toTransportMode('TROLLEYBUS')).toBe('trolleyBus');
+    expect(toTransportMode('SNOWANDICE')).toBe('snowAndIce');
   });
 });
 
