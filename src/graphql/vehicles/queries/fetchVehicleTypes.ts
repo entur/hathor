@@ -5,7 +5,7 @@ const fetchVehicleTypesGQL = gql`
   query VehicleTypes($page: Int, $size: Int, $filter: VehicleTypeFilter) {
     vehicleTypes(page: $page, size: $size, filter: $filter) {
       content {
-        id
+        netexId
         version
         name {
           value
@@ -21,13 +21,13 @@ const fetchVehicleTypesGQL = gql`
         changed
         changedBy
         deckPlan {
-          id
+          netexId
           name {
             value
           }
         }
         vehicles {
-          id
+          netexId
           registrationNumber
           version
         }
@@ -42,7 +42,7 @@ const fetchVehicleTypesGQL = gql`
 import type { PageVars } from '../../paginationTypes.ts';
 
 export type VehicleTypeVars = PageVars & {
-  filter?: { ids?: string[]; transportModes?: string[] };
+  filter?: { netexIds?: string[]; transportModes?: string[] };
 };
 
 export const fetchVehicleTypesRequest = (
