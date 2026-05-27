@@ -91,12 +91,12 @@ const mockVehiclesPayload = () => ({
   data: {
     vehicles: {
       content: ROWS.map(r => ({
-        id: r.id,
+        netexId: r.id,
         version: r.version,
         registrationNumber: r.reg,
         operationalNumber: r.op,
         transportType: {
-          id: r.vehicleType.id,
+          netexId: r.vehicleType.id,
           version: 1,
           name: { value: r.vehicleType.name },
           transportMode: r.vehicleType.mode,

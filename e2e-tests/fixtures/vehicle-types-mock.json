@@ -3,7 +3,7 @@
     "vehicleTypes": {
       "content": [
         {
-          "id": "NMR:VehicleType:1",
+          "netexId": "NMR:VehicleType:1",
           "version": 1,
           "name": { "value": "Type Alpha" },
           "shortName": null,
@@ -15,13 +15,15 @@
           "changed": null,
           "changedBy": null,
           "deckPlan": {
-            "id": "NMR:DeckPlan:1",
+            "netexId": "NMR:DeckPlan:1",
             "name": { "value": "Plan A" }
           },
-          "vehicles": [{ "id": "NMR:Vehicle:101", "registrationNumber": "AA-101", "version": 1 }]
+          "vehicles": [
+            { "netexId": "NMR:Vehicle:101", "registrationNumber": "AA-101", "version": 1 }
+          ]
         },
         {
-          "id": "NMR:VehicleType:2",
+          "netexId": "NMR:VehicleType:2",
           "version": 1,
           "name": { "value": "Type Beta" },
           "shortName": null,
@@ -33,13 +35,15 @@
           "changed": null,
           "changedBy": null,
           "deckPlan": {
-            "id": "NMR:DeckPlan:2",
+            "netexId": "NMR:DeckPlan:2",
             "name": { "value": "Plan B" }
           },
-          "vehicles": [{ "id": "NMR:Vehicle:102", "registrationNumber": "BB-102", "version": 1 }]
+          "vehicles": [
+            { "netexId": "NMR:Vehicle:102", "registrationNumber": "BB-102", "version": 1 }
+          ]
         },
         {
-          "id": "NMR:VehicleType:3",
+          "netexId": "NMR:VehicleType:3",
           "version": 1,
           "name": { "value": "Type Gamma" },
           "shortName": null,
@@ -51,10 +55,12 @@
           "changed": null,
           "changedBy": null,
           "deckPlan": {
-            "id": "NMR:DeckPlan:3",
+            "netexId": "NMR:DeckPlan:3",
             "name": { "value": "Plan C" }
           },
-          "vehicles": [{ "id": "NMR:Vehicle:103", "registrationNumber": "CC-103", "version": 1 }]
+          "vehicles": [
+            { "netexId": "NMR:Vehicle:103", "registrationNumber": "CC-103", "version": 1 }
+          ]
         }
       ],
       "totalElements": 3,

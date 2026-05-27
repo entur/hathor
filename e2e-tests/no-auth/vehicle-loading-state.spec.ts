@@ -49,12 +49,12 @@ test.describe('useVehicle — missing applicationImportBaseUrl never stops loadi
               vehicles: {
                 content: [
                   {
-                    id: 'NMR:Vehicle:bus-1',
+                    netexId: 'NMR:Vehicle:bus-1',
                     version: 1,
                     registrationNumber: 'BUS-001',
                     operationalNumber: null,
                     transportType: {
-                      id: 'NMR:VehicleType:bus',
+                      netexId: 'NMR:VehicleType:bus',
                       version: 1,
                       name: { value: 'Bus Type' },
                       transportMode: 'bus',

@@ -73,7 +73,7 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
     if (state.lagCalls > 0) state.lagCalls -= 1;
     const base = JSON.parse(JSON.stringify(MOCK_VEHICLES_LIST)) as {
       data: {
-        vehicles: { content: { id?: string; version?: number }[]; totalElements: number };
+        vehicles: { content: { netexId?: string; version?: number }[]; totalElements: number };
       };
     };
     if (includeExtra && state.extraId) {
@@ -81,7 +81,7 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
       base.data.vehicles.totalElements = base.data.vehicles.content.length;
     }
     if (state.bumpId) {
-      const row = base.data.vehicles.content.find(r => r.id === state.bumpId);
+      const row = base.data.vehicles.content.find(r => r.netexId === state.bumpId);
       if (row && typeof row.version === 'number') row.version += 1;
     }
     await route.fulfill({
@@ -103,12 +103,12 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
 };
 
 const makeExtraVehicle = (id: string) => ({
-  id,
+  netexId: id,
   version: 1,
   registrationNumber: 'NEW-001',
   operationalNumber: null,
   transportType: {
-    id: 'NMR:VehicleType:bus',
+    netexId: 'NMR:VehicleType:bus',
     version: 1,
     name: { value: 'Bus Type' },
     transportMode: 'bus',

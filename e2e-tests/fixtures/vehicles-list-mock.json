@@ -3,180 +3,180 @@
     "vehicles": {
       "content": [
         {
-          "id": "NMR:Vehicle:rail-1",
+          "netexId": "NMR:Vehicle:rail-1",
           "version": 1,
           "registrationNumber": "RAIL-001",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-2",
+          "netexId": "NMR:Vehicle:rail-2",
           "version": 1,
           "registrationNumber": "RAIL-002",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-3",
+          "netexId": "NMR:Vehicle:rail-3",
           "version": 1,
           "registrationNumber": "RAIL-003",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-4",
+          "netexId": "NMR:Vehicle:rail-4",
           "version": 1,
           "registrationNumber": "RAIL-004",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-5",
+          "netexId": "NMR:Vehicle:rail-5",
           "version": 1,
           "registrationNumber": "RAIL-005",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-6",
+          "netexId": "NMR:Vehicle:rail-6",
           "version": 1,
           "registrationNumber": "RAIL-006",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-7",
+          "netexId": "NMR:Vehicle:rail-7",
           "version": 1,
           "registrationNumber": "RAIL-007",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-8",
+          "netexId": "NMR:Vehicle:rail-8",
           "version": 1,
           "registrationNumber": "RAIL-008",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-9",
+          "netexId": "NMR:Vehicle:rail-9",
           "version": 1,
           "registrationNumber": "RAIL-009",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-10",
+          "netexId": "NMR:Vehicle:rail-10",
           "version": 1,
           "registrationNumber": "RAIL-010",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-11",
+          "netexId": "NMR:Vehicle:rail-11",
           "version": 1,
           "registrationNumber": "RAIL-011",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:rail-12",
+          "netexId": "NMR:Vehicle:rail-12",
           "version": 1,
           "registrationNumber": "RAIL-012",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:rail",
+            "netexId": "NMR:VehicleType:rail",
             "version": 1,
             "name": { "value": "Rail Type" },
             "transportMode": "rail"
           }
         },
         {
-          "id": "NMR:Vehicle:bus-1",
+          "netexId": "NMR:Vehicle:bus-1",
           "version": 1,
           "registrationNumber": "BUS-001",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:bus",
+            "netexId": "NMR:VehicleType:bus",
             "version": 1,
             "name": { "value": "Bus Type" },
             "transportMode": "bus"
           }
         },
         {
-          "id": "NMR:Vehicle:bus-2",
+          "netexId": "NMR:Vehicle:bus-2",
           "version": 1,
           "registrationNumber": "BUS-002",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:bus",
+            "netexId": "NMR:VehicleType:bus",
             "version": 1,
             "name": { "value": "Bus Type" },
             "transportMode": "bus"
           }
         },
         {
-          "id": "NMR:Vehicle:unk-1",
+          "netexId": "NMR:Vehicle:unk-1",
           "version": 1,
           "registrationNumber": "UNK-001",
           "operationalNumber": null,
           "transportType": {
-            "id": "NMR:VehicleType:unknown",
+            "netexId": "NMR:VehicleType:unknown",
             "version": 1,
             "name": { "value": "Mystery Type" },
             "transportMode": "someUnknownNetexValue"
