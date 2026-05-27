@@ -28,7 +28,6 @@ export type VehicleType = {
   changed?: string;
   changedBy?: string;
   vehicles?: Vehicle[];
-  __typename: string;
 };
 
 export type VehicleTypeContext = {
