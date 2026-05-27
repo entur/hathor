@@ -8,7 +8,7 @@ import { compareVehicleTypes } from './vehicleTypeSortValue.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 
-export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName';
+export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 
 export function useVehicleTypes() {
   const [data, setData] = useState<VehicleType[]>([]);

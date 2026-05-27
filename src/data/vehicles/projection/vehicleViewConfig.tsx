@@ -4,7 +4,7 @@ import { useVehicles } from './useVehicles.ts';
 import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../../components/data/DataPageContent.tsx';
-import TransportModeChip from './cells/TransportModeChip.tsx';
+import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { getVehicleSortValue } from './vehicleSortValue.ts';
 import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
 import { vehicleSelectedHref } from './vehicleUrlParams.ts';
@@ -49,7 +49,7 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     id: 'transportTypeMode',
     headerLabel: 'vehicles.field.parentTransportMode',
     isSortable: true,
-    renderCell: item => <TransportModeChip mode={vehicleMode(item)} />,
+    renderCell: item => <TransportModeIcon mode={vehicleMode(item)} />,
     display: 'desktop-only',
   },
   {

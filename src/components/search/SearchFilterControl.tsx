@@ -13,6 +13,8 @@ import {
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useSearch } from './searchUtils.ts';
 import { useTranslation } from 'react-i18next';
+import { isTransportMode } from '../../data/netex/transportMode.ts';
+import TransportModeIcon from '../icons/TransportModeIcon.tsx';
 
 export default function SearchFilterControl() {
   const { t } = useTranslation();
@@ -80,7 +82,13 @@ export default function SearchFilterControl() {
                     size="small"
                   />
                 }
-                label={t(type.labelKey, type.defaultLabel)}
+                label={
+                  isTransportMode(type.id) ? (
+                    <TransportModeIcon mode={type.id} iconPosition="left" />
+                  ) : (
+                    t(type.labelKey, type.defaultLabel)
+                  )
+                }
               />
             ))}
           </FormGroup>

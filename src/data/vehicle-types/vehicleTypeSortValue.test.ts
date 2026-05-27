@@ -80,6 +80,46 @@ describe('compareVehicleTypes', () => {
     const sorted = [...rows].sort(compareVehicleTypes('name', 'asc'));
     expect(sorted.map(r => r.id)).toEqual(['aa', 'zz', 'ws-1', 'ws-2']);
   });
+
+  it('sorts by transportMode alphabetically by NeTEx id, locale-independent', () => {
+    const rows = [
+      mk({ id: 'a', transportMode: 'tram' }),
+      mk({ id: 'b', transportMode: 'bus' }),
+      mk({ id: 'c', transportMode: 'rail' }),
+    ];
+    const sorted = [...rows].sort(compareVehicleTypes('transportMode', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['b', 'c', 'a']);
+  });
+
+  it('parks rows with no transportMode at the end on asc (regression: empty-last)', () => {
+    const rows = [
+      mk({ id: 'no-mode-1', transportMode: undefined }),
+      mk({ id: 'bus', transportMode: 'bus' }),
+      mk({ id: 'no-mode-2', transportMode: undefined }),
+      mk({ id: 'rail', transportMode: 'rail' }),
+    ];
+    const sorted = [...rows].sort(compareVehicleTypes('transportMode', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['bus', 'rail', 'no-mode-1', 'no-mode-2']);
+  });
+
+  it('parks rows with no transportMode at the end on desc as well', () => {
+    const rows = [
+      mk({ id: 'no-mode', transportMode: undefined }),
+      mk({ id: 'bus', transportMode: 'bus' }),
+      mk({ id: 'rail', transportMode: 'rail' }),
+    ];
+    const sorted = [...rows].sort(compareVehicleTypes('transportMode', 'desc'));
+    expect(sorted.map(r => r.id)).toEqual(['rail', 'bus', 'no-mode']);
+  });
+
+  it('treats backend strings outside the NeTEx enum as unknown (empty-last)', () => {
+    const rows = [
+      mk({ id: 'garbage', transportMode: 'not-a-real-mode' }),
+      mk({ id: 'bus', transportMode: 'bus' }),
+    ];
+    const sorted = [...rows].sort(compareVehicleTypes('transportMode', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['bus', 'garbage']);
+  });
 });
 
 describe('getVehicleTypeSortValue', () => {

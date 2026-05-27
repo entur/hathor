@@ -1,0 +1,33 @@
+/**
+ * Per-mode color tokens for transport-mode icons.
+ *
+ * Lifted from concept-sandbox/claude-design.html on the ui-sandboxing branch.
+ * Mirror point: src/components/icons/TransportModeSprite.tsx. See
+ * FORK_DECISIONS.md → "Transport-mode icon strategy".
+ *
+ * `--tm-unknown` is the catch-all fallback used by `colorVarFor(mode)` when a
+ * mode has no specific token.
+ */
+:root {
+  --tm-bus: #c5044e;
+  --tm-tram: #642e88;
+  --tm-coach: #8a1414;
+  --tm-rail: #00367f;
+  --tm-metro: #bf5826;
+  --tm-water: #0c6693;
+  --tm-air: #800664;
+  --tm-trolleyBus: #a11440;
+  --tm-cableway: #642e88;
+  --tm-funicular: #78469a;
+  --tm-taxi: #181c56;
+  --tm-unknown: #6a6b78;
+
+  /*
+   * Intentional gaps: `lift`, `snowAndIce` have no per-mode token and fall
+   * through to `--tm-unknown` via the `var(--tm-X, var(--tm-unknown))` chain
+   * in TransportModeIcon. Add a token here only when design provides a hue.
+   *
+   * `--tm-cableway` deliberately shares the tram hue — same family of rail
+   * transit.
+   */
+}

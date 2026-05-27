@@ -15,7 +15,7 @@ interface UseDataViewTableLogicParams<T, K extends string> {
   page: number;
   rowsPerPage: number;
   activeFilters: string[];
-  getFilterKey?: (item: T) => string;
+  getFilterKey?: (item: T) => string | readonly string[];
   getSortValue: (item: T, key: K) => string | number;
 }
 
@@ -51,8 +51,9 @@ export function useDataViewTableLogic<T, K extends string>({
       baseData = allData || [];
       if (isDataSearchActive && activeFilters.length > 0 && getFilterKey) {
         baseData = baseData.filter(item => {
-          const typeKey = getFilterKey(item);
-          return activeFilters.includes(typeKey);
+          const raw = getFilterKey(item);
+          const keys = typeof raw === 'string' ? [raw] : raw;
+          return keys.some(k => activeFilters.includes(k));
         });
       }
       currentTotal =

@@ -359,3 +359,83 @@ under `vehicle-types/`.
   sub-area — left as-is.
 - Renaming `AutosysImportFloatingMenu.tsx` or the `MultiImport*` files.
 - Carving any other `components/` sub-area; the rest is genuinely generic.
+
+---
+
+## Transport-mode icon strategy: inline SVG sprite over file-per-icon _(2026-05-26)_
+
+### Context
+
+VehicleType list (#23) and Vehicle list (#24, partially shipped via #26) both need
+to render a `TransportMode` cell. Two infrastructures were on the table:
+
+1. Hathor's existing two-tier icon resolver (`src/utils/iconLoaderUtils.ts`), which
+   serves menu/settings/home icons from `defaultIcons/` with optional
+   `customIcons/` override.
+2. The inline SVG sprite developed in `concept-sandbox/claude-design.html` on the
+   `ui-sandboxing` branch, with `<symbol id="tm-…">` defs and per-mode
+   `--tm-<mode>` CSS color tokens.
+
+The 2026-05-11 brainstorming on #23 picked option 1. That decision was never
+codified here; it lived only in the issue body. As of 2026-05-26, with the sprite
+POC visually settled and the per-mode color dimension confirmed as a UX
+requirement, we are landing the sprite choice formally and recording
+file-per-icon as the considered alternative.
+
+### Decision
+
+Transport-mode icons render via a single inline SVG sprite, mounted once at app
+root. The sprite is the **only** rendering primitive for transport-mode icons;
+they do not go through `getIconUrl()`.
+
+Concrete contract:
+
+- `src/components/icons/TransportModeSprite.tsx` mounts a hidden
+  `<svg style="display:none"><defs><symbol id="tm-…"></defs></svg>` block at app
+  root.
+- `src/components/icons/TransportModeIcon.tsx` is the rendering primitive:
+  `<svg><use href={`#tm-${mode}`}/></svg>` with
+  `color: var(--tm-${mode}, var(--tm-unknown))`. Symbol-level fallback maps any
+  mode not in the sprite to `#tm-unknown`. The component exposes a single
+  optional prop `iconPosition: 'left' | 'right'` that, when set, renders the
+  localized label inline.
+- Per-mode color tokens (`--tm-bus`, `--tm-tram`, …) live in
+  `src/theme/transportModeTokens.css`, imported once. Future move into the
+  theme JSON loader is out of scope.
+- Norway-specific glyph variants (T-banen, etc.) are modelled as alternate
+  symbol ids (`tm-metro-nb`), toggled in the same component by the existing
+  `useCustomFeatures` flag. They are NOT served via `customIcons/`.
+- `iconLoaderUtils.ts` and the `defaultIcons/` + `customIcons/` two-tier remain
+  untouched and continue to serve every other icon class (menu, settings, home,
+  etc.).
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **File-per-icon via `getIconUrl`** (the original 2026-05-11 pick) | Forces hand-tinted SVGs for the 15 NeTEx modes (no `currentColor` route), 15× the asset work for the same visual result. The `customIcons/` two-tier was attractive as a Norway-variant mechanism, but alternate `<symbol>` ids do the same job without runtime FS access. |
+| **MUI `<DirectionsBus />` etc. inline** | Bypasses the asset pipeline entirely but loses fine control over visual weight and per-mode color tokens. Couples the cell shape to MUI's icon-naming taxonomy. |
+| **Lift sprite AND keep `customIcons/<mode>.svg` override** | Double mechanism. The cell would need to choose between sprite and resolver per mode, doubling surface area for no current consumer. YAGNI. |
+
+### Consequences
+
+- Hathor's `iconLoaderUtils.ts` remains byte-identical to Inanna's. The
+  divergence is purely additive: a new component class that Inanna doesn't yet
+  have.
+- Inanna issue #5's `getIconKey` resolver-prop refactor still applies to every
+  other icon class; transport modes are simply outside its scope.
+- Adding a new transport-mode glyph is a single PR that adds a `<symbol>` block
+  to `TransportModeSprite.tsx` plus a `--tm-<mode>` token. No file drop into
+  `defaultIcons/`, no resolver change.
+- The `concept-sandbox/claude-design.html` POC is now the canonical source for
+  the lifted symbol shapes. The sandbox itself is unchanged; only its sprite
+  block is mirrored into `src/components/icons/`. `concept-sandbox/README.md`
+  cross-links the two sides.
+- Future filter chips (#24) reuse `TransportModeIcon` directly, so the icon
+  dimension on `/vehicles` can be added later without changing the cell layer.
+
+### Out of scope
+
+- Theme integration of `--tm-*`.
+- Norway-variant `<symbol>` blocks.
+- Reuse on the existing `/vehicles` `TransportModeChip` cell.

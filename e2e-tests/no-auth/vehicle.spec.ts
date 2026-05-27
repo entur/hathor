@@ -26,7 +26,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     }
   });
 
-  test('list renders 15 rows with localised TransportMode chips', async ({ page }) => {
+  test('list renders 15 rows with TransportMode icons in the column', async ({ page }) => {
     await page.goto('/vehicles');
     await page.waitForLoadState('networkidle');
 
@@ -40,10 +40,13 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     await expect(table.getByText('BUS-001')).toBeVisible();
     await expect(table.getByText('RAIL-001')).toBeVisible();
 
-    // TransportMode column renders the localised label, not the raw enum.
-    // Page 0 (asc by registrationNumber, rowsPerPage=10) = 2 bus + 8 rail rows.
-    await expect(table.getByText('Bus', { exact: true })).toHaveCount(2);
-    await expect(table.getByText('Rail', { exact: true })).toHaveCount(8);
+    // TransportMode column renders an icon (no visible label — tooltip carries
+    // the localized text). Page 0 (asc by registrationNumber, rowsPerPage=10)
+    // = 2 bus + 8 rail rows; 1 row is the BUS-002 entry, 8 are RAIL-001..008,
+    // and the remaining BUS-001 row pads to 10 (the unknown-mode row UNK-001
+    // and RAIL-009..012 are paginated to page 1).
+    await expect(table.locator('use[href="#tm-bus"]')).toHaveCount(2);
+    await expect(table.locator('use[href="#tm-rail"]')).toHaveCount(8);
   });
 
   test('Rail chip filter narrows rows to rail-mode only', async ({ page }) => {
