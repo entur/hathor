@@ -14,6 +14,8 @@ import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/VehicleView.tsx';
 import VehicleCreatePage from './pages/VehicleCreatePage.tsx';
+import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
+import './theme/transportModeTokens.css';
 
 export default function App() {
   const { useCustomFeatures } = useCustomization();
@@ -34,6 +36,7 @@ export default function App() {
             />
             <Box className="app-root">
               <Box className="app-content">
+                <TransportModeSprite />
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route
