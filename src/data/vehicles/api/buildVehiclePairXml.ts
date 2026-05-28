@@ -1,7 +1,7 @@
 import { buildPublicationDeliveryXml } from '../../netex/publicationDeliveryXml';
 import { vehicleToXmlShape } from '../types/Vehicle-mapping';
 import { vehicleModelToXmlShape } from '../types/VehicleModel-mapping';
-import type { VehicleEditFormValue } from '../VehicleEditForm';
+import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 
 export function buildVehiclePairXml(form: VehicleEditFormValue): string {
   return buildPublicationDeliveryXml({

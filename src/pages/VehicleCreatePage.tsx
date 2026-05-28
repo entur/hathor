@@ -3,9 +3,11 @@ import { Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import GenericDetailsPage from './GenericDetailsPage';
-import VehicleEditForm, { type VehicleEditFormValue } from '../data/vehicles/VehicleEditForm';
-import SaveErrorSnackbar from '../data/vehicles/SaveErrorSnackbar';
-import SaveSuccessSnackbar from '../data/vehicles/SaveSuccessSnackbar';
+import VehicleEditForm, {
+  type VehicleEditFormValue,
+} from '../data/vehicles/components/VehicleEditForm';
+import SaveErrorSnackbar from '../data/vehicles/components/SaveErrorSnackbar';
+import SaveSuccessSnackbar from '../data/vehicles/components/SaveSuccessSnackbar';
 import DiscardDialog from '../components/dialogs/DiscardDialog';
 import { BLANK_FORM } from '../data/vehicles/utils/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/hooks/useVehiclePairSave';

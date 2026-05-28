@@ -4,7 +4,7 @@ import { useConfig } from '../../../contexts/configContext';
 import { importAsNetexToBackend } from '../../vehicle-imports/vehicleImportServices';
 import { buildVehiclePairXml } from '../api/buildVehiclePairXml';
 import { parseVehicleImportResponse } from '../api/parseVehicleImportResponse';
-import type { VehicleEditFormValue } from '../VehicleEditForm';
+import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 
 interface SaveResult {
   newId: string | null;

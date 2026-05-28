@@ -2,30 +2,30 @@ import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import NetexId from '../netex/NetexId.tsx';
-import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
-import EditorRail from '../../components/sidebar/EditorRail.tsx';
-import { FormLayout, MetaRow } from '../../components/FormLayout.tsx';
-import { VEHICLE_SELECTED_PARAM } from './utils/vehicleUrlParams.ts';
-import { vehicleMode, type VehicleGQLShaped } from './types/vehicleGqlShaped.ts';
+import NetexId from '../../netex/NetexId.tsx';
+import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import EditorRail from '../../../components/sidebar/EditorRail.tsx';
+import { FormLayout, MetaRow } from '../../../components/FormLayout.tsx';
+import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
+import { vehicleMode, type VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
-import { firstText } from '../netex/multilingualString.ts';
+import { firstText } from '../../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
-import { useVehicle } from './hooks/useVehicle.ts';
-import { useVehiclePairSave } from './hooks/useVehiclePairSave.ts';
-import { useDirtyFormBlock } from './hooks/useDirtyFormBlock.ts';
-import { commitSave } from './api/commitSave.ts';
+import { useVehicle } from '../hooks/useVehicle.ts';
+import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
+import { useDirtyFormBlock } from '../hooks/useDirtyFormBlock.ts';
+import { commitSave } from '../api/commitSave.ts';
 import {
   edit,
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
   type FormState,
-} from './stores/vehicleFormState.ts';
+} from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
-import type { Vehicle } from './types/Vehicle';
+import type { Vehicle } from '../types/Vehicle';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
