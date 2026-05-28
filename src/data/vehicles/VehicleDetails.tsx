@@ -23,7 +23,7 @@ import {
   initialFormState,
   isDirty as isFormDirty,
   type FormState,
-} from './vehicleFormState.ts';
+} from './stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
 import type { Vehicle } from './types/Vehicle';
 
