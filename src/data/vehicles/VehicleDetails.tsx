@@ -16,7 +16,7 @@ import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
 import { useVehicle } from './useVehicle.ts';
 import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
-import { commitSave } from './commitSave.ts';
+import { commitSave } from './api/commitSave.ts';
 import {
   edit,
   hydrate,

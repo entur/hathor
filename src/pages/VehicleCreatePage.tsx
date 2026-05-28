@@ -11,7 +11,7 @@ import { BLANK_FORM } from '../data/vehicles/utils/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/xml/useVehiclePairSave';
 import { useDirtyFormBlock } from '../data/vehicles/useDirtyFormBlock';
 import { canSubmit } from '../data/vehicles/vehicleFormState';
-import { waitForVehicleInList } from '../data/vehicles/waitForVehicleInList';
+import { waitForVehicleInList } from '../data/vehicles/api/waitForVehicleInList';
 import { vehicleSelectedHref } from '../data/vehicles/utils/vehicleUrlParams';
 import { useAuth } from '../auth/authUtils';
 import { useConfig } from '../contexts/configContext';
