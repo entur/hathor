@@ -439,3 +439,45 @@ Concrete contract:
 - Theme integration of `--tm-*`.
 - Norway-variant `<symbol>` blocks.
 - Reuse on the existing `/vehicles` `TransportModeChip` cell.
+
+---
+
+## Drop `projection/` + `xml/` subdirs; adopt bulletproof-react segmentation _(2026-05-28)_
+
+### Context
+
+The 2026-05-16 split carved `src/data/vehicles/` into role-aligned subdirs (`projection/` for the GQL-read side, `xml/` for the NeTEx-write side). The read/write boundary it captured is real, but as a *naming convention for every feature* it's an ad-hoc one — and the project has since converged on bulletproof-react's per-feature segmentation as the house style.
+
+### Decision
+
+Every `src/data/<feature>/` follows bulletproof-react's sub-areas:
+
+```
+src/data/<feature>/
+  api/         — fetchers, mutations, GQL/REST adapters, NeTEx XML builders/parsers
+  assets/      — images/icons local to the feature
+  components/  — feature-only React components
+  hooks/       — feature-only hooks
+  stores/      — feature-only state (context/reducer)
+  types/       — feature-local types (incl. generated NeTEx + GQL projections)
+  utils/       — feature-only helpers
+```
+
+Omit any sub-area that's empty. The read/write semantics that motivated `projection/` and `xml/` are preserved by file/type naming (`*GqlShaped`, `Vehicle.ts` for NeTEx) and by JSDoc on the relevant `types/` files — not by directory name.
+
+### Supersedes
+
+- _Split `src/data/vehicles/` into `projection/` + `xml/`_ (2026-05-16). `projection/` collapses into `api/` + `types/`; `xml/` collapses into `api/` + `types/`.
+
+### Consequences
+
+- `vehicles/projection/*` → `vehicles/api/` (fetcher, hook) + `vehicles/types/` (`vehicleGqlShaped.ts`).
+- `vehicles/xml/*` → `vehicles/api/` (builder, save hook, parser) + `vehicles/types/` (generated `Vehicle.ts`, `VehicleModel.ts`, `*-mapping.ts`).
+- Bridge components at `vehicles/` root (`VehicleDetails`, `VehicleEditForm`, cells, etc.) move into `vehicles/components/`.
+- Cross-feature UI keeps living under `src/components/` (e.g. `src/components/FormLayout.tsx`) — bulletproof-react's segmentation is per-feature, not global.
+- Migration is incremental: rename when a feature is being touched anyway. No big-bang move; the ESLint netex-ts-gen exemption paths update with each carve.
+
+### Out of scope
+
+- An ESLint `no-restricted-imports` rule enforcing direction of cross-area imports inside a feature.
+- Renaming the existing `vehicle-types/`, `deck-plans/`, `vehicle-imports/` features pre-emptively — they get reshaped the next time they're touched.
