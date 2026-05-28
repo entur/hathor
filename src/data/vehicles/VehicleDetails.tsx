@@ -7,7 +7,7 @@ import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { FormLayout, MetaRow } from '../../components/FormLayout.tsx';
 import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
-import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
+import { vehicleMode, type VehicleGQLShaped } from './types/vehicleGqlShaped.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import { firstText } from '../netex/multilingualString.ts';
@@ -25,7 +25,7 @@ import {
   type FormState,
 } from './vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
-import type { Vehicle } from './xml/Vehicle';
+import type { Vehicle } from './types/Vehicle';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;

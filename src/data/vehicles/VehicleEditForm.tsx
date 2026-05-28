@@ -1,7 +1,7 @@
 import { TextField, Typography, Divider } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import type { Vehicle } from './xml/Vehicle';
-import type { VehicleModel } from './xml/VehicleModel';
+import type { Vehicle } from './types/Vehicle';
+import type { VehicleModel } from './types/VehicleModel';
 import { firstText } from '../netex/multilingualString.ts';
 import { MISSING_TEXT } from './vehicleFormDefaults';
 import { intToRef, refToInt } from './transportTypeRef';

@@ -1,4 +1,4 @@
-import type { VehicleModel } from './xml/VehicleModel';
+import type { VehicleModel } from './types/VehicleModel';
 import type { VehicleEditFormValue } from './VehicleEditForm';
 
 export const INLINE_MODEL_ID = 'INLINE:VehicleModel:1' as const;

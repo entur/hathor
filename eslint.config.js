@@ -32,10 +32,10 @@ export default tseslint.config(
     // (Extensions?: any in entity interfaces; intentionally-unused Reshape
     // params in mapping helpers). Upstream fix tracked separately.
     files: [
-      'src/data/vehicles/xml/Vehicle.ts',
-      'src/data/vehicles/xml/Vehicle-mapping.ts',
-      'src/data/vehicles/xml/VehicleModel.ts',
-      'src/data/vehicles/xml/VehicleModel-mapping.ts',
+      'src/data/vehicles/types/Vehicle.ts',
+      'src/data/vehicles/types/Vehicle-mapping.ts',
+      'src/data/vehicles/types/VehicleModel.ts',
+      'src/data/vehicles/types/VehicleModel-mapping.ts',
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ClientError } from 'graphql-request';
 import { fetchVehiclesAndApply, translateVehiclesFetchError } from './fetchVehiclesAndApply';
-import type { VehicleGQLShaped } from './vehicleGqlShaped';
+import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
 const noop = () => {};
 

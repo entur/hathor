@@ -1,7 +1,7 @@
 import { vehicleViewConfig } from './projection/vehicleViewConfig.tsx';
 import GenericDataViewPage from '../../pages/GenericDataViewPage.tsx';
 import NewVehicleFab from './NewVehicleFab.tsx';
-import type { VehicleGQLShaped, VehicleColumnKey } from './projection/vehicleGqlShaped.ts';
+import type { VehicleGQLShaped, VehicleColumnKey } from './types/vehicleGqlShaped.ts';
 
 /**
  * `/vehicles` route entry point. URL-filter affordances will arrive with

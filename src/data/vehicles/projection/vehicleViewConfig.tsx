@@ -10,7 +10,11 @@ import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
 import { vehicleSelectedHref } from './vehicleUrlParams.ts';
 import { transportModeFilters } from '../../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
-import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './vehicleGqlShaped.ts';
+import {
+  vehicleMode,
+  type VehicleGQLShaped,
+  type VehicleColumnKey,
+} from '../types/vehicleGqlShaped.ts';
 
 const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   {

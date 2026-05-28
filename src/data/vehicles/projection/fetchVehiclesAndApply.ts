@@ -7,7 +7,7 @@
  */
 import { ClientError } from 'graphql-request';
 import type { AccessToken } from '../../../auth';
-import type { VehicleGQLShaped } from './vehicleGqlShaped';
+import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 import { fetchVehicles } from './fetchVehicles';
 
 export interface FetchVehiclesAndApplyDeps {

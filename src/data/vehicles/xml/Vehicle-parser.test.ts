@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { parseVehicleXml } from './Vehicle-parser';
-import { vehicleToXmlShape } from './Vehicle-mapping';
+import { vehicleToXmlShape } from '../types/Vehicle-mapping';
 import { buildPublicationDeliveryXml } from '../../netex/publicationDeliveryXml';
-import type { TextType } from './Vehicle';
+import type { TextType } from '../types/Vehicle';
 
 const SEED_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">

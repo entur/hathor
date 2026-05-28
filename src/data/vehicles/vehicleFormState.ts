@@ -6,7 +6,7 @@
  * the baseline untouched so divergence is the only signal for dirty.
  */
 import type { VehicleEditFormValue } from './VehicleEditForm';
-import type { Vehicle } from './xml/Vehicle';
+import type { Vehicle } from './types/Vehicle';
 import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults';
 import { TRANSPORT_TYPE_REF_PATTERN } from './transportTypeRef';
 

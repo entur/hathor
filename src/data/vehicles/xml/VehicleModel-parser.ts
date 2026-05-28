@@ -5,7 +5,7 @@
  * `parser-helpers.ts` (shared with `Vehicle-parser`).
  */
 import { XMLParser } from 'fast-xml-parser';
-import type { VehicleModel } from './VehicleModel';
+import type { VehicleModel } from '../types/VehicleModel';
 import { findResourceFrame, toArray } from '../../netex/xmlUtils';
 import {
   attr,

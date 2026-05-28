@@ -3,7 +3,7 @@ import { useConfig } from '../../contexts/configContext.ts';
 import { useAuth } from '../../auth/authUtils.ts';
 import { fetchVehicleNetexXml } from './xml/fetchVehicleNetexXml';
 import { parseVehicleXml } from './xml/Vehicle-parser';
-import type { Vehicle } from './xml/Vehicle';
+import type { Vehicle } from './types/Vehicle';
 
 /**
  * Fetch and parse a single Vehicle from Sobek's NeTEx single-vehicle endpoint.

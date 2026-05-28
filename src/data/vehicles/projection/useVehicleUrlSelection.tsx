@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useEditing } from '../../../contexts/EditingContext.tsx';
 import VehicleDetails from '../VehicleDetails.tsx';
 import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
-import type { VehicleGQLShaped } from './vehicleGqlShaped.ts';
+import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 
 interface UrlSelectionParams {
   allData: VehicleGQLShaped[] | null;
