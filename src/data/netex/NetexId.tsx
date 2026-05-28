@@ -86,8 +86,11 @@ function partsFor(id: string): NetexParts {
  * - `'hide'` (default) renders nothing.
  * - `'show'` renders the button always.
  * - `'onHover'` reveals the button on hover/focus, so the chip expands then.
+ * - `'only'` drops the segmented chip entirely and renders just the copy
+ *   button (in a Tooltip whose label embeds the full id). For meta rows
+ *   where the id is reference-only and would clutter the layout.
  */
-export type NetexIdCopy = 'show' | 'hide' | 'onHover';
+export type NetexIdCopy = 'show' | 'hide' | 'onHover' | 'only';
 
 interface NetexIdProps extends Omit<ChipProps, 'label' | 'size'> {
   /** Full NeTEx id of the form `CODESPACE:TYPE:VALUE`, e.g. `NMR:Vehicle:abc-123`. */
@@ -133,7 +136,27 @@ export default function NetexId({
     if (timerRef.current !== null) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
   };
-  const copyTooltip = t(copied ? 'netex.copied' : 'netex.copyId', copied ? 'Copied!' : 'Copy id');
+  const copyTooltip = copied
+    ? t('netex.copied', 'Copied!')
+    : copy === 'only'
+      ? t('netex.copyIdWith', 'Copy id {{id}}', { id })
+      : t('netex.copyId', 'Copy id');
+  if (copy === 'only') {
+    return (
+      <Tooltip title={copyTooltip}>
+        <IconButton
+          size="small"
+          onClick={onCopyClick}
+          className={COPY_CLS}
+          data-testid="netex-id-copy"
+          aria-label={copyTooltip}
+          sx={{ width: dim.btn, height: dim.btn, p: 0, '& svg': { fontSize: dim.icon } }}
+        >
+          {copied ? <CheckIcon fontSize="inherit" /> : <ContentCopyIcon fontSize="inherit" />}
+        </IconButton>
+      </Tooltip>
+    );
+  }
   const labelNode = (
     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: dim.gap }}>
       <span>

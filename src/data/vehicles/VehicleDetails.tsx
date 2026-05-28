@@ -2,8 +2,8 @@ import { useEffect, useReducer, useState, type ReactNode } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { transportModeLabelKey } from '../netex/transportMode.ts';
 import NetexId from '../netex/NetexId.tsx';
+import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
 import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
@@ -191,14 +191,14 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
               <span>{vehicle.transportType?.name ?? '—'}</span>
               {xmlVehicle?.TransportTypeRef && (
-                <NetexId id={xmlVehicle.TransportTypeRef} copy="onHover" size="small" />
+                <NetexId id={xmlVehicle.TransportTypeRef} copy="only" size="medium" />
               )}
             </Stack>
           }
         />
         <ContextRow
           label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
-          value={t(transportModeLabelKey(tmode), tmode)}
+          value={<TransportModeIcon mode={tmode} iconPosition="left" />}
         />
       </Box>
       <Divider sx={{ mb: 2 }} />

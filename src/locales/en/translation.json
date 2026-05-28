@@ -125,6 +125,7 @@
   "vehicles.form.modelSection": "Model",
 
   "netex.copyId": "Copy id",
+  "netex.copyIdWith": "Copy id {{id}}",
   "netex.copied": "Copied!",
 
   "session.expired.title": "Session Expired",
