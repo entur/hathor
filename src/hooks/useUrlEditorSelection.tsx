@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useEditing } from '../contexts/EditingContext.tsx';
+import { useEditingItem } from '../contexts/EditingContext.tsx';
 
 interface UrlEditorSelectionParams<T> {
   /** URL search param key holding the selected id (e.g. 'selected'). */
@@ -56,7 +56,7 @@ export function useUrlEditorSelection<T>({
 }: UrlEditorSelectionParams<T>): void {
   const [searchParams] = useSearchParams();
   const selected = searchParams.get(paramKey);
-  const { setEditingItem } = useEditing();
+  const { setEditingItem } = useEditingItem();
 
   const getIdRef = useRef(getId);
   getIdRef.current = getId;

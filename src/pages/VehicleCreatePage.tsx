@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import DiscardDialog from '../components/dialogs/DiscardDialog';
 import { BLANK_FORM } from '../data/vehicles/utils/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/hooks/useVehiclePairSave';
 import { useDirtyFormBlock } from '../hooks/useDirtyFormBlock';
+import { useEditorDirty } from '../contexts/EditingContext';
 import { canSubmit } from '../data/vehicles/stores/vehicleFormState';
 import { waitForVehicleInList } from '../data/vehicles/api/waitForVehicleInList';
 import { vehicleSelectedHref } from '../data/vehicles/utils/vehicleUrlParams';
@@ -36,6 +37,14 @@ export default function VehicleCreatePage() {
   // form reads as clean — no spurious discard dialog, no beforeunload block.
   const isDirty = JSON.stringify(form) !== savedKey;
   useDirtyFormBlock(isDirty);
+
+  // Mirror the sidebar editor's push so chrome (#91) sees create-page dirty
+  // too. Clear on unmount so the signal doesn't leak across routes.
+  const { setEditorDirty } = useEditorDirty();
+  useEffect(() => {
+    setEditorDirty(isDirty);
+  }, [isDirty, setEditorDirty]);
+  useEffect(() => () => setEditorDirty(false), [setEditorDirty]);
 
   const handleSave = async () => {
     const result = await save(form);

@@ -1,32 +1,19 @@
+import { Fragment } from 'react';
 import { Box, Divider, Skeleton } from '@mui/material';
+import { FormLayout } from './FormLayout.tsx';
 
 const INPUT_HEIGHT = 37;
-const ROW_GAP = 1.25;
 const TITLE_HEIGHT = 28;
 const ID_PILL_WIDTH = 144;
 const ID_PILL_HEIGHT = 24;
-const LABEL_COL_MIN = '8rem';
-const LABEL_COL_MAX = '12rem';
-const COL_GAP = 2;
 const ANIM = 'wave' as const;
-
-const gridSx = {
-  width: '100%',
-  display: 'grid',
-  gridTemplateColumns: {
-    xs: '1fr',
-    sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
-  },
-  columnGap: COL_GAP,
-  alignItems: 'center',
-};
 
 export interface FormLayoutSkeletonSection {
   /** Number of label+value rows in this grid. */
   rowCount: number;
   /** Height of the value-cell rounded block. Defaults to 37 (input height). */
   rowHeight?: number;
-  /** Vertical gap between rows. Defaults to 1.25. */
+  /** Vertical gap between rows. Defaults to FormLayout's `rowGap` default. */
   rowGap?: number;
 }
 
@@ -35,7 +22,7 @@ interface FormLayoutSkeletonProps {
   ariaLabel: string;
   /** Render an h6 + id-pill skeleton row at the top, with a divider below. */
   showTitle?: boolean;
-  /** Each section is its own grid; Dividers auto-rendered between sections. */
+  /** Each section is its own <FormLayout> grid; Dividers auto-rendered between. */
   sections: FormLayoutSkeletonSection[];
 }
 
@@ -50,14 +37,10 @@ function SkeletonRow({ height = INPUT_HEIGHT }: { height?: number }) {
 
 /**
  * Wave-animated loading skeleton for any sidebar editor built on the
- * two-column form-layout grid. Mirrors the live form's column shape
- * (`minmax(8rem, 12rem) 1fr`) so the swap from skeleton → form is
- * visually static.
- *
- * The grid template is hardcoded here to keep parity with the current
- * `VehicleEditForm` pre-#98. Once #98 lands (FormLayout primitives in
- * `src/components/FormLayout.tsx`), the rebase can swap each inner grid
- * for `<FormLayout>` so they share one source of truth.
+ * {@link FormLayout} two-column grid. Internally wraps each section in
+ * `<FormLayout>` so the skeleton's grid shape (and container-query
+ * stacking) tracks the live form automatically — no separate grid
+ * template to keep in sync.
  */
 export default function FormLayoutSkeleton({
   ariaLabel,
@@ -72,7 +55,7 @@ export default function FormLayoutSkeleton({
     >
       {showTitle && (
         <>
-          <Box sx={{ ...gridSx, mb: 1 }}>
+          <FormLayout sx={{ mb: 1 }}>
             <Skeleton animation={ANIM} variant="text" height={TITLE_HEIGHT} width="70%" />
             <Skeleton
               animation={ANIM}
@@ -80,27 +63,21 @@ export default function FormLayoutSkeleton({
               width={ID_PILL_WIDTH}
               height={ID_PILL_HEIGHT}
             />
-          </Box>
+          </FormLayout>
           <Divider sx={{ mb: 2 }} />
         </>
       )}
       {sections.map((section, sIdx) => {
         const isLast = sIdx === sections.length - 1;
         return (
-          <Box key={sIdx}>
-            <Box
-              sx={{
-                ...gridSx,
-                mb: isLast ? 0 : 2,
-                rowGap: section.rowGap ?? ROW_GAP,
-              }}
-            >
+          <Fragment key={sIdx}>
+            <FormLayout rowGap={section.rowGap} sx={isLast ? undefined : { mb: 2 }}>
               {Array.from({ length: section.rowCount }).map((_, rIdx) => (
                 <SkeletonRow key={rIdx} height={section.rowHeight} />
               ))}
-            </Box>
+            </FormLayout>
             {!isLast && <Divider sx={{ mb: 2 }} />}
-          </Box>
+          </Fragment>
         );
       })}
     </Box>
