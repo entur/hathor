@@ -7,8 +7,8 @@
  */
 import type { VehicleEditFormValue } from './VehicleEditForm';
 import type { Vehicle } from './types/Vehicle';
-import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults';
-import { TRANSPORT_TYPE_REF_PATTERN } from './transportTypeRef';
+import { BLANK_FORM, MISSING_MODEL } from './utils/vehicleFormDefaults';
+import { TRANSPORT_TYPE_REF_PATTERN } from './utils/transportTypeRef';
 
 export interface FormState {
   form: VehicleEditFormValue;

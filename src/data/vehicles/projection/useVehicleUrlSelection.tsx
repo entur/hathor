@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useEditing } from '../../../contexts/EditingContext.tsx';
 import VehicleDetails from '../VehicleDetails.tsx';
-import { VEHICLE_SELECTED_PARAM } from './vehicleUrlParams.ts';
+import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 
 interface UrlSelectionParams {

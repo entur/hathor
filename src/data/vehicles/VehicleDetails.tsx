@@ -6,7 +6,7 @@ import NetexId from '../netex/NetexId.tsx';
 import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
 import { FormLayout, MetaRow } from '../../components/FormLayout.tsx';
-import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
+import { VEHICLE_SELECTED_PARAM } from './utils/vehicleUrlParams.ts';
 import { vehicleMode, type VehicleGQLShaped } from './types/vehicleGqlShaped.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';

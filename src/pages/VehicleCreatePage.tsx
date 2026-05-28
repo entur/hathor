@@ -7,12 +7,12 @@ import VehicleEditForm, { type VehicleEditFormValue } from '../data/vehicles/Veh
 import SaveErrorSnackbar from '../data/vehicles/SaveErrorSnackbar';
 import SaveSuccessSnackbar from '../data/vehicles/SaveSuccessSnackbar';
 import DiscardDialog from '../components/dialogs/DiscardDialog';
-import { BLANK_FORM } from '../data/vehicles/vehicleFormDefaults';
+import { BLANK_FORM } from '../data/vehicles/utils/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/xml/useVehiclePairSave';
 import { useDirtyFormBlock } from '../data/vehicles/useDirtyFormBlock';
 import { canSubmit } from '../data/vehicles/vehicleFormState';
 import { waitForVehicleInList } from '../data/vehicles/waitForVehicleInList';
-import { vehicleSelectedHref } from '../data/vehicles/projection/vehicleUrlParams';
+import { vehicleSelectedHref } from '../data/vehicles/utils/vehicleUrlParams';
 import { useAuth } from '../auth/authUtils';
 import { useConfig } from '../contexts/configContext';
 

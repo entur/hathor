@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './types/Vehicle';
 import type { VehicleModel } from './types/VehicleModel';
 import { firstText } from '../netex/multilingualString.ts';
-import { MISSING_TEXT } from './vehicleFormDefaults';
-import { intToRef, refToInt } from './transportTypeRef';
+import { MISSING_TEXT } from './utils/vehicleFormDefaults';
+import { intToRef, refToInt } from './utils/transportTypeRef';
 import { FormLayout, FieldRow } from '../../components/FormLayout.tsx';
 
 export interface VehicleEditFormValue {
