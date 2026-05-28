@@ -13,9 +13,9 @@ import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
-import { useVehicle } from './useVehicle.ts';
-import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
-import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
+import { useVehicle } from './hooks/useVehicle.ts';
+import { useVehiclePairSave } from './hooks/useVehiclePairSave.ts';
+import { useDirtyFormBlock } from './hooks/useDirtyFormBlock.ts';
 import { commitSave } from './api/commitSave.ts';
 import {
   edit,
