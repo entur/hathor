@@ -1,11 +1,10 @@
-export type SearchContextViewType = 'map' | 'data' | null;
+export type SearchContextViewType = 'data' | null;
 export type SearchFilterValue = string;
 
 export interface SearchResultItem {
   id: string;
   name?: string;
   type: SearchContextViewType;
-  coordinates?: [number, number];
   originalData?: unknown;
 }
 

@@ -154,8 +154,6 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 
 - **Commented-out code** — `useDataViewSearch.ts:14-27` (Tiamat filter logic with `ParentStopPlace`/`stopPlaceType`), `DesktopSearchBar.tsx` and `MobileSearchBar.tsx` (disabled `SearchAutocomplete` rendering), `Header.tsx` (unused `useTranslation` and mobile search callback).
 - **Unused translation keys** — ~49 dead keys across `en/translation.json` and `nb/translation.json`, including `data.table.*`, `map.*`, `types.*` (stop-place types), `session.expired.message`, `product.*`.
-- **Unused map infrastructure** — `useLayerVisibility.ts` hook never imported; `'map'` variant in `SearchContextViewType` never used.
-- **Dead auth export** — `AuthProvider` exported from `src/auth/index.ts` but never consumed.
 - **Stub component** — `WorkAreaContent.tsx` accepts `onSave`/`onCancel`/`onDetailsOpen` props but ignores them; `handleSave()` is empty.
 
 ## Key Files
