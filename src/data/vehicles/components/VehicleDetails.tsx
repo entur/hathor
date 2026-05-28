@@ -15,7 +15,8 @@ import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
 import { useVehicle } from '../hooks/useVehicle.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
-import { useDirtyFormBlock } from '../hooks/useDirtyFormBlock.ts';
+import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
+import { useEditing } from '../../../contexts/EditingContext.tsx';
 import { commitSave } from '../api/commitSave.ts';
 import {
   edit,
@@ -64,6 +65,15 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
 
   const isDirty = isFormDirty(formState);
   useDirtyFormBlock(isDirty);
+
+  // Lift the editor's dirty signal onto EditingContext so chrome (sort /
+  // pagination guards, #91) can react without reaching into the feature.
+  // Clear on unmount so the signal doesn't leak across routes.
+  const { setEditorDirty } = useEditing();
+  useEffect(() => {
+    setEditorDirty(isDirty);
+  }, [isDirty, setEditorDirty]);
+  useEffect(() => () => setEditorDirty(false), [setEditorDirty]);
 
   const closeSlider = () =>
     setSearchParams(

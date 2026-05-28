@@ -15,6 +15,13 @@ export interface EditingItem {
 interface EditingContextType {
   editingItem: EditingItem | null;
   setEditingItem: (item: EditingItem | null) => void;
+  /**
+   * Whether the currently-mounted sidebar editor has unsaved changes.
+   * Owned by the editor (push via `setEditorDirty`), consumed by chrome
+   * that needs to guard navigation / sort / pagination (#91).
+   */
+  isEditorDirty: boolean;
+  setEditorDirty: (dirty: boolean) => void;
 }
 
 const EditingContext = createContext<EditingContextType | undefined>(undefined);
@@ -25,8 +32,12 @@ interface EditingProviderProps {
 
 export function EditingProvider({ children }: EditingProviderProps) {
   const [editingItem, setEditingItem] = useState<EditingItem | null>(null);
+  const [isEditorDirty, setEditorDirty] = useState<boolean>(false);
 
-  const value = useMemo(() => ({ editingItem, setEditingItem }), [editingItem]);
+  const value = useMemo(
+    () => ({ editingItem, setEditingItem, isEditorDirty, setEditorDirty }),
+    [editingItem, isEditorDirty]
+  );
 
   return <EditingContext.Provider value={value}>{children}</EditingContext.Provider>;
 }

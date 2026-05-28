@@ -11,7 +11,7 @@ import SaveSuccessSnackbar from '../data/vehicles/components/SaveSuccessSnackbar
 import DiscardDialog from '../components/dialogs/DiscardDialog';
 import { BLANK_FORM } from '../data/vehicles/utils/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/hooks/useVehiclePairSave';
-import { useDirtyFormBlock } from '../data/vehicles/hooks/useDirtyFormBlock';
+import { useDirtyFormBlock } from '../hooks/useDirtyFormBlock';
 import { canSubmit } from '../data/vehicles/stores/vehicleFormState';
 import { waitForVehicleInList } from '../data/vehicles/api/waitForVehicleInList';
 import { vehicleSelectedHref } from '../data/vehicles/utils/vehicleUrlParams';
