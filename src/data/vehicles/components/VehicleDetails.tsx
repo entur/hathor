@@ -11,8 +11,8 @@ import { vehicleMode, type VehicleGQLShaped } from '../types/vehicleGqlShaped.ts
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import { firstText } from '../../netex/multilingualString.ts';
-import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
-import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
+import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
+import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
 import { useVehicle } from '../hooks/useVehicle.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';

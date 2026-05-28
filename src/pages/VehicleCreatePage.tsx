@@ -6,8 +6,8 @@ import GenericDetailsPage from './GenericDetailsPage';
 import VehicleEditForm, {
   type VehicleEditFormValue,
 } from '../data/vehicles/components/VehicleEditForm';
-import SaveErrorSnackbar from '../data/vehicles/components/SaveErrorSnackbar';
-import SaveSuccessSnackbar from '../data/vehicles/components/SaveSuccessSnackbar';
+import SaveErrorSnackbar from '../components/feedback/SaveErrorSnackbar';
+import SaveSuccessSnackbar from '../components/feedback/SaveSuccessSnackbar';
 import DiscardDialog from '../components/dialogs/DiscardDialog';
 import { BLANK_FORM } from '../data/vehicles/utils/vehicleFormDefaults';
 import { useVehiclePairSave } from '../data/vehicles/hooks/useVehiclePairSave';
