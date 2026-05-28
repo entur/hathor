@@ -1,13 +1,14 @@
-import { useEffect, useReducer, useState, type ReactNode } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import NetexId from '../netex/NetexId.tsx';
 import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../components/sidebar/EditorRail.tsx';
+import { FormLayout, MetaRow } from '../../components/FormLayout.tsx';
 import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
 import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
-import VehicleEditForm, { LABEL_COL_MIN, LABEL_COL_MAX, COL_GAP } from './VehicleEditForm.tsx';
+import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import { firstText } from '../netex/multilingualString.ts';
 import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
@@ -122,19 +123,7 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <Box
-        sx={{
-          mb: 1,
-          width: '100%',
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
-          },
-          columnGap: COL_GAP,
-          alignItems: 'center',
-        }}
-      >
+      <FormLayout sx={{ mb: 1 }}>
         <Typography
           variant="h6"
           noWrap
@@ -167,40 +156,22 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
           size="small"
           sx={{ justifySelf: 'start' }}
         />
-      </Box>
+      </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
-      <Box
-        sx={{
-          mb: 2,
-          width: '100%',
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
-          },
-          columnGap: COL_GAP,
-          rowGap: 0.5,
-          alignItems: 'center',
-        }}
-        data-testid="vehicle-context"
-      >
-        <ContextRow
-          label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}
-          value={
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-              <span>{vehicle.transportType?.name ?? '—'}</span>
-              {xmlVehicle?.TransportTypeRef && (
-                <NetexId id={xmlVehicle.TransportTypeRef} copy="only" size="medium" />
-              )}
-            </Stack>
-          }
-        />
-        <ContextRow
-          label={t('vehicles.field.parentTransportMode', 'Transport Mode')}
-          value={<TransportModeIcon mode={tmode} iconPosition="left" />}
-        />
-      </Box>
+      <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
+        <MetaRow label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+            <span>{vehicle.transportType?.name ?? '—'}</span>
+            {xmlVehicle?.TransportTypeRef && (
+              <NetexId id={xmlVehicle.TransportTypeRef} copy="only" size="medium" />
+            )}
+          </Stack>
+        </MetaRow>
+        <MetaRow label={t('vehicles.field.parentTransportMode', 'Transport Mode')}>
+          <TransportModeIcon mode={tmode} iconPosition="left" />
+        </MetaRow>
+      </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
       {xmlError ? (
@@ -240,15 +211,4 @@ type FormAction =
 
 function formReducer(state: FormState, action: FormAction): FormState {
   return action.type === 'hydrate' ? hydrate(state, action.xmlVehicle) : edit(state, action.form);
-}
-
-function ContextRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <Box sx={{ display: 'contents' }}>
-      <Typography sx={{ fontSize: '0.875rem', color: 'text.primary' }}>{label}</Typography>
-      <Typography variant="body2" component="div">
-        {value}
-      </Typography>
-    </Box>
-  );
 }

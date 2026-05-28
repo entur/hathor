@@ -1,6 +1,6 @@
 import { Box, Divider, Skeleton } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { LABEL_COL_MIN, LABEL_COL_MAX, COL_GAP, ROW_GAP } from './VehicleEditForm.tsx';
+import { FormLayout } from '../../components/FormLayout.tsx';
 
 const CONTEXT_ROWS = 2;
 const VEHICLE_FORM_ROWS = 7;
@@ -13,22 +13,6 @@ const CONTEXT_VALUE_HEIGHT = 22;
 const CONTEXT_ROW_GAP = 0.5;
 const SECTION_HEADING_HEIGHT = 16;
 const ANIM = 'wave' as const;
-
-/**
- * Shared grid template used by every section so the skeleton lines up
- * column-for-column with the real {@link VehicleEditForm} that replaces it.
- * Keeps the swap from skeleton → form visually static (no layout shift).
- */
-const gridSx = {
-  width: '100%',
-  display: 'grid',
-  gridTemplateColumns: {
-    xs: '1fr',
-    sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr`,
-  },
-  columnGap: COL_GAP,
-  alignItems: 'center',
-};
 
 interface SkeletonRowProps {
   height?: number;
@@ -66,7 +50,7 @@ export default function VehicleDetailsSkeleton() {
       aria-label={t('vehicles.loading', 'Loading vehicle…')}
       sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}
     >
-      <Box sx={{ ...gridSx, mb: 1 }}>
+      <FormLayout sx={{ mb: 1 }}>
         <Skeleton animation={ANIM} variant="text" height={TITLE_HEIGHT} width="70%" />
         <Skeleton
           animation={ANIM}
@@ -74,17 +58,17 @@ export default function VehicleDetailsSkeleton() {
           width={ID_PILL_WIDTH}
           height={ID_PILL_HEIGHT}
         />
-      </Box>
+      </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
-      <Box sx={{ ...gridSx, mb: 2, rowGap: CONTEXT_ROW_GAP }}>
+      <FormLayout rowGap={CONTEXT_ROW_GAP} sx={{ mb: 2 }}>
         {contextRows.map((_, i) => (
           <SkeletonRow key={`ctx-${i}`} height={CONTEXT_VALUE_HEIGHT} />
         ))}
-      </Box>
+      </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
-      <Box sx={{ ...gridSx, rowGap: ROW_GAP }}>
+      <FormLayout>
         {vehicleRows.map((_, i) => (
           <SkeletonRow key={`v-${i}`} />
         ))}
@@ -104,7 +88,7 @@ export default function VehicleDetailsSkeleton() {
         {modelRows.map((_, i) => (
           <SkeletonRow key={`m-${i}`} />
         ))}
-      </Box>
+      </FormLayout>
     </Box>
   );
 }

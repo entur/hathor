@@ -1,16 +1,11 @@
-import type { ReactNode } from 'react';
-import { Box, InputLabel, TextField, Typography, Divider } from '@mui/material';
+import { TextField, Typography, Divider } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Vehicle } from './xml/Vehicle';
 import type { VehicleModel } from './xml/VehicleModel';
 import { firstText } from '../netex/multilingualString.ts';
 import { MISSING_TEXT } from './vehicleFormDefaults';
 import { intToRef, refToInt } from './transportTypeRef';
-
-export const LABEL_COL_MIN = '8rem';
-export const LABEL_COL_MAX = '12rem';
-export const COL_GAP = 2;
-export const ROW_GAP = 1.25;
+import { FormLayout, FieldRow } from '../../components/FormLayout.tsx';
 
 export interface VehicleEditFormValue {
   vehicle: Vehicle;
@@ -28,40 +23,6 @@ const toTextArr = (s: string): { value: string }[] | undefined =>
 
 const orUndef = (s: string): string | undefined => (s.length === 0 ? undefined : s);
 
-interface FieldRowProps {
-  id: string;
-  label: string;
-  alignTop?: boolean;
-  children: ReactNode;
-}
-
-/**
- * Two-column form row using CSS Grid `display: contents` so the InputLabel
- * and the input become direct grid items of the parent grid. Keeps label↔input
- * pairing explicit in JSX while letting a single parent grid guarantee column
- * alignment across all rows.
- */
-function FieldRow({ id, label, alignTop, children }: FieldRowProps) {
-  return (
-    <Box sx={{ display: 'contents' }}>
-      <InputLabel
-        htmlFor={id}
-        sx={{
-          alignSelf: alignTop ? 'start' : 'center',
-          pt: alignTop ? 1 : 0,
-          mb: 0,
-          fontSize: '0.875rem',
-          color: 'text.primary',
-          whiteSpace: 'normal',
-        }}
-      >
-        {label}
-      </InputLabel>
-      {children}
-    </Box>
-  );
-}
-
 export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFormProps) {
   const { t } = useTranslation();
   const v = value.vehicle;
@@ -78,15 +39,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const rawTransportRef = transportRef !== '' && transportIntValue === '';
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: `minmax(${LABEL_COL_MIN}, ${LABEL_COL_MAX}) 1fr` },
-        columnGap: COL_GAP,
-        rowGap: ROW_GAP,
-        alignItems: 'center',
-      }}
-    >
+    <FormLayout>
       <FieldRow id="vehicle-name" label={t('vehicles.field.name', 'Name')}>
         <TextField
           id="vehicle-name"
@@ -251,6 +204,6 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           fullWidth
         />
       </FieldRow>
-    </Box>
+    </FormLayout>
   );
 }
