@@ -1,4 +1,8 @@
-import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './vehicleGqlShaped.ts';
+import {
+  vehicleMode,
+  type VehicleGQLShaped,
+  type VehicleColumnKey,
+} from '../types/vehicleGqlShaped.ts';
 import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
 import { transportModeSortValue } from '../../netex/transportMode.ts';
 

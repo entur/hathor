@@ -11,7 +11,7 @@
  *   `T | T[]`    → `T[]`          (forced via `isArray` on known list keys)
  */
 import { XMLParser } from 'fast-xml-parser';
-import type { Vehicle } from './Vehicle';
+import type { Vehicle } from '../types/Vehicle';
 import { findResourceFrame, toArray } from '../../netex/xmlUtils';
 import {
   attr,

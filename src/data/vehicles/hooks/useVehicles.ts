@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
-import type { VehicleGQLShaped, VehicleColumnKey } from './vehicleGqlShaped.ts';
-import { fetchVehiclesAndApply } from './fetchVehiclesAndApply.ts';
-import { compareVehicles } from './vehicleSortValue.ts';
+import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShaped.ts';
+import { fetchVehiclesAndApply } from '../api/fetchVehiclesAndApply.ts';
+import { compareVehicles } from '../utils/vehicleSortValue.ts';
 
 /**
  * Data hook for the `/vehicles` list. Mirrors `useVehicleTypes` — single fetch

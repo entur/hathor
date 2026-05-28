@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { edit, hydrate, initialFormState, isDirty, type FormState } from './vehicleFormState';
-import { BLANK_FORM, MISSING_MODEL } from './vehicleFormDefaults';
-import type { Vehicle } from './xml/Vehicle';
-import type { VehicleEditFormValue } from './VehicleEditForm';
+import { BLANK_FORM, MISSING_MODEL } from '../utils/vehicleFormDefaults';
+import type { Vehicle } from '../types/Vehicle';
+import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 
 const aVehicle: Partial<Vehicle> = {
   $id: 'NMR:Vehicle:bus-1',

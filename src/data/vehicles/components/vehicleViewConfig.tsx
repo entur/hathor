@@ -1,16 +1,20 @@
 import { Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useVehicles } from './useVehicles.ts';
+import { useVehicles } from '../hooks/useVehicles.ts';
 import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../../components/data/DataPageContent.tsx';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
-import { getVehicleSortValue } from './vehicleSortValue.ts';
-import { useVehicleUrlSelection } from './useVehicleUrlSelection.tsx';
-import { vehicleSelectedHref } from './vehicleUrlParams.ts';
+import { getVehicleSortValue } from '../utils/vehicleSortValue.ts';
+import { useVehicleUrlSelection } from '../hooks/useVehicleUrlSelection.tsx';
+import { vehicleSelectedHref } from '../utils/vehicleUrlParams.ts';
 import { transportModeFilters } from '../../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
-import { vehicleMode, type VehicleGQLShaped, type VehicleColumnKey } from './vehicleGqlShaped.ts';
+import {
+  vehicleMode,
+  type VehicleGQLShaped,
+  type VehicleColumnKey,
+} from '../types/vehicleGqlShaped.ts';
 
 const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   {

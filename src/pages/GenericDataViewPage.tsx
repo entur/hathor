@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
-import { useEditing } from '../contexts/EditingContext.tsx';
+import { useEditingItem } from '../contexts/EditingContext.tsx';
 import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
@@ -52,7 +52,7 @@ export default function GenericDataViewPage<T, K extends string>({
     toggle: toggleSidebar,
   } = useResizableSidebar(initWidth, true, DETAILS_PANE_SIDE);
 
-  const { editingItem } = useEditing();
+  const { editingItem } = useEditingItem();
   const prevEditingIdRef = useRef<string | null>(null);
 
   const {

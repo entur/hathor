@@ -12,7 +12,7 @@ import VehicleTypeView from './data/vehicle-types/VehicleTypeView.tsx';
 import VehicleTypeDetails from './data/vehicle-types/VehicleTypeDetails.tsx';
 import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
-import VehicleView from './data/vehicles/VehicleView.tsx';
+import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import VehicleCreatePage from './pages/VehicleCreatePage.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import './theme/transportModeTokens.css';

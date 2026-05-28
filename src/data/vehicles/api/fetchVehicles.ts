@@ -1,7 +1,7 @@
 import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 import { toTransportMode } from '../../netex/transportMode.ts';
 import { FETCH_ALL_SIZE, type Page } from '../../../graphql/paginationTypes.ts';
-import type { VehicleGQLShaped } from './vehicleGqlShaped.ts';
+import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import type { AccessToken } from '../../../auth';
 
 interface VehicleWire {

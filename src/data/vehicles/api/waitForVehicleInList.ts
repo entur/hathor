@@ -1,5 +1,5 @@
-import { fetchVehicles } from './projection/fetchVehicles';
-import type { AccessToken } from '../../auth';
+import { fetchVehicles } from './fetchVehicles';
+import type { AccessToken } from '../../../auth';
 
 const DEFAULT_ATTEMPTS = 5;
 const DEFAULT_DELAY_MS = 250;

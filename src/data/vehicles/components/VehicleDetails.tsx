@@ -2,30 +2,31 @@ import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import NetexId from '../netex/NetexId.tsx';
-import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
-import EditorRail from '../../components/sidebar/EditorRail.tsx';
-import { FormLayout, MetaRow } from '../../components/FormLayout.tsx';
-import { VEHICLE_SELECTED_PARAM } from './projection/vehicleUrlParams.ts';
-import { vehicleMode, type VehicleGQLShaped } from './projection/vehicleGqlShaped.ts';
+import NetexId from '../../netex/NetexId.tsx';
+import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import EditorRail from '../../../components/sidebar/EditorRail.tsx';
+import { FormLayout, MetaRow } from '../../../components/FormLayout.tsx';
+import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
+import { vehicleMode, type VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
-import { firstText } from '../netex/multilingualString.ts';
-import SaveErrorSnackbar from './SaveErrorSnackbar.tsx';
-import SaveSuccessSnackbar from './SaveSuccessSnackbar.tsx';
-import { useVehicle } from './useVehicle.ts';
-import { useVehiclePairSave } from './xml/useVehiclePairSave.ts';
-import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
-import { commitSave } from './commitSave.ts';
+import { firstText } from '../../netex/multilingualString.ts';
+import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
+import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
+import { useVehicle } from '../hooks/useVehicle.ts';
+import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
+import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
+import { useEditorDirty } from '../../../contexts/EditingContext.tsx';
+import { commitSave } from '../api/commitSave.ts';
 import {
   edit,
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
   type FormState,
-} from './vehicleFormState.ts';
+} from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
-import type { Vehicle } from './xml/Vehicle';
+import type { Vehicle } from '../types/Vehicle';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
@@ -64,6 +65,15 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
 
   const isDirty = isFormDirty(formState);
   useDirtyFormBlock(isDirty);
+
+  // Lift the editor's dirty signal onto EditingContext so chrome (sort /
+  // pagination guards, #91) can react without reaching into the feature.
+  // Clear on unmount so the signal doesn't leak across routes.
+  const { setEditorDirty } = useEditorDirty();
+  useEffect(() => {
+    setEditorDirty(isDirty);
+  }, [isDirty, setEditorDirty]);
+  useEffect(() => () => setEditorDirty(false), [setEditorDirty]);
 
   const closeSlider = () =>
     setSearchParams(
