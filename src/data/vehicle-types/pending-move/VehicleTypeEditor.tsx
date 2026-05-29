@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Paper, Typography } from '@mui/material';
-import { Editor, validate, normalizeGraphQL, vehicleTypeToXmlShape } from '@entur/vtype-details';
-import type { VehicleType as EditorVehicleType, ExtraTab } from '@entur/vtype-details';
+import { Editor } from '@entur/vtype-details';
+import type { ExtraTab } from '@entur/vtype-details';
 import { DataViewTable, type ColumnDefinition } from '@entur/data-view-table';
-import { useAuth } from '../../../auth/authUtils';
-import { useConfig } from '../../../contexts/configContext';
-import { importAsNetexToBackend } from '../../vehicle-imports/vehicleImportServices';
-import { buildPublicationDeliveryXml } from '../../netex/publicationDeliveryXml';
+import { useAuth } from '../../auth/authUtils';
+import { useConfig } from '../../contexts/configContext';
 import { useVehicleType } from './useVehicleType';
-import type { Vehicle, DeckPlan } from '../types/vehicleTypeTypes';
-import { getDeckPlanSortValue } from '../../deck-plans/deckPlanSortValue';
-import type { OrderBy as DeckPlanSortKey } from '../../deck-plans/useDeckPlans';
-import LoadingPage from '../../../components/common/LoadingPage';
-import ErrorPage from '../../../components/common/ErrorPage';
-import GenericDetailsPage from '../../../pages/GenericDetailsPage';
+import type { Vehicle, DeckPlan, VehicleType } from './vehicleTypeTypes';
+import { getDeckPlanSortValue } from '../deck-plans/deckPlanSortValue';
+import type { OrderBy as DeckPlanSortKey } from '../deck-plans/useDeckPlans';
+import LoadingPage from '../../components/common/LoadingPage';
+import ErrorPage from '../../components/common/ErrorPage';
+import GenericDetailsPage from '../../pages/GenericDetailsPage';
+import { createOrUpdateVehicleTypeRequest } from '../../graphql/vehicles/mutations/createOrUpdateVehicleType';
+import type { VehicleTypeWire } from './fetchVehicleTypes';
 
 type VehicleSortKey = 'id' | 'registrationNumber';
 
@@ -47,36 +47,70 @@ export default function VehicleTypeDetails() {
   const { id } = useParams();
   const isNew = !id;
 
-  const [value, setValue] = useState<Partial<EditorVehicleType>>({});
+  const [value, setValue] = useState<Partial<VehicleType>>({});
   const [errors, setErrors] = useState<string[]>([]);
 
   const { getAccessToken } = useAuth();
-  const { applicationImportBaseUrl } = useConfig();
+  const { applicationBaseUrl } = useConfig();
 
   const { data: vtype, loading, error } = useVehicleType(id);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (vtype) setValue(normalizeGraphQL(vtype));
+    if (vtype) setValue(vtype);
   }, [vtype]);
 
   const handleSave = async () => {
-    const result = validate(value);
-    setErrors(result.errors);
-    if (result.errors.length > 0) throw new Error('Validation failed');
-
-    if (!applicationImportBaseUrl) {
-      throw new Error('Application import base URL is not configured');
+    if (!applicationBaseUrl) {
+      throw new Error('Application base URL is not configured');
     }
 
-    const xml = buildPublicationDeliveryXml({
-      vehicleTypes: [vehicleTypeToXmlShape(value as Record<string, unknown>)],
-    });
-    const token = await getAccessToken();
-    await importAsNetexToBackend(applicationImportBaseUrl, xml, token);
+    setSaving(true);
+    try {
+      const wireVehicleType = {
+        netexId: value.id,
+        name: value.name,
+        description: value.description,
+        shortName: value.shortName,
+        transportMode: value.transportMode,
+        length: value.length,
+        width: value.width,
+        height: value.height,
+        weight: value.weight,
+        lowFloor: value.lowFloor,
+        selfPropelled: value.selfPropelled,
+        hybridCategory: value.hybridCategory,
+        euroClass: value.euroClass,
+        propulsionTypes: value.propulsionTypes,
+        fuelTypes: value.fuelTypes,
+        passengerCapacity: value.passengerCapacity,
+        formDragCoefficient: value.formDragCoefficient,
+        rollResistanceCoefficient: value.rollResistanceCoefficient,
+        maximumEngineEffectKW: value.maximumEngineEffectKW,
+        maximumVelocity: value.maximumVelocity,
+        maximumRange: value.maximumRange,
+        deckPlan: value.deckPlan?.id ? { netexId: value.deckPlan?.id } : undefined,
+      } as VehicleTypeWire;
+      const token = await getAccessToken();
+      const body = await createOrUpdateVehicleTypeRequest(
+        applicationBaseUrl,
+        token,
+        wireVehicleType
+      );
+      if (body.error) {
+        setErrors([body.error]);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setErrors([message]);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (!isNew && loading) return <LoadingPage />;
   if (!isNew && error) return <ErrorPage message={error} />;
+  if (saving) return <LoadingPage />;
 
   const extraTabs: ExtraTab[] = [];
 
@@ -115,10 +149,10 @@ export default function VehicleTypeDetails() {
     <GenericDetailsPage
       title={title}
       onSave={handleSave}
-      saveDisabled={isEmpty || !applicationImportBaseUrl}
+      saveDisabled={isEmpty || !applicationBaseUrl}
     >
       <Paper sx={{ p: 3, mb: 2 }}>
-        <Editor value={value} onChange={setValue} extraTabs={extraTabs} />
+        <Editor value={value} onChange={setValue} />
       </Paper>
       {errors.length > 0 && (
         <Paper sx={{ p: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
