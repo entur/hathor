@@ -28,10 +28,11 @@
    * `--tm-cableway` deliberately shares the tram hue — same family of rail
    * transit.
    *
-   * `--tm-lift` is a placeholder forest-green chosen so the shared
-   * cableway silhouette (NeTEx lift aliases to tm-cableway, see
-   * `transportModeIconHelpers.ts`) renders in a distinct hue from the
-   * cableway purple. Swap when design provides an authoritative color.
+   * `--tm-lift` is a placeholder forest-green chosen so the lift
+   * silhouette (derived from cableway but mirrored, shortened, and with
+   * one fewer window — see `TransportModeSprite.tsx`) renders in a
+   * distinct hue from the cableway purple. Swap when design provides an
+   * authoritative color.
    *
    * `--tm-snowAndIce` is a placeholder ice-blue — distinct from the
    * water hue and from --tm-unknown gray. Swap when design provides one.

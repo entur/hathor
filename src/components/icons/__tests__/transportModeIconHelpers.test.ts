@@ -12,15 +12,11 @@ describe('symbolIdFor', () => {
     expect(symbolIdFor('metro')).toBe('metro');
     expect(symbolIdFor('cableway')).toBe('cableway');
     expect(symbolIdFor('funicular')).toBe('funicular');
+    expect(symbolIdFor('lift')).toBe('lift');
     expect(symbolIdFor('water')).toBe('water');
     expect(symbolIdFor('air')).toBe('air');
     expect(symbolIdFor('snowAndIce')).toBe('snowAndIce');
     expect(symbolIdFor('unknown')).toBe('unknown');
-  });
-
-  it('resolves aliased modes to their shared silhouette', () => {
-    // `lift` shares the cableway silhouette — distinct color via --tm-lift.
-    expect(symbolIdFor('lift')).toBe('cableway');
   });
 });
 
@@ -35,7 +31,7 @@ describe('colorVarFor', () => {
 });
 
 describe('SPRITE_MODES', () => {
-  it('contains exactly the 13 modes with a dedicated <symbol> in TransportModeSprite.tsx', () => {
+  it('contains exactly the 14 modes with a dedicated <symbol> in TransportModeSprite.tsx', () => {
     expect(SPRITE_MODES).toEqual(
       new Set([
         'bus',
@@ -47,6 +43,7 @@ describe('SPRITE_MODES', () => {
         'metro',
         'cableway',
         'funicular',
+        'lift',
         'water',
         'air',
         'snowAndIce',
