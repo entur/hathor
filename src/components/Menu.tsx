@@ -11,17 +11,15 @@ import {
   useTheme,
   useMediaQuery,
   IconButton,
-  Toolbar,
   Divider,
-  Typography,
   styled,
 } from '@mui/material';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useTranslation } from 'react-i18next';
 import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
 import { getIconUrl } from '../utils/iconLoaderUtils.ts';
 
 const APP_HEADER_HEIGHT_PX = 64;
+const MOBILE_DRAWER_W = 280;
 
 const menuItems = [
   { textKey: 'home', path: '/', iconKey: 'home' },
@@ -88,7 +86,7 @@ export default function Menu() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { expanded, toggle } = useNavRail();
 
-  // ── Mobile branch — temporary Drawer, anchored left, full-width (C4 narrows) ──
+  // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
   if (isMobile) {
     return (
       <StyledDrawer
@@ -100,37 +98,12 @@ export default function Menu() {
         slotProps={{
           paper: {
             sx: {
-              width: '100%',
+              width: MOBILE_DRAWER_W,
               borderRight: 'none',
             },
           },
         }}
       >
-        <Toolbar
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            px: 1,
-            backgroundColor: theme.palette.primary.main,
-            color: theme.palette.common.white,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src={theme.logoUrl} alt="logo" height={24} />
-            <Typography variant="h6" noWrap sx={{ ml: 1 }}>
-              {theme.applicationName}
-            </Typography>
-          </Box>
-          <IconButton
-            onClick={toggle}
-            color="inherit"
-            aria-label={t('header.actions.menu', 'menu')}
-          >
-            <ChevronLeftIcon />
-          </IconButton>
-        </Toolbar>
-        <Divider />
         <List disablePadding>
           {menuItems.map(item => (
             <NavItem key={item.path} {...item} expanded={true} onNavigate={toggle} />
