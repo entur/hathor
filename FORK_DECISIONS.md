@@ -481,3 +481,45 @@ Omit any sub-area that's empty. The read/write semantics that motivated `project
 
 - An ESLint `no-restricted-imports` rule enforcing direction of cross-area imports inside a feature.
 - Renaming the existing `vehicle-types/`, `deck-plans/`, `vehicle-imports/` features pre-emptively — they get reshaped the next time they're touched.
+
+---
+
+## Replace right-anchored Menu Drawer with persistent left Nav Rail _(2026-05-29)_
+
+### Context
+
+Inanna's stock `Menu.tsx` was a right-anchored persistent Drawer that rendered its own primary-colored Toolbar (logo + chevron close) covering the AppBar's rightmost ~280px. Two visible flaws on desktop: the brand appeared twice (`HeaderBranding` at top-left, Drawer Toolbar at top-right), and the Drawer's own Toolbar visually clashed with the AppBar instead of sitting beneath it. On mobile the Drawer went full-width, masking the AppBar entirely.
+
+GH #65's original addendum proposed flipping the Drawer to the left and relocating the hamburger to the AppBar start. That solved anchor consistency but left the underlying logo-dup and AppBar-overlap pain untouched.
+
+### Decision
+
+Replace the Drawer entirely with a Material 3 Navigation Rail (MUI Mini-Variant Drawer pattern):
+
+- **Desktop:** persistent rail at `top: 64px, left: 0, bottom: 0`. Width toggles between `RAIL_COLLAPSED_W = 64` (icons only) and `RAIL_EXPANDED_W = 280` (icons + labels). In-rail top-slot toggle using the same `getIconUrl('menu')` custom-icon-set asset as the rest of the chrome (no icon-flip on state). Active route highlighted via MUI native `<ListItemButton selected>`. Collapsed-state disambiguation via `<Tooltip placement="right">` with empty-title-disables idiom.
+- **Mobile:** temporary Drawer anchored left, 280px wide (`MOBILE_DRAWER_W`), no internal Toolbar header. AppBar stays visible above the drawer, so `HeaderBranding` is the sole brand surface.
+- **State:** new `NavRailContext` exposes `{ expanded, toggle }`. Persisted to `localStorage` under `hathor:navRailExpanded`, default collapsed.
+- **Reflow contract:** `--nav-rail-width` CSS var set on `.app-root` via a small `AppShell` helper that reads the context (gates to `0` on mobile so the content area carries no phantom gutter under the temporary drawer). Consumed by `.app-content` via `margin-left` + `0.2s` ease transition. Mirrors `GenericDataViewPage`'s `--sidebar-width` / `--app-header-height` pattern so the codebase has one consistent CSS-var reflow contract.
+- **`HeaderActions` threading collapse is partial:** `onMenuIconClick` prop kept, but the trailing menu IconButton is wrapped in `{isMobile && …}`. Desktop has no AppBar trigger — the rail's in-rail toggle is the only entry point. Mobile keeps the IconButton as the drawer opener. (Full threading collapse — moving the trigger into `Header.tsx` itself — was rejected to keep file touch lower.)
+- **Menu items get distinct icons:** `product` (Vehicle Types), `train` (Vehicles), `map` (Deck Plans) — disambiguation is the point of an icon rail; the previous all-`'data'` keys defeated it.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| #65 addendum's "flip Drawer to left + move hamburger to AppBar start" | Cheaper diff (~30 lines) but preserved both the logo-duplication and the AppBar/Drawer-Toolbar collision. |
+| **Bottom navigation on mobile** (MUI `<BottomNavigation>`) | Familiar mobile pattern but introduces a divergent mental model from the desktop rail. Rejected for consistency. |
+| **Always-visible 64px rail on mobile** | Mobile real estate is too tight; the rail would steal a constant 18% of a 360px phone viewport. |
+| **Full-height rail with AppBar shifted right (L2)** | Visually stronger but cascades into logo-position-on-toggle shifts and a more invasive AppBar rewrite. The L1 (AppBar full-width on top, rail below) trade-off keeps `HeaderBranding` immovable. |
+| **MUI `<Slide>` for the rail, drop `useResizableSidebar`** (per #65 main body) | The 200ms width transition gives the same UX as Slide; the resize handle didn't exist for the Drawer either way; nothing was lost by skipping. |
+| **In-rail logo, drop `HeaderBranding`** | The rail's first slot is the toggle (per M3); pushing the logo down a slot would orphan it visually and require more AppBar surgery. |
+
+### Consequences
+
+- New `src/contexts/NavRailContext.tsx` (provider + hook + exported width consts). Parallels the existing one-context-per-concern pattern (`EditingContext`, `SearchContext`, `ConfigContext`).
+- `Menu.tsx` keeps its filename (filenames after Inanna stay stable for `git blame` continuity) but is fully rewritten; the surviving `git mv`-free rewrite shows in diff as full file replacement, which is honest about the scope of the change.
+- `Header.tsx` shrinks: local `drawerOpen` state gone, `useNavRail()` provides the toggle.
+- Every page reflows. `.app-content` gains a transitioning `margin-left`. Pages that previously assumed full-viewport width no longer have it; none do today, but new full-bleed views must apply `margin-left: 0` explicitly to escape.
+- Nav state persisted across reloads under `localStorage` key `hathor:navRailExpanded`. Recognize during any future localStorage-clearing migration.
+- One e2e smoke test added in `e2e-tests/no-auth/no-auth.spec.ts`: clears the localStorage key, asserts rail visible, toggles via `aria-expanded` round-trip. Width assertions skipped because Playwright timing during 200ms transitions is flaky — `aria-expanded` is the stable signal.
+- Closes hathor#65; supersedes that issue's addendum (which proposed the simpler Drawer-flip approach).
