@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { AppBar, Toolbar, useTheme, useMediaQuery } from '@mui/material';
-import Menu from '../Menu.tsx';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
+import { useNavRail } from '../../contexts/NavRailContext.tsx';
 // import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
 import DesktopSearchBar from '../search/DesktopSearchBar.tsx';
@@ -13,7 +13,7 @@ import HeaderActions from './HeaderActions.tsx';
 import { useLocation } from 'react-router-dom';
 
 export default function Header() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { toggle: toggleNavRail } = useNavRail();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
@@ -57,7 +57,7 @@ export default function Header() {
                 onSearchIconClick={isHomePage ? () => {} : () => setSearchActive(true)}
                 onUserIconClick={() => (auth.isAuthenticated ? setUserOpen(true) : auth.login())}
                 onSettingsIconClick={() => setSettingsOpen(true)}
-                onMenuIconClick={() => setDrawerOpen(o => !o)}
+                onMenuIconClick={toggleNavRail}
                 isAuthenticated={auth.isAuthenticated}
                 authConfigured={!!oidcConfig}
               />
@@ -66,7 +66,6 @@ export default function Header() {
         </Toolbar>
       </AppBar>
 
-      <Menu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <UserDialog
         open={userOpen}

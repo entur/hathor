@@ -55,6 +55,25 @@ test.describe('No-auth profile (oidcConfig undefined)', () => {
     await expect(authDisabledLabel).toBeVisible();
     await expect(authDisabledLabel).toContainText('Auth off');
   });
+
+  test('nav rail toggles between collapsed and expanded', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => window.localStorage.removeItem('hathor:navRailExpanded'));
+    await page.reload();
+    await page.waitForLoadState('domcontentloaded');
+
+    const rail = page.getByTestId('nav-rail');
+    const toggle = page.getByTestId('nav-rail-toggle');
+
+    await expect(rail).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
 });
 
 // ── Auth scenario ────────────────────────────────────────────────────────────

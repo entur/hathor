@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Drawer,
   List,
@@ -6,20 +6,29 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Toolbar,
-  Divider,
   Box,
-  Typography,
+  Tooltip,
   useTheme,
   useMediaQuery,
   IconButton,
+  Toolbar,
+  Divider,
+  Typography,
   styled,
 } from '@mui/material';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { getIconUrl } from '../utils/iconLoaderUtils.ts';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { useTranslation } from 'react-i18next';
+import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
+import { getIconUrl } from '../utils/iconLoaderUtils.ts';
 
-const DESKTOP_WIDTH = 280;
+const APP_HEADER_HEIGHT_PX = 64;
+
+const menuItems = [
+  { textKey: 'home', path: '/', iconKey: 'home' },
+  { textKey: 'Vehicle Types', path: '/vehicle-types', iconKey: 'product' },
+  { textKey: 'Vehicles', path: '/vehicles', iconKey: 'train' },
+  { textKey: 'Deck Plans', path: '/deck-plans', iconKey: 'map' },
+];
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
@@ -32,86 +41,146 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
   },
 }));
 
-const menuItems = [
-  { textKey: 'home', path: '/', iconKey: 'home' },
-  { textKey: 'Vehicle Types', path: '/vehicle-types', iconKey: 'data' },
-  { textKey: 'Vehicles', path: '/vehicles', iconKey: 'data' },
-  { textKey: 'Deck Plans', path: '/deck-plans', iconKey: 'data' },
-];
-
-interface SideMenuProps {
-  open: boolean;
-  onClose: () => void;
+function isActive(pathname: string, path: string): boolean {
+  if (path === '/') return pathname === '/';
+  return pathname === path || pathname.startsWith(path + '/');
 }
 
-export default function Menu({ open, onClose }: SideMenuProps) {
+interface NavItemProps {
+  textKey: string;
+  path: string;
+  iconKey: string;
+  expanded: boolean;
+  onNavigate?: () => void;
+}
+
+function NavItem({ textKey, path, iconKey, expanded, onNavigate }: NavItemProps) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const active = isActive(location.pathname, path);
+  const label = t(textKey);
+
+  const button = (
+    <ListItemButton
+      component={Link}
+      to={path}
+      onClick={onNavigate}
+      selected={active}
+      sx={{ minHeight: 48, justifyContent: expanded ? 'flex-start' : 'center' }}
+    >
+      <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 0, justifyContent: 'center' }}>
+        <Box component="img" src={getIconUrl(iconKey)} alt={label} sx={{ width: 24, height: 24 }} />
+      </ListItemIcon>
+      {expanded && <ListItemText primary={label} />}
+    </ListItemButton>
+  );
+
+  return (
+    <Tooltip title={expanded ? '' : label} placement="right">
+      <ListItem disablePadding>{button}</ListItem>
+    </Tooltip>
+  );
+}
+
+export default function Menu() {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { expanded, toggle } = useNavRail();
 
-  return (
-    <StyledDrawer
-      variant={isMobile ? 'temporary' : 'persistent'}
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      ModalProps={{ keepMounted: true }}
-      slotProps={{
-        paper: {
-          sx: {
-            width: isMobile ? '100%' : DESKTOP_WIDTH,
-            borderLeft: isMobile ? 'none' : `1px solid ${theme.palette.divider}`,
+  // ── Mobile branch — temporary Drawer, anchored left, full-width (C4 narrows) ──
+  if (isMobile) {
+    return (
+      <StyledDrawer
+        variant="temporary"
+        anchor="left"
+        open={expanded}
+        onClose={toggle}
+        ModalProps={{ keepMounted: true }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: '100%',
+              borderRight: 'none',
+            },
           },
-        },
-      }}
-    >
-      <Toolbar
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: 1,
-          backgroundColor: theme.palette.primary.main,
-          color: theme.palette.common.white,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <img src={theme.logoUrl} alt="logo" height={24} />
-          <Typography variant="h6" noWrap sx={{ ml: 1 }}>
-            {theme.applicationName}
-          </Typography>
-        </Box>
-        <IconButton onClick={onClose} color="inherit">
-          <ChevronRightIcon />
-        </IconButton>
-      </Toolbar>
-      <Divider />
+        <Toolbar
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 1,
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.common.white,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src={theme.logoUrl} alt="logo" height={24} />
+            <Typography variant="h6" noWrap sx={{ ml: 1 }}>
+              {theme.applicationName}
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={toggle}
+            color="inherit"
+            aria-label={t('header.actions.menu', 'menu')}
+          >
+            <ChevronLeftIcon />
+          </IconButton>
+        </Toolbar>
+        <Divider />
+        <List disablePadding>
+          {menuItems.map(item => (
+            <NavItem key={item.path} {...item} expanded={true} onNavigate={toggle} />
+          ))}
+        </List>
+      </StyledDrawer>
+    );
+  }
 
+  // ── Desktop branch — persistent left rail at top:64, full height below AppBar ──
+  return (
+    <Box
+      component="aside"
+      data-testid="nav-rail"
+      sx={{
+        position: 'fixed',
+        top: APP_HEADER_HEIGHT_PX,
+        left: 0,
+        bottom: 0,
+        width: expanded ? RAIL_EXPANDED_W : RAIL_COLLAPSED_W,
+        backgroundColor: theme.palette.background.paper,
+        borderRight: `1px solid ${theme.palette.divider}`,
+        transition: 'width 0.2s ease',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: theme.zIndex.appBar - 1,
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+        <IconButton
+          data-testid="nav-rail-toggle"
+          onClick={toggle}
+          aria-label={t('header.actions.menu', 'menu')}
+          aria-expanded={expanded}
+        >
+          <Box
+            component="img"
+            src={getIconUrl('menu')}
+            alt={t('header.actions.menuIconAlt', 'menu icon')}
+            sx={{ width: 28, height: 28 }}
+          />
+        </IconButton>
+      </Box>
+      <Divider />
       <List disablePadding>
-        {menuItems.map(({ textKey, path, iconKey }) => (
-          <ListItem key={path} disablePadding>
-            <ListItemButton component={Link} to={path} onClick={onClose}>
-              <ListItemIcon>
-                <Box
-                  component="img"
-                  src={getIconUrl(iconKey)}
-                  alt={t(textKey)}
-                  sx={{ width: 24, height: 24 }}
-                />
-              </ListItemIcon>
-              <ListItemText primary={t(textKey)} />
-            </ListItemButton>
-          </ListItem>
+        {menuItems.map(item => (
+          <NavItem key={item.path} {...item} expanded={expanded} />
         ))}
       </List>
-
-      <Box sx={{ flexGrow: 1 }} />
-      <Divider />
-      <Box p={2} textAlign="center">
-        <Typography variant="caption" color={theme.palette.secondary.main}>
-          {theme.companyName}
-        </Typography>
-      </Box>
-    </StyledDrawer>
+    </Box>
   );
 }

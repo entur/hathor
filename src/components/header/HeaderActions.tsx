@@ -77,13 +77,15 @@ export default function HeaderActions({
       >
         {renderHeaderIcon('settings')}
       </IconButton>
-      <IconButton
-        color="inherit"
-        onClick={onMenuIconClick}
-        aria-label={t('header.actions.menu', 'menu')}
-      >
-        {renderHeaderIcon('menu')}
-      </IconButton>
+      {isMobile && (
+        <IconButton
+          color="inherit"
+          onClick={onMenuIconClick}
+          aria-label={t('header.actions.menu', 'menu')}
+        >
+          {renderHeaderIcon('menu')}
+        </IconButton>
+      )}
     </Box>
   );
 }
