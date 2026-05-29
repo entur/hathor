@@ -28,7 +28,7 @@ interface EditorDirtyContextType {
 }
 
 // Split so per-keystroke dirty flips don't re-render consumers that only
-// care about `editingItem` (SidebarContent, GenericDataViewPage).
+// care about `editingItem` (Sidebar, GenericDataViewPage).
 const EditingItemContext = createContext<EditingItemContextType | undefined>(undefined);
 const EditorDirtyContext = createContext<EditorDirtyContextType | undefined>(undefined);
 

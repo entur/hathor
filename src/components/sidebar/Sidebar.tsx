@@ -1,8 +1,8 @@
 import { Box, Drawer, useMediaQuery, IconButton, Toolbar } from '@mui/material';
-import SidebarContent from './SidebarContent.tsx';
 import type { Theme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useEditingItem } from '../../contexts/EditingContext.tsx';
 
 export type Side = 'left' | 'right';
 
@@ -25,6 +25,8 @@ export function Sidebar({
 }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
+  const { editingItem } = useEditingItem();
+  const editor = editingItem ? <editingItem.EditorComponent itemId={editingItem.id} /> : null;
 
   if (isMobile) {
     return (
@@ -57,7 +59,7 @@ export function Sidebar({
             {closeIcon}
           </IconButton>
         </Toolbar>
-        <SidebarContent />
+        {editor}
       </Drawer>
     );
   }
@@ -78,7 +80,7 @@ export function Sidebar({
           overflow: 'hidden',
         }}
       >
-        {!collapsed && <SidebarContent />}
+        {!collapsed && editor}
       </Box>
 
       {!collapsed && (

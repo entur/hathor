@@ -67,12 +67,6 @@
   "map.contextMenu.latitude": "Lat",
   "map.contextMenu.longitude": "Lng",
 
-  "workArea.title": "Work area",
-  "workArea.nameLabel": "Name",
-  "workArea.typeLabel": "Type",
-  "workArea.includeLabel": "Include",
-  "workArea.moreInfoTooltip": "More info",
-
   "types.train": "Train",
   "types.bus": "Bus",
   "types.ferry": "Ferry",

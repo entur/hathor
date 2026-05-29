@@ -67,12 +67,6 @@
   "map.contextMenu.latitude": "Breddegrad",
   "map.contextMenu.longitude": "Lengdegrad",
 
-  "workArea.title": "Arbeidsområde",
-  "workArea.nameLabel": "Navn",
-  "workArea.typeLabel": "Type",
-  "workArea.includeLabel": "Inkluder",
-  "workArea.moreInfoTooltip": "Mer info",
-
   "types.train": "Tog",
   "types.bus": "Buss",
   "types.ferry": "Ferge",
