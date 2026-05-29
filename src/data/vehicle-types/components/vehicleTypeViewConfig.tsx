@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Chip, Typography } from '@mui/material';
-import { useVehicleTypes } from './useVehicleTypes.ts';
-import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
-import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
-import DataPageContent from '../../components/data/DataPageContent.tsx';
+import { useVehicleTypes } from '../hooks/useVehicleTypes.ts';
+import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
+import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
+import DataPageContent from '../../../components/data/DataPageContent.tsx';
 import VehicleListCell from './cells/VehicleListCell.tsx';
-import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
-import type { OrderBy } from './useVehicleTypes.ts';
-import type { VehicleType } from './vehicleTypeTypes.ts';
-import { getVehicleTypeSortValue } from './vehicleTypeSortValue.ts';
-import TransportModeIcon from '../../components/icons/TransportModeIcon.tsx';
-import { toTransportMode, transportModeFilters } from '../netex/transportMode.ts';
+import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
+import type { OrderBy } from '../hooks/useVehicleTypes.ts';
+import type { VehicleType } from '../types/vehicleTypeTypes.ts';
+import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
+import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import { toTransportMode, transportModeFilters } from '../../netex/transportMode.ts';
 
 const fmtDim = (v: VehicleType) => {
   const parts = [

@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useConfig } from '../../contexts/configContext.ts';
-import { useAuth } from '../../auth/authUtils.ts';
+import { useConfig } from '../../../contexts/configContext.ts';
+import { useAuth } from '../../../auth/authUtils.ts';
 import { fetchVehicleType } from './fetchVehicleType.ts';
-import { graphqlErrMsg } from '../graphqlErrMsg.ts';
-import type { VehicleType } from './vehicleTypeTypes.ts';
+import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
+import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 
 export function useVehicleType(id: string | undefined) {
   const [data, setData] = useState<VehicleType | null>(null);

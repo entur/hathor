@@ -1,6 +1,6 @@
 import { getDeckPlanViewConfig } from './deckPlanViewConfig.ts';
 import GenericDataViewPage from '../../pages/GenericDataViewPage.tsx';
-import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
 import { useUrlFilters } from '../../hooks/useUrlFilters.ts';
 import type { OrderBy } from './useDeckPlans.ts';
 import { useNavigate } from 'react-router-dom';

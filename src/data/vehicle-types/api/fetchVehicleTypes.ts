@@ -1,8 +1,8 @@
-import { fetchVehicleTypesRequest } from '../../graphql/vehicles/queries/fetchVehicleTypes.ts';
-import type { VehicleTypeContext, VehicleType, Name } from './vehicleTypeTypes.ts';
-import type { AccessToken } from '../../auth';
-import type { Page } from '../../graphql/paginationTypes.ts';
-import { FETCH_ALL_SIZE } from '../../graphql/paginationTypes.ts';
+import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
+import type { VehicleTypeContext, VehicleType, Name } from '../types/vehicleTypeTypes.ts';
+import type { AccessToken } from '../../../auth';
+import type { Page } from '../../../graphql/paginationTypes.ts';
+import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 
 export interface VehicleTypeWire {
   netexId: string;

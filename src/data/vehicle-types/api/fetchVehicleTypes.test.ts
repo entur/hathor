@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
-import { fetchVehicleTypesRequest } from '../../graphql/vehicles/queries/fetchVehicleTypes.ts';
+import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 
-vi.mock('../../graphql/vehicles/queries/fetchVehicleTypes.ts', () => ({
+vi.mock('../../../graphql/vehicles/queries/fetchVehicleTypes.ts', () => ({
   fetchVehicleTypesRequest: vi.fn(),
 }));
 

@@ -4,17 +4,17 @@ import { Paper, Typography } from '@mui/material';
 import { Editor, validate, normalizeGraphQL, vehicleTypeToXmlShape } from '@entur/vtype-details';
 import type { VehicleType as EditorVehicleType, ExtraTab } from '@entur/vtype-details';
 import { DataViewTable, type ColumnDefinition } from '@entur/data-view-table';
-import { useAuth } from '../../auth/authUtils';
-import { useConfig } from '../../contexts/configContext';
-import { importAsNetexToBackend } from '../vehicle-imports/vehicleImportServices';
-import { buildPublicationDeliveryXml } from '../netex/publicationDeliveryXml';
+import { useAuth } from '../../../auth/authUtils';
+import { useConfig } from '../../../contexts/configContext';
+import { importAsNetexToBackend } from '../../vehicle-imports/vehicleImportServices';
+import { buildPublicationDeliveryXml } from '../../netex/publicationDeliveryXml';
 import { useVehicleType } from './useVehicleType';
-import type { Vehicle, DeckPlan } from './vehicleTypeTypes';
-import { getDeckPlanSortValue } from '../deck-plans/deckPlanSortValue';
-import type { OrderBy as DeckPlanSortKey } from '../deck-plans/useDeckPlans';
-import LoadingPage from '../../components/common/LoadingPage';
-import ErrorPage from '../../components/common/ErrorPage';
-import GenericDetailsPage from '../../pages/GenericDetailsPage';
+import type { Vehicle, DeckPlan } from '../types/vehicleTypeTypes';
+import { getDeckPlanSortValue } from '../../deck-plans/deckPlanSortValue';
+import type { OrderBy as DeckPlanSortKey } from '../../deck-plans/useDeckPlans';
+import LoadingPage from '../../../components/common/LoadingPage';
+import ErrorPage from '../../../components/common/ErrorPage';
+import GenericDetailsPage from '../../../pages/GenericDetailsPage';
 
 type VehicleSortKey = 'id' | 'registrationNumber';
 

@@ -1,7 +1,7 @@
-import type { VehicleType } from './vehicleTypeTypes.ts';
-import type { OrderBy } from './useVehicleTypes.ts';
-import { compareWithEmptyLast } from '../../utils/compareWithEmptyLast.ts';
-import { toTransportMode, transportModeSortValue } from '../netex/transportMode.ts';
+import type { VehicleType } from '../types/vehicleTypeTypes.ts';
+import type { OrderBy } from '../hooks/useVehicleTypes.ts';
+import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
+import { toTransportMode, transportModeSortValue } from '../../netex/transportMode.ts';
 
 export const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string | number => {
   switch (key) {
