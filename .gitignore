@@ -40,3 +40,6 @@ coverage
 docs/superpowers
 .claude
 .vite
+
+*storybook.log
+storybook-static

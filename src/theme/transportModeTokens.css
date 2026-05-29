@@ -20,14 +20,21 @@
   --tm-cableway: #642e88;
   --tm-funicular: #78469a;
   --tm-taxi: #181c56;
+  --tm-lift: #2d6a4f;
+  --tm-snowAndIce: #1a76a8;
   --tm-unknown: #6a6b78;
 
   /*
-   * Intentional gaps: `lift`, `snowAndIce` have no per-mode token and fall
-   * through to `--tm-unknown` via the `var(--tm-X, var(--tm-unknown))` chain
-   * in TransportModeIcon. Add a token here only when design provides a hue.
-   *
    * `--tm-cableway` deliberately shares the tram hue — same family of rail
    * transit.
+   *
+   * `--tm-lift` is a placeholder forest-green chosen so the lift
+   * silhouette (derived from cableway but mirrored, shortened, and with
+   * one fewer window — see `TransportModeSprite.tsx`) renders in a
+   * distinct hue from the cableway purple. Swap when design provides an
+   * authoritative color.
+   *
+   * `--tm-snowAndIce` is a placeholder ice-blue — distinct from the
+   * water hue and from --tm-unknown gray. Swap when design provides one.
    */
 }

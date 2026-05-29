@@ -6,18 +6,24 @@
 import type { TransportMode } from '../../data/netex/transportMode.ts';
 
 /**
- * The set of modes `TransportModeSprite.tsx` actually draws. Any mode
- * outside this set falls back to the `tm-unknown` placeholder symbol.
- * Keep in lockstep with `TransportModeSprite.tsx`.
+ * The set of modes `TransportModeSprite.tsx` has a dedicated `<symbol>`
+ * for. Any mode outside this set falls back to `tm-unknown`. Keep in
+ * lockstep with `TransportModeSprite.tsx`.
  */
 export const SPRITE_MODES: ReadonlySet<TransportMode> = new Set<TransportMode>([
   'bus',
   'coach',
+  'taxi',
+  'trolleyBus',
   'rail',
   'tram',
   'metro',
+  'cableway',
+  'funicular',
+  'lift',
   'water',
   'air',
+  'snowAndIce',
   'unknown',
 ]);
 
