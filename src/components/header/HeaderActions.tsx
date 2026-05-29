@@ -2,6 +2,7 @@ import { Box, IconButton, Badge, Button, Chip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { getIconUrl } from '../../utils/iconLoaderUtils.ts';
 import { useTranslation } from 'react-i18next';
+import { useNavRail } from '../../contexts/NavRailContext.tsx';
 
 interface HeaderActionsProps {
   isMobile: boolean;
@@ -25,6 +26,7 @@ export default function HeaderActions({
   authConfigured,
 }: HeaderActionsProps) {
   const { t } = useTranslation();
+  const { mobileOpen } = useNavRail();
 
   const renderHeaderIcon = (key: string, size = 28) => (
     <Box
@@ -81,7 +83,10 @@ export default function HeaderActions({
         <IconButton
           color="inherit"
           onClick={onMenuIconClick}
-          aria-label={t('header.actions.menu', 'menu')}
+          aria-label={
+            mobileOpen ? t('rail.collapse', 'Collapse menu') : t('rail.expand', 'Expand menu')
+          }
+          aria-expanded={mobileOpen}
         >
           {renderHeaderIcon('menu')}
         </IconButton>

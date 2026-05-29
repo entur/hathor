@@ -135,6 +135,10 @@
   "header.actions.settingsIconAlt": "settings icon",
   "header.actions.menuIconAlt": "menu icon",
 
+  "rail.label": "Main navigation",
+  "rail.collapse": "Collapse menu",
+  "rail.expand": "Expand menu",
+
   "product": "Product",
   "product.electronics": "Electronics",
   "product.books": "Books",

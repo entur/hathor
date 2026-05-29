@@ -13,7 +13,7 @@ import HeaderActions from './HeaderActions.tsx';
 import { useLocation } from 'react-router-dom';
 
 export default function Header() {
-  const { toggle: toggleNavRail } = useNavRail();
+  const { toggleMobile } = useNavRail();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
@@ -57,7 +57,7 @@ export default function Header() {
                 onSearchIconClick={isHomePage ? () => {} : () => setSearchActive(true)}
                 onUserIconClick={() => (auth.isAuthenticated ? setUserOpen(true) : auth.login())}
                 onSettingsIconClick={() => setSettingsOpen(true)}
-                onMenuIconClick={toggleNavRail}
+                onMenuIconClick={toggleMobile}
                 isAuthenticated={auth.isAuthenticated}
                 authConfigured={!!oidcConfig}
               />

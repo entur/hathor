@@ -4,6 +4,7 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  useRef,
   useContext,
   type ReactNode,
 } from 'react';
@@ -16,8 +17,16 @@ export const RAIL_COLLAPSED_W = 64;
 export const RAIL_EXPANDED_W = 280;
 
 interface NavRailContextType {
+  /** Desktop rail expanded state; persisted to localStorage. */
   expanded: boolean;
-  toggle: () => void;
+  /** Toggle the desktop rail's expanded/collapsed state. */
+  toggleExpanded: () => void;
+  /** Mobile temporary-Drawer open state; session-only. */
+  mobileOpen: boolean;
+  /** Toggle the mobile drawer's open/closed state. */
+  toggleMobile: () => void;
+  /** Close the mobile drawer (used by nav-item click for nav-and-close). */
+  closeMobile: () => void;
 }
 
 const NavRailContext = createContext<NavRailContextType | undefined>(undefined);
@@ -36,8 +45,17 @@ interface NavRailProviderProps {
 
 export function NavRailProvider({ children }: NavRailProviderProps) {
   const [expanded, setExpanded] = useState<boolean>(readPersisted);
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 
+  // Skip the first effect run so we don't write the just-read value back
+  // to localStorage on every fresh mount (would pollute storage with
+  // 'false' for users who never toggled).
+  const skipInitialPersist = useRef(true);
   useEffect(() => {
+    if (skipInitialPersist.current) {
+      skipInitialPersist.current = false;
+      return;
+    }
     try {
       window.localStorage.setItem(STORAGE_KEY, String(expanded));
     } catch {
@@ -45,19 +63,32 @@ export function NavRailProvider({ children }: NavRailProviderProps) {
     }
   }, [expanded]);
 
-  const toggle = useCallback(() => {
+  const toggleExpanded = useCallback(() => {
     setExpanded(v => !v);
   }, []);
 
-  const value = useMemo(() => ({ expanded, toggle }), [expanded, toggle]);
+  const toggleMobile = useCallback(() => {
+    setMobileOpen(v => !v);
+  }, []);
+
+  const closeMobile = useCallback(() => {
+    setMobileOpen(false);
+  }, []);
+
+  const value = useMemo(
+    () => ({ expanded, toggleExpanded, mobileOpen, toggleMobile, closeMobile }),
+    [expanded, toggleExpanded, mobileOpen, toggleMobile, closeMobile]
+  );
 
   return <NavRailContext.Provider value={value}>{children}</NavRailContext.Provider>;
 }
 
 /**
- * Read the nav-rail's expanded state and its toggle action.
- * `expanded` controls icon-only (false, 64px) vs icons-and-labels (true, 280px)
- * on desktop, and mobile temporary-Drawer open/closed.
+ * Read the nav-rail's state and actions. `expanded` controls icon-only
+ * (false, 64px) vs icons-and-labels (true, 280px) on desktop, and is
+ * persisted in localStorage. `mobileOpen` controls the temporary Drawer
+ * on mobile and is session-only — persisted desktop state must not leak
+ * into the mobile UX.
  */
 export function useNavRail(): NavRailContextType {
   const ctx = useContext(NavRailContext);

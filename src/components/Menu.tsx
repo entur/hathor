@@ -21,11 +21,17 @@ import { getIconUrl } from '../utils/iconLoaderUtils.ts';
 const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
 
+// textKey values reuse existing i18n keys so labels translate without
+// new entries (see feedback_i18n_reuse_keys memory).
 const menuItems = [
   { textKey: 'home', path: '/', iconKey: 'home' },
-  { textKey: 'Vehicle Types', path: '/vehicle-types', iconKey: 'product' },
-  { textKey: 'Vehicles', path: '/vehicles', iconKey: 'train' },
-  { textKey: 'Deck Plans', path: '/deck-plans', iconKey: 'map' },
+  {
+    textKey: 'home.features.vehicletypes.headline',
+    path: '/vehicle-types',
+    iconKey: 'product',
+  },
+  { textKey: 'vehicles.title', path: '/vehicles', iconKey: 'train' },
+  { textKey: 'home.features.deckplans.headline', path: '/deck-plans', iconKey: 'map' },
 ];
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
@@ -64,6 +70,7 @@ function NavItem({ textKey, path, iconKey, expanded, onNavigate }: NavItemProps)
       to={path}
       onClick={onNavigate}
       selected={active}
+      aria-current={active ? 'page' : undefined}
       sx={{ minHeight: 48, justifyContent: expanded ? 'flex-start' : 'center' }}
     >
       <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 0, justifyContent: 'center' }}>
@@ -84,16 +91,19 @@ export default function Menu() {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { expanded, toggle } = useNavRail();
+  const { expanded, toggleExpanded, mobileOpen, closeMobile } = useNavRail();
 
   // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
+  // Mobile open state is session-only (mobileOpen), NOT the persisted
+  // desktop `expanded` flag, so a user who left the desktop rail
+  // expanded does not see the mobile drawer auto-open on next visit.
   if (isMobile) {
     return (
       <StyledDrawer
         variant="temporary"
         anchor="left"
-        open={expanded}
-        onClose={toggle}
+        open={mobileOpen}
+        onClose={closeMobile}
         ModalProps={{ keepMounted: true }}
         slotProps={{
           paper: {
@@ -106,7 +116,7 @@ export default function Menu() {
       >
         <List disablePadding>
           {menuItems.map(item => (
-            <NavItem key={item.path} {...item} expanded={true} onNavigate={toggle} />
+            <NavItem key={item.path} {...item} expanded={true} onNavigate={closeMobile} />
           ))}
         </List>
       </StyledDrawer>
@@ -116,8 +126,9 @@ export default function Menu() {
   // ── Desktop branch — persistent left rail at top:64, full height below AppBar ──
   return (
     <Box
-      component="aside"
+      component="nav"
       data-testid="nav-rail"
+      aria-label={t('rail.label', 'Main navigation')}
       sx={{
         position: 'fixed',
         top: APP_HEADER_HEIGHT_PX,
@@ -143,8 +154,10 @@ export default function Menu() {
       >
         <IconButton
           data-testid="nav-rail-toggle"
-          onClick={toggle}
-          aria-label={t('header.actions.menu', 'menu')}
+          onClick={toggleExpanded}
+          aria-label={
+            expanded ? t('rail.collapse', 'Collapse menu') : t('rail.expand', 'Expand menu')
+          }
           aria-expanded={expanded}
         >
           <Box

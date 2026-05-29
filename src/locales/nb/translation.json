@@ -135,6 +135,10 @@
   "header.actions.settingsIconAlt": "innstillinger-ikon",
   "header.actions.menuIconAlt": "menyikon",
 
+  "rail.label": "Hovedmeny",
+  "rail.collapse": "Skjul meny",
+  "rail.expand": "Vis meny",
+
   "import.result.fuelTypeEnum.battery": "Elektrisk",
   "import.result.seatingCapacity": "{{count}} sitteplasser",
   "import.result.standingCapacity": ", {{count}} ståplasser",

@@ -26,13 +26,15 @@ export function Sidebar({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
   const { editingItem } = useEditingItem();
-  const editor = editingItem ? <editingItem.EditorComponent itemId={editingItem.id} /> : null;
 
   if (isMobile) {
     return (
       <Drawer
         anchor={side}
-        open={!collapsed}
+        // Gate `open` on both `!collapsed` AND a present editingItem so
+        // the Drawer doesn't surface a blank pane during the frame
+        // between editingItem clearing and the chrome effect collapsing.
+        open={!collapsed && !!editingItem}
         onClose={toggleCollapse}
         variant="temporary"
         ModalProps={{
@@ -59,7 +61,7 @@ export function Sidebar({
             {closeIcon}
           </IconButton>
         </Toolbar>
-        {editor}
+        {editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
       </Drawer>
     );
   }
@@ -80,7 +82,7 @@ export function Sidebar({
           overflow: 'hidden',
         }}
       >
-        {!collapsed && editor}
+        {!collapsed && editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
       </Box>
 
       {!collapsed && (
