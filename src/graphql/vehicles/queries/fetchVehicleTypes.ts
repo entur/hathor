@@ -17,6 +17,27 @@ const fetchVehicleTypesGQL = gql`
         length
         width
         height
+        weight
+        lowFloor
+        propulsionTypes
+        fuelTypes
+        selfPropelled
+        euroClass
+        maximumVelocity
+        maximumRange
+        formDragCoefficient
+        rollResistanceCoefficient
+        maximumEngineEffectKW
+        hybridCategory
+        passengerCapacity {
+          totalCapacity
+          seatingCapacity
+          standingCapacity
+          pushchairCapacity
+          wheelchairPlaceCapacity
+          pramPlaceCapacity
+          bicycleRackCapacity
+        }
         created
         changed
         changedBy
@@ -29,6 +50,7 @@ const fetchVehicleTypesGQL = gql`
         vehicles {
           netexId
           registrationNumber
+          operationalNumber
           version
         }
       }

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Chip, Typography } from '@mui/material';
 import { useVehicleTypes } from '../hooks/useVehicleTypes.ts';
 import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
@@ -11,6 +11,8 @@ import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { toTransportMode, transportModeFilters } from '../../netex/transportMode.ts';
+import { useVehicleTypeUrlSelection } from '../hooks/useVehicleTypeUrlSelection.tsx';
+import { vehicleTypeSelectedHref } from '../utils/vehicleTypeUrlParams.ts';
 
 const fmtDim = (v: VehicleType) => {
   const parts = [
@@ -26,16 +28,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'id',
     headerLabel: 'ID',
     isSortable: true,
-    renderCell: item => (
-      <Chip
-        label={item.id}
-        component={Link}
-        to={`/vehicle-types/${encodeURIComponent(item.id)}`}
-        clickable
-        size="small"
-        variant="outlined"
-      />
-    ),
+    renderCell: item => <Chip label={item.id} size="small" variant="outlined" />,
     display: 'always',
   },
   {
@@ -94,6 +87,12 @@ const getVehicleTypeFilterKey = (item: VehicleType): readonly string[] => [
   toTransportMode(item.transportMode),
 ];
 
+/** Whole-row click opens the read-only sidebar via `/vehicle-types?selected=<id>`. */
+const useVehicleTypeRowClick = () => {
+  const navigate = useNavigate();
+  return (item: VehicleType) => navigate(vehicleTypeSelectedHref(item.id));
+};
+
 export const vehicleTypeViewConfig = {
   useData: useVehicleTypes,
   useSearchRegistration: useDataViewSearch,
@@ -104,4 +103,6 @@ export const vehicleTypeViewConfig = {
   getSortValue: getVehicleTypeSortValue,
   filters: transportModeFilters,
   title: 'Vehicle Types',
+  useUrlEffect: useVehicleTypeUrlSelection,
+  useRowClick: useVehicleTypeRowClick,
 };

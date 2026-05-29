@@ -1,5 +1,13 @@
 import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
-import type { VehicleTypeContext, VehicleType, Name } from '../types/vehicleTypeTypes.ts';
+import type {
+  VehicleTypeContext,
+  VehicleType,
+  Name,
+  PassengerCapacity,
+  PropulsionType,
+  FuelType,
+  HybridCategory,
+} from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
@@ -13,12 +21,38 @@ export interface VehicleTypeWire {
   length: number;
   width: number;
   height: number;
+  weight?: number | null;
+  lowFloor?: boolean | null;
+  propulsionTypes?: (PropulsionType | null)[] | null;
+  fuelTypes?: (FuelType | null)[] | null;
+  selfPropelled?: boolean | null;
+  euroClass?: string | null;
+  maximumVelocity?: number | null;
+  maximumRange?: number | null;
+  formDragCoefficient?: number | null;
+  rollResistanceCoefficient?: number | null;
+  maximumEngineEffectKW?: number | null;
+  hybridCategory?: HybridCategory | null;
+  passengerCapacity?: PassengerCapacity | null;
   created?: string | null;
   changed?: string | null;
   changedBy?: string | null;
   deckPlan?: { netexId: string; name?: Name | null } | null;
-  vehicles?: { netexId: string; registrationNumber: string; version: number }[] | null;
+  vehicles?:
+    | {
+        netexId: string;
+        registrationNumber: string;
+        operationalNumber?: string | null;
+        version: number;
+      }[]
+    | null;
 }
+
+/** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
+const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
+  const out = list?.filter((x): x is T => x != null);
+  return out && out.length ? out : undefined;
+};
 
 export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   id: vt.netexId,
@@ -29,6 +63,19 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   length: vt.length,
   width: vt.width,
   height: vt.height,
+  weight: vt.weight ?? undefined,
+  lowFloor: vt.lowFloor ?? undefined,
+  propulsionTypes: compact(vt.propulsionTypes),
+  fuelTypes: compact(vt.fuelTypes),
+  selfPropelled: vt.selfPropelled ?? undefined,
+  euroClass: vt.euroClass ?? undefined,
+  maximumVelocity: vt.maximumVelocity ?? undefined,
+  maximumRange: vt.maximumRange ?? undefined,
+  formDragCoefficient: vt.formDragCoefficient ?? undefined,
+  rollResistanceCoefficient: vt.rollResistanceCoefficient ?? undefined,
+  maximumEngineEffectKW: vt.maximumEngineEffectKW ?? undefined,
+  hybridCategory: vt.hybridCategory ?? undefined,
+  passengerCapacity: vt.passengerCapacity ?? undefined,
   created: vt.created ?? undefined,
   changed: vt.changed ?? undefined,
   changedBy: vt.changedBy ?? undefined,
@@ -39,6 +86,7 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
     ? vt.vehicles.map(v => ({
         id: v.netexId,
         registrationNumber: v.registrationNumber,
+        operationalNumber: v.operationalNumber ?? undefined,
         version: v.version,
       }))
     : undefined,

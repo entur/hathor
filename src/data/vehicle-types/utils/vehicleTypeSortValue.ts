@@ -10,7 +10,7 @@ export const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string
     case 'id':
       return item.id;
     case 'dimensions':
-      return item.length;
+      return item.length ?? 0;
     case 'deckPlanName':
       return item.deckPlan?.name?.value || '';
     case 'transportMode':
