@@ -1,4 +1,5 @@
 import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transportMode.ts';
+import type { Name } from '../../vehicle-types/vehicleTypeTypes.ts';
 
 /**
  * Vehicle list row — GQL-shaped projection (camelCase). Distinct from the
@@ -9,15 +10,20 @@ import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transpor
  */
 export interface VehicleGQLShaped {
   id: string;
-  version: number;
-  registrationNumber: string;
+  version?: number;
+  name?: Name;
+  registrationNumber?: string;
   operationalNumber?: string;
-  transportType?: {
-    id: string;
-    version: number;
-    name?: string;
-    transportMode: TransportMode;
-  };
+  chassisNumber?: string;
+  registrationDate?: string;
+  buildDate?: string;
+  description?: Name;
+  transportType?: Partial<{
+    id?: string;
+    version?: number;
+    name?: Name;
+    transportMode?: TransportMode;
+  }>;
 }
 
 export type VehicleColumnKey =

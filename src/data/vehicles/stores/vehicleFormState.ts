@@ -7,13 +7,13 @@
  */
 import { createFormState, type FormState as GenericFormState } from '../../../hooks/useFormState';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
-import type { Vehicle } from '../types/Vehicle';
-import { BLANK_FORM, MISSING_MODEL } from '../utils/vehicleFormDefaults';
+import { BLANK_FORM } from '../utils/vehicleFormDefaults';
 import { TRANSPORT_TYPE_REF_PATTERN } from '../utils/transportTypeRef';
+import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
-const vehicleForm = createFormState<VehicleEditFormValue, Partial<Vehicle>>({
+const vehicleForm = createFormState<VehicleEditFormValue, Partial<VehicleGQLShaped>>({
   blank: BLANK_FORM,
-  formFromSource: src => (src ? { vehicle: src as Vehicle, model: MISSING_MODEL } : BLANK_FORM),
+  formFromSource: src => (src ? { vehicle: src as VehicleGQLShaped } : BLANK_FORM),
 });
 
 export type FormState = GenericFormState<VehicleEditFormValue>;
@@ -28,5 +28,5 @@ export const isDirty = vehicleForm.isDirty;
  *  one is unrecoverable. Drives `saveDisabled` on /vehicles/new; the slider
  *  edit doesn't gate since existing rows already carry the ref. */
 export function canSubmit(form: VehicleEditFormValue): boolean {
-  return TRANSPORT_TYPE_REF_PATTERN.test(form.vehicle.TransportTypeRef ?? '');
+  return TRANSPORT_TYPE_REF_PATTERN.test(form.vehicle.transportType?.id ?? '');
 }

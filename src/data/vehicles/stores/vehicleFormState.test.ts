@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { edit, hydrate, initialFormState, isDirty, type FormState } from './vehicleFormState';
-import { BLANK_FORM, MISSING_MODEL } from '../utils/vehicleFormDefaults';
-import type { Vehicle } from '../types/Vehicle';
+import { BLANK_FORM } from '../utils/vehicleFormDefaults';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
+import { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
-const aVehicle: Partial<Vehicle> = {
-  $id: 'NMR:Vehicle:bus-1',
-  $version: '1',
-  RegistrationNumber: 'BUS-001',
-  Name: [{ value: 'Bus One' }],
+const aVehicle: Partial<VehicleGQLShaped> = {
+  id: 'NMR:Vehicle:bus-1',
+  version: 1,
+  registrationNumber: 'BUS-001',
+  name: { value: 'Bus One' },
 };
 
 const editFor = (s: FormState, mutate: (v: VehicleEditFormValue) => VehicleEditFormValue) =>
@@ -37,7 +37,7 @@ describe('vehicleFormState — dirty tracking through load/edit/cancel cycles', 
     const loaded = hydrate(initialFormState, aVehicle);
     const edited = editFor(loaded, v => ({
       ...v,
-      vehicle: { ...v.vehicle, RegistrationNumber: 'BUS-NEW' },
+      vehicle: { ...v.vehicle, registrationNumber: 'BUS-NEW' },
     }));
     expect(isDirty(edited)).toBe(true);
   });
@@ -46,7 +46,7 @@ describe('vehicleFormState — dirty tracking through load/edit/cancel cycles', 
     const loaded = hydrate(initialFormState, aVehicle);
     const edited = editFor(loaded, v => ({
       ...v,
-      vehicle: { ...v.vehicle, RegistrationNumber: 'BUS-NEW' },
+      vehicle: { ...v.vehicle, registrationNumber: 'BUS-NEW' },
     }));
     const reverted = edit(edited, loaded.form);
     expect(isDirty(reverted)).toBe(false);
@@ -56,7 +56,7 @@ describe('vehicleFormState — dirty tracking through load/edit/cancel cycles', 
     const loaded = hydrate(initialFormState, aVehicle);
     const edited = editFor(loaded, v => ({
       ...v,
-      vehicle: { ...v.vehicle, RegistrationNumber: 'BUS-NEW' },
+      vehicle: { ...v.vehicle, registrationNumber: 'BUS-NEW' },
     }));
     expect(isDirty(edited)).toBe(true);
     const cancelled = hydrate(edited, aVehicle);
@@ -68,16 +68,5 @@ describe('vehicleFormState — dirty tracking through load/edit/cancel cycles', 
     const cleared = hydrate(loaded, undefined);
     expect(cleared.form).toEqual(BLANK_FORM);
     expect(isDirty(cleared)).toBe(false);
-  });
-
-  it('hydrated form preserves MISSING_MODEL until issue #69 brings a real model fetch', () => {
-    const loaded = hydrate(initialFormState, aVehicle);
-    expect(loaded.form.model).toEqual(MISSING_MODEL);
-    expect(loaded.form.vehicle).toBe(aVehicle);
-  });
-
-  it('#80 sect3: MISSING_MODEL leaves Manufacturer undefined so [missing] never round-trips', () => {
-    const loaded = hydrate(initialFormState, aVehicle);
-    expect(loaded.form.model.Manufacturer).toBeUndefined();
   });
 });

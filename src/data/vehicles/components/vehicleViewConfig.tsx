@@ -46,7 +46,7 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     id: 'transportTypeName',
     headerLabel: 'vehicles.field.parentVehicleType',
     isSortable: true,
-    renderCell: item => item.transportType?.name ?? '—',
+    renderCell: item => item.transportType?.name?.value ?? '—',
     display: 'always',
   },
   {
