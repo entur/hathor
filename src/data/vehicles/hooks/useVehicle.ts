@@ -5,9 +5,9 @@ import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import { fetchVehicle } from '../api/fetchVehicles.ts';
 
 /**
- * Fetch and parse a single Vehicle from Sobek's NeTEx single-vehicle endpoint.
+ * Fetch and parse a single VehicleGQLShaped from Sobek's GraphQL endpoint.
  * Mirrors `useVehicleType`'s lifecycle. Returns `data: null` when the
- * response carries no Vehicle (unknown id surfaced as an `error`).
+ * response carries no VehicleGQLShaped (unknown id surfaced as an `error`).
  */
 export function useVehicle(id: string | undefined) {
   const [data, setData] = useState<Partial<VehicleGQLShaped> | null>(null);

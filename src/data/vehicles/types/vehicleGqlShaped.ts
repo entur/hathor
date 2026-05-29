@@ -2,11 +2,9 @@ import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transpor
 import type { Name } from '../../vehicle-types/vehicleTypeTypes.ts';
 
 /**
- * Vehicle list row — GQL-shaped projection (camelCase). Distinct from the
- * NeTEx-shaped `Vehicle` in `../xml/` which is the XML-write truth.
+ * Vehicle object — GQL-shaped to mirror the shape of the `vehicles(...)` GraphQL query response.
+ * The `id` field is seeded from the NeTEx `netexId` because the UI relies on every object having an ID property
  *
- * `transportType.id` ≡ NeTEx `TransportTypeRef`. The nested sidecar is optional
- * (server may return null when the parent VehicleType is missing).
  */
 export interface VehicleGQLShaped {
   id: string;

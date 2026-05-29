@@ -10,8 +10,8 @@ export interface VehicleWire {
   description: Name | undefined;
   chassisNumber: string | undefined;
   buildDate: string | undefined;
-  netexId: string;
-  version: number;
+  netexId?: string;
+  version?: number;
   name?: Name | undefined;
   registrationNumber: string;
   operationalNumber?: string | undefined;
@@ -50,7 +50,7 @@ export async function fetchVehicles(
     );
   }
   return content.map<VehicleGQLShaped>(v => ({
-    id: v.netexId,
+    id: v.netexId || '',
     version: v.version,
     name: v.name || undefined,
     registrationNumber: v.registrationNumber,
@@ -71,9 +71,7 @@ export async function fetchVehicles(
 }
 
 /**
- * Fetch the full Vehicle list from Sobek's `vehicles(...)` GraphQL query and
- * project each entry into the camelCase row shape consumed by the list view.
- * Warns once when the response is truncated past `FETCH_ALL_SIZE`.
+ * Fetch one VehicleGQLShaped from Sobek's `vehicles(...)` GraphQL query and
  *
  * @param applicationBaseUrl Sobek base URL.
  * @param token OIDC access token (bearer).
@@ -95,7 +93,7 @@ export async function fetchVehicle(
     );
   }
   return content.map<VehicleGQLShaped>(v => ({
-    id: v.netexId,
+    id: v.netexId || '',
     version: v.version,
     name: v.name || undefined,
     registrationNumber: v.registrationNumber,

@@ -50,7 +50,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         } as VehicleWire;
         const token = await getAccessToken();
         const body = await createOrUpdateVehicleRequest(applicationBaseUrl, token, wireVehicle);
-        return { newId: body.createOrUpdateVehicle.id, error: body.error ?? null };
+        return { newId: body.createOrUpdateVehicle, error: body.error ?? null };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setError(message);
