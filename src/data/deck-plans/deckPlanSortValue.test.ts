@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { compareDeckPlans, getDeckPlanSortValue } from './deckPlanSortValue.ts';
-import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
 
 const mk = (over: Partial<DeckPlan>): DeckPlan =>
   ({

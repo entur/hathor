@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ClientError } from 'graphql-request';
 import { useSearchParams } from 'react-router-dom';
-import { useConfig } from '../../contexts/configContext.ts';
-import type { VehicleType, VehicleTypeContext } from './vehicleTypeTypes.js';
-import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
-import { compareVehicleTypes } from './vehicleTypeSortValue.ts';
-import type { Order } from '../../components/data/dataTableTypes.ts';
-import { useAuth } from '../../auth/authUtils.ts';
+import { useConfig } from '../../../contexts/configContext.ts';
+import type { VehicleType, VehicleTypeContext } from '../types/vehicleTypeTypes.js';
+import { fetchVehicleTypes } from '../api/fetchVehicleTypes.ts';
+import { compareVehicleTypes } from '../utils/vehicleTypeSortValue.ts';
+import type { Order } from '../../../components/data/dataTableTypes.ts';
+import { useAuth } from '../../../auth/authUtils.ts';
 
 export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 

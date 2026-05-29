@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../contexts/configContext.ts';
 import type { Order } from '../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../auth/authUtils.ts';
-import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
 import type { DeckPlanContext } from './deckPlanTypes.ts';
 import { fetchDeckPlans } from './fetchDeckPlans.ts';
 import { compareDeckPlans } from './deckPlanSortValue.ts';
