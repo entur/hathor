@@ -69,7 +69,7 @@ function NavItem({ textKey, path, iconKey, expanded, onNavigate }: NavItemProps)
       <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 0, justifyContent: 'center' }}>
         <Box component="img" src={getIconUrl(iconKey)} alt={label} sx={{ width: 24, height: 24 }} />
       </ListItemIcon>
-      {expanded && <ListItemText primary={label} />}
+      {expanded && <ListItemText primary={label} slotProps={{ primary: { noWrap: true } }} />}
     </ListItemButton>
   );
 
@@ -133,7 +133,14 @@ export default function Menu() {
         zIndex: theme.zIndex.appBar - 1,
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: expanded ? 'flex-start' : 'center',
+          pl: expanded ? 1 : 0,
+          py: 1,
+        }}
+      >
         <IconButton
           data-testid="nav-rail-toggle"
           onClick={toggle}
