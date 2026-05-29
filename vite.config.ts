@@ -34,6 +34,7 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: 'unit',
           globals: true,
           environment: 'node',
           include: ['src/**/*.test.{ts,tsx}'],
