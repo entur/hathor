@@ -17,6 +17,13 @@ jobs:
       run: npm ci
     - name: Unit tests with coverage
       run: npm run test:coverage
+    - name: Check Sobek schema in sync
+      run: |
+        curl -fsS https://entur.github.io/sobek/schema.graphqls -o /tmp/sobek.live.graphqls
+        if ! diff -u src/graphql/sobek.schema.graphqls /tmp/sobek.live.graphqls; then
+          echo "::error::Sobek schema drift detected — sync schema from backend: curl -s https://entur.github.io/sobek/schema.graphqls -o src/graphql/sobek.schema.graphqls then update e2e fixtures to fit (npm test src/data/netex/e2eFixturesContract.test.ts)"
+          exit 1
+        fi
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Playwright auth ON
