@@ -1,11 +1,4 @@
-import { useState } from 'react';
 import type React from 'react';
-import type {
-  VehicleType,
-  TextType,
-  AllPublicTransportModesEnumeration,
-} from './generated/VehicleType.js';
-import { ALL_PUBLIC_TRANSPORT_MODES, PROPULSION_TYPE, FUEL_TYPE } from './generated/VehicleType.js';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -15,14 +8,18 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useResizablePane } from './useResizablePane.js';
 import { PassengerCapacitySummary } from './PassengerCapacitySummary.js';
-import { EnvironmentalExtras } from './EnvironmentalExtras.js';
 import { numVal, parseNum } from './fieldHelpers.js';
+import {
+  FUEL_TYPE,
+  PROPULSION_TYPE,
+  TRANSPORT_MODE,
+  type TransportMode,
+  type VehicleType,
+} from './vehicleTypeTypes.js';
 
 export interface ExtraTab {
   label: string;
@@ -32,20 +29,9 @@ export interface ExtraTab {
 export interface SimpleEditorProps {
   value: Partial<VehicleType>;
   onChange: (next: Partial<VehicleType>) => void;
-  extraTabs?: ExtraTab[];
 }
 
 const EURO_CLASSES = ['', 'Euro5', 'Euro6'] as const;
-
-// Inline helpers that convert between display strings and the VehicleType
-// structure on every keystroke. There is no separate "simple" data shape —
-// the state is always Partial<VehicleType>. These just bridge the gap
-// between a single text field and the underlying NeTEx type:
-//   textVal / textSet  — TextType[]  ↔ single string (first item, lang=nb)
-//   numVal / parseNum  — number      ↔ input string
-const textVal = (arr?: TextType[]) => arr?.[0]?.value ?? '';
-const textSet = (text: string): TextType[] | undefined =>
-  text ? [{ value: text, $lang: 'nb' }] : undefined;
 
 /**
  * Friendly form editor over {@link VehicleType}.
@@ -53,12 +39,11 @@ const textSet = (text: string): TextType[] | undefined =>
  * Reads from and writes directly to `Partial<VehicleType>` — there is no
  * intermediate "simplified" shape. Each onChange handler converts its input
  * value into the full NeTEx structure inline (e.g. a Name text field calls
- * `textSet` which rebuilds `TextType[]`). The complex type flows out on
+ * `textSet` which rebuilds `Name[]`). The complex type flows out on
  * every keystroke, so no `simplifiedToStem` transform is needed downstream.
  */
-export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps): React.JSX.Element {
+export function SimpleEditor({ value, onChange }: SimpleEditorProps): React.JSX.Element {
   const { containerRef, topFraction, isResizing, onMouseDown } = useResizablePane(0.65);
-  const [bottomTab, setBottomTab] = useState(0);
 
   return (
     <Box
@@ -91,22 +76,30 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                 label="Id"
                 size="small"
                 fullWidth
-                value={value.$id ?? ''}
-                onChange={e => onChange({ ...value, $id: e.target.value })}
+                disabled
+                value={value.id ?? ''}
+                onChange={e => onChange({ ...value, id: e.target.value })}
               />
               <TextField
                 label="Name"
                 size="small"
                 fullWidth
-                value={textVal(value.Name)}
-                onChange={e => onChange({ ...value, Name: textSet(e.target.value) })}
+                value={value.name?.value ?? ''}
+                onChange={e =>
+                  onChange({ ...value, name: { lang: value.name?.lang, value: e.target.value } })
+                }
               />
               <TextField
                 label="Short name"
                 size="small"
                 fullWidth
-                value={textVal(value.ShortName)}
-                onChange={e => onChange({ ...value, ShortName: textSet(e.target.value) })}
+                value={value.shortName?.value ?? ''}
+                onChange={e =>
+                  onChange({
+                    ...value,
+                    shortName: { lang: value.shortName?.lang, value: e.target.value },
+                  })
+                }
               />
               <TextField
                 label="Description"
@@ -114,8 +107,13 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                 fullWidth
                 multiline
                 rows={3}
-                value={textVal(value.Description)}
-                onChange={e => onChange({ ...value, Description: textSet(e.target.value) })}
+                value={value.description?.value ?? ''}
+                onChange={e =>
+                  onChange({
+                    ...value,
+                    description: { lang: value.description?.lang, value: e.target.value },
+                  })
+                }
               />
               <TextField
                 label="Transport mode"
@@ -123,17 +121,16 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                 size="small"
                 fullWidth
                 SelectProps={{ native: true }}
-                value={value.TransportMode ?? ''}
+                value={value.transportMode ?? ''}
                 onChange={e =>
                   onChange({
                     ...value,
-                    TransportMode: (e.target.value ||
-                      undefined) as AllPublicTransportModesEnumeration,
+                    transportMode: (e.target.value || undefined) as TransportMode | undefined,
                   })
                 }
               >
                 <option value="" />
-                {ALL_PUBLIC_TRANSPORT_MODES.map(v => (
+                {TRANSPORT_MODE.map(v => (
                   <option key={v} value={v}>
                     {v}
                   </option>
@@ -143,11 +140,11 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                 label="Private code"
                 size="small"
                 fullWidth
-                value={value.PrivateCode?.value ?? ''}
+                value={value.privateCode?.value ?? ''}
                 onChange={e =>
                   onChange({
                     ...value,
-                    PrivateCode: { ...value.PrivateCode, value: e.target.value },
+                    privateCode: { ...value.privateCode, value: e.target.value },
                   })
                 }
               />
@@ -163,14 +160,14 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
               <EnumMultiSelect
                 label="Propulsion types"
                 options={PROPULSION_TYPE}
-                value={value.PropulsionTypes}
-                onChange={selected => onChange({ ...value, PropulsionTypes: selected })}
+                value={value.propulsionTypes}
+                onChange={selected => onChange({ ...value, propulsionTypes: selected })}
               />
               <EnumMultiSelect
                 label="Fuel types"
                 options={FUEL_TYPE}
-                value={value.FuelTypes}
-                onChange={selected => onChange({ ...value, FuelTypes: selected })}
+                value={value.fuelTypes}
+                onChange={selected => onChange({ ...value, fuelTypes: selected })}
               />
               <TextField
                 label="Euro class"
@@ -178,8 +175,8 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                 size="small"
                 fullWidth
                 SelectProps={{ native: true }}
-                value={value.EuroClass ?? ''}
-                onChange={e => onChange({ ...value, EuroClass: e.target.value || undefined })}
+                value={value.euroClass ?? ''}
+                onChange={e => onChange({ ...value, euroClass: e.target.value || undefined })}
               >
                 {EURO_CLASSES.map(v => (
                   <option key={v} value={v}>
@@ -190,8 +187,8 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
               <FormControlLabel
                 control={
                   <Switch
-                    checked={!!value.SelfPropelled}
-                    onChange={e => onChange({ ...value, SelfPropelled: e.target.checked })}
+                    checked={!!value.selfPropelled}
+                    onChange={e => onChange({ ...value, selfPropelled: e.target.checked })}
                     size="small"
                   />
                 }
@@ -200,18 +197,8 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
               <FormControlLabel
                 control={
                   <Switch
-                    checked={!!value.ReversingDirection}
-                    onChange={e => onChange({ ...value, ReversingDirection: e.target.checked })}
-                    size="small"
-                  />
-                }
-                label="Reversing direction"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={!!value.LowFloor}
-                    onChange={e => onChange({ ...value, LowFloor: e.target.checked })}
+                    checked={!!value.lowFloor}
+                    onChange={e => onChange({ ...value, lowFloor: e.target.checked })}
                     size="small"
                   />
                 }
@@ -222,24 +209,24 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                 size="small"
                 type="number"
                 fullWidth
-                value={numVal(value.MaximumRange)}
-                onChange={e => onChange({ ...value, MaximumRange: parseNum(e.target.value) })}
+                value={numVal(value.maximumRange)}
+                onChange={e => onChange({ ...value, maximumRange: parseNum(e.target.value) })}
               />
               <TextField
                 label="Maximum velocity"
                 size="small"
                 type="number"
                 fullWidth
-                value={numVal(value.MaximumVelocity)}
-                onChange={e => onChange({ ...value, MaximumVelocity: parseNum(e.target.value) })}
+                value={numVal(value.maximumVelocity)}
+                onChange={e => onChange({ ...value, maximumVelocity: parseNum(e.target.value) })}
               />
             </Stack>
           </Paper>
 
           {/* Card: Passenger capacity */}
           <PassengerCapacitySummary
-            value={value.PassengerCapacity ?? {}}
-            onChange={next => onChange({ ...value, PassengerCapacity: next })}
+            value={value.passengerCapacity ?? {}}
+            onChange={next => onChange({ ...value, passengerCapacity: next })}
           />
 
           {/* Card: Dimensions */}
@@ -252,10 +239,10 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
             <AccordionSummary expandIcon={<span>&#9660;</span>}>
               <Typography variant="body2" fontWeight={500}>
                 Dimensions
-                {(value.Length != null ||
-                  value.Width != null ||
-                  value.Height != null ||
-                  value.Weight != null) && (
+                {(value.length != null ||
+                  value.width != null ||
+                  value.height != null ||
+                  value.weight != null) && (
                   <Typography
                     component="span"
                     variant="body2"
@@ -264,10 +251,10 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                   >
                     (
                     {[
-                      value.Length != null && `L: ${value.Length}`,
-                      value.Width != null && `W: ${value.Width}`,
-                      value.Height != null && `H: ${value.Height}`,
-                      value.Weight != null && `${value.Weight} kg`,
+                      value.length != null && `L: ${value.length}`,
+                      value.width != null && `W: ${value.width}`,
+                      value.height != null && `H: ${value.height}`,
+                      value.weight != null && `${value.weight} kg`,
                     ]
                       .filter(Boolean)
                       .join(', ')}
@@ -283,32 +270,32 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
                   size="small"
                   type="number"
                   fullWidth
-                  value={numVal(value.Length)}
-                  onChange={e => onChange({ ...value, Length: parseNum(e.target.value) })}
+                  value={numVal(value.length)}
+                  onChange={e => onChange({ ...value, length: parseNum(e.target.value) })}
                 />
                 <TextField
                   label="Width"
                   size="small"
                   type="number"
                   fullWidth
-                  value={numVal(value.Width)}
-                  onChange={e => onChange({ ...value, Width: parseNum(e.target.value) })}
+                  value={numVal(value.width)}
+                  onChange={e => onChange({ ...value, width: parseNum(e.target.value) })}
                 />
                 <TextField
                   label="Height"
                   size="small"
                   type="number"
                   fullWidth
-                  value={numVal(value.Height)}
-                  onChange={e => onChange({ ...value, Height: parseNum(e.target.value) })}
+                  value={numVal(value.height)}
+                  onChange={e => onChange({ ...value, height: parseNum(e.target.value) })}
                 />
                 <TextField
                   label="Weight"
                   size="small"
                   type="number"
                   fullWidth
-                  value={numVal(value.Weight)}
-                  onChange={e => onChange({ ...value, Weight: parseNum(e.target.value) })}
+                  value={numVal(value.weight)}
+                  onChange={e => onChange({ ...value, weight: parseNum(e.target.value) })}
                 />
               </Stack>
             </AccordionDetails>
@@ -337,24 +324,6 @@ export function SimpleEditor({ value, onChange, extraTabs }: SimpleEditorProps):
             bgcolor: 'text.disabled',
           }}
         />
-      </Box>
-
-      {/* ── Bottom pane: Tabs ── */}
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-        <Tabs value={bottomTab} onChange={(_, v) => setBottomTab(v)}>
-          <Tab label="Environmental extras" />
-          {extraTabs?.map(t => (
-            <Tab key={t.label} label={t.label} />
-          ))}
-        </Tabs>
-        {bottomTab === 0 && <EnvironmentalExtras value={value} onChange={onChange} />}
-        {extraTabs?.map((t, i) =>
-          bottomTab === i + 1 ? (
-            <Box key={t.label} sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-              {t.content}
-            </Box>
-          ) : null
-        )}
       </Box>
     </Box>
   );

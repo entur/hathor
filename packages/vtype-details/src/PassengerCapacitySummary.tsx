@@ -1,5 +1,4 @@
 import type React from 'react';
-import type { PassengerCapacityStructure } from './generated/VehicleType.js';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -7,10 +6,11 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { numVal, parseNum } from './fieldHelpers.js';
+import type { PassengerCapacity } from './vehicleTypeTypes.js';
 
 export interface PassengerCapacitySummaryProps {
-  value: Partial<PassengerCapacityStructure>;
-  onChange: (next: Partial<PassengerCapacityStructure>) => void;
+  value: Partial<PassengerCapacity>;
+  onChange: (next: Partial<PassengerCapacity>) => void;
 }
 
 export function PassengerCapacitySummary({
@@ -18,10 +18,10 @@ export function PassengerCapacitySummary({
   onChange,
 }: PassengerCapacitySummaryProps): React.JSX.Element {
   const summary = [
-    value.TotalCapacity != null && `Total: ${value.TotalCapacity}`,
-    value.SeatingCapacity != null && `Seated: ${value.SeatingCapacity}`,
-    value.StandingCapacity != null && `Standing: ${value.StandingCapacity}`,
-    value.WheelchairPlaceCapacity != null && `Wheelchair: ${value.WheelchairPlaceCapacity}`,
+    value.totalCapacity != null && `Total: ${value.totalCapacity}`,
+    value.seatingCapacity != null && `Seated: ${value.seatingCapacity}`,
+    value.standingCapacity != null && `Standing: ${value.standingCapacity}`,
+    value.wheelchairPlaceCapacity != null && `Wheelchair: ${value.wheelchairPlaceCapacity}`,
   ]
     .filter(Boolean)
     .join(', ');
@@ -45,33 +45,33 @@ export function PassengerCapacitySummary({
             size="small"
             type="number"
             fullWidth
-            value={numVal(value.TotalCapacity)}
-            onChange={e => onChange({ ...value, TotalCapacity: parseNum(e.target.value) })}
+            value={numVal(value.totalCapacity)}
+            onChange={e => onChange({ ...value, totalCapacity: parseNum(e.target.value) })}
           />
           <TextField
             label="Seating capacity"
             size="small"
             type="number"
             fullWidth
-            value={numVal(value.SeatingCapacity)}
-            onChange={e => onChange({ ...value, SeatingCapacity: parseNum(e.target.value) })}
+            value={numVal(value.seatingCapacity)}
+            onChange={e => onChange({ ...value, seatingCapacity: parseNum(e.target.value) })}
           />
           <TextField
             label="Standing capacity"
             size="small"
             type="number"
             fullWidth
-            value={numVal(value.StandingCapacity)}
-            onChange={e => onChange({ ...value, StandingCapacity: parseNum(e.target.value) })}
+            value={numVal(value.standingCapacity)}
+            onChange={e => onChange({ ...value, standingCapacity: parseNum(e.target.value) })}
           />
           <TextField
             label="Wheelchair places"
             size="small"
             type="number"
             fullWidth
-            value={numVal(value.WheelchairPlaceCapacity)}
+            value={numVal(value.wheelchairPlaceCapacity)}
             onChange={e =>
-              onChange({ ...value, WheelchairPlaceCapacity: parseNum(e.target.value) })
+              onChange({ ...value, wheelchairPlaceCapacity: parseNum(e.target.value) })
             }
           />
         </Stack>
