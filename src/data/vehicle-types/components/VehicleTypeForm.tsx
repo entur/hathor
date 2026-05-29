@@ -15,7 +15,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
-import { transportModeFilters, toTransportMode } from '../../netex/transportMode.ts';
+import { transportModeFilters } from '../../netex/transportMode.ts';
 import { vehicleSelectedHref } from '../../vehicles/utils/vehicleUrlParams.ts';
 import {
   PROPULSION_TYPES,
@@ -58,8 +58,13 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
   const ro = mode === 'view';
 
   const setField = (patch: Partial<VehicleType>) => onChange({ ...value, ...patch });
-  const setCapacity = (patch: Partial<PassengerCapacity>) =>
-    onChange({ ...value, passengerCapacity: { ...value.passengerCapacity, ...patch } });
+  const setCapacity = (patch: Partial<PassengerCapacity>) => {
+    const merged = { ...value.passengerCapacity, ...patch };
+    // Collapse back to `undefined` when every count is cleared so the object
+    // doesn't linger as `{}` and read as dirty vs an absent baseline.
+    const hasAny = Object.values(merged).some(v => v != null);
+    onChange({ ...value, passengerCapacity: hasAny ? merged : undefined });
+  };
 
   /** A read-only-aware number FieldRow bound to a top-level VehicleType key. */
   const numRow = (key: keyof VehicleType, label: string): ReactNode => (
@@ -150,12 +155,18 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             <TextField
               id="vtype-transport-mode"
               select
-              value={toTransportMode(value.transportMode)}
-              onChange={e => setField({ transportMode: e.target.value })}
+              // `transportMode` is normalised to a canonical mode (or undefined)
+              // at projection, so it always matches an option or the blank one
+              // below — no MUI out-of-range value, no read/write skew.
+              value={value.transportMode ?? ''}
+              onChange={e => setField({ transportMode: e.target.value || undefined })}
               disabled={ro}
               size="small"
               fullWidth
             >
+              <MenuItem value="">
+                <em>{t('common.none', 'None')}</em>
+              </MenuItem>
               {transportModeFilters.map(f => (
                 <MenuItem key={f.id} value={f.id}>
                   {t(f.labelKey, f.defaultLabel)}
@@ -169,7 +180,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
                 <Switch
                   id="vtype-low-floor"
                   checked={!!value.lowFloor}
-                  onChange={e => setField({ lowFloor: e.target.checked || undefined })}
+                  onChange={e => setField({ lowFloor: e.target.checked })}
                   disabled={ro}
                   size="small"
                 />
@@ -193,7 +204,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           >
             <Autocomplete<PropulsionType, true>
               multiple
-              options={PROPULSION_TYPES as readonly PropulsionType[] as PropulsionType[]}
+              options={[...PROPULSION_TYPES]}
               value={value.propulsionTypes ?? []}
               onChange={(_e, v) => setField({ propulsionTypes: v.length ? v : undefined })}
               disabled={ro}
@@ -207,7 +218,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           <FieldRow id="vtype-fuel-types" label={t('vehicleType.field.fuelTypes', 'Fuel Types')}>
             <Autocomplete<FuelType, true>
               multiple
-              options={FUEL_TYPES as readonly FuelType[] as FuelType[]}
+              options={[...FUEL_TYPES]}
               value={value.fuelTypes ?? []}
               onChange={(_e, v) => setField({ fuelTypes: v.length ? v : undefined })}
               disabled={ro}
@@ -225,7 +236,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
                 <Switch
                   id="vtype-self-propelled"
                   checked={!!value.selfPropelled}
-                  onChange={e => setField({ selfPropelled: e.target.checked || undefined })}
+                  onChange={e => setField({ selfPropelled: e.target.checked })}
                   disabled={ro}
                   size="small"
                 />

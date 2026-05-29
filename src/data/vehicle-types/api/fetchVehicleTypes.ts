@@ -11,6 +11,7 @@ import type {
 import type { AccessToken } from '../../../auth';
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
+import { toTransportMode, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 
 export interface VehicleTypeWire {
   netexId: string;
@@ -18,9 +19,9 @@ export interface VehicleTypeWire {
   name?: Name | null;
   shortName?: Name | null;
   transportMode?: string | null;
-  length: number;
-  width: number;
-  height: number;
+  length?: number | null;
+  width?: number | null;
+  height?: number | null;
   weight?: number | null;
   lowFloor?: boolean | null;
   propulsionTypes?: (PropulsionType | null)[] | null;
@@ -54,15 +55,26 @@ const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
   return out && out.length ? out : undefined;
 };
 
+/**
+ * Normalise a backend transport-mode string to its canonical TransportMode, or
+ * `undefined` when missing/unrecognised. Keeps the stored value identical to
+ * what the form Select renders (no case skew, no out-of-range `'unknown'`).
+ */
+const canonTransportMode = (m?: string | null): string | undefined => {
+  if (m == null) return undefined;
+  const canon = toTransportMode(m);
+  return canon === UNKNOWN_TRANSPORT_MODE ? undefined : canon;
+};
+
 export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
   name: vt.name ?? undefined,
   shortName: vt.shortName ?? undefined,
-  transportMode: vt.transportMode ?? undefined,
-  length: vt.length,
-  width: vt.width,
-  height: vt.height,
+  transportMode: canonTransportMode(vt.transportMode),
+  length: vt.length ?? undefined,
+  width: vt.width ?? undefined,
+  height: vt.height ?? undefined,
   weight: vt.weight ?? undefined,
   lowFloor: vt.lowFloor ?? undefined,
   propulsionTypes: compact(vt.propulsionTypes),

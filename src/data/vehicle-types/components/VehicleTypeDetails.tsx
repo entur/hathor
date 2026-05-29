@@ -51,6 +51,7 @@ export default function VehicleTypeDetails({ vehicleType }: VehicleTypeDetailsPr
     if (vehicleType) {
       dispatch({ type: 'hydrate', row: vehicleType });
       setMode('view');
+      setSavedAt(null); // don't let a prior "saved" snackbar bleed into the next row
     }
   }, [vehicleType]);
 
