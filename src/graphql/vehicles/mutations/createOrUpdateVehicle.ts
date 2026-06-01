@@ -13,7 +13,7 @@ export const createOrUpdateVehicleRequest = (
   token: AccessToken,
   vehicleData: VehicleWire
 ) =>
-  request(
+  request<{ createOrUpdateVehicle: string | null }>(
     applicationBaseUrl,
     createOrUpdateVehicleMutation,
     { input: vehicleData },
