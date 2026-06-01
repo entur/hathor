@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useSearch } from '../components/search';
 import type { SearchContextViewType, SearchResultItem } from '../components/search/searchTypes';
-import type { Name } from '../data/vehicle-types/vehicleTypeTypes';
+import type { Name } from '../data/vehicle-types/types/vehicleTypeTypes';
 
 export function useDataViewSearch<T extends { id: string; name?: Name }>(
   allFetchedItems: T[] | null,

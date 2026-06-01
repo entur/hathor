@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TableRow, TableCell, IconButton } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import type { ColumnDefinition } from './dataTableTypes.ts';
-import type { ComponentType } from 'react';
+import type { ComponentType, MouseEvent } from 'react';
 
 interface Props<T, K extends string> {
   item: T;
@@ -34,7 +34,14 @@ export default function DataTableRow<T, K extends string>({
   const rowOnClick = useCompactView
     ? () => setOpen(o => !o)
     : onRowClick
-      ? () => onRowClick(item)
+      ? (e: MouseEvent<HTMLElement>) => {
+          // A clickable row may host its own links/buttons (e.g. the vehicle
+          // chips in the Vehicles column linking to `/vehicles?selected=…`).
+          // Bail when the click originated from an interactive child so the
+          // row's navigation doesn't hijack the element's own handler.
+          if ((e.target as HTMLElement).closest('a, button')) return;
+          onRowClick(item);
+        }
       : undefined;
 
   return (

@@ -6,7 +6,7 @@ import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../components/data/DataPageContent.tsx';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
-import type { DeckPlan } from '../vehicle-types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
 import { useNavigate } from 'react-router-dom';
 import { getDeckPlanSortValue } from './deckPlanSortValue.ts';
 

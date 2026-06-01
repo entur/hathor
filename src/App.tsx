@@ -16,8 +16,8 @@ import {
   RAIL_EXPANDED_W,
 } from './contexts/NavRailContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
-import VehicleTypeView from './data/vehicle-types/VehicleTypeView.tsx';
-import VehicleTypeDetails from './data/vehicle-types/VehicleTypeDetails.tsx';
+import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx';
+import VehicleTypeEditor from './data/vehicle-types/pending-move/VehicleTypeEditor.tsx';
 import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
@@ -84,11 +84,7 @@ export default function App() {
                     />
                     <Route
                       path="/vehicle-types/new"
-                      element={<ProtectedRoute element={<VehicleTypeDetails />} />}
-                    />
-                    <Route
-                      path="/vehicle-types/:id"
-                      element={<ProtectedRoute element={<VehicleTypeDetails />} />}
+                      element={<ProtectedRoute element={<VehicleTypeEditor />} />}
                     />
                   </Routes>
                 </Box>

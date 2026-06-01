@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Box, Chip, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { vehicleSelectedHref } from '../../vehicles/utils/vehicleUrlParams.ts';
-import type { Vehicle } from '../vehicleTypeTypes.ts';
+import { vehicleSelectedHref } from '../../../vehicles/utils/vehicleUrlParams.ts';
+import type { Vehicle } from '../../types/vehicleTypeTypes.ts';
 
 const MAX_VISIBLE = 5;
 
