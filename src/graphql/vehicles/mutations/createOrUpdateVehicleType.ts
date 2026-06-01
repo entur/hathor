@@ -1,6 +1,6 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth/index.ts';
-import type { VehicleTypeWire } from '../../../data/vehicle-types/fetchVehicleTypes.ts';
+import type { VehicleTypeWire } from '../../../data/vehicle-types/api/fetchVehicleTypes.ts';
 
 const createOrUpdateVehicleTypeMutation = gql`
   mutation MutateVehicleType($input: VehicleTypeInput!) {
