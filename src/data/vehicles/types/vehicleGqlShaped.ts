@@ -1,5 +1,5 @@
 import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transportMode.ts';
-import type { Name } from '../../vehicle-types/vehicleTypeTypes.ts';
+import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 /**
  * Vehicle object — GQL-shaped to mirror the shape of the `vehicles(...)` GraphQL query response.
