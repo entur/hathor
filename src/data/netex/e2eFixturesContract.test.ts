@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { buildSchema, GraphQLObjectType } from 'graphql';
+import { buildSchema, GraphQLObjectType, getNamedType } from 'graphql';
+
+/** Sobek's `Date` scalar is date-only; values must look like `2020-01-31`. */
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * Contract: every Playwright JSON fixture under e2e-tests/fixtures/ that
@@ -32,6 +35,23 @@ const fieldsOf = (typeName: string): Set<string> => {
   return new Set(Object.keys(t.getFields()));
 };
 
+/**
+ * Field names of a GQL object type whose unwrapped (NonNull/List-stripped)
+ * type is the given named scalar — e.g. the `Date` fields on `Vehicle`.
+ * Derived from the SDL so it tracks scalar changes instead of hardcoding.
+ */
+const fieldsOfScalar = (typeName: string, scalarName: string): Set<string> => {
+  const t = schema.getType(typeName);
+  if (!(t instanceof GraphQLObjectType)) {
+    throw new Error(`Sobek schema has no object type "${typeName}"`);
+  }
+  return new Set(
+    Object.entries(t.getFields())
+      .filter(([, f]) => getNamedType(f.type).name === scalarName)
+      .map(([name]) => name)
+  );
+};
+
 /** Mirror of the `Vehicles` query selection in queries/fetchVehicles.ts. */
 const VEHICLE_SELECTED = [
   'netexId',
@@ -57,6 +77,7 @@ describe('e2e Playwright fixtures contract (post-#135 wire shape)', () => {
   it('vehicles-list-mock: rows match the Sobek Vehicle schema and the query selection', () => {
     const vehicleFields = fieldsOf('Vehicle');
     const transportTypeFields = fieldsOf('VehicleType');
+    const vehicleDateFields = fieldsOfScalar('Vehicle', 'Date');
     const fx = loadFixture('vehicles-list-mock.json') as {
       data: { vehicles: { content: Array<Record<string, unknown>> } };
     };
@@ -75,6 +96,17 @@ describe('e2e Playwright fixtures contract (post-#135 wire shape)', () => {
       }
       if (v.name != null) expect(v.name).toHaveProperty('value');
       if (v.description != null) expect(v.description).toHaveProperty('value');
+
+      // (c) Date-scalar fields carry date-only values — Sobek types buildDate/
+      //     registrationDate as `Date` (not DateTime), so full-ISO timestamps drift.
+      for (const f of vehicleDateFields) {
+        if (v[f] != null) {
+          expect(
+            DATE_ONLY.test(String(v[f])),
+            `vehicle field "${f}"=${JSON.stringify(v[f])} must be date-only (YYYY-MM-DD) per Sobek Date scalar`
+          ).toBe(true);
+        }
+      }
 
       const tt = v.transportType as Record<string, unknown> | null | undefined;
       if (tt) {
