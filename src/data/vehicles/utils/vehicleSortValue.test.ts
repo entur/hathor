@@ -75,8 +75,8 @@ describe('compareVehicles', () => {
   it('sorts by transportType name and parks rows without a transportType at the end', () => {
     const rows = [
       mk({ id: 'a' }),
-      withTType({ id: 'b' }, { name: 'Zulu' }),
-      withTType({ id: 'c' }, { name: 'Alpha' }),
+      withTType({ id: 'b' }, { name: { value: 'Zulu' } }),
+      withTType({ id: 'c' }, { name: { value: 'Alpha' } }),
     ];
     const sorted = [...rows].sort(compareVehicles('transportTypeName', 'asc'));
     expect(sorted.map(r => r.id)).toEqual(['c', 'b', 'a']);
@@ -84,10 +84,10 @@ describe('compareVehicles', () => {
 
   it('treats whitespace-only transportType name as empty (Sobek #121 regression)', () => {
     const rows = [
-      withTType({ id: 'ws-1' }, { name: '\n                ' }),
-      withTType({ id: 'aa' }, { name: 'aa' }),
-      withTType({ id: 'ws-2' }, { name: '   ' }),
-      withTType({ id: 'zz' }, { name: 'zz' }),
+      withTType({ id: 'ws-1' }, { name: { value: '\n                ' } }),
+      withTType({ id: 'aa' }, { name: { value: 'aa' } }),
+      withTType({ id: 'ws-2' }, { name: { value: '   ' } }),
+      withTType({ id: 'zz' }, { name: { value: 'zz' } }),
     ];
     const sorted = [...rows].sort(compareVehicles('transportTypeName', 'asc'));
     expect(sorted.map(r => r.id)).toEqual(['aa', 'zz', 'ws-1', 'ws-2']);

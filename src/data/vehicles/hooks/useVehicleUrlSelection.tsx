@@ -34,7 +34,7 @@ export function useVehicleUrlSelection({
     rowsPerPage,
     setPage,
     loading,
-    getId: v => v.id,
+    getId: v => v.id ?? '',
     renderEditor: row => <VehicleDetails vehicle={row} onSaved={refetch} />,
   });
 }

@@ -16,6 +16,10 @@ public/theme-*.json
 # Ignore vendored/generated bundles
 public/deckplan-editor
 
+# Vendored Sobek schema — must stay byte-identical to upstream (CI drift guard
+# diffs it against entur.github.io/sobek/schema.graphqls), so never reformat it.
+src/graphql/sobek.schema.graphqls
+
 # Ignore generated architecture metafile
 docs/architecture-data.js
 
