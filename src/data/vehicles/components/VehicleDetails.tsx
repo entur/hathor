@@ -10,7 +10,6 @@ import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
 import { vehicleMode, type VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
-import { firstText } from '../../netex/multilingualString.ts';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
 import { useVehicle } from '../hooks/useVehicle.ts';
@@ -26,7 +25,6 @@ import {
   type FormState,
 } from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
-import type { Vehicle } from '../types/Vehicle';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
@@ -128,7 +126,7 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
     );
   }
 
-  const trimmedName = firstText(form.vehicle.Name).trim();
+  const trimmedName = form.vehicle.name?.value?.trim();
   const tmode = vehicleMode(vehicle);
 
   return (
@@ -159,22 +157,24 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
             </>
           )}
         </Typography>
-        <NetexId
-          id={vehicle.id}
-          version={vehicle.version}
-          copy="onHover"
-          size="small"
-          sx={{ justifySelf: 'start' }}
-        />
+        {vehicle.id && (
+          <NetexId
+            id={vehicle.id}
+            version={vehicle.version}
+            copy="onHover"
+            size="small"
+            sx={{ justifySelf: 'start' }}
+          />
+        )}
       </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
       <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
         <MetaRow label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-            <span>{vehicle.transportType?.name ?? '—'}</span>
-            {xmlVehicle?.TransportTypeRef && (
-              <NetexId id={xmlVehicle.TransportTypeRef} copy="only" size="medium" />
+            <span>{vehicle.transportType?.name?.value ?? '—'}</span>
+            {xmlVehicle?.transportType?.id && (
+              <NetexId id={xmlVehicle.transportType.id} copy="only" size="medium" />
             )}
           </Stack>
         </MetaRow>
@@ -216,7 +216,7 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
 }
 
 type FormAction =
-  | { type: 'hydrate'; xmlVehicle: Partial<Vehicle> | null | undefined }
+  | { type: 'hydrate'; xmlVehicle: Partial<VehicleGQLShaped> | null | undefined }
   | { type: 'edit'; form: VehicleEditFormValue };
 
 function formReducer(state: FormState, action: FormAction): FormState {

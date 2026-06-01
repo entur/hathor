@@ -22,9 +22,9 @@ export const getVehicleSortValue = (
     case 'operationalNumber':
       return item.operationalNumber || '';
     case 'version':
-      return item.version;
+      return item.version === undefined ? -1 : item.version; // Treat missing version as -1 to sort before any valid versions
     case 'transportTypeName':
-      return item.transportType?.name || '';
+      return item.transportType?.name?.value || '';
     case 'transportTypeMode':
       return transportModeSortValue(vehicleMode(item));
     default: {

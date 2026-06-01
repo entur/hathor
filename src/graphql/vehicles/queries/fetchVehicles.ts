@@ -10,6 +10,15 @@ const fetchVehiclesGQL = gql`
         version
         registrationNumber
         operationalNumber
+        buildDate
+        chassisNumber
+        description {
+          value
+        }
+        registrationDate
+        name {
+          value
+        }
         transportType {
           netexId
           version

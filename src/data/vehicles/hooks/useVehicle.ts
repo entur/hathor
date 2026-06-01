@@ -1,26 +1,25 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
-import { fetchVehicleNetexXml } from '../api/fetchVehicleNetexXml';
-import { parseVehicleXml } from '../api/Vehicle-parser';
-import type { Vehicle } from '../types/Vehicle';
+import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import { fetchVehicle } from '../api/fetchVehicles.ts';
 
 /**
- * Fetch and parse a single Vehicle from Sobek's NeTEx single-vehicle endpoint.
+ * Fetch and parse a single VehicleGQLShaped from Sobek's GraphQL endpoint.
  * Mirrors `useVehicleType`'s lifecycle. Returns `data: null` when the
- * response carries no Vehicle (unknown id surfaced as an `error`).
+ * response carries no VehicleGQLShaped (unknown id surfaced as an `error`).
  */
 export function useVehicle(id: string | undefined) {
-  const [data, setData] = useState<Partial<Vehicle> | null>(null);
+  const [data, setData] = useState<Partial<VehicleGQLShaped> | null>(null);
   const [loading, setLoading] = useState(!!id);
   const [error, setError] = useState<string | null>(null);
-  const { applicationImportBaseUrl } = useConfig();
+  const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
 
   const doFetch = useCallback(async () => {
     if (!id) return;
-    if (!applicationImportBaseUrl) {
-      setError('Application import base URL is not configured');
+    if (!applicationBaseUrl) {
+      setError('Application base URL is not configured');
       setLoading(false);
       return;
     }
@@ -28,20 +27,19 @@ export function useVehicle(id: string | undefined) {
     setError(null);
     try {
       const token = await getAccessToken();
-      const xml = await fetchVehicleNetexXml(applicationImportBaseUrl, id, token);
-      const parsed = parseVehicleXml(xml);
-      if (!parsed) {
+      const vehicles = await fetchVehicle(id, applicationBaseUrl, token);
+      if (!vehicles?.length) {
         setError(`Vehicle "${id}" not found`);
         setData(null);
       } else {
-        setData(parsed);
+        setData(vehicles[0]);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
-  }, [applicationImportBaseUrl, id, getAccessToken]);
+  }, [applicationBaseUrl, id, getAccessToken]);
 
   useEffect(() => {
     doFetch();
