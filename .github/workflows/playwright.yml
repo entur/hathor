@@ -19,11 +19,22 @@ jobs:
       run: npm run test:coverage
     - name: Check Sobek schema in sync
       run: |
-        curl -fsS https://entur.github.io/sobek/schema.graphqls -o /tmp/sobek.live.graphqls
-        if ! diff -u src/graphql/sobek.schema.graphqls /tmp/sobek.live.graphqls; then
-          echo "::error::Sobek schema drift detected — sync schema from backend: curl -s https://entur.github.io/sobek/schema.graphqls -o src/graphql/sobek.schema.graphqls then update e2e fixtures to fit (npm test src/data/netex/e2eFixturesContract.test.ts)"
+        set -uo pipefail
+        url=https://entur.github.io/sobek/schema.graphqls
+        live=/tmp/sobek.live.graphqls
+        # Retry transient network/5xx errors, cap total time. A genuine fetch
+        # failure (or empty body) is an outage — warn and skip, don't fail as drift.
+        if ! curl -fsS --retry 3 --retry-delay 2 --retry-all-errors --max-time 30 "$url" -o "$live" \
+           || [ ! -s "$live" ]; then
+          echo "::warning::Could not fetch upstream Sobek schema (outage?) — skipping drift check."
+          exit 0
+        fi
+        # Fetch succeeded, so any diff is real drift.
+        if ! diff -u src/graphql/sobek.schema.graphqls "$live"; then
+          echo "::error::Sobek schema drift detected — re-sync: curl -s $url -o src/graphql/sobek.schema.graphqls then update e2e fixtures (npm test src/data/netex/e2eFixturesContract.test.ts)"
           exit 1
         fi
+        echo "Sobek schema in sync."
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Playwright auth ON
