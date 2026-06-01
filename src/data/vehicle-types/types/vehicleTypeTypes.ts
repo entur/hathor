@@ -70,6 +70,7 @@ export type VehicleType = {
   version: number;
   name?: Name;
   shortName?: Name;
+  description?: Name;
   transportMode?: string;
   deckPlan?: DeckPlan;
   length?: number;

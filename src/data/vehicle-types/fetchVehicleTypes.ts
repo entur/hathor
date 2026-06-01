@@ -9,7 +9,7 @@ import type {
   PassengerCapacity,
   DeckPlan,
   Vehicle,
-} from './vehicleTypeTypes.ts';
+} from './types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../auth';
 import type { Page } from '../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../graphql/paginationTypes.ts';
