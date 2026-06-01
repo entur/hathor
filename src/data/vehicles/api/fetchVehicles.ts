@@ -3,7 +3,7 @@ import { toTransportMode } from '../../netex/transportMode.ts';
 import { FETCH_ALL_SIZE, type Page } from '../../../graphql/paginationTypes.ts';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import type { AccessToken } from '../../../auth';
-import type { Name } from '../../vehicle-types/vehicleTypeTypes.ts';
+import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 export interface VehicleWire {
   registrationDate: string | undefined;
