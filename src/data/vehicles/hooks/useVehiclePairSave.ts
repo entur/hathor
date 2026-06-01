@@ -5,6 +5,9 @@ import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import type { VehicleWire } from '../api/fetchVehicles';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
 
+const orUndef = (s: string | undefined, value: unknown): unknown =>
+  s && s.length > 0 ? value : undefined;
+
 interface SaveResult {
   newId: string | null;
   error: string | null;
@@ -35,13 +38,19 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
       try {
         const wireVehicle = {
           registrationDate: form.vehicle.registrationDate,
-          description: form.vehicle.description,
-          chassisNumber: form.vehicle.chassisNumber,
+          description: orUndef(form.vehicle.description?.value, form.vehicle.description),
+          chassisNumber: orUndef(form.vehicle.chassisNumber, form.vehicle.chassisNumber),
           buildDate: form.vehicle.buildDate,
-          netexId: form.vehicle.id == '' ? undefined : form.vehicle.id, // treat blank id as "new vehicle"
-          name: form.vehicle.name,
-          registrationNumber: form.vehicle.registrationNumber ?? '',
-          operationalNumber: form.vehicle.operationalNumber,
+          netexId: orUndef(form.vehicle.id, form.vehicle.id), // treat blank id as "new vehicle"
+          name: orUndef(form.vehicle.name?.value, form.vehicle.name),
+          registrationNumber: orUndef(
+            form.vehicle.registrationNumber,
+            form.vehicle.registrationNumber
+          ),
+          operationalNumber: orUndef(
+            form.vehicle.operationalNumber,
+            form.vehicle.operationalNumber
+          ),
           transportType: form.vehicle.transportType
             ? {
                 netexId: form.vehicle.transportType.id ?? '',
