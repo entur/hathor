@@ -1,62 +1,74 @@
-const customPngModules = import.meta.glob('../static/customIcons/*.png', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-const customSvgModules = import.meta.glob('../static/customIcons/*.svg', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-const defaultPngModules = import.meta.glob('../static/defaultIcons/*.png', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-const defaultSvgModules = import.meta.glob('../static/defaultIcons/*.svg', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-
-function findByName(modules: Record<string, string>, name: string): string | undefined {
-  const match = Object.entries(modules).find(([key]) => {
-    const path = key.split('?')[0];
-    return path.endsWith(`/${name}`);
-  });
-  return match ? match[1] : undefined;
-}
+/**
+ * Icon URL resolver.
+ *
+ * Vite's import.meta.glob yields static `fullPath -> url` maps at build time,
+ * so we flatten them **once** into a single index keyed by bare icon name,
+ * each name carrying up to four candidate URLs (custom/default × svg/png).
+ * getIconUrl() then resolves via a fixed priority ladder — no per-call linear
+ * scan, no per-call path parsing.
+ */
 
 const CUSTOM_FEATURES_LOCAL_STORAGE_KEY = 'useCustomFeatures';
-function areCustomFeaturesEnabled(): boolean {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const storedValue = localStorage.getItem(CUSTOM_FEATURES_LOCAL_STORAGE_KEY);
-    return storedValue ? JSON.parse(storedValue) : true;
-  }
-  return true;
+const FALLBACK_NAME = 'default';
+// path tail -> (custom|default)Icons/<name>.(svg|png)[?query]
+const ICON_PATH = /\/(custom|default)Icons\/([^/]+)\.(svg|png)(?:\?.*)?$/;
+
+type Source = 'custom' | 'default';
+type Format = 'svg' | 'png';
+type Tier = 'customSvg' | 'customPng' | 'defaultSvg' | 'defaultPng';
+/** Candidate URLs for one icon name, by source × format. */
+type IconEntry = Partial<Record<Tier, string>>;
+type IconIndex = Map<string, IconEntry>;
+
+/** Maps a (source, format) pair to its tier key — keeps tier strings type-safe. */
+const TIER: Record<Source, Record<Format, Tier>> = {
+  custom: { svg: 'customSvg', png: 'customPng' },
+  default: { svg: 'defaultSvg', png: 'defaultPng' },
+};
+
+const modules = import.meta.glob(
+  ['../static/customIcons/*.{svg,png}', '../static/defaultIcons/*.{svg,png}'],
+  { eager: true, import: 'default' }
+) as Record<string, string>;
+
+/** name -> candidate URLs, built once at module load. */
+const index: IconIndex = new Map();
+for (const [path, url] of Object.entries(modules)) {
+  const m = ICON_PATH.exec(path);
+  if (!m) continue;
+  const [, src, name, ext] = m;
+  const source: Source = src === 'custom' ? 'custom' : 'default';
+  const format: Format = ext === 'svg' ? 'svg' : 'png';
+  index.set(name, { ...index.get(name), [TIER[source][format]]: url });
 }
 
-export function getIconUrl(name: string, excludeSVG: boolean = false): string {
-  const svgName = `${name}.svg`;
-  const pngName = `${name}.png`;
-  const useCustom = areCustomFeaturesEnabled();
-  if (useCustom) {
-    if (!excludeSVG) {
-      const customSvg = findByName(customSvgModules, svgName);
-      if (customSvg) return customSvg;
-    }
+/** Last-resort `default.*` entry, resolved once. */
+const fallback = index.get(FALLBACK_NAME);
 
-    const customPng = findByName(customPngModules, pngName);
-    if (customPng) return customPng;
-  }
-  if (!excludeSVG) {
-    const defaultSvg = findByName(defaultSvgModules, svgName);
-    if (defaultSvg) return defaultSvg;
-  }
+function areCustomFeaturesEnabled(): boolean {
+  if (typeof window === 'undefined' || !window.localStorage) return true;
+  const v = localStorage.getItem(CUSTOM_FEATURES_LOCAL_STORAGE_KEY);
+  return v ? JSON.parse(v) : true;
+}
 
-  const defaultPng = findByName(defaultPngModules, pngName);
-  if (defaultPng) return defaultPng;
-
-  if (!excludeSVG) {
-    const fallbackSvg = findByName(defaultSvgModules, 'default.svg');
-    if (fallbackSvg) return fallbackSvg;
-  }
-  const fallbackPng = findByName(defaultPngModules, 'default.png');
-  return fallbackPng ?? '';
+/**
+ * Resolve an icon's URL by bare name (no extension).
+ * Priority: custom svg → custom png → default svg → default png →
+ * `default.*` fallback → '' (never throws / returns undefined).
+ *
+ * @param name - bare icon name, e.g. 'menu', 'train'
+ * @param useCustom - override the custom-features flag (defaults to localStorage)
+ * @returns resolved asset URL, or '' if nothing (incl. fallback) is found
+ */
+export function getIconUrl(name: string, useCustom = areCustomFeaturesEnabled()): string {
+  const e = index.get(name);
+  return (
+    (useCustom && e?.customSvg) ||
+    (useCustom && e?.customPng) ||
+    e?.defaultSvg ||
+    e?.defaultPng ||
+    fallback?.defaultSvg ||
+    fallback?.defaultPng ||
+    ''
+  );
 }
