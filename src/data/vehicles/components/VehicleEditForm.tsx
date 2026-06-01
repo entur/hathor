@@ -36,7 +36,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         <TextField
           id="vehicle-name"
           value={v.name?.value ?? ''}
-          onChange={e => setV({ name: { ...v.name, value: e.target.value } })}
+          onChange={e => setV({ name: { lang: v.name?.lang, value: e.target.value } })}
           disabled={ro}
           size="small"
           fullWidth
@@ -49,7 +49,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
       >
         <TextField
           id="vehicle-registration-number"
-          value={v.registrationNumber ?? ''}
+          value={v.registrationNumber}
           onChange={e => setV({ registrationNumber: orUndef(e.target.value) })}
           disabled={ro}
           size="small"
@@ -145,7 +145,9 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         <TextField
           id="vehicle-description"
           value={v.description?.value ?? ''}
-          onChange={e => setV({ description: { value: e.target.value } })}
+          onChange={e =>
+            setV({ description: { lang: v.description?.lang, value: e.target.value } })
+          }
           disabled={ro}
           size="small"
           fullWidth
