@@ -71,12 +71,23 @@ function NavItem({ textKey, path, iconKey, expanded, onNavigate }: NavItemProps)
       onClick={onNavigate}
       selected={active}
       aria-current={active ? 'page' : undefined}
-      sx={{ minHeight: 48, justifyContent: expanded ? 'flex-start' : 'center' }}
+      // Always left-aligned with a fixed icon gutter: the icon sits centered in
+      // the first RAIL_COLLAPSED_W px, so its position is identical whether the
+      // rail is collapsed or expanded. As the width animates, the icon never
+      // moves — only the trailing label fades/clips. (Centering the icon in the
+      // button instead made it snap to the button's mid-point on collapse.)
+      sx={{ minHeight: 48, justifyContent: 'flex-start', pl: 0, pr: 2 }}
     >
-      <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 0, justifyContent: 'center' }}>
+      <ListItemIcon sx={{ minWidth: RAIL_COLLAPSED_W, mr: 0, justifyContent: 'center' }}>
         <Box component="img" src={getIconUrl(iconKey)} alt={label} sx={{ width: 24, height: 24 }} />
       </ListItemIcon>
-      {expanded && <ListItemText primary={label} slotProps={{ primary: { noWrap: true } }} />}
+      <ListItemText
+        primary={label}
+        slotProps={{ primary: { noWrap: true } }}
+        // Kept mounted and faded (not unmounted) so the label dissolves in sync
+        // with the width transition rather than vanishing before it starts.
+        sx={{ my: 0, opacity: expanded ? 1 : 0, transition: 'opacity 0.2s ease' }}
+      />
     </ListItemButton>
   );
 
@@ -144,29 +155,27 @@ export default function Menu() {
         zIndex: theme.zIndex.appBar - 1,
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: expanded ? 'flex-start' : 'center',
-          pl: expanded ? 1 : 0,
-          py: 1,
-        }}
-      >
-        <IconButton
-          data-testid="nav-rail-toggle"
-          onClick={toggleExpanded}
-          aria-label={
-            expanded ? t('rail.collapse', 'Collapse menu') : t('rail.expand', 'Expand menu')
-          }
-          aria-expanded={expanded}
-        >
-          <Box
-            component="img"
-            src={getIconUrl('menu')}
-            alt={t('header.actions.menuIconAlt', 'menu icon')}
-            sx={{ width: 28, height: 28 }}
-          />
-        </IconButton>
+      {/* Toggle centered in the same RAIL_COLLAPSED_W gutter as the nav icons,
+          so the hamburger shares their vertical centre-line and stays put as
+          the rail animates. */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', py: 1 }}>
+        <Box sx={{ width: RAIL_COLLAPSED_W, display: 'flex', justifyContent: 'center' }}>
+          <IconButton
+            data-testid="nav-rail-toggle"
+            onClick={toggleExpanded}
+            aria-label={
+              expanded ? t('rail.collapse', 'Collapse menu') : t('rail.expand', 'Expand menu')
+            }
+            aria-expanded={expanded}
+          >
+            <Box
+              component="img"
+              src={getIconUrl('menu')}
+              alt={t('header.actions.menuIconAlt', 'menu icon')}
+              sx={{ width: 28, height: 28 }}
+            />
+          </IconButton>
+        </Box>
       </Box>
       <Divider />
       <List disablePadding>
