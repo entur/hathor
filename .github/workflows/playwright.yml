@@ -14,6 +14,10 @@ jobs:
     # that hung and cancelled every run at the 60-min timeout.
     container:
       image: mcr.microsoft.com/playwright:v1.58.2-noble
+      # Firefox/WebKit sandbox via user namespaces (clone()), which the default
+      # container seccomp profile blocks → "CanCreateUserNamespace EPERM".
+      # Relax seccomp so Firefox can launch; Chromium is unaffected.
+      options: --security-opt seccomp=unconfined
     # Inside a container GitHub runs `run:` steps with `sh` (dash), which lacks
     # `set -o pipefail` used by the schema-guard. Force bash — present in the
     # image — to match host-runner behaviour.
