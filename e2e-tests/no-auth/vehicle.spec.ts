@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { interceptVehicleListQuery } from './vehicle-list-helpers';
+import {
+  interceptVehicleListQuery,
+  interceptVehicleByIdQuery,
+  mockVehicleById,
+} from './vehicle-list-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,6 +27,10 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
   test.beforeEach(async ({ page }) => {
     if (process.env.E2E_BACKEND !== 'true') {
       await interceptVehicleListQuery(page);
+      // The slider's `useVehicle` fires `vehicles(filter:{netexIds})`; resolve
+      // it from the same fixture so a `?selected=` deep-link hydrates from the
+      // *requested* row, not the list's `content[0]`.
+      await interceptVehicleByIdQuery(page, mockVehicleById);
     }
   });
 

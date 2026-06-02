@@ -20,18 +20,22 @@ const MOCK_VEHICLES_LIST: unknown = JSON.parse(
 );
 
 /**
- * Intercept the GraphQL `vehicles(...)` query and return the vehicles-list
- * fixture. Other GraphQL operations on the same endpoint pass through.
+ * Intercept the unfiltered GraphQL `vehicles(...)` list query and return the
+ * vehicles-list fixture. Other GraphQL operations pass through.
  *
  * Matches on the field name `vehicles(` (not on a token like `vehicleTypes`)
  * so the matcher survives query-shape changes that keep the field name
- * stable but rename surrounding operation names.
+ * stable but rename surrounding operation names. A `filter.netexIds` query is
+ * a *single-vehicle* fetch — this handler falls through on it (symmetric with
+ * {@link interceptStatefulVehicleListQuery}) so it stays safe to register
+ * standalone: it never answers a by-id fetch with the full list.
  */
 export const interceptVehicleListQuery = (page: Page) =>
   page.route('**/graphql', async route => {
     const postData = route.request().postDataJSON();
     const query: string = postData?.query ?? '';
-    if (query.includes('vehicles(')) {
+    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    if (query.includes('vehicles(') && !netexIds) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -46,23 +50,30 @@ export const interceptVehicleListQuery = (page: Page) =>
   });
 
 /**
+ * Resolve a single vehicle from the list fixture by NeTEx id — the faithful
+ * by-id resolver for specs that deep-link into the slider on a row that exists
+ * in {@link interceptVehicleListQuery}'s dataset. Returns `null` for an unknown
+ * id (modelling not-found). Pass straight to {@link interceptVehicleByIdQuery}.
+ */
+export const mockVehicleById = (id: string): VehicleRow | null => {
+  const list = MOCK_VEHICLES_LIST as { data: { vehicles: { content: VehicleRow[] } } };
+  return list.data.vehicles.content.find(v => v.netexId === id) ?? null;
+};
+
+/**
  * Stateful vehicles list interceptor used by create-flow specs. The baseline
  * 15-row fixture is returned until `addCreated(id)` is called with a positive
  * `lagCalls` — for the next `lagCalls` GraphQL list responses the new id is
  * **still missing** (read-after-write replica lag), and from then on every
  * response includes it. `lagCalls = 0` (the default) makes the row available
- * immediately. `bumpVersion(id)` increments an existing row's `version` from
- * the next response onward — mirrors a real backend bumping the persisted
- * row's version on save, which the non-stateful interceptor cannot reproduce
- * (its byte-identical refetch masks the `rowSig` re-commit in slider edits).
- * Tracks every `vehicles(` request count so specs can assert on extra fetches.
+ * immediately. Tracks every `vehicles(` request count so specs can assert on
+ * extra fetches.
  */
 export const interceptStatefulVehicleListQuery = async (page: Page) => {
   const state = {
     extraId: null as string | null,
     lagCalls: 0,
     callCount: 0,
-    bumpId: null as string | null,
   };
   await page.route('**/graphql', async route => {
     const postData = route.request().postDataJSON();
@@ -80,16 +91,12 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
     if (state.lagCalls > 0) state.lagCalls -= 1;
     const base = JSON.parse(JSON.stringify(MOCK_VEHICLES_LIST)) as {
       data: {
-        vehicles: { content: { netexId?: string; version?: number }[]; totalElements: number };
+        vehicles: { content: { netexId?: string }[]; totalElements: number };
       };
     };
     if (includeExtra && state.extraId) {
       base.data.vehicles.content.push(makeExtraVehicle(state.extraId));
       base.data.vehicles.totalElements = base.data.vehicles.content.length;
-    }
-    if (state.bumpId) {
-      const row = base.data.vehicles.content.find(r => r.netexId === state.bumpId);
-      if (row && typeof row.version === 'number') row.version += 1;
     }
     await route.fulfill({
       status: 200,
@@ -101,9 +108,6 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
     addCreated: (id: string, lagCalls = 0) => {
       state.extraId = id;
       state.lagCalls = lagCalls;
-    },
-    bumpVersion: (id: string) => {
-      state.bumpId = id;
     },
     callCount: () => state.callCount,
   };

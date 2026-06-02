@@ -93,3 +93,42 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
     await expect(page.locator('#vehicle-registration-number')).toHaveCount(0);
   });
 });
+
+const MISSING_BASE_URL_ERROR = 'Application base URL is not configured';
+
+/**
+ * Restores coverage of the PR #74 B1 invariant — a missing `applicationBaseUrl`
+ * must surface a user-visible error, never fail silently. `useVehicle`'s copy
+ * of this guard can't be isolated end-to-end (it shares the key with the list
+ * hook, which simply renders no rows when the key is absent), but its sibling
+ * in `useVehiclePairSave` is reachable: `/vehicles/new` renders the form with
+ * no list, so a save with no base URL drives the guard directly.
+ */
+test.describe('save with no applicationBaseUrl surfaces a config error, not silent failure (no-auth)', () => {
+  test.skip(process.env.E2E_BACKEND === 'true', 'mock-only — drives a deliberately broken config');
+
+  test.beforeAll(() => {
+    fs.copyFileSync(path.join(fixturesDir, 'config-no-baseurl.json'), targetConfig);
+  });
+
+  test.afterAll(() => {
+    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
+  });
+
+  test('saving a new vehicle with no base URL shows the config error and does not navigate', async ({
+    page,
+  }) => {
+    await page.goto('/vehicles/new');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByLabel('Registration Number').fill('NEW-001');
+    await page.getByLabel(/Vehicle Type ID/).fill('2');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    // The guard short-circuits before any request: error snackbar, no success
+    // action, still on /vehicles/new.
+    await expect(page.getByText(MISSING_BASE_URL_ERROR)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'View in list' })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/vehicles\/new$/);
+  });
+});
