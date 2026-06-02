@@ -71,5 +71,5 @@ export const getDeckPlanViewConfig = (navigate: ReturnType<typeof useNavigate>) 
   getFilterKey: getDeckPlanFilterKey,
   getSortValue: getDeckPlanSortValue,
   filters: DeckPlanFilters,
-  title: 'Deck Plans',
+  titleKey: 'deckPlans.title',
 });

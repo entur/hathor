@@ -54,6 +54,8 @@
   "home.features.vehicletypes.description": "A list of vehicle types used in public transport.",
   "home.features.deckplans.headline": "Deck Plans",
   "home.features.deckplans.description": "A list of deck plans for vehicles used in public transport.",
+  "deckPlans.title": "Deck Plans",
+  "breadcrumbs.home": "Home",
 
   "map.layers.title": "Map Layers",
   "map.layers.circles": "Circles",
@@ -91,6 +93,7 @@
   "transportMode.snowAndIce": "Snow & ice",
   "transportMode.unknown": "Unknown",
 
+  "vehicleType.title": "Vehicle Types",
   "vehicleType.detailsTitle": "Vehicle Type Details",
   "vehicleType.notFound": "Vehicle type not found",
   "vehicleType.saveSuccess": "Vehicle type saved",

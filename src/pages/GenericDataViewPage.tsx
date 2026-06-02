@@ -39,7 +39,8 @@ export default function GenericDataViewPage<T, K extends string>({
     getFilterKey,
     getSortValue,
     filters,
-    floatingAction,
+    addAction,
+    importAction,
   } = viewConfig;
 
   const theme = useTheme();
@@ -187,9 +188,11 @@ export default function GenericDataViewPage<T, K extends string>({
           setRowsPerPage={setRowsPerPage}
           columns={columns}
           title={viewConfig.title}
+          titleKey={viewConfig.titleKey}
           handleColumnEvent={viewConfig.handleColumnEvent}
           onRowClick={onRowClick}
-          floatingAction={floatingAction}
+          addAction={addAction}
+          importAction={importAction}
           urlFilterInfo={urlFilterInfo}
           sortLocked={!!editingItem}
         />

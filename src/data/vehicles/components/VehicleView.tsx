@@ -10,7 +10,7 @@ import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShap
 export default function VehicleView() {
   return (
     <GenericDataViewPage<VehicleGQLShaped, VehicleColumnKey>
-      viewConfig={{ ...vehicleViewConfig, floatingAction: <NewVehicleFab /> }}
+      viewConfig={{ ...vehicleViewConfig, addAction: <NewVehicleFab /> }}
     />
   );
 }
