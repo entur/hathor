@@ -188,5 +188,7 @@
   "import.importData": "Hent data fra Statens vegvesen",
   "import.confirmImport": "Lagre i kjøretøysregister",
 
-  "product": "Produkt"
+  "product": "Produkt",
+
+  "organisations.select.label": "Velg organisasjon"
 }

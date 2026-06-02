@@ -179,5 +179,7 @@
   "product": "Product",
   "product.electronics": "Electronics",
   "product.books": "Books",
-  "product.clothing": "Clothing"
+  "product.clothing": "Clothing",
+
+  "organisations.select.label": "Select organisation"
 }
