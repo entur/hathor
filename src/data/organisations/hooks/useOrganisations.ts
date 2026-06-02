@@ -20,6 +20,7 @@ export function useOrganisations() {
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !isAuthenticated) return;
     setLoading(true);
+    setError(null);
     try {
       const token = await getAccessToken();
       const organisations = await fetchOrganisations(applicationBaseUrl, token);
