@@ -32,7 +32,10 @@ export function useVehicleTypes() {
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    fetchVehicleTypes(applicationBaseUrl, token)
+    // Return the chain so callers (`refetch` as `onSaved`) can await a fully
+    // applied refresh — the post-save re-baseline depends on `setData` having
+    // run before the success signal fires.
+    return fetchVehicleTypes(applicationBaseUrl, token)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
       })

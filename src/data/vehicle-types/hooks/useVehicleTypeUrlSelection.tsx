@@ -9,20 +9,22 @@ interface UrlSelectionParams {
   rowsPerPage: number;
   setPage: (page: number) => void;
   loading: boolean;
+  /** List refetch, forwarded into `VehicleTypeDetails` so a save can refresh the row. */
+  refetch?: () => Promise<void>;
 }
 
 /**
  * VehicleType binding for the generic {@link useUrlEditorSelection} hook: param
- * key `selected`, row id is `vt.id` (already the full NeTEx id), editor is the
- * read-only `<VehicleTypeDetails>`. No `refetch`/`onSaved` — the sidebar renders
- * straight from the resolved list row and never mutates, so there is nothing to
- * refresh after.
+ * key `selected`, row id is `vt.id` (already the full NeTEx id), editor is
+ * `<VehicleTypeDetails>` with the list `refetch` wired to `onSaved` so a save
+ * re-resolves the row and re-hydrates the form.
  *
  * @param allData      Full dataset; `null` while the initial fetch is in flight.
  * @param dataForTable Current page slice (drives the deep-link page jump).
  * @param rowsPerPage  Page size, for the page-jump maths.
  * @param setPage      Pager setter.
  * @param loading      Whether the dataset fetch is in flight.
+ * @param refetch      List refetch, forwarded as the editor's `onSaved`.
  */
 export function useVehicleTypeUrlSelection({
   allData,
@@ -30,6 +32,7 @@ export function useVehicleTypeUrlSelection({
   rowsPerPage,
   setPage,
   loading,
+  refetch,
 }: UrlSelectionParams): void {
   useUrlEditorSelection<VehicleType>({
     paramKey: VEHICLE_TYPE_SELECTED_PARAM,
@@ -39,6 +42,6 @@ export function useVehicleTypeUrlSelection({
     setPage,
     loading,
     getId: vt => vt.id,
-    renderEditor: row => <VehicleTypeDetails vehicleType={row} />,
+    renderEditor: row => <VehicleTypeDetails vehicleType={row} onSaved={refetch} />,
   });
 }

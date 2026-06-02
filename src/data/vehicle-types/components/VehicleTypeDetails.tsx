@@ -6,8 +6,12 @@ import NetexId from '../../netex/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
+import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
-import { useEditorDirty } from '../../../contexts/EditingContext.tsx';
+import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
+import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { commitSave } from '../../../utils/commitSave.ts';
+import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
@@ -19,6 +23,12 @@ const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
 interface VehicleTypeDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
   vehicleType: VehicleType | null;
+  /**
+   * List-side refetch fired after a successful save so the row on
+   * `/vehicle-types` (and the resolved sidebar prop) reflects the persisted
+   * values + bumped version before the success snackbar appears. Optional.
+   */
+  onSaved?: () => Promise<void>;
 }
 
 type FormState = { form: VehicleType; baseline: VehicleType };
@@ -34,17 +44,20 @@ function formReducer(state: FormState, action: FormAction): FormState {
  * Editable sidebar for a VehicleType, opened via `/vehicle-types?selected=<id>`.
  * Hydrates straight from the resolved list row (the list query carries every
  * field) into a tabbed {@link VehicleTypeForm}. The full {@link EditorRail}
- * drives view↔edit, and **save is mocked** — it advances the dirty baseline and
- * shows a success snackbar without calling any mutation.
+ * drives view↔edit; save fires the `createOrUpdateVehicleType` mutation via
+ * {@link useVehicleTypeSave}, re-baselines the form from the submitted values,
+ * and runs `onSaved` to refresh the list table.
  *
  * @param vehicleType Resolved row, or `null` for a not-found deep link.
+ * @param onSaved Optional list refetch run after a successful save (table freshness).
  */
-export default function VehicleTypeDetails({ vehicleType }: VehicleTypeDetailsProps) {
+export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleTypeDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
+  const { save, saving, error, clearError } = useVehicleTypeSave();
 
   // Re-hydrate (and drop back to view) whenever the deep-link resolves a new row.
   useEffect(() => {
@@ -57,29 +70,21 @@ export default function VehicleTypeDetails({ vehicleType }: VehicleTypeDetailsPr
 
   const isDirty = !!vehicleType && JSON.stringify(state.form) !== JSON.stringify(state.baseline);
   useDirtyFormBlock(isDirty);
+  useLiftEditorDirty(isDirty);
 
-  // Lift the dirty signal onto EditingContext so chrome (sort/pagination guards)
-  // can react without reaching into the feature; clear on unmount.
-  const { setEditorDirty } = useEditorDirty();
-  useEffect(() => {
-    setEditorDirty(isDirty);
-  }, [isDirty, setEditorDirty]);
-  useEffect(() => () => setEditorDirty(false), [setEditorDirty]);
+  const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
 
-  const closeSlider = () =>
-    setSearchParams(
-      params => {
-        params.delete(VEHICLE_TYPE_SELECTED_PARAM);
-        return params;
-      },
-      { replace: true }
-    );
-
-  // Mock save: advance the baseline so the form goes pristine, no mutation fired.
-  const handleSave = () => {
-    dispatch({ type: 'hydrate', row: state.form });
-    setSavedAt(Date.now());
-    setMode('view');
+  // Fire the mutation, then refresh the list (`onSaved`) so the table reflects
+  // the edit. The sidebar's own re-baseline is from the submitted form, not the
+  // refetched prop: `useUrlEditorSelection`'s commit guard intentionally does
+  // not push a new row into an open editor on a same-id refetch.
+  const handleSave = async () => {
+    const result = await commitSave(save, state.form, onSaved);
+    if (!result.error) {
+      dispatch({ type: 'hydrate', row: state.form });
+      setSavedAt(Date.now());
+      setMode('view');
+    }
   };
 
   if (!vehicleType) {
@@ -153,6 +158,7 @@ export default function VehicleTypeDetails({ vehicleType }: VehicleTypeDetailsPr
         />
       </Stack>
 
+      <SaveErrorSnackbar error={error} onClose={clearError} />
       <SaveSuccessSnackbar
         open={savedAt !== null}
         message={t('vehicleType.saveSuccess', 'Vehicle type saved')}
@@ -164,12 +170,14 @@ export default function VehicleTypeDetails({ vehicleType }: VehicleTypeDetailsPr
         mode={mode}
         onEnterEdit={() => setMode('edit')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', row: vehicleType });
+          // Revert to the last committed baseline (post-save = saved values),
+          // not the `vehicleType` prop which goes stale after a same-id save.
+          dispatch({ type: 'hydrate', row: state.baseline });
           setMode('view');
         }}
         onSave={handleSave}
         isDirty={isDirty}
-        saving={false}
+        saving={saving}
       />
     </Box>
   );

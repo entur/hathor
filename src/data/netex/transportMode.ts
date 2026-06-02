@@ -111,6 +111,24 @@ export const toTransportMode = (s: string | null | undefined): TransportMode => 
   return NORMALIZED_TO_CANONICAL.get(normalizeKey(s)) ?? UNKNOWN_TRANSPORT_MODE;
 };
 
+/**
+ * Inverse of {@link toTransportMode} for write paths: canonical camelCase
+ * `TransportMode` → Sobek's GraphQL `TransportMode` enum value
+ * (SCREAMING_SNAKE), e.g. `'bus' → 'BUS'`, `'trolleyBus' → 'TROLLEY_BUS'`,
+ * `'snowAndIce' → 'SNOW_AND_ICE'`. `'unknown'`, `null`, and `undefined` map to
+ * `null` — the backend enum has no slot for them, so a mutation must omit the
+ * value rather than send an invalid name. Mirrors the SDL `TransportMode` enum.
+ *
+ * @param mode Canonical mode held by the editor form.
+ * @returns The Sobek enum name, or `null` when unmapped/absent.
+ */
+export const toSobekTransportMode = (
+  mode: TransportMode | string | null | undefined
+): string | null => {
+  if (!mode || mode === UNKNOWN_TRANSPORT_MODE) return null;
+  return mode.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase();
+};
+
 /** Map a `TransportMode` to its i18n key. */
 export const transportModeLabelKey = (mode: TransportMode): string => `transportMode.${mode}`;
 

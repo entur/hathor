@@ -11,7 +11,11 @@ import type {
 import type { AccessToken } from '../../../auth';
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
-import { toTransportMode, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
+import {
+  toTransportMode,
+  toSobekTransportMode,
+  UNKNOWN_TRANSPORT_MODE,
+} from '../../netex/transportMode.ts';
 
 export interface VehicleTypeWire {
   netexId: string;
@@ -102,6 +106,75 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
         version: v.version,
       }))
     : undefined,
+});
+
+/**
+ * Sobek `VehicleTypeInput` — the mutation-accepted shape. Strict subset of the
+ * fetched {@link VehicleTypeWire}: no `version`/`created`/`changed`/`changedBy`
+ * /`vehicles` (all server-managed; Sobek resolves the live version by `netexId`)
+ * and it adds `description`. Mirrors `input VehicleTypeInput` in the SDL
+ * (`src/graphql/sobek.schema.graphqls`).
+ */
+export interface VehicleTypeInput {
+  netexId?: string | null;
+  name?: Name | null;
+  shortName?: Name | null;
+  description?: Name | null;
+  euroClass?: string | null;
+  propulsionTypes?: (PropulsionType | null)[] | null;
+  fuelTypes?: (FuelType | null)[] | null;
+  transportMode?: string | null;
+  passengerCapacity?: PassengerCapacity | null;
+  deckPlan?: { netexId?: string | null; name?: Name | null } | null;
+  formDragCoefficient?: number | null;
+  rollResistanceCoefficient?: number | null;
+  maximumEngineEffectKW?: number | null;
+  maximumVelocity?: number | null;
+  maximumRange?: number | null;
+  length?: number | null;
+  height?: number | null;
+  width?: number | null;
+  weight?: number | null;
+  lowFloor?: boolean | null;
+  selfPropelled?: boolean | null;
+  hybridCategory?: HybridCategory | null;
+}
+
+/**
+ * Inverse of {@link projectVehicleType}: domain {@link VehicleType} →
+ * {@link VehicleTypeInput} for `createOrUpdateVehicleType`. Sobek does a
+ * **full-document replace**, so every input-accepted field is emitted —
+ * `undefined` is coerced to explicit `null` so a blanked field is cleared
+ * rather than silently retained (the opposite of `useVehiclePairSave`'s
+ * omit-blank). `version`/`vehicles`/audit fields are intentionally dropped
+ * (not part of the input contract).
+ *
+ * @param vt Domain VehicleType (as held by the editor form).
+ * @returns The mutation input payload.
+ */
+export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
+  netexId: vt.id,
+  name: vt.name ?? null,
+  shortName: vt.shortName ?? null,
+  description: vt.description ?? null,
+  euroClass: vt.euroClass ?? null,
+  propulsionTypes: vt.propulsionTypes ?? null,
+  fuelTypes: vt.fuelTypes ?? null,
+  transportMode: toSobekTransportMode(vt.transportMode),
+  passengerCapacity: vt.passengerCapacity ?? null,
+  deckPlan: vt.deckPlan ? { netexId: vt.deckPlan.id, name: vt.deckPlan.name ?? null } : null,
+  formDragCoefficient: vt.formDragCoefficient ?? null,
+  rollResistanceCoefficient: vt.rollResistanceCoefficient ?? null,
+  maximumEngineEffectKW: vt.maximumEngineEffectKW ?? null,
+  maximumVelocity: vt.maximumVelocity ?? null,
+  maximumRange: vt.maximumRange ?? null,
+  length: vt.length ?? null,
+  height: vt.height ?? null,
+  width: vt.width ?? null,
+  weight: vt.weight ?? null,
+  lowFloor: vt.lowFloor ?? null,
+  selfPropelled: vt.selfPropelled ?? null,
+  hybridCategory: vt.hybridCategory ?? null,
 });
 
 /**
