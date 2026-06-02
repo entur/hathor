@@ -4,8 +4,9 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import {
   interceptStatefulVehicleListQuery,
-  interceptVehicleNetexGet,
-  vehiclePublicationDelivery,
+  interceptVehicleByIdQuery,
+  interceptVehicleSaveMutation,
+  vehicleRow,
 } from './vehicle-list-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -38,26 +39,21 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
   });
 
-  /** Wires the stateful list + POST + single-vehicle GET. `lag` = list calls
-   *  that still return baseline after the import POST resolves. Mirrors real
-   *  Sobek behaviour: a POST without `<TransportTypeRef/>` persists but stays
-   *  invisible to the GraphQL `vehicles()` resolver (probe 2026-05-19) — so
-   *  the mock only flips `addCreated` when the payload carries the ref. */
+  /** Wires the stateful list + `createOrUpdateVehicle` mutation + single-vehicle
+   *  by-id fetch. `lag` = list calls that still return baseline after the save
+   *  mutation resolves. Mirrors real Sobek behaviour: a save without a real
+   *  `transportType.netexId` persists but stays invisible to the GraphQL
+   *  `vehicles()` resolver (probe 2026-05-19) — so the mock only flips
+   *  `addCreated` when the mutation input carries a numeric VehicleType ref. */
   const wireCreateFlow = async (page: Page, { lag = 0 } = {}) => {
     if (process.env.E2E_BACKEND === 'true') return null;
     const list = await interceptStatefulVehicleListQuery(page);
-    await interceptVehicleNetexGet(page);
-    await page.route('**/services/vehicles/netex', async route => {
-      if (route.request().method() !== 'POST') return route.continue();
-      const body = route.request().postData() ?? '';
-      if (/<TransportTypeRef\s+ref="NMR:VehicleType:\d+"/.test(body)) {
-        list.addCreated(NEW_ID, lag);
-      }
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/xml',
-        body: vehiclePublicationDelivery(NEW_ID),
-      });
+    await interceptVehicleByIdQuery(page, id =>
+      id === NEW_ID ? vehicleRow(id, { name: { value: 'Newly created' } }) : null
+    );
+    interceptVehicleSaveMutation(page, NEW_ID, input => {
+      const ref = (input.transportType as { netexId?: string } | undefined)?.netexId;
+      if (ref && /^NMR:VehicleType:\d+$/.test(ref)) list.addCreated(NEW_ID, lag);
     });
     return list;
   };
