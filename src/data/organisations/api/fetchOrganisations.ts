@@ -10,14 +10,14 @@ import type {
 
 interface OrganisationWire {
   netexId: string;
-  name: Name | null;
-  type: OrganisationType | null;
+  name: Name;
+  type: OrganisationType;
 }
 
 const projectOrganisation = (dp: OrganisationWire): Organisation => ({
   id: dp.netexId,
-  name: dp.name!,
-  type: dp.type!,
+  name: dp.name,
+  type: dp.type,
 });
 
 export const fetchOrganisations = async (
