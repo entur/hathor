@@ -16,22 +16,23 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
-import { getIconUrl } from '../utils/iconLoaderUtils.ts';
+import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
 
 const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
 
 // textKey values reuse existing i18n keys so labels translate without
 // new entries (see feedback_i18n_reuse_keys memory).
-const menuItems = [
+// iconKey values map to `#menu-<iconKey>` sprite symbols (see MenuIconSprite).
+const menuItems: { textKey: string; path: string; iconKey: MenuIconName }[] = [
   { textKey: 'home', path: '/', iconKey: 'home' },
   {
     textKey: 'home.features.vehicletypes.headline',
     path: '/vehicle-types',
-    iconKey: 'product',
+    iconKey: 'vehicleTypes',
   },
-  { textKey: 'vehicles.title', path: '/vehicles', iconKey: 'train' },
-  { textKey: 'home.features.deckplans.headline', path: '/deck-plans', iconKey: 'map' },
+  { textKey: 'vehicles.title', path: '/vehicles', iconKey: 'vehicles' },
+  { textKey: 'home.features.deckplans.headline', path: '/deck-plans', iconKey: 'deckPlans' },
 ];
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
@@ -53,7 +54,7 @@ function isActive(pathname: string, path: string): boolean {
 interface NavItemProps {
   textKey: string;
   path: string;
-  iconKey: string;
+  iconKey: MenuIconName;
   expanded: boolean;
   onNavigate?: () => void;
 }
@@ -78,8 +79,17 @@ function NavItem({ textKey, path, iconKey, expanded, onNavigate }: NavItemProps)
       // button instead made it snap to the button's mid-point on collapse.)
       sx={{ minHeight: 48, justifyContent: 'flex-start', pl: 0, pr: 2 }}
     >
-      <ListItemIcon sx={{ minWidth: RAIL_COLLAPSED_W, mr: 0, justifyContent: 'center' }}>
-        <Box component="img" src={getIconUrl(iconKey)} alt={label} sx={{ width: 24, height: 24 }} />
+      <ListItemIcon
+        sx={{
+          minWidth: RAIL_COLLAPSED_W,
+          mr: 0,
+          justifyContent: 'center',
+          // Inherit-driven colour: glyph fills with currentColor, so the
+          // active item recolours to primary while others stay muted.
+          color: active ? 'primary.main' : 'text.secondary',
+        }}
+      >
+        <MenuIcon name={iconKey} size={24} />
       </ListItemIcon>
       <ListItemText
         primary={label}
@@ -168,12 +178,7 @@ export default function Menu() {
             }
             aria-expanded={expanded}
           >
-            <Box
-              component="img"
-              src={getIconUrl('menu')}
-              alt={t('header.actions.menuIconAlt', 'menu icon')}
-              sx={{ width: 28, height: 28 }}
-            />
+            <MenuIcon name="menu" size={28} />
           </IconButton>
         </Box>
       </Box>

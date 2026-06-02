@@ -23,6 +23,7 @@ import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import VehicleCreatePage from './pages/VehicleCreatePage.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
+import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
 import './theme/transportModeTokens.css';
 
 function AppShell({ children }: { children: ReactNode }) {
@@ -60,6 +61,7 @@ export default function App() {
               <AppShell>
                 <Box className="app-content">
                   <TransportModeSprite />
+                  <MenuIconSprite />
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route
