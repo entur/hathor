@@ -26,7 +26,7 @@ const CONTENT_MAX = 1180; // px; content measure for the whole dashboard
 const NAV_ICON = 30; // px; browse-tile glyph
 const STAT_ICON = 20; // px; overview-strip glyph
 const ACTION_ICON = 22; // px; create-action glyph
-const TILE_RADIUS = 2; // theme.spacing units for flat tile corners
+const TILE_RADIUS = 2; // ×theme.shape.borderRadius (≈8px at the 4px default) for flat tile corners
 
 // Overview metrics — sample figures; wire to data hooks (useVehicleTypes etc.) later.
 const STATS: { labelKey: string; fallback: string; value: string; icon: MenuIconName }[] = [
@@ -237,13 +237,21 @@ export default function HomePage() {
               icon="vehicleTypes"
               label={t('home.createNew.vehicleType', 'Vehicle Type')}
             />
-            <Divider flexItem orientation="vertical" />
+            <Divider
+              flexItem
+              orientation="vertical"
+              sx={{ display: { xs: 'none', sm: 'block' } }}
+            />
             <CreateAction
               onClick={() => setComingOpen(true)}
               icon="vehicles"
               label={t('home.createNew.train', 'Train')}
             />
-            <Divider flexItem orientation="vertical" />
+            <Divider
+              flexItem
+              orientation="vertical"
+              sx={{ display: { xs: 'none', sm: 'block' } }}
+            />
             <CreateAction
               onClick={() => setComingOpen(true)}
               icon="deckPlans"
