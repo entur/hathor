@@ -67,12 +67,6 @@
   "map.contextMenu.latitude": "Breddegrad",
   "map.contextMenu.longitude": "Lengdegrad",
 
-  "workArea.title": "Arbeidsområde",
-  "workArea.nameLabel": "Navn",
-  "workArea.typeLabel": "Type",
-  "workArea.includeLabel": "Inkluder",
-  "workArea.moreInfoTooltip": "Mer info",
-
   "types.train": "Tog",
   "types.bus": "Buss",
   "types.ferry": "Ferge",
@@ -175,6 +169,10 @@
   "header.actions.userIconAlt": "brukerikon",
   "header.actions.settingsIconAlt": "innstillinger-ikon",
   "header.actions.menuIconAlt": "menyikon",
+
+  "rail.label": "Hovedmeny",
+  "rail.collapse": "Skjul meny",
+  "rail.expand": "Vis meny",
 
   "import.result.fuelTypeEnum.battery": "Elektrisk",
   "import.result.seatingCapacity": "{{count}} sitteplasser",

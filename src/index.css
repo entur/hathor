@@ -12,6 +12,8 @@ body {
 .app-content {
   flex: 1;
   overflow: auto;
+  margin-left: var(--nav-rail-width, 0px);
+  transition: margin-left 0.2s ease;
 }
 
 .map-container {

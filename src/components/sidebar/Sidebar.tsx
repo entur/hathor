@@ -1,8 +1,8 @@
 import { Box, Drawer, useMediaQuery, IconButton, Toolbar } from '@mui/material';
-import SidebarContent from './SidebarContent.tsx';
 import type { Theme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useEditingItem } from '../../contexts/EditingContext.tsx';
 
 export type Side = 'left' | 'right';
 
@@ -25,12 +25,16 @@ export function Sidebar({
 }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
+  const { editingItem } = useEditingItem();
 
   if (isMobile) {
     return (
       <Drawer
         anchor={side}
-        open={!collapsed}
+        // Gate `open` on both `!collapsed` AND a present editingItem so
+        // the Drawer doesn't surface a blank pane during the frame
+        // between editingItem clearing and the chrome effect collapsing.
+        open={!collapsed && !!editingItem}
         onClose={toggleCollapse}
         variant="temporary"
         ModalProps={{
@@ -57,7 +61,7 @@ export function Sidebar({
             {closeIcon}
           </IconButton>
         </Toolbar>
-        <SidebarContent />
+        {editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
       </Drawer>
     );
   }
@@ -78,7 +82,7 @@ export function Sidebar({
           overflow: 'hidden',
         }}
       >
-        {!collapsed && <SidebarContent />}
+        {!collapsed && editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
       </Box>
 
       {!collapsed && (
