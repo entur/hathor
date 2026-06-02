@@ -8,6 +8,12 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # Browsers + OS deps come preinstalled in the official Playwright image,
+    # pinned to the @playwright/test version the e2e runner resolves to
+    # (1.58.2). This sidesteps the `npx playwright install` browser-download
+    # that hung and cancelled every run at the 60-min timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -35,8 +41,6 @@ jobs:
           exit 1
         fi
         echo "Sobek schema in sync."
-    - name: Install Playwright Browsers
-      run: npx playwright install
     - name: Playwright auth ON
       run: npm run e2e:auth
     - name: Playwright auth OFF
