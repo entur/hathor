@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchOrganisations } from './fetchOrganisations.ts';
 import { fetchOrganisationsRequest } from '../../../graphql/vehicles/queries/fetchOrganisations.ts';
 
-vi.mock('../../graphql/vehicles/queries/fetchOrganisations.ts', () => ({
+vi.mock('../../../graphql/vehicles/queries/fetchOrganisations.ts', () => ({
   fetchOrganisationsRequest: vi.fn(),
 }));
 

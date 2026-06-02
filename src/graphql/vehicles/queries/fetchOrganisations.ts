@@ -1,5 +1,6 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth/index.ts';
+import type { PageVars } from '../../paginationTypes.ts';
 
 const fetchOrganisationsGQL = gql`
   query Organisations($page: Int, $size: Int) {
@@ -17,8 +18,6 @@ const fetchOrganisationsGQL = gql`
     }
   }
 `;
-
-import type { PageVars } from '../../paginationTypes.ts';
 
 export type OrganisationVars = PageVars;
 
