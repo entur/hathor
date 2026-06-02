@@ -1,16 +1,8 @@
 import { useState } from 'react';
 import {
-  Container,
   Box,
   Typography,
-  Paper,
-  useTheme,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
+  Divider,
   Dialog,
   DialogTitle,
   DialogActions,
@@ -18,154 +10,256 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  EmojiTransportation,
-  ViewInAr,
-  AddCircleOutline,
-  DirectionsBus,
-  Train,
-} from '@mui/icons-material';
+import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
 
+/**
+ * Home — the registry dashboard. A flat, left-aligned layout: a typographic
+ * hero band, an overview metric strip, and tile grids for browsing and
+ * creating. No elevated/bordered Paper, no centered text. Domain glyphs reuse
+ * the nav rail's {@link MenuIcon} sprite (`#menu-<name>`) instead of
+ * @mui/icons-material so the home view and the side menu render the exact same
+ * iconset.
+ */
+
+// Layout tunables — bubbled per repo style.
+const CONTENT_MAX = 1180; // px; content measure for the whole dashboard
+const NAV_ICON = 30; // px; browse-tile glyph
+const STAT_ICON = 20; // px; overview-strip glyph
+const ACTION_ICON = 22; // px; create-action glyph
+const TILE_RADIUS = 2; // ×theme.shape.borderRadius (≈8px at the 4px default) for flat tile corners
+
+// Overview metrics — sample figures; wire to data hooks (useVehicleTypes etc.) later.
+const STATS: { labelKey: string; fallback: string; value: string; icon: MenuIconName }[] = [
+  {
+    labelKey: 'home.stat.vehicleTypes',
+    fallback: 'Vehicle types',
+    value: '142',
+    icon: 'vehicleTypes',
+  },
+  { labelKey: 'home.stat.vehicles', fallback: 'Vehicles', value: '3 870', icon: 'vehicles' },
+  { labelKey: 'home.stat.deckPlans', fallback: 'Deck plans', value: '58', icon: 'deckPlans' },
+];
+
+// Browse destinations — paths + glyphs mirror Menu.tsx (the nav rail).
+const NAV: {
+  titleKey: string;
+  titleFallback: string;
+  descKey: string;
+  descFallback: string;
+  path: string;
+  icon: MenuIconName;
+}[] = [
+  {
+    titleKey: 'home.features.vehicletypes.headline',
+    titleFallback: 'Vehicle Types',
+    descKey: 'home.features.vehicletypes.description',
+    descFallback: 'A list of vehicle types used in public transport.',
+    path: '/vehicle-types',
+    icon: 'vehicleTypes',
+  },
+  {
+    titleKey: 'vehicles.title',
+    titleFallback: 'Vehicles',
+    descKey: 'home.nav.vehicles.desc',
+    descFallback: 'Individual vehicles registered in the national registry.',
+    path: '/vehicles',
+    icon: 'vehicles',
+  },
+  {
+    titleKey: 'home.features.deckplans.headline',
+    titleFallback: 'Deck Plans',
+    descKey: 'home.features.deckplans.description',
+    descFallback: 'A list of deck plans for vehicles used in public transport.',
+    path: '/deck-plans',
+    icon: 'deckPlans',
+  },
+];
+
+/** One flat browse tile: sprite glyph + title + caption, hover-tinted, links to a view. */
+function NavTile({
+  to,
+  icon,
+  title,
+  desc,
+}: {
+  to: string;
+  icon: MenuIconName;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Box
+      component={Link}
+      to={to}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1.25,
+        p: 2.5,
+        borderRadius: TILE_RADIUS,
+        textDecoration: 'none',
+        color: 'text.primary',
+        bgcolor: 'action.hover',
+        transition: theme =>
+          theme.transitions.create(['background-color', 'transform'], { duration: 150 }),
+        '&:hover': { bgcolor: 'action.selected', transform: 'translateY(-2px)' },
+      }}
+    >
+      <Box sx={{ color: 'primary.main', display: 'flex' }}>
+        <MenuIcon name={icon} size={NAV_ICON} />
+      </Box>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+        {title}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        {desc}
+      </Typography>
+    </Box>
+  );
+}
+
+/**
+ * Registry dashboard home page.
+ * @returns the flat Home dashboard view.
+ */
 export default function HomePage() {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [comingOpen, setComingOpen] = useState(false);
 
-  const features = [
-    {
-      icon: <EmojiTransportation fontSize="large" color="primary" />,
-      headlineKey: 'home.features.vehicletypes.headline',
-      descriptionKey: 'home.features.vehicletypes.description',
-      path: '/vehicle-types',
-    },
-    {
-      icon: <ViewInAr fontSize="large" color="primary" />,
-      headlineKey: 'home.features.deckplans.headline',
-      descriptionKey: 'home.features.deckplans.description',
-      path: '/deck-plans',
-    },
-  ];
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper
-        elevation={3}
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100%' }}>
+      <Box
         sx={{
-          p: { xs: 2, sm: 2.5, md: 3 },
-          textAlign: 'center',
-          mb: 5,
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <Typography
-          variant="h3"
-          component="h1"
-          gutterBottom
-          sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}
-        >
-          {t('home.welcomeMessage')}
-        </Typography>
-        <Typography
-          variant="subtitle1"
-          color="text.secondary"
-          sx={{ mb: 2, maxWidth: '70ch', mx: 'auto' }}
-        >
-          {t('home.description')}
-        </Typography>
-      </Paper>
-
-      <Box sx={{ mb: 5 }}>
-        <Typography
-          variant="h4"
-          component="h2"
-          gutterBottom
-          align="center"
-          sx={{ fontWeight: 'medium', mb: 4 }}
-        >
-          {t('home.features.title')}
-        </Typography>
-        <Grid container spacing={4} justifyContent="center">
-          {features.map(feature => {
-            return (
-              <Grid key={feature.headlineKey} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-                <Paper
-                  elevation={2}
-                  sx={{
-                    p: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    height: '100%',
-                    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                    cursor: feature.path ? 'pointer' : 'default',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: theme.shadows[6],
-                    },
-                  }}
-                  {...(feature.path ? { component: Link, to: feature.path } : {})}
-                >
-                  <Box sx={{ mb: 2, color: theme.palette.primary.main }}>{feature.icon}</Box>
-                  <Typography
-                    variant="h6"
-                    component="h3"
-                    gutterBottom
-                    align="center"
-                    sx={{ fontWeight: 'medium' }}
-                  >
-                    {t(feature.headlineKey)}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" align="center">
-                    {t(feature.descriptionKey)}
-                  </Typography>
-                </Paper>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </Box>
-
-      <Paper
-        elevation={2}
-        sx={{
-          p: 3,
-          maxWidth: 400,
+          maxWidth: CONTENT_MAX,
           mx: 'auto',
+          px: { xs: 2, sm: 3, md: 5 },
+          py: { xs: 3, md: 5 },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <AddCircleOutline fontSize="large" color="primary" sx={{ mr: 1 }} />
-          <Typography variant="h6" component="h3" sx={{ fontWeight: 'medium' }}>
-            {t('home.createNew.title', 'Create new')}
+        {/* Hero band — left aligned, no card */}
+        <Box component="header" sx={{ mb: { xs: 4, md: 6 } }}>
+          <Typography
+            variant="overline"
+            sx={{ color: 'primary.main', letterSpacing: '0.12em', fontWeight: 700 }}
+          >
+            {t('home.eyebrow', 'National vehicle registry')}
+          </Typography>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{ fontWeight: 800, lineHeight: 1.1, mt: 0.5, mb: 2 }}
+          >
+            {t('home.welcomeMessage')}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '64ch' }}>
+            {t('home.description')}
           </Typography>
         </Box>
-        <List disablePadding>
-          <ListItem disablePadding>
-            <ListItemButton component={Link} to="/vehicle-types/new">
-              <ListItemIcon>
-                <DirectionsBus fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={t('home.createNew.vehicleType', 'Vehicle Type')} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => setComingOpen(true)}>
-              <ListItemIcon>
-                <Train fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={t('home.createNew.train', 'Train')} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => setComingOpen(true)}>
-              <ListItemIcon>
-                <ViewInAr fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={t('home.createNew.deckPlan', 'Deck Plan')} />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Paper>
+
+        {/* Overview metric strip — flat tiles separated by gaps, no borders */}
+        <Box
+          component="section"
+          aria-label={t('home.overview', 'Overview')}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+            gap: 2,
+            mb: { xs: 4, md: 6 },
+          }}
+        >
+          {STATS.map(s => (
+            <Box
+              key={s.labelKey}
+              sx={{ p: 2.5, borderRadius: TILE_RADIUS, bgcolor: 'action.hover' }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: 1,
+                  color: 'text.secondary',
+                }}
+              >
+                <MenuIcon name={s.icon} size={STAT_ICON} />
+                <Typography variant="overline" sx={{ letterSpacing: '0.08em' }}>
+                  {t(s.labelKey, s.fallback)}
+                </Typography>
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1 }}>
+                {s.value}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Browse section */}
+        <Box component="section" sx={{ mb: { xs: 4, md: 6 } }}>
+          <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+            {t('home.browse', 'Browse the registry')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+              gap: 2,
+            }}
+          >
+            {NAV.map(n => (
+              <NavTile
+                key={n.path}
+                to={n.path}
+                icon={n.icon}
+                title={t(n.titleKey, n.titleFallback)}
+                desc={t(n.descKey, n.descFallback)}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Create section — flat action row */}
+        <Box component="section">
+          <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+            {t('home.createNew.title', 'Create new')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'stretch',
+              borderRadius: TILE_RADIUS,
+              bgcolor: 'action.hover',
+              overflow: 'hidden',
+            }}
+          >
+            <CreateAction
+              to="/vehicle-types/new"
+              icon="vehicleTypes"
+              label={t('home.createNew.vehicleType', 'Vehicle Type')}
+            />
+            <Divider
+              flexItem
+              orientation="vertical"
+              sx={{ display: { xs: 'none', sm: 'block' } }}
+            />
+            <CreateAction
+              onClick={() => setComingOpen(true)}
+              icon="vehicles"
+              label={t('home.createNew.train', 'Train')}
+            />
+            <Divider
+              flexItem
+              orientation="vertical"
+              sx={{ display: { xs: 'none', sm: 'block' } }}
+            />
+            <CreateAction
+              onClick={() => setComingOpen(true)}
+              icon="deckPlans"
+              label={t('home.createNew.deckPlan', 'Deck Plan')}
+            />
+          </Box>
+        </Box>
+      </Box>
 
       <Dialog open={comingOpen} onClose={() => setComingOpen(false)}>
         <DialogTitle>{t('home.createNew.comingSoon', 'Coming soon')}</DialogTitle>
@@ -173,6 +267,51 @@ export default function HomePage() {
           <Button onClick={() => setComingOpen(false)}>{t('close', 'Close')}</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
+  );
+}
+
+/** One create-action cell: link (when `to`) or button (when `onClick`), flat & hover-tinted. */
+function CreateAction({
+  to,
+  onClick,
+  icon,
+  label,
+}: {
+  to?: string;
+  onClick?: () => void;
+  icon: MenuIconName;
+  label: string;
+}) {
+  const linkProps = to
+    ? { component: Link, to }
+    : { component: 'button' as const, type: 'button' as const, onClick };
+  return (
+    <Box
+      {...linkProps}
+      sx={{
+        flex: { xs: '1 1 100%', sm: '1 1 0' },
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        p: 2.5,
+        border: 0,
+        font: 'inherit',
+        textAlign: 'left',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'text.primary',
+        bgcolor: 'transparent',
+        transition: theme => theme.transitions.create('background-color', { duration: 150 }),
+        '&:hover': { bgcolor: 'action.selected' },
+      }}
+    >
+      <Box sx={{ color: 'primary.main', display: 'flex' }}>
+        <MenuIcon name={icon} size={ACTION_ICON} />
+      </Box>
+      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+        {label}
+      </Typography>
+    </Box>
   );
 }
