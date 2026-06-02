@@ -53,10 +53,16 @@ jobs:
         echo "Sobek schema in sync."
     - name: Playwright auth ON
       run: npm run e2e:auth
+      # GH runs the container as root but sets HOME=/github/home (owned by the
+      # image's pwuser); Firefox refuses to run as root with a foreign HOME.
+      # Point HOME at a root-owned dir so Firefox launches.
+      env:
+        HOME: /root
     - name: Playwright auth OFF
       run: npm run e2e:no-auth
       env:
         E2E_BACKEND: 'false'
+        HOME: /root
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
