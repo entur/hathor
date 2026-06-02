@@ -1,6 +1,6 @@
 {
-  "applicationBaseUrl": "http://localhost:37999/services/vehicles/graphql",
   "applicationGetAutosysUrl": "http://127.0.0.1:37998/services/autosys?registrationNumber=",
+  "applicationImportBaseUrl": "http://localhost:37999/services/vehicles/netex",
   "applicationEnv": "test",
   "claimsNamespace": "https://ror.entur.io/role_assignments",
   "preferredNameNamespace": "https://ror.entur.io/preferred_name",

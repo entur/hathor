@@ -20,27 +20,45 @@ const MOCK_VEHICLES_LIST: unknown = JSON.parse(
 );
 
 /**
- * Intercept the GraphQL `vehicles(...)` query and return the vehicles-list
- * fixture. Other GraphQL operations on the same endpoint pass through.
+ * Intercept the unfiltered GraphQL `vehicles(...)` list query and return the
+ * vehicles-list fixture. Other GraphQL operations pass through.
  *
  * Matches on the field name `vehicles(` (not on a token like `vehicleTypes`)
  * so the matcher survives query-shape changes that keep the field name
- * stable but rename surrounding operation names.
+ * stable but rename surrounding operation names. A `filter.netexIds` query is
+ * a *single-vehicle* fetch — this handler falls through on it (symmetric with
+ * {@link interceptStatefulVehicleListQuery}) so it stays safe to register
+ * standalone: it never answers a by-id fetch with the full list.
  */
 export const interceptVehicleListQuery = (page: Page) =>
   page.route('**/graphql', async route => {
     const postData = route.request().postDataJSON();
     const query: string = postData?.query ?? '';
-    if (query.includes('vehicles(')) {
+    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    if (query.includes('vehicles(') && !netexIds) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(MOCK_VEHICLES_LIST),
       });
     } else {
-      await route.continue();
+      // Fall through to any handler registered earlier (by-id query, save
+      // mutation) rather than straight to the network — `page.route` runs
+      // handlers in reverse registration order and `fallback()` chains them.
+      await route.fallback();
     }
   });
+
+/**
+ * Resolve a single vehicle from the list fixture by NeTEx id — the faithful
+ * by-id resolver for specs that deep-link into the slider on a row that exists
+ * in {@link interceptVehicleListQuery}'s dataset. Returns `null` for an unknown
+ * id (modelling not-found). Pass straight to {@link interceptVehicleByIdQuery}.
+ */
+export const mockVehicleById = (id: string): VehicleRow | null => {
+  const list = MOCK_VEHICLES_LIST as { data: { vehicles: { content: VehicleRow[] } } };
+  return list.data.vehicles.content.find(v => v.netexId === id) ?? null;
+};
 
 /**
  * Stateful vehicles list interceptor used by create-flow specs. The baseline
@@ -48,24 +66,24 @@ export const interceptVehicleListQuery = (page: Page) =>
  * `lagCalls` — for the next `lagCalls` GraphQL list responses the new id is
  * **still missing** (read-after-write replica lag), and from then on every
  * response includes it. `lagCalls = 0` (the default) makes the row available
- * immediately. `bumpVersion(id)` increments an existing row's `version` from
- * the next response onward — mirrors a real backend bumping the persisted
- * row's version on save, which the non-stateful interceptor cannot reproduce
- * (its byte-identical refetch masks the `rowSig` re-commit in slider edits).
- * Tracks every `vehicles(` request count so specs can assert on extra fetches.
+ * immediately. Tracks every `vehicles(` request count so specs can assert on
+ * extra fetches.
  */
 export const interceptStatefulVehicleListQuery = async (page: Page) => {
   const state = {
     extraId: null as string | null,
     lagCalls: 0,
     callCount: 0,
-    bumpId: null as string | null,
   };
   await page.route('**/graphql', async route => {
     const postData = route.request().postDataJSON();
     const query: string = postData?.query ?? '';
-    if (!query.includes('vehicles(')) {
-      await route.continue();
+    // Only the unfiltered *list* query is this handler's concern. A
+    // `filter.netexIds` query is a single-vehicle fetch — let the by-id
+    // handler answer it; the save mutation likewise belongs elsewhere.
+    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    if (!query.includes('vehicles(') || netexIds) {
+      await route.fallback();
       return;
     }
     state.callCount += 1;
@@ -73,16 +91,12 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
     if (state.lagCalls > 0) state.lagCalls -= 1;
     const base = JSON.parse(JSON.stringify(MOCK_VEHICLES_LIST)) as {
       data: {
-        vehicles: { content: { netexId?: string; version?: number }[]; totalElements: number };
+        vehicles: { content: { netexId?: string }[]; totalElements: number };
       };
     };
     if (includeExtra && state.extraId) {
       base.data.vehicles.content.push(makeExtraVehicle(state.extraId));
       base.data.vehicles.totalElements = base.data.vehicles.content.length;
-    }
-    if (state.bumpId) {
-      const row = base.data.vehicles.content.find(r => r.netexId === state.bumpId);
-      if (row && typeof row.version === 'number') row.version += 1;
     }
     await route.fulfill({
       status: 200,
@@ -95,85 +109,135 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
       state.extraId = id;
       state.lagCalls = lagCalls;
     },
-    bumpVersion: (id: string) => {
-      state.bumpId = id;
-    },
     callCount: () => state.callCount,
   };
 };
 
-const makeExtraVehicle = (id: string) => ({
+const makeExtraVehicle = (id: string) =>
+  vehicleRow(id, {
+    name: { value: 'Newly created' },
+    registrationNumber: 'NEW-001',
+    transportType: {
+      netexId: 'NMR:VehicleType:bus',
+      version: 1,
+      name: { value: 'Bus Type' },
+      transportMode: 'bus',
+    },
+  });
+
+/** A single-vehicle GraphQL row. Mirrors the `vehicles(...)` selection in
+ *  `src/graphql/vehicles/queries/fetchVehicles.ts` field-for-field so the mock
+ *  exercises `fetchVehicle`'s projection against the real wire shape. All
+ *  nullable fields default to null; override per test via {@link vehicleRow}. */
+export interface VehicleRow {
+  netexId: string;
+  version: number;
+  name: { value: string } | null;
+  registrationNumber: string;
+  operationalNumber: string | null;
+  buildDate: string | null;
+  chassisNumber: string | null;
+  description: { value: string } | null;
+  registrationDate: string | null;
+  transportType: {
+    netexId: string;
+    version: number;
+    name: { value: string } | null;
+    transportMode: string | null;
+  } | null;
+}
+
+/** Build a full single-vehicle row for `id`, with `over` patching any field.
+ *  Defaults to a rail vehicle so the row is renderable without every test
+ *  re-stating the common fields. */
+export const vehicleRow = (id: string, over: Partial<VehicleRow> = {}): VehicleRow => ({
   netexId: id,
   version: 1,
-  registrationNumber: 'NEW-001',
+  name: null,
+  registrationNumber: 'REG-001',
   operationalNumber: null,
+  buildDate: null,
+  chassisNumber: null,
+  description: null,
+  registrationDate: null,
   transportType: {
-    netexId: 'NMR:VehicleType:bus',
+    netexId: 'NMR:VehicleType:rail',
     version: 1,
-    name: { value: 'Bus Type' },
-    transportMode: 'bus',
+    name: { value: 'Rail Type' },
+    transportMode: 'rail',
   },
+  ...over,
 });
 
-/** Sobek wraps every multilingual value in a nested `<Text>` element —
- *  `<Name><Text>…</Text></Name>` (confirmed via live probe). Mirror that exact
- *  shape in mocks so the parser is exercised against reality rather than a
- *  friendlier invented `<Name>value</Name>` shape that masks round-trip bugs. */
-export const netexName = (value: string) => `<Name><Text>${value}</Text></Name>`;
-
-/** Minimal PublicationDelivery wrapping a single Vehicle. `body` is inserted
- *  inside the `<Vehicle>` element — leave empty for a bare echo, or pass
- *  e.g. `${netexName('X')}<RegistrationNumber>R</RegistrationNumber>`. */
-export const vehiclePublicationDelivery = (id: string, body = '') =>
-  `<?xml version="1.0" encoding="UTF-8"?>
-<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
-  <dataObjects>
-    <ResourceFrame>
-      <vehicles>
-        <Vehicle id="${id}" version="1">${body}</Vehicle>
-      </vehicles>
-    </ResourceFrame>
-  </dataObjects>
-</PublicationDelivery>`;
-
 /**
- * Intercept POST to the NeTEx import endpoint and return a PublicationDelivery
- * containing a Vehicle with the given id. `parseVehicleImportResponse` then
- * extracts this id as `result.newId`.
+ * Intercept the single-vehicle GraphQL fetch — a `vehicles(...)` query carrying
+ * a `filter.netexIds` — and answer it from `resolve(id)`. This is the GraphQL
+ * replacement for the retired NeTEx-XML single-vehicle GET: production
+ * `useVehicle` now reads `fetchVehicle` → `vehicles(filter:{netexIds:[id]})`.
+ *
+ * `resolve` returns the row to serve, or `null` to model "not found" (empty
+ * `content`, which surfaces as `useVehicle`'s not-found error). Unfiltered
+ * list queries and the save mutation fall through to their own handlers.
+ *
+ * Register AFTER the list interceptor so it is checked first and only claims
+ * the filtered query.
  */
-export const interceptVehicleImportPost = (page: Page, newId: string) =>
-  page.route('**/services/vehicles/netex', async route => {
-    if (route.request().method() !== 'POST') {
-      await route.continue();
+export const interceptVehicleByIdQuery = (page: Page, resolve: (id: string) => VehicleRow | null) =>
+  page.route('**/graphql', async route => {
+    const postData = route.request().postDataJSON();
+    const query: string = postData?.query ?? '';
+    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    if (!query.includes('vehicles(') || !netexIds?.length) {
+      await route.fallback();
       return;
     }
+    const row = resolve(netexIds[0]);
     await route.fulfill({
       status: 200,
-      contentType: 'application/xml',
-      body: vehiclePublicationDelivery(newId),
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          vehicles: {
+            content: row ? [row] : [],
+            totalElements: row ? 1 : 0,
+            page: 0,
+            size: 10000,
+          },
+        },
+      }),
     });
   });
 
 /**
- * Intercept GET on the single-vehicle NeTEx XML endpoint
- * (`/services/vehicles/netex/vehicles/{id}`) and return a minimal but valid
- * Vehicle PublicationDelivery for the requested id. Used so the slider's
- * `useVehicle` hook resolves to a parsed Vehicle (not "Vehicle not found").
+ * Intercept the `createOrUpdateVehicle` mutation — the GraphQL replacement for
+ * the retired NeTEx-XML import POST. Captures the mutation's `input` for
+ * assertions, invokes `onSaved(input)` (e.g. to flip a stateful list's
+ * `addCreated`), and returns `newId` as the mutation's scalar result so
+ * `useVehiclePairSave` surfaces it as `result.newId`.
+ *
+ * Register AFTER the list/by-id interceptors. Non-mutation operations fall
+ * through.
  */
-export const interceptVehicleNetexGet = (page: Page) =>
-  page.route('**/services/vehicles/netex/vehicles/**', async route => {
-    if (route.request().method() !== 'GET') {
-      await route.continue();
+export const interceptVehicleSaveMutation = (
+  page: Page,
+  newId: string,
+  onSaved?: (input: Record<string, unknown>) => void
+) => {
+  const state = { lastInput: null as Record<string, unknown> | null };
+  page.route('**/graphql', async route => {
+    const postData = route.request().postDataJSON();
+    const query: string = postData?.query ?? '';
+    if (!query.includes('createOrUpdateVehicle')) {
+      await route.fallback();
       return;
     }
-    const url = new URL(route.request().url());
-    const id = decodeURIComponent(url.pathname.split('/').pop() ?? '');
+    state.lastInput = postData?.variables?.input ?? null;
+    onSaved?.(state.lastInput ?? {});
     await route.fulfill({
       status: 200,
-      contentType: 'application/xml',
-      body: vehiclePublicationDelivery(
-        id,
-        `${netexName('Newly created')}<RegistrationNumber>NEW-001</RegistrationNumber>`
-      ),
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { createOrUpdateVehicle: newId } }),
     });
   });
+  return { input: () => state.lastInput };
+};

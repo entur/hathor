@@ -8,6 +8,22 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # Browsers + OS deps come preinstalled in the official Playwright image,
+    # pinned to the @playwright/test version the e2e runner resolves to
+    # (1.58.2). This sidesteps the `npx playwright install` browser-download
+    # that hung and cancelled every run at the 60-min timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      # Firefox/WebKit sandbox via user namespaces (clone()), which the default
+      # container seccomp profile blocks → "CanCreateUserNamespace EPERM".
+      # Relax seccomp so Firefox can launch; Chromium is unaffected.
+      options: --security-opt seccomp=unconfined
+    # Inside a container GitHub runs `run:` steps with `sh` (dash), which lacks
+    # `set -o pipefail` used by the schema-guard. Force bash — present in the
+    # image — to match host-runner behaviour.
+    defaults:
+      run:
+        shell: bash
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -35,14 +51,18 @@ jobs:
           exit 1
         fi
         echo "Sobek schema in sync."
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
     - name: Playwright auth ON
       run: npm run e2e:auth
+      # GH runs the container as root but sets HOME=/github/home (owned by the
+      # image's pwuser); Firefox refuses to run as root with a foreign HOME.
+      # Point HOME at a root-owned dir so Firefox launches.
+      env:
+        HOME: /root
     - name: Playwright auth OFF
       run: npm run e2e:no-auth
       env:
         E2E_BACKEND: 'false'
+        HOME: /root
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:

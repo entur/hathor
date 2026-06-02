@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,38 +10,37 @@ const __dirname = path.dirname(__filename);
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 
-const MISSING_BASE_URL_ERROR = 'Application import base URL is not configured';
+const SELECTED_ID = 'NMR:Vehicle:bus-1';
+const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
 
 /**
- * Regression test for B1 (PR #74 review): when `applicationImportBaseUrl`
- * is missing from runtime config, `useVehicle` must short-circuit into
- * `loading=false` + a user-visible error — *not* hang forever on the
- * "Loading vehicle…" spinner.
+ * Regression test for B1 (PR #74 review): `useVehicle` must never hang on the
+ * "Loading vehicle…" spinner — it must resolve `loading=false` and surface a
+ * user-visible error.
  *
- * Before fix: `useVehicle.doFetch` returned early without
- * `setLoading(false)`. Initial `useState(!!id)` left loading=true forever
- * when id was truthy.
- *
- * After fix: missing-baseUrl branch sets `error` and `loading=false`
- * synchronously, surfacing the same message
- * `useVehiclePairSave` already emits for the save path.
+ * Realigned to the GraphQL read path after #101 retired the NeTEx-XML single
+ * fetch. The obsolete trigger (missing `applicationImportBaseUrl`) no longer
+ * applies: `useVehicle` now reads `applicationBaseUrl`, shared with the list,
+ * so a missing-config scenario can't isolate the slider. The surviving
+ * equivalent — a `vehicles(filter:{netexIds})` fetch that resolves to no row —
+ * is exercised here: the list query still returns the row (so the slider opens
+ * with a title), while the single-vehicle query returns empty `content`,
+ * driving `useVehicle` into its not-found error branch.
  */
-test.describe('useVehicle — missing applicationImportBaseUrl never stops loading (no-auth)', () => {
+test.describe('useVehicle — a single-vehicle fetch with no match errors, never hangs (no-auth)', () => {
   test.beforeAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-import-baseurl.json'), targetConfig);
-  });
-
-  test.afterAll(() => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
   });
 
   test.beforeEach(async ({ page }) => {
     if (process.env.E2E_BACKEND === 'true') return;
 
+    // List query (no `filter.netexIds`) → the row exists, so the slider opens
+    // on a found row and renders a title.
     await page.route('**/graphql', async route => {
       const body = route.request().postDataJSON();
       const q: string = body?.query ?? '';
-      if (q.includes('vehicles(')) {
+      if (q.includes('vehicles(') && !body?.variables?.filter?.netexIds) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -48,18 +48,15 @@ test.describe('useVehicle — missing applicationImportBaseUrl never stops loadi
             data: {
               vehicles: {
                 content: [
-                  {
-                    netexId: 'NMR:Vehicle:bus-1',
-                    version: 1,
+                  vehicleRow(SELECTED_ID, {
                     registrationNumber: 'BUS-001',
-                    operationalNumber: null,
                     transportType: {
                       netexId: 'NMR:VehicleType:bus',
                       version: 1,
                       name: { value: 'Bus Type' },
                       transportMode: 'bus',
                     },
-                  },
+                  }),
                 ],
                 totalElements: 1,
                 page: 0,
@@ -69,26 +66,69 @@ test.describe('useVehicle — missing applicationImportBaseUrl never stops loadi
           }),
         });
       } else {
-        await route.continue();
+        await route.fallback();
       }
     });
+
+    // Single-vehicle query (with `filter.netexIds`) → empty content → not found.
+    await interceptVehicleByIdQuery(page, () => null);
   });
 
-  test('missing import baseUrl surfaces as an error, not a stuck spinner', async ({ page }) => {
-    await page.goto('/vehicles?selected=NMR:Vehicle:bus-1');
+  test('a single-vehicle fetch that returns no row surfaces an error, not a stuck spinner', async ({
+    page,
+  }) => {
+    await page.goto(`/vehicles?selected=${SELECTED_ID}`);
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
-    // Loading resolves quickly — the missing-baseUrl branch should set
-    // error + loading=false synchronously, so the spinner is gone almost
-    // immediately. Auto-wait to its default disappearance timeout.
+    // Loading resolves — the not-found branch sets error + loading=false, so
+    // the spinner disappears. Auto-wait to its default disappearance timeout.
     await expect(page.getByText('Loading vehicle…')).toBeHidden();
 
-    // User sees the actual reason, mirroring useVehiclePairSave's message.
-    await expect(page.getByText(MISSING_BASE_URL_ERROR)).toBeVisible();
+    // User sees the actual reason.
+    await expect(page.getByText(NOT_FOUND_ERROR)).toBeVisible();
 
-    // Form area stays hidden because xmlError is set.
+    // Form area stays hidden because the fetch errored.
     await expect(page.locator('#vehicle-registration-number')).toHaveCount(0);
+  });
+});
+
+const MISSING_BASE_URL_ERROR = 'Application base URL is not configured';
+
+/**
+ * Restores coverage of the PR #74 B1 invariant — a missing `applicationBaseUrl`
+ * must surface a user-visible error, never fail silently. `useVehicle`'s copy
+ * of this guard can't be isolated end-to-end (it shares the key with the list
+ * hook, which simply renders no rows when the key is absent), but its sibling
+ * in `useVehiclePairSave` is reachable: `/vehicles/new` renders the form with
+ * no list, so a save with no base URL drives the guard directly.
+ */
+test.describe('save with no applicationBaseUrl surfaces a config error, not silent failure (no-auth)', () => {
+  test.skip(process.env.E2E_BACKEND === 'true', 'mock-only — drives a deliberately broken config');
+
+  test.beforeAll(() => {
+    fs.copyFileSync(path.join(fixturesDir, 'config-no-baseurl.json'), targetConfig);
+  });
+
+  test.afterAll(() => {
+    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
+  });
+
+  test('saving a new vehicle with no base URL shows the config error and does not navigate', async ({
+    page,
+  }) => {
+    await page.goto('/vehicles/new');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByLabel('Registration Number').fill('NEW-001');
+    await page.getByLabel(/Vehicle Type ID/).fill('2');
+    await page.getByRole('button', { name: 'Save' }).click();
+
+    // The guard short-circuits before any request: error snackbar, no success
+    // action, still on /vehicles/new.
+    await expect(page.getByText(MISSING_BASE_URL_ERROR)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'View in list' })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/vehicles\/new$/);
   });
 });

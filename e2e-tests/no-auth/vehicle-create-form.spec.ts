@@ -4,8 +4,9 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import {
   interceptStatefulVehicleListQuery,
-  interceptVehicleNetexGet,
-  vehiclePublicationDelivery,
+  interceptVehicleByIdQuery,
+  interceptVehicleSaveMutation,
+  vehicleRow,
 } from './vehicle-list-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,46 +18,38 @@ const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const VT_ID_INT = '2';
 const EXPECTED_REF = `NMR:VehicleType:${VT_ID_INT}`;
-const TRANSPORT_REF_PATTERN = /<TransportTypeRef\s+ref="NMR:VehicleType:\d+"/;
+const REF_PATTERN = /^NMR:VehicleType:\d+$/;
 
 /**
- * Regression coverage for the three coupled VehicleEditForm edits:
- *   - #80 sect3 — Manufacturer ghost text (no [missing] literal in payload)
+ * Regression coverage for the coupled VehicleEditForm edits, realigned to the
+ * GraphQL save path after #101 retired the NeTEx-XML import POST:
  *   - #82 — TransportType field required + writable
  *   - #81 — Back button on /vehicles/new with dirty-form discard dialog
  *
  * The TransportType field is a TEMP bare numeric input until Sobek's
  * VehicleTypeFilter gains a `name` field. The onChange prefixes
  * `NMR:VehicleType:` before binding to form state — this spec asserts on the
- * full prefixed shape in the POST body.
+ * full prefixed shape in the `createOrUpdateVehicle` mutation input.
  */
 test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
   test.beforeAll(() => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
   });
 
-  /** Captures the most recent NeTEx-import POST body so specs can assert
-   *  on its shape (e.g. presence/absence of <TransportTypeRef>, <Manufacturer>). */
+  /** Captures the most recent `createOrUpdateVehicle` mutation input so specs
+   *  can assert on its shape (e.g. the prefixed `transportType.netexId`). */
   const wireCreateFlow = async (page: Page) => {
-    if (process.env.E2E_BACKEND === 'true') return { postBody: () => '' };
+    if (process.env.E2E_BACKEND === 'true') return { input: () => null };
     const list = await interceptStatefulVehicleListQuery(page);
-    await interceptVehicleNetexGet(page);
-    let lastPostBody = '';
-    await page.route('**/services/vehicles/netex', async route => {
-      if (route.request().method() !== 'POST') return route.continue();
-      lastPostBody = route.request().postData() ?? '';
+    await interceptVehicleByIdQuery(page, id => (id === NEW_ID ? vehicleRow(id) : null));
+    return interceptVehicleSaveMutation(page, NEW_ID, input => {
       // Gate-equivalent: only "persist" when the client included a real ref.
-      if (TRANSPORT_REF_PATTERN.test(lastPostBody)) list.addCreated(NEW_ID, 0);
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/xml',
-        body: vehiclePublicationDelivery(NEW_ID),
-      });
+      const ref = (input.transportType as { netexId?: string } | undefined)?.netexId;
+      if (ref && REF_PATTERN.test(ref)) list.addCreated(NEW_ID, 0);
     });
-    return { postBody: () => lastPostBody };
   };
 
-  test('Save disabled until Vehicle Type ID entered; POST body carries prefixed TransportTypeRef', async ({
+  test('Save disabled until Vehicle Type ID entered; mutation input carries prefixed transportType ref', async ({
     page,
   }) => {
     const capture = await wireCreateFlow(page);
@@ -73,25 +66,8 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
 
     await save.click();
     await expect(page.getByRole('button', { name: 'View in list' })).toBeVisible();
-    expect(capture.postBody()).toContain(`<TransportTypeRef ref="${EXPECTED_REF}"`);
-    expect(capture.postBody()).toMatch(TRANSPORT_REF_PATTERN);
-  });
-
-  test('Manufacturer field: value empty, placeholder [missing] (no payload literal)', async ({
-    page,
-  }) => {
-    // Open existing vehicle slider so MISSING_MODEL applies (Sobek single-vehicle
-    // export emits no Model — the form's model slot defaults to MISSING_MODEL).
-    await wireCreateFlow(page);
-    await page.goto(`/vehicles?selected=${encodeURIComponent('NMR:Vehicle:bus-1')}`);
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
-
-    await page.getByTestId('editor-rail-edit').click();
-
-    const manufacturer = page.getByLabel('Manufacturer');
-    await expect(manufacturer).toHaveValue('');
-    await expect(manufacturer).toHaveAttribute('placeholder', '[missing]');
+    const input = capture.input() as { transportType?: { netexId?: string } } | null;
+    expect(input?.transportType?.netexId).toBe(EXPECTED_REF);
   });
 
   test('Back button: clean form navigates immediately to /vehicles', async ({ page }) => {
@@ -158,15 +134,11 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
     const vehicleId = 'NMR:Vehicle:rail-1';
     const rawRef = 'NMR:VehicleType:rail';
     await interceptStatefulVehicleListQuery(page);
-    await page.route('**/services/vehicles/netex/vehicles/**', async route => {
-      if (route.request().method() !== 'GET') return route.continue();
-      const id = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop() ?? '');
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/xml',
-        body: vehiclePublicationDelivery(id, `<TransportTypeRef ref="${rawRef}"/>`),
-      });
-    });
+    await interceptVehicleByIdQuery(page, id =>
+      vehicleRow(id, {
+        transportType: { netexId: rawRef, version: 1, name: null, transportMode: 'rail' },
+      })
+    );
 
     await page.goto(`/vehicles?selected=${encodeURIComponent(vehicleId)}`);
     await page.waitForLoadState('networkidle');
