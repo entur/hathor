@@ -36,7 +36,7 @@ jobs:
         fi
         echo "Sobek schema in sync."
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install
     - name: Playwright auth ON
       run: npm run e2e:auth
     - name: Playwright auth OFF
