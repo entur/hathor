@@ -27,6 +27,26 @@ export interface VehicleWire {
 }
 
 /**
+ * Sobek `VehicleInput` — the mutation-accepted shape (mirrors `input
+ * VehicleInput` in the SDL). Strict subset of the fetched {@link VehicleWire}:
+ * no `version` (server-managed; Sobek resolves the live version by `netexId`)
+ * and `transportType` is a bare ref (only `netexId` is sent, though the SDL
+ * type is `VehicleTypeInput`). Mirrors the `<Entity>Input` convention used by
+ * `VehicleTypeInput`.
+ */
+export interface VehicleInput {
+  netexId?: string | null;
+  name?: Name | null;
+  description?: Name | null;
+  registrationNumber?: string | null;
+  operationalNumber?: string | null;
+  transportType?: { netexId?: string | null } | null;
+  chassisNumber?: string | null;
+  buildDate?: string | null;
+  registrationDate?: string | null;
+}
+
+/**
  * Fetch the full Vehicle list from Sobek's `vehicles(...)` GraphQL query and
  * project each entry into the camelCase row shape consumed by the list view.
  * Warns once when the response is truncated past `FETCH_ALL_SIZE`.
