@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useConfig } from '../../../contexts/configContext.ts';
-import { useAuth } from '../../../auth/authUtils.ts';
-import type { Organisation } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import { useAuth } from '../../../auth/index.ts';
+import type { Organisation } from '../types/organisationTypes.ts';
 import { fetchOrganisations } from '../api/fetchOrganisations.ts';
 
 /**

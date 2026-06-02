@@ -2,11 +2,8 @@ import type { AccessToken } from '../../../auth/index.ts';
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import { fetchOrganisationsRequest } from '../../../graphql/vehicles/queries/fetchOrganisations.ts';
-import type {
-  Name,
-  Organisation,
-  OrganisationType,
-} from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { Organisation, OrganisationType } from '../types/organisationTypes.ts';
 
 interface OrganisationWire {
   netexId: string;
@@ -14,10 +11,10 @@ interface OrganisationWire {
   type: OrganisationType;
 }
 
-const projectOrganisation = (dp: OrganisationWire): Organisation => ({
-  id: dp.netexId,
-  name: dp.name,
-  type: dp.type,
+const projectOrganisation = (org: OrganisationWire): Organisation => ({
+  id: org.netexId,
+  name: org.name,
+  type: org.type,
 });
 
 export const fetchOrganisations = async (

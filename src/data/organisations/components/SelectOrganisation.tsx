@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useOrganisations } from '../hooks/useOrganisations.ts';
-import type { Organisation } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 import { Autocomplete, TextField } from '@mui/material';
 import { useAuth } from '../../../auth/index.ts';
+import type { Organisation } from '../types/organisationTypes.ts';
 
 export default function SelectOrganisation() {
   const { t } = useTranslation();
@@ -11,7 +11,7 @@ export default function SelectOrganisation() {
 
   return (
     <>
-      {isAuthenticated && data?.length > 0 && (
+      {isAuthenticated && data.length > 0 && (
         <Autocomplete<Organisation, false>
           options={data}
           title={t('organisations.select.label', 'Select organisation')}

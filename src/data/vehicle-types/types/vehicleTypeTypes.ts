@@ -47,15 +47,12 @@ export const FUEL_TYPES = [
   'NONE',
 ] as const;
 
-export const ORGANISATION_TYPES = ['AUTHORITY', 'OPERATOR', 'OTHER'] as const;
-
 /** Sobek `HybridCategory` enum. */
 export const HYBRID_CATEGORIES = ['CHARGEABLE', 'NONCHARGEABLE'] as const;
 
 export type PropulsionType = (typeof PROPULSION_TYPES)[number];
 export type FuelType = (typeof FUEL_TYPES)[number];
 export type HybridCategory = (typeof HYBRID_CATEGORIES)[number];
-export type OrganisationType = (typeof ORGANISATION_TYPES)[number];
 
 /** Sobek `PassengerCapacity` — all counts optional. */
 export type PassengerCapacity = {
@@ -101,14 +98,4 @@ export type VehicleType = {
 
 export type VehicleTypeContext = {
   vehicleTypes: VehicleType[];
-};
-
-export type Organisation = {
-  id: string;
-  name: Name;
-  type: OrganisationType;
-};
-
-export type OrganisationContext = {
-  organisations: Organisation[];
 };

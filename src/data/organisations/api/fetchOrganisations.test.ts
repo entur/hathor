@@ -25,14 +25,14 @@ describe('fetchOrganisations', () => {
 
   it('projects an organisation with a name into the internal shape', async () => {
     mockedRequest.mockResolvedValue(
-      mkPage([{ netexId: 'NMR:Organisation:DP1', name: { value: 'Standard' } }])
+      mkPage([{ netexId: 'NMR:Organisation:O1', name: { value: 'Standard' } }])
     );
     const organisations = await fetchOrganisations('http://x', null);
-    expect(organisations).toEqual([{ id: 'NMR:Organisation:DP1', name: { value: 'Standard' } }]);
+    expect(organisations).toEqual([{ id: 'NMR:Organisation:O1', name: { value: 'Standard' } }]);
   });
 
   it('omits name when the server returns no name', async () => {
-    mockedRequest.mockResolvedValue(mkPage([{ netexId: 'NMR:Organisation:DP2' }]));
+    mockedRequest.mockResolvedValue(mkPage([{ netexId: 'NMR:Organisation:O2' }]));
     const [dp] = await fetchOrganisations('http://x', null);
     expect(dp.name).toBeUndefined();
   });
