@@ -39,6 +39,7 @@ export interface AutosysAssembledResult {
  * Failed fetches are collected as translated errors.
  */
 export function assembleAutosysResults(
+  dataOwnerRef: string,
   results: AutosysFetchResult[],
   mergeFn: (frames: FramesByQueryRegNumber) => MergedEntities = mergeResourceFrames
 ): AutosysAssembledResult {
@@ -93,6 +94,6 @@ export function assembleAutosysResults(
       successCount: frameCount,
       errors,
     },
-    postPayload: pubDeliverySingleRcFrame(firstXml, merged),
+    postPayload: pubDeliverySingleRcFrame(firstXml, merged, dataOwnerRef),
   };
 }

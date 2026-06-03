@@ -9,7 +9,7 @@ describe('assembleAutosysResults', () => {
       { queryRegNumber: 'AB1234', xml: makeXml(), error: null },
     ];
 
-    const { summary, postPayload } = assembleAutosysResults(results);
+    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.vehicleCount).toBe(1);
     expect(summary.vehicleTypeIds.size).toBe(1);
@@ -50,7 +50,7 @@ describe('assembleAutosysResults', () => {
       },
     ];
 
-    const { summary } = assembleAutosysResults(results);
+    const { summary } = assembleAutosysResults('NOG:Authority:1', results);
 
     // All 3 vehicles share Vehicle id="NMR:Vehicle:1" so dedup yields 1 unique
     expect(summary.vehicleCount).toBe(1);
@@ -68,7 +68,7 @@ describe('assembleAutosysResults', () => {
       { queryRegNumber: 'FAIL2', xml: '', error: '404 Not Found' },
     ];
 
-    const { summary, postPayload } = assembleAutosysResults(results);
+    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.vehicleCount).toBe(1);
     expect(summary.vehicleTypeIds.size).toBe(1);
@@ -80,7 +80,7 @@ describe('assembleAutosysResults', () => {
   });
 
   it('returns empty result for empty input', () => {
-    const { summary, postPayload } = assembleAutosysResults([]);
+    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', []);
 
     expect(summary.vehicleCount).toBe(0);
     expect(summary.vehicleTypeIds.size).toBe(0);
@@ -95,7 +95,7 @@ describe('assembleAutosysResults', () => {
     const badXml = `<?xml version="1.0"?><PublicationDelivery><dataObjects></dataObjects></PublicationDelivery>`;
     const results: AutosysFetchResult[] = [{ queryRegNumber: 'AB1234', xml: badXml, error: null }];
 
-    const { summary, postPayload } = assembleAutosysResults(results);
+    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.vehicleCount).toBe(0);
     expect(summary.errors).toHaveLength(1);
@@ -109,7 +109,7 @@ describe('assembleAutosysResults', () => {
       { queryRegNumber: 'AB1234', xml: makeXmlFlat(), error: null },
     ];
 
-    const { summary, postPayload } = assembleAutosysResults(results);
+    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.vehicleCount).toBe(1);
     expect(summary.vehicleTypeIds.size).toBe(1);
@@ -129,7 +129,7 @@ describe('assembleAutosysResults', () => {
       },
     ];
 
-    const { summary } = assembleAutosysResults(results);
+    const { summary } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.vehicleCount).toBe(1);
     expect(summary.vehicleTypeIds.size).toBe(1);
@@ -153,7 +153,7 @@ describe('assembleAutosysResults', () => {
       },
     ];
 
-    const { summary } = assembleAutosysResults(results);
+    const { summary } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.errors).toHaveLength(2);
     expect(summary.errors[0]).toEqual({
@@ -171,7 +171,7 @@ describe('assembleAutosysResults', () => {
       { queryRegNumber: 'AB1234', xml: 'not xml at all <<<>>>', error: null },
     ];
 
-    const { summary, postPayload } = assembleAutosysResults(results);
+    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
 
     expect(summary.errors).toHaveLength(1);
     expect(summary.errors[0].queryRegNumber).toBe('AB1234');

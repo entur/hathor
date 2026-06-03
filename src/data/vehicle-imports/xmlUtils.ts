@@ -1,6 +1,6 @@
 import type { FramesByQueryRegNumber, ImportEntry, ParsedXml } from './types';
 import { XMLBuilder } from 'fast-xml-parser';
-import { findResourceFrame, toArray, xmlParser } from '../netex/xmlUtils';
+import { addDataOwnerRefToFrame, findResourceFrame, toArray, xmlParser } from '../netex/xmlUtils';
 
 /** Collect and deduplicate entities by @_id from a path like `rf.vehicleTypes.VehicleType`. */
 function uniqueById(frames: ParsedXml[], section: string, element: string): ParsedXml[] {
@@ -65,7 +65,8 @@ export function mergeResourceFrames(
 /** Clone a PublicationDelivery blueprint and inject merged entities into its ResourceFrame. */
 export function pubDeliverySingleRcFrame(
   blueprint: ParsedXml | undefined,
-  merged: MergedEntities
+  merged: MergedEntities,
+  dataOwnerRef: string
 ): string | undefined {
   if (!blueprint) return;
 
@@ -88,6 +89,13 @@ export function pubDeliverySingleRcFrame(
     format: true,
     suppressEmptyNode: true,
   });
+
+  addDataOwnerRefToFrame(
+    blueprintClone.PublicationDelivery?.dataObjects?.CompositeFrame ?? wrapperRf,
+    wrapperRf,
+    dataOwnerRef
+  );
+
   const xmlContent = builder.build(blueprintClone);
   return xmlContent;
 }

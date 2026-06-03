@@ -21,6 +21,7 @@ import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumn
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations';
 
 const CONCURRENCY_LIMIT = 5;
 
@@ -50,6 +51,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { currentOrganisation } = useOrganisations();
 
   const isTableFlow = tableMeta !== null;
   const steps = isTableFlow ? TABLE_STEPS : LIST_STEPS;
@@ -122,6 +124,10 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   // --- Fetch + submit ---
 
   const startFetch = async () => {
+    if (currentOrganisation?.id === undefined) {
+      setSubmitError('Current organisation is not set');
+      return;
+    }
     const regNumbers = entries.map(e => e.queryRegNumber);
     setFetching(true);
     setFetchProgress({ completed: 0, total: regNumbers.length });
@@ -134,7 +140,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       completed => setFetchProgress({ completed, total: regNumbers.length })
     );
 
-    const assembled = assembleAutosysResults(results, frames =>
+    const assembled = assembleAutosysResults(currentOrganisation.id, results, frames =>
       mergeResourceFrames(frames, entries)
     );
     setAssembledResult(assembled);
