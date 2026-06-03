@@ -94,6 +94,7 @@
   "vehicleType.detailsTitle": "Kjøretøytypedetaljer",
   "vehicleType.notFound": "Kjøretøytype ikke funnet",
   "vehicleType.saveSuccess": "Kjøretøytype lagret",
+  "vehicleType.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
   "vehicleType.tab.edit": "Rediger",
   "vehicleType.tab.propulsion": "Fremdrift/yt.",
   "vehicleType.tab.capacity": "Passasjerkapasitet",

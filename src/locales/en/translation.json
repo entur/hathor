@@ -94,6 +94,7 @@
   "vehicleType.detailsTitle": "Vehicle Type Details",
   "vehicleType.notFound": "Vehicle type not found",
   "vehicleType.saveSuccess": "Vehicle type saved",
+  "vehicleType.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
   "vehicleType.tab.edit": "Edit",
   "vehicleType.tab.propulsion": "Propulsion/perf.",
   "vehicleType.tab.capacity": "Passenger Capacity",

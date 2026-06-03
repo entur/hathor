@@ -219,4 +219,22 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     expect(lastInput()?.name).toEqual({ value: 'Type Beta X', lang: 'nb' });
   });
+
+  // The mutation commits but the post-save list refresh 500s. The user must not
+  // get a bare "saved" success over a stale table — the refresh failure is
+  // surfaced (useVehicleTypes.doFetch no longer swallows; handleSave catches).
+  test('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
+    page,
+  }) => {
+    await interceptVehicleTypesWithSave(page, { failRefetch: true });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+    await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
 });

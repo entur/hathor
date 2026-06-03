@@ -10,7 +10,6 @@ import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.ts
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
-import { commitSave } from '../../../utils/commitSave.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
@@ -67,6 +66,7 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
   const { save, saving, error, clearError } = useVehicleTypeSave();
 
@@ -75,7 +75,9 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
     if (vehicleType) {
       dispatch({ type: 'hydrate', row: vehicleType });
       setMode('view');
-      setSavedAt(null); // don't let a prior "saved" snackbar bleed into the next row
+      // Don't let a prior save snackbar / stale-list warning bleed into the next row.
+      setSavedAt(null);
+      setRefreshError(null);
     }
   }, [vehicleType]);
 
@@ -93,11 +95,26 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
   // refetched prop: `useUrlEditorSelection`'s commit guard intentionally does
   // not push a new row into an open editor on a same-id refetch.
   const handleSave = async () => {
-    const result = await commitSave(save, state.form, onSaved);
-    if (!result.error) {
-      dispatch({ type: 'hydrate', row: state.form });
-      setSavedAt(Date.now());
-      setMode('view');
+    setRefreshError(null);
+    // `save` resolves to `{ error }` and never throws — so a save failure flows
+    // through the save-error snackbar, and the try below is scoped to ONLY the
+    // post-save list refresh (`onSaved`).
+    const result = await save(state.form);
+    if (result.error) return;
+
+    // Save committed: re-baseline from the submitted form (the commit guard in
+    // useUrlEditorSelection won't push the refetched row into an open editor).
+    dispatch({ type: 'hydrate', row: state.form });
+    setMode('view');
+    try {
+      await onSaved?.();
+      setSavedAt(Date.now()); // success only once the list is fresh
+    } catch {
+      // Save is real, but the list couldn't refresh — warn instead of a clean
+      // success over a stale table.
+      setRefreshError(
+        t('vehicleType.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
+      );
     }
   };
 
@@ -173,6 +190,11 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
       </Stack>
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
+      <SaveErrorSnackbar
+        error={refreshError}
+        severity="warning"
+        onClose={() => setRefreshError(null)}
+      />
       <SaveSuccessSnackbar
         open={savedAt !== null}
         message={t('vehicleType.saveSuccess', 'Vehicle type saved')}

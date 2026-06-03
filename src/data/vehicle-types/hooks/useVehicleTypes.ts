@@ -61,13 +61,18 @@ export function useVehicleTypes() {
         } else {
           setError('An unexpected error occurred');
         }
+        // Re-throw so `refetch()` honestly rejects on failure (e.g. a failed
+        // post-save refresh) instead of resolving and masking the error.
+        throw err;
       })
       .finally(() => setLoading(false));
   }, [applicationBaseUrl, getAccessToken]);
 
-  // Refetch when applicationBaseUrl changes or when filter param changes (after import)
+  // Refetch when applicationBaseUrl changes or when filter param changes (after
+  // import). Fire-and-forget: the error is already in state, so swallow the
+  // rejection here (only awaiting callers like the post-save refresh care).
   useEffect(() => {
-    doFetch();
+    void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
 
   const handleRequestSort = (property: OrderBy) => {

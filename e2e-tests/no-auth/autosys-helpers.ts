@@ -71,6 +71,9 @@ interface VehicleTypeInputCapture {
 interface SaveInterceptOpts {
   /** When set, the mutation responds with this GraphQL error instead of succeeding. */
   saveError?: string;
+  /** When true, the vehicleTypes query AFTER a save fails (500) — exercises the
+   * post-save list-refresh failure path. */
+  failRefetch?: boolean;
 }
 
 /**
@@ -97,6 +100,7 @@ export async function interceptVehicleTypesWithSave(
   const state = JSON.parse(JSON.stringify(MOCK_VEHICLE_TYPES));
   const content: Array<Record<string, unknown>> = state.data.vehicleTypes.content;
   let lastInput: VehicleTypeInputCapture | null = null;
+  let saved = false;
 
   await page.route('**/graphql', async route => {
     const post = route.request().postDataJSON();
@@ -115,6 +119,7 @@ export async function interceptVehicleTypesWithSave(
       }
       const row = content.find(r => r.netexId === input.netexId);
       if (row) Object.assign(row, input, { version: (row.version as number) + 1 });
+      saved = true;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -126,6 +131,14 @@ export async function interceptVehicleTypesWithSave(
     }
 
     if (query.includes('vehicleTypes')) {
+      if (opts.failRefetch && saved) {
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ errors: [{ message: 'refetch failed' }] }),
+        });
+        return;
+      }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
