@@ -24,7 +24,7 @@ export const fetchOrganisations = async (
   const raw: { organisations: Page<OrganisationWire> } = await fetchOrganisationsRequest(
     applicationBaseUrl,
     token,
-    { size: FETCH_ALL_SIZE }
+    { filter: { onlyUserAuthorized: true }, size: FETCH_ALL_SIZE }
   );
   return raw.organisations.content.map(projectOrganisation);
 };
