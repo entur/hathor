@@ -8,6 +8,7 @@ import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
 import type { DeckPlanContext } from './deckPlanTypes.ts';
 import { fetchDeckPlans } from './fetchDeckPlans.ts';
 import { compareDeckPlans } from './deckPlanSortValue.ts';
+import { useOrganisations } from '../organisations/hooks/useOrganisations.ts';
 
 export type OrderBy = 'name' | 'id';
 
@@ -24,16 +25,17 @@ export function useDeckPlans() {
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
   const [searchParams] = useSearchParams();
+  const { currentOrganisation } = useOrganisations();
 
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
 
   const doFetch = useCallback(async () => {
-    if (!applicationBaseUrl) return;
+    if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    fetchDeckPlans(applicationBaseUrl, token)
+    fetchDeckPlans(applicationBaseUrl, currentOrganisation.id, token)
       .then((ctx: DeckPlanContext) => {
         setData(ctx.deckPlans);
       })
@@ -61,7 +63,7 @@ export function useDeckPlans() {
         }
       })
       .finally(() => setLoading(false));
-  }, [applicationBaseUrl, getAccessToken]);
+  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
 
   // Refetch when applicationBaseUrl changes or when filter param changes (after import)
   useEffect(() => {

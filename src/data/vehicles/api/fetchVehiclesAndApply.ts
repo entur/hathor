@@ -16,7 +16,12 @@ export interface FetchVehiclesAndApplyDeps {
   setData: (rows: VehicleGQLShaped[]) => void;
   setError: (msg: string | null) => void;
   /** Test seam. Defaults to the production `fetchVehicles`. */
-  fetchVehiclesImpl?: (baseUrl: string, token: AccessToken) => Promise<VehicleGQLShaped[]>;
+  fetchVehiclesImpl?: (
+    baseUrl: string,
+    dataOwnerRef: string,
+    token: AccessToken
+  ) => Promise<VehicleGQLShaped[]>;
+  dataOwnerRef: string;
 }
 
 export async function fetchVehiclesAndApply({
@@ -25,11 +30,12 @@ export async function fetchVehiclesAndApply({
   setData,
   setError,
   fetchVehiclesImpl = fetchVehicles,
+  dataOwnerRef,
 }: FetchVehiclesAndApplyDeps): Promise<void> {
   setError(null);
   try {
     const token = await getAccessToken();
-    const rows = await fetchVehiclesImpl(applicationBaseUrl, token);
+    const rows = await fetchVehiclesImpl(applicationBaseUrl, dataOwnerRef, token);
     setData(rows);
   } catch (err) {
     setError(translateVehiclesFetchError(err));

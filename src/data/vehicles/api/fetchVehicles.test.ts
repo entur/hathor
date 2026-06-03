@@ -19,7 +19,7 @@ describe('fetchVehicles', () => {
 
   it('returns an empty array when content is empty', async () => {
     mockedRequest.mockResolvedValue(mkPage([]));
-    expect(await fetchVehicles('http://x', null)).toEqual([]);
+    expect(await fetchVehicles('http://x', 'NOG:Authority:1', null)).toEqual([]);
   });
 
   it('projects a vehicle with a full transportType into the nested row shape', async () => {
@@ -44,7 +44,7 @@ describe('fetchVehicles', () => {
         },
       ])
     );
-    expect(await fetchVehicles('http://x', null)).toEqual([
+    expect(await fetchVehicles('http://x', 'NOG:Authority:1', null)).toEqual([
       {
         id: 'NMR:Vehicle:1',
         version: 2,
@@ -76,7 +76,7 @@ describe('fetchVehicles', () => {
         },
       ])
     );
-    const [row] = await fetchVehicles('http://x', null);
+    const [row] = await fetchVehicles('http://x', 'NOG:Authority:1', null);
     expect(row.transportType).toBeUndefined();
   });
 
@@ -98,7 +98,7 @@ describe('fetchVehicles', () => {
         },
       ])
     );
-    const [row] = await fetchVehicles('http://x', null);
+    const [row] = await fetchVehicles('http://x', 'NOG:Authority:1', null);
     expect(row.transportType?.transportMode).toBe('UNKNOWN');
   });
 
@@ -113,7 +113,7 @@ describe('fetchVehicles', () => {
         },
       ])
     );
-    const [row] = await fetchVehicles('http://x', null);
+    const [row] = await fetchVehicles('http://x', 'NOG:Authority:1', null);
     expect(row.operationalNumber).toBeUndefined();
   });
 
@@ -133,14 +133,14 @@ describe('fetchVehicles', () => {
           /* totalElements */ 42
         )
       );
-      await fetchVehicles('http://x', null);
+      await fetchVehicles('http://x', 'NOG:Authority:1', null);
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy.mock.calls[0][0]).toMatch(/truncated/);
     });
 
     it('does not warn when content.length === totalElements', async () => {
       mockedRequest.mockResolvedValue(mkPage([]));
-      await fetchVehicles('http://x', null);
+      await fetchVehicles('http://x', 'NOG:Authority:1', null);
       expect(warnSpy).not.toHaveBeenCalled();
     });
   });
