@@ -9,6 +9,8 @@ import type { ColumnDefinition } from '../../../components/data/dataTableTypes.t
 import type { OrderBy } from '../hooks/useVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
+import { deckPlanLabel } from '../utils/deckPlanLabel.ts';
+import { metadataCount } from '../utils/metadataCount.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { toTransportMode, transportModeFilters } from '../../netex/transportMode.ts';
 import { useVehicleTypeUrlSelection } from '../hooks/useVehicleTypeUrlSelection.tsx';
@@ -61,7 +63,17 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'deckPlanName',
     headerLabel: 'Deck Plan',
     isSortable: true,
-    renderCell: item => item.deckPlan?.name?.value,
+    renderCell: item => deckPlanLabel(item.deckPlan),
+    display: 'desktop-only',
+  },
+  {
+    id: 'pcKv',
+    headerLabel: 'PC/KV',
+    isSortable: false,
+    // privateCode + keyValues count — surfaces extension metadata (incl. the
+    // Autosys imported-id) that the form doesn't show; '—' when none.
+    renderCell: item => metadataCount(item) || '—',
+    align: 'center',
     display: 'desktop-only',
   },
   {
