@@ -36,12 +36,13 @@ export interface VehicleWire {
  */
 export async function fetchVehicles(
   applicationBaseUrl: string,
+  dataOwnerRef: string,
   token: AccessToken
 ): Promise<VehicleGQLShaped[]> {
   const raw: { vehicles: Page<VehicleWire> } = await fetchVehiclesRequest(
     applicationBaseUrl,
     token,
-    { size: FETCH_ALL_SIZE }
+    { size: FETCH_ALL_SIZE, filter: { dataOwnerRef } }
   );
   const { content, totalElements } = raw.vehicles;
   if (content.length < totalElements) {
@@ -79,12 +80,13 @@ export async function fetchVehicles(
 export async function fetchVehicle(
   netexId: string,
   applicationBaseUrl: string,
+  dataOwnerRef: string,
   token: AccessToken
 ): Promise<VehicleGQLShaped[]> {
   const raw: { vehicles: Page<VehicleWire> } = await fetchVehiclesRequest(
     applicationBaseUrl,
     token,
-    { size: FETCH_ALL_SIZE, filter: { netexIds: [netexId] } }
+    { size: FETCH_ALL_SIZE, filter: { netexIds: [netexId], dataOwnerRef } }
   );
   const { content, totalElements } = raw.vehicles;
   if (content.length < totalElements) {

@@ -7,11 +7,13 @@ import { projectVehicleType, type VehicleTypeWire } from '../api/fetchVehicleTyp
 export const fetchVehicleType = async (
   applicationBaseUrl: string,
   id: string,
+  dataOwnerRef: string,
   token: AccessToken
 ): Promise<VehicleType | null> => {
   const res: { vehicleTypes: Page<VehicleTypeWire> } = await fetchVehicleTypeRequest(
     applicationBaseUrl,
     id,
+    dataOwnerRef,
     token
   );
   const wire = res.vehicleTypes.content[0];

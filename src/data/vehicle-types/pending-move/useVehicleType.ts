@@ -4,6 +4,7 @@ import { useAuth } from '../../../auth/authUtils.ts';
 import { fetchVehicleType } from './fetchVehicleType.ts';
 import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
 
 export function useVehicleType(id: string | undefined) {
   const [data, setData] = useState<VehicleType | null>(null);
@@ -11,14 +12,15 @@ export function useVehicleType(id: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
+  const { currentOrganisation } = useOrganisations();
 
   const doFetch = useCallback(async () => {
-    if (!applicationBaseUrl || !id) return;
+    if (!applicationBaseUrl || !id || !currentOrganisation?.id) return;
     setLoading(true);
     setError(null);
     try {
       const token = await getAccessToken();
-      const vtype = await fetchVehicleType(applicationBaseUrl, id, token);
+      const vtype = await fetchVehicleType(applicationBaseUrl, id, currentOrganisation.id, token);
       if (!vtype) {
         setError(`VehicleType "${id}" not found`);
       } else {
@@ -29,7 +31,7 @@ export function useVehicleType(id: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [applicationBaseUrl, id, getAccessToken]);
+  }, [applicationBaseUrl, id, getAccessToken, currentOrganisation?.id]);
 
   useEffect(() => {
     doFetch();

@@ -20,6 +20,7 @@ const DEFAULT_DELAY_MS = 250;
 export async function waitForVehicleInList(
   id: string,
   applicationBaseUrl: string,
+  dataOwnerRef: string,
   getAccessToken: () => Promise<AccessToken>,
   attempts: number = DEFAULT_ATTEMPTS,
   delayMs: number = DEFAULT_DELAY_MS
@@ -27,7 +28,7 @@ export async function waitForVehicleInList(
   for (let i = 0; i < attempts; i++) {
     try {
       const token = await getAccessToken();
-      const rows = await fetchVehicles(applicationBaseUrl, token);
+      const rows = await fetchVehicles(applicationBaseUrl, dataOwnerRef, token);
       if (rows.some(r => r.id === id)) return true;
     } catch {
       // transient — try again

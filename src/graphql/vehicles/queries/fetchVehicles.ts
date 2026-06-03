@@ -36,7 +36,7 @@ const fetchVehiclesGQL = gql`
 `;
 
 export type VehicleVars = PageVars & {
-  filter?: { netexIds?: string[]; transportModes?: string[] };
+  filter?: { netexIds?: string[]; transportModes?: string[]; dataOwnerRef: string };
 };
 
 export const fetchVehiclesRequest = (

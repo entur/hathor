@@ -4,5 +4,10 @@ import type { AccessToken } from '../../../auth';
 export const fetchVehicleTypeRequest = (
   applicationBaseUrl: string,
   id: string,
+  dataOwnerRef: string,
   token: AccessToken
-) => fetchVehicleTypesRequest(applicationBaseUrl, token, { size: 1, filter: { netexIds: [id] } });
+) =>
+  fetchVehicleTypesRequest(applicationBaseUrl, token, {
+    size: 1,
+    filter: { netexIds: [id], dataOwnerRef },
+  });
