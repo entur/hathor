@@ -3,8 +3,8 @@ import { authHeader, type AccessToken } from '../../../auth/index.ts';
 import type { PageVars } from '../../paginationTypes.ts';
 
 const fetchOrganisationsGQL = gql`
-  query Organisations($page: Int, $size: Int) {
-    organisations(page: $page, size: $size) {
+  query Organisations($page: Int, $size: Int, $filter: OrganisationsFilter) {
+    organisations(page: $page, size: $size, filter: $filter) {
       content {
         netexId
         name {
@@ -19,7 +19,11 @@ const fetchOrganisationsGQL = gql`
   }
 `;
 
-export type OrganisationVars = PageVars;
+export type OrganisationVars = PageVars & {
+  filter?: {
+    onlyUserAuthorized?: boolean;
+  };
+};
 
 export const fetchOrganisationsRequest = (
   applicationBaseUrl: string,
