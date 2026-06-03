@@ -51,7 +51,7 @@
         {
           "netexId": "NMR:VehicleType:2",
           "version": 1,
-          "name": { "value": "Type Beta" },
+          "name": { "value": "Type Beta", "lang": "nb" },
           "shortName": null,
           "transportMode": "rail",
           "length": 15,

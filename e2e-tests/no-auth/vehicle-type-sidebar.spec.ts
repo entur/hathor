@@ -89,6 +89,28 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page).not.toHaveURL(/selected=/);
     await expect(page.getByTestId('vehicle-type-details-title')).not.toBeVisible();
   });
+
+  // EXPECTED-FAIL — surfaces should-fix (phantom dirty). VehicleType:3 (Gamma)
+  // has lowFloor:null → projection omits it from the baseline, but the Switch
+  // writes a literal boolean, so toggling on then off leaves form.lowFloor=false
+  // ≠ (absent) baseline → JSON-compare reports dirty. A no-op toggle should not
+  // dirty the form. Remove test.fail() once the dirty-compare tolerates
+  // undefined-vs-false (or the Switch writes undefined at the baseline).
+  test('toggling a null-baseline Low Floor switch on then off should not dirty the form', async ({
+    page,
+  }) => {
+    test.fail();
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:3');
+    await page.waitForLoadState('networkidle');
+    await page.getByTestId('editor-rail-edit').click();
+
+    const lowFloor = page.locator('#vtype-low-floor');
+    await lowFloor.click(); // on
+    await lowFloor.click(); // off — back to the visual starting point
+
+    await page.getByTestId('editor-rail-collapse').click();
+    await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
+  });
 });
 
 /**
@@ -182,5 +204,23 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     // No success, and the editor stays editable (still dirty in edit mode).
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
     await expect(page.locator('#vtype-name')).toBeEnabled();
+  });
+
+  // EXPECTED-FAIL — surfaces should-fix (name lang dropped). VehicleType:2's name
+  // carries lang 'nb'. Editing only the text must keep the lang tag, else the
+  // full-replace clears it. VehicleTypeForm's name onChange rebuilds `{ value }`,
+  // dropping lang. Remove test.fail() once the edit merges (preserves) lang.
+  test('editing the name text preserves the existing lang tag', async ({ page }) => {
+    test.fail();
+    const { lastInput } = await interceptVehicleTypesWithSave(page);
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:2');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Beta X');
+    await page.getByTestId('editor-rail-save').click();
+    await expect(page.getByText('Vehicle type saved')).toBeVisible();
+
+    expect(lastInput()?.name).toEqual({ value: 'Type Beta X', lang: 'nb' });
   });
 });
