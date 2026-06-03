@@ -8,9 +8,9 @@ const createOrUpdateVehicleTypeMutation = gql`
   }
 `;
 
-/** Mutation response: the persisted VehicleType's NeTEx id. */
+/** Mutation response: the persisted VehicleType's NeTEx id (nullable per SDL). */
 export interface CreateOrUpdateVehicleTypeResponse {
-  createOrUpdateVehicleType: string;
+  createOrUpdateVehicleType: string | null;
 }
 
 export const createOrUpdateVehicleTypeRequest = (
@@ -18,7 +18,7 @@ export const createOrUpdateVehicleTypeRequest = (
   token: AccessToken,
   vehicleTypeData: VehicleTypeInput
 ): Promise<CreateOrUpdateVehicleTypeResponse> =>
-  request(
+  request<CreateOrUpdateVehicleTypeResponse>(
     applicationBaseUrl,
     createOrUpdateVehicleTypeMutation,
     { input: vehicleTypeData },
