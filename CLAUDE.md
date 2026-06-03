@@ -31,7 +31,8 @@ npm run format           # Prettier auto-format
 
 # E2E tests (Playwright)
 npm run e2e:auth         # Run auth-enabled test suite
-npm run e2e:no-auth      # Run no-auth test suite
+npm run e2e:no-auth      # Run no-auth test suite (mocked GraphQL)
+npm run e2e:local-backend  # no-auth suite against a live local Sobek (E2E_BACKEND=true)
 ```
 
 Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` on the whole project) followed by `npx lint-staged` (Prettier `--write` + ESLint `--fix` on staged files). The developer uses `prettierd` in nvim for format-on-save, which picks up the repo-root `.prettierrc` automatically.
@@ -46,9 +47,11 @@ The core architectural pattern is a reusable data table system:
 
 1. **ViewConfig** (`src/pages/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
 2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
-3. **Page component** (e.g. `src/data/vehicle-types/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
+3. **Page component** (e.g. `src/data/vehicle-types/components/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
 
 To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
+
+**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Note: cross-feature backend-model types (`Name`, `DeckPlan`, enums) currently sit in `data/vehicle-types/types/` + `data/netex/` and are reached into by sibling features — a known coupling being reworked onto a shared, codegen-shaped model layer (**#107**).
 
 ### State Management
 
@@ -59,13 +62,15 @@ No state library — uses React Context API exclusively:
 - **EditingContext** — sidebar editor state (which entity is being edited)
 - **CustomizationContext** — theme/icon toggle, persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
+- **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
 
 Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehicleTypes`).
 
 ### Backend Integration
 
-- **GraphQL**: `graphql-request` library, queries in `src/graphql/vehicles/queries/`
-- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.ts`
+- **GraphQL (read)**: `graphql-request`, queries in `src/graphql/vehicles/queries/`
+- **GraphQL (write)**: `createOrUpdateVehicle` / `createOrUpdateVehicleType` mutations in `src/graphql/vehicles/mutations/`. Sobek's `createOrUpdate*` is a **full-document replace** — an absent/blank input field is nulled, so serializers must send the complete document (not omit-blank).
+- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.ts` (Autosys bulk import). The route-based VehicleType *create-via-XML* editor was removed — VehicleType save is now the GraphQL mutation above.
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
 
@@ -79,7 +84,7 @@ When in doubt about whether a hathor query has drifted from Sobek's current sche
 
 ### Routing
 
-React Router v6 in `src/App.tsx`. Protected routes use `<ProtectedRoute>` which checks OIDC authentication.
+React Router v6 in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/vehicles/new` and `/deck-plans/:id` stay route-based. The former route-based `/vehicle-types/:id` and `/vehicle-types/new` editors were removed.
 
 ### Internationalization
 
