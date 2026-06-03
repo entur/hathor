@@ -92,4 +92,35 @@ describe('serializeVehicleType', () => {
     expect(input.name).toEqual({ value: 'Rail Type' });
     expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } });
   });
+
+  // Full-document-replace contract: a no-op edit (project → serialize) must NOT
+  // drop any field Sobek sent, else the next save nulls it. These pin the
+  // must-fix data-loss bugs from the code review.
+  describe('full-document round-trip preserves fetched fields (no silent wipe)', () => {
+    it('preserves description (query selects it; must survive project∘serialize)', () => {
+      // The list query selects `description { value }`, so the wire carries it.
+      const wire = {
+        netexId: 'NMR:VehicleType:9',
+        version: 1,
+        name: { value: 'Has description' },
+        description: { value: 'Long-form description' },
+      } as VehicleTypeWire;
+      const input = serializeVehicleType(projectVehicleType(wire));
+      expect(input.description).toEqual({ value: 'Long-form description' });
+    });
+
+    it('preserves a transportMode outside the chip-filter set (FERRY)', () => {
+      // Sobek's TransportMode enum has modes hathor does not chip-filter
+      // (FERRY, INTERCITY_RAIL, URBAN_RAIL, SELF_DRIVE, …). Editing such a VT
+      // must not reclassify it.
+      const wire: VehicleTypeWire = {
+        netexId: 'NMR:VehicleType:ferry',
+        version: 1,
+        name: { value: 'Ferry Type' },
+        transportMode: 'FERRY',
+      };
+      const input = serializeVehicleType(projectVehicleType(wire));
+      expect(input.transportMode).toBe('FERRY');
+    });
+  });
 });

@@ -22,6 +22,7 @@ export interface VehicleTypeWire {
   version: number;
   name?: Name | null;
   shortName?: Name | null;
+  description?: Name | null;
   transportMode?: string | null;
   length?: number | null;
   width?: number | null;
@@ -75,7 +76,11 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   version: vt.version,
   name: vt.name ?? undefined,
   shortName: vt.shortName ?? undefined,
-  transportMode: canonTransportMode(vt.transportMode),
+  description: vt.description ?? undefined,
+  // Canonical form for chips/icons, but fall back to the raw Sobek value for
+  // modes outside hathor's filter set (FERRY, INTERCITY_RAIL, …) so a save
+  // round-trips them instead of nulling the field under full-replace.
+  transportMode: canonTransportMode(vt.transportMode) ?? vt.transportMode ?? undefined,
   length: vt.length ?? undefined,
   width: vt.width ?? undefined,
   height: vt.height ?? undefined,
