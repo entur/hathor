@@ -20,6 +20,17 @@ const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
 const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
 
+/**
+ * Coerce flag booleans so a Switch's `false` (off) compares equal to an absent
+ * baseline (a null-backed flag projects to `undefined`). Without this, toggling
+ * a null-baseline `lowFloor`/`selfPropelled` on then off reads as dirty.
+ */
+const normalizeForDirty = (vt: VehicleType): VehicleType => ({
+  ...vt,
+  lowFloor: vt.lowFloor || undefined,
+  selfPropelled: vt.selfPropelled || undefined,
+});
+
 interface VehicleTypeDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
   vehicleType: VehicleType | null;
@@ -68,7 +79,10 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
     }
   }, [vehicleType]);
 
-  const isDirty = !!vehicleType && JSON.stringify(state.form) !== JSON.stringify(state.baseline);
+  const isDirty =
+    !!vehicleType &&
+    JSON.stringify(normalizeForDirty(state.form)) !==
+      JSON.stringify(normalizeForDirty(state.baseline));
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
