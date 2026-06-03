@@ -15,6 +15,23 @@ export type Vehicle = {
   version: number;
 };
 
+/** Sobek `PrivateCode` — an alternate/internal identifier (`value` required). */
+export type PrivateCode = {
+  type?: string;
+  value: string;
+};
+
+/**
+ * Sobek `KeyValues` — extension metadata bag. NOT user-editable in hathor, but
+ * carries real data on live VTs (env values keyed e.g. `MaximumEngineEffectKW`,
+ * plus the Autosys `imported-id` provenance), so it must round-trip untouched —
+ * a save that omits it would null it under full-document-replace.
+ */
+export type KeyValue = {
+  key: string;
+  values: string[];
+};
+
 /** Sobek `PropulsionType` enum (wire form is SCREAMING_SNAKE). */
 export const PROPULSION_TYPES = [
   'COMBUSTION',
@@ -95,6 +112,9 @@ export type VehicleType = {
   changed?: string;
   changedBy?: string;
   vehicles?: Vehicle[];
+  // Carried for round-trip preservation only (not edited in the form).
+  privateCode?: PrivateCode;
+  keyValues?: KeyValue[];
 };
 
 export type VehicleTypeContext = {

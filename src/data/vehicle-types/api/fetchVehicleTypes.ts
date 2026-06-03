@@ -52,6 +52,8 @@ export interface VehicleTypeWire {
         version: number;
       }[]
     | null;
+  privateCode?: { type?: string | null; value: string } | null;
+  keyValues?: { key: string; values: string[] }[] | null;
 }
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
@@ -111,6 +113,10 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
         version: v.version,
       }))
     : undefined,
+  privateCode: vt.privateCode
+    ? { type: vt.privateCode.type ?? undefined, value: vt.privateCode.value }
+    : undefined,
+  keyValues: vt.keyValues ?? undefined,
 });
 
 /**
@@ -143,6 +149,8 @@ export interface VehicleTypeInput {
   lowFloor?: boolean | null;
   selfPropelled?: boolean | null;
   hybridCategory?: HybridCategory | null;
+  privateCode?: { type?: string | null; value: string } | null;
+  keyValues?: { key: string; values: string[] }[] | null;
 }
 
 /**
@@ -180,6 +188,10 @@ export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
   lowFloor: vt.lowFloor ?? null,
   selfPropelled: vt.selfPropelled ?? null,
   hybridCategory: vt.hybridCategory ?? null,
+  // Carried through untouched — Sobek stores env values + the Autosys
+  // imported-id here; omitting them would null them under full-replace.
+  privateCode: vt.privateCode ?? null,
+  keyValues: vt.keyValues ?? null,
 });
 
 /**

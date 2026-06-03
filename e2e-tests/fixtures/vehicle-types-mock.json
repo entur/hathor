@@ -46,6 +46,11 @@
               "operationalNumber": "OP-101",
               "version": 1
             }
+          ],
+          "privateCode": { "type": "internal", "value": "VT-1-PC" },
+          "keyValues": [
+            { "key": "imported-id", "values": ["AUTOSYS:VehicleType:1"] },
+            { "key": "MaximumEngineEffectKW", "values": ["250"] }
           ]
         },
         {
@@ -92,7 +97,9 @@
               "operationalNumber": "OP-102",
               "version": 1
             }
-          ]
+          ],
+          "privateCode": null,
+          "keyValues": []
         },
         {
           "netexId": "NMR:VehicleType:3",
@@ -125,7 +132,9 @@
           },
           "vehicles": [
             { "netexId": "NMR:Vehicle:103", "registrationNumber": "CC-103", "version": 1 }
-          ]
+          ],
+          "privateCode": null,
+          "keyValues": null
         }
       ],
       "totalElements": 3,
