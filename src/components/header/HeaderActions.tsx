@@ -3,6 +3,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { getIconUrl } from '../../utils/iconLoaderUtils.ts';
 import { useTranslation } from 'react-i18next';
 import { useNavRail } from '../../contexts/NavRailContext.tsx';
+import SelectOrganisation from '../../data/organisations/components/SelectOrganisation.tsx';
 
 interface HeaderActionsProps {
   isMobile: boolean;
@@ -50,15 +51,18 @@ export default function HeaderActions({
       )}
 
       {isAuthenticated ? (
-        <IconButton
-          color="inherit"
-          onClick={onUserIconClick}
-          aria-label={t('header.actions.userAccount', 'user account')}
-        >
-          <Badge color="success" overlap="circular" variant="dot">
-            {renderHeaderIcon('user')}
-          </Badge>
-        </IconButton>
+        <>
+          <SelectOrganisation />
+          <IconButton
+            color="inherit"
+            onClick={onUserIconClick}
+            aria-label={t('header.actions.userAccount', 'user account')}
+          >
+            <Badge color="success" overlap="circular" variant="dot">
+              {renderHeaderIcon('user')}
+            </Badge>
+          </IconButton>
+        </>
       ) : authConfigured ? (
         <Button variant="outlined" color="inherit" onClick={onUserIconClick}>
           {t('header.actions.login', 'Log in')}
