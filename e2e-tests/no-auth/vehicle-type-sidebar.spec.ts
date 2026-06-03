@@ -90,16 +90,14 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page.getByTestId('vehicle-type-details-title')).not.toBeVisible();
   });
 
-  // EXPECTED-FAIL — surfaces should-fix (phantom dirty). VehicleType:3 (Gamma)
-  // has lowFloor:null → projection omits it from the baseline, but the Switch
-  // writes a literal boolean, so toggling on then off leaves form.lowFloor=false
-  // ≠ (absent) baseline → JSON-compare reports dirty. A no-op toggle should not
-  // dirty the form. Remove test.fail() once the dirty-compare tolerates
-  // undefined-vs-false (or the Switch writes undefined at the baseline).
+  // RED — VehicleType:3 (Gamma) has lowFloor:null → projection omits it from the
+  // baseline, but the Switch writes a literal boolean, so toggling on then off
+  // leaves form.lowFloor=false ≠ (absent) baseline → JSON-compare reports dirty.
+  // A no-op toggle must not dirty the form; fails until the dirty-compare
+  // tolerates undefined-vs-false.
   test('toggling a null-baseline Low Floor switch on then off should not dirty the form', async ({
     page,
   }) => {
-    test.fail();
     await page.goto('/vehicle-types?selected=NMR:VehicleType:3');
     await page.waitForLoadState('networkidle');
     await page.getByTestId('editor-rail-edit').click();
@@ -206,12 +204,10 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await expect(page.locator('#vtype-name')).toBeEnabled();
   });
 
-  // EXPECTED-FAIL — surfaces should-fix (name lang dropped). VehicleType:2's name
-  // carries lang 'nb'. Editing only the text must keep the lang tag, else the
-  // full-replace clears it. VehicleTypeForm's name onChange rebuilds `{ value }`,
-  // dropping lang. Remove test.fail() once the edit merges (preserves) lang.
+  // RED — VehicleType:2's name carries lang 'nb'. Editing only the text must
+  // keep the lang tag, else full-replace clears it. VehicleTypeForm's name
+  // onChange rebuilds `{ value }`, dropping lang → fails until the edit merges it.
   test('editing the name text preserves the existing lang tag', async ({ page }) => {
-    test.fail();
     const { lastInput } = await interceptVehicleTypesWithSave(page);
     await page.goto('/vehicle-types?selected=NMR:VehicleType:2');
     await page.waitForLoadState('networkidle');

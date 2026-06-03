@@ -123,19 +123,20 @@ describe('serializeVehicleType', () => {
       expect(input.transportMode).toBe('FERRY');
     });
 
-    // EXPECTED-FAIL — surfaces a should-fix bug (review #3). Sobek's
-    // VehicleTypeInput accepts privateCode/keyValues, but neither is selected by
-    // the query, modelled in VehicleTypeWire, mapped in projectVehicleType, nor
-    // emitted by serializeVehicleType — so a full-document-replace save nulls
-    // them. Flip `it.fails` → `it` once they round-trip (query+wire+projection).
-    it.fails('preserves privateCode through project∘serialize', () => {
+    // Sobek's VehicleTypeInput accepts privateCode/keyValues, but neither is
+    // selected by the query, modelled in VehicleTypeWire, mapped in
+    // projectVehicleType, nor emitted by serializeVehicleType — so a
+    // full-document-replace save nulls them. RED until they round-trip.
+    it('preserves privateCode + keyValues through project∘serialize', () => {
       const wire = {
         netexId: 'NMR:VehicleType:pc',
         version: 1,
         privateCode: { type: 'internal', value: 'PC-1' },
+        keyValues: [{ key: 'fleet', values: ['A', 'B'] }],
       } as unknown as VehicleTypeWire;
       const input = serializeVehicleType(projectVehicleType(wire)) as Record<string, unknown>;
       expect(input.privateCode).toEqual({ type: 'internal', value: 'PC-1' });
+      expect(input.keyValues).toEqual([{ key: 'fleet', values: ['A', 'B'] }]);
     });
   });
 });
