@@ -141,7 +141,11 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               id="vtype-name"
               value={value.name?.value ?? ''}
               onChange={e =>
-                setField({ name: textOr(e.target.value) ? { value: e.target.value } : undefined })
+                setField({
+                  name: textOr(e.target.value)
+                    ? { ...value.name, value: e.target.value }
+                    : undefined,
+                })
               }
               disabled={ro}
               size="small"
