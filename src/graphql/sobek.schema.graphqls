@@ -97,20 +97,25 @@ enum HybridCategory {
 input VehicleTypeFilter {
     netexIds: [String!]
     transportModes: [TransportMode!]
+    name: String
 }
 
 input VehicleFilter {
     netexIds: [String!]
     transportModes: [TransportMode!]
+    name: String
 }
 
 input OrganisationsFilter {
     netexIds: [String!]
     organisationType: OrganisationType
+    name: String
 }
 
 input DeckPlanFilter {
     netexIds: [String!]
+    transportModes: [TransportMode!]
+    name: String
 }
 
 # Page types
@@ -191,13 +196,7 @@ type DeckPlanPage {
 type Organisation {
     netexId: String!
     name: MultilingualString
-    legalName: String
-    organisationType: OrganisationType
-    companyNumber: String
-    contactDetails: String
-    version: String
-    created: DateTime
-    changed: DateTime
+    type: OrganisationType
 }
 
 type OrganisationPage {

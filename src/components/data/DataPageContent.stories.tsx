@@ -160,7 +160,7 @@ const meta: Meta<typeof PageContentDemo> = {
     docs: {
       description: {
         component:
-          'The shared list-head + data table for every Generic data view page (`/vehicles`, `/vehicle-types`, `/deck-plans`). The list-head (#88) is a single row: breadcrumbs above, then `title` (h6, left) + total-entries count + optional url-filter-chip on the left, with the right-aligned `addAction` / `importAction` slots. Pagination sits alone in the bottom bar. Rendered here via a demo wrapper that supplies mock rows, columns, and live sort/pagination state.',
+          'The shared list-head + data table for every Generic data view page (`/vehicles`, `/vehicle-types`, `/deck-plans`). The list-head (#88) is a single row: breadcrumbs above, then `title` (h5, left) + total-entries count + optional url-filter-chip on the left, with the right-aligned `addAction` / `importAction` slots. Pagination sits alone in the bottom bar. Rendered here via a demo wrapper that supplies mock rows, columns, and live sort/pagination state.',
       },
     },
   },
@@ -185,7 +185,7 @@ export default meta;
 
 type Story = StoryObj<typeof PageContentDemo>;
 
-/** Baseline: breadcrumbs + h6 left-aligned title + count, sortable table, pagination. */
+/** Baseline: breadcrumbs + h5 left-aligned title + count, sortable table, pagination. */
 export const Default: Story = {};
 
 /** `/vehicles` head: right-aligned add-new slot. */

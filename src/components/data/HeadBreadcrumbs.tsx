@@ -25,7 +25,9 @@ export default function HeadBreadcrumbs({ title }: HeadBreadcrumbsProps) {
       <Link component={RouterLink} to={HOME_ROUTE} underline="hover" color="inherit">
         {t('breadcrumbs.home', 'Home')}
       </Link>
-      <Typography color="text.primary">{title}</Typography>
+      <Typography component="span" color="text.primary">
+        {title}
+      </Typography>
     </Breadcrumbs>
   );
 }
