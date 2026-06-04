@@ -19,7 +19,7 @@ describe('serializeVehicleType', () => {
       version: 7,
       name: { value: 'Type Alpha' },
       shortName: { value: 'TA' },
-      transportMode: 'bus',
+      transportMode: 'BUS',
       euroClass: 'EURO6',
       maximumEngineEffectKW: 250,
       propulsionTypes: ['ELECTRIC'],
@@ -123,11 +123,11 @@ describe('serializeVehicleType', () => {
       expect(input.transportMode).toBe('FERRY');
     });
 
-    // Sobek's VehicleTypeInput accepts privateCode/keyValues, but neither is
-    // selected by the query, modelled in VehicleTypeWire, mapped in
-    // projectVehicleType, nor emitted by serializeVehicleType — so a
-    // full-document-replace save nulls them. RED until they round-trip.
-    it('preserves privateCode + keyValues through project∘serialize', () => {
+    // privateCode/keyValues are deliberately NOT round-tripped. hathor neither
+    // fetches nor models them, so serialize must never emit them — this works
+    // around sobek#149 (any input carrying keyValues → INTERNAL_ERROR). The
+    // cost (full-replace nulls them server-side) is documented in the PR.
+    it('never emits privateCode or keyValues (workaround sobek#149)', () => {
       const wire = {
         netexId: 'NMR:VehicleType:pc',
         version: 1,
@@ -135,8 +135,8 @@ describe('serializeVehicleType', () => {
         keyValues: [{ key: 'fleet', values: ['A', 'B'] }],
       } as unknown as VehicleTypeWire;
       const input = serializeVehicleType(projectVehicleType(wire)) as Record<string, unknown>;
-      expect(input.privateCode).toEqual({ type: 'internal', value: 'PC-1' });
-      expect(input.keyValues).toEqual([{ key: 'fleet', values: ['A', 'B'] }]);
+      expect('privateCode' in input).toBe(false);
+      expect('keyValues' in input).toBe(false);
     });
   });
 });
