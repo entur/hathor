@@ -55,6 +55,9 @@
   "home.features.deckplans.headline": "Setekart",
   "home.features.deckplans.description": "En liste over setekart for kjøretøy som brukes i kollektivtransport.",
 
+  "home.notLoggedIn": "Du må logge inn for å bruke registeret",
+  "home.noOrganisation": "Du må velge en organisasjon for å bruke registeret. Dette gjøres i velgeren øverst til høyre på siden. Hvis du ikke ser noen organisasjoner å velge, kontakt administratoren din for å få tilgang.",
+
   "map.layers.title": "Kartlag",
   "map.layers.circles": "Sirkler",
   "map.layers.icons": "Ikoner",
@@ -188,5 +191,6 @@
 
   "product": "Produkt",
 
-  "organisations.select.label": "Velg organisasjon"
+  "organisations.select.label": "Velg organisasjon",
+  "organisations.select.noOptions": "Ingen organisasjoner tilgjengelig"
 }

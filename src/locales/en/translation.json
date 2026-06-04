@@ -55,6 +55,9 @@
   "home.features.deckplans.headline": "Deck Plans",
   "home.features.deckplans.description": "A list of deck plans for vehicles used in public transport.",
 
+  "home.notLoggedIn": "You need to log in to use the registry",
+  "home.noOrganisation": "You need to choose an organisation to use the registry. This is done in the selector at the top right of the page. If you do not see any organisations to select, please contact your administrator to grant you access.",
+
   "map.layers.title": "Map Layers",
   "map.layers.circles": "Circles",
   "map.layers.icons": "Icons",
@@ -179,5 +182,6 @@
   "product.books": "Books",
   "product.clothing": "Clothing",
 
-  "organisations.select.label": "Select organisation"
+  "organisations.select.label": "Select organisation",
+  "organisations.select.noOptions": "No organisations available"
 }
