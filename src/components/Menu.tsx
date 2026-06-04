@@ -17,6 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
 import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
+import { useOrganisations } from '../data/organisations/hooks/useOrganisations.ts';
 
 const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
@@ -24,16 +25,23 @@ const MOBILE_DRAWER_W = 280;
 // textKey values reuse existing i18n keys so labels translate without
 // new entries (see feedback_i18n_reuse_keys memory).
 // iconKey values map to `#menu-<iconKey>` sprite symbols (see MenuIconSprite).
-const menuItems: { textKey: string; path: string; iconKey: MenuIconName }[] = [
-  { textKey: 'home', path: '/', iconKey: 'home' },
-  {
-    textKey: 'home.features.vehicletypes.headline',
-    path: '/vehicle-types',
-    iconKey: 'vehicleTypes',
-  },
-  { textKey: 'vehicles.title', path: '/vehicles', iconKey: 'vehicles' },
-  { textKey: 'home.features.deckplans.headline', path: '/deck-plans', iconKey: 'deckPlans' },
-];
+const menuItems: { textKey: string; path: string; iconKey: MenuIconName; requiresOrg: boolean }[] =
+  [
+    { textKey: 'home', path: '/', iconKey: 'home', requiresOrg: false },
+    {
+      textKey: 'home.features.vehicletypes.headline',
+      path: '/vehicle-types',
+      iconKey: 'vehicleTypes',
+      requiresOrg: true,
+    },
+    { textKey: 'vehicles.title', path: '/vehicles', iconKey: 'vehicles', requiresOrg: true },
+    {
+      textKey: 'home.features.deckplans.headline',
+      path: '/deck-plans',
+      iconKey: 'deckPlans',
+      requiresOrg: true,
+    },
+  ];
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
@@ -113,6 +121,7 @@ export default function Menu() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { expanded, toggleExpanded, mobileOpen, closeMobile } = useNavRail();
+  const { currentOrganisation } = useOrganisations();
 
   // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
   // Mobile open state is session-only (mobileOpen), NOT the persisted
@@ -184,9 +193,11 @@ export default function Menu() {
       </Box>
       <Divider />
       <List disablePadding>
-        {menuItems.map(item => (
-          <NavItem key={item.path} {...item} expanded={expanded} />
-        ))}
+        {menuItems
+          .filter(item => !item.requiresOrg || currentOrganisation)
+          .map(item => (
+            <NavItem key={item.path} {...item} expanded={expanded} />
+          ))}
       </List>
     </Box>
   );
