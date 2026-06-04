@@ -1,4 +1,6 @@
+import { XMLBuilder } from 'fast-xml-parser';
 import { authHeader, type AccessToken } from '../../auth';
+import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../netex/xmlUtils';
 
 /**
  * Fetch NeTEx XML for a single deck plan from Sobek
@@ -28,16 +30,35 @@ export const fetchDeckPlanDetails = async (
  */
 export const saveDeckPlanAsNetexToBackend = async (
   applicationImportBaseUrl: string,
+  dataOwnerRef: string,
   deckPlanData: string,
   token: AccessToken
 ): Promise<string> => {
+  const xml = xmlParser.parse(deckPlanData);
+  if (!xml) {
+    throw new Error('Invalid XML data');
+  }
+  const resourceFrame = findResourceFrame(xml);
+  if (!resourceFrame) {
+    throw new Error('No ResourceFrame found in XML data');
+  }
+  const builder = new XMLBuilder({
+    ignoreAttributes: false,
+    format: true,
+    suppressEmptyNode: true,
+  });
+  addDataOwnerRefToFrame(
+    xml.PublicationDelivery?.dataObjects?.CompositeFrame ?? resourceFrame,
+    resourceFrame,
+    dataOwnerRef
+  );
   const response = await fetch(`${applicationImportBaseUrl}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
       ...authHeader(token),
     },
-    body: deckPlanData,
+    body: builder.build(xml),
   });
   if (!response.ok) {
     throw new Error(`Error importing deck plan data: ${response.statusText}`);

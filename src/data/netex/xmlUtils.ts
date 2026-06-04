@@ -21,4 +21,30 @@ export function toArray<T>(value: T | T[] | undefined): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
+export function addDataOwnerRefToFrame(
+  baseFrame: ParsedXml,
+  resourceFrame: ParsedXml,
+  dataOwnerRef: string
+) {
+  const frameDefaults = baseFrame.FrameDefaults ?? (baseFrame.FrameDefaults = {});
+  frameDefaults.DefaultResponsibilitySetRef = { '@_ref': 'NMR:ResponsibilitySet:1' };
+
+  const ResponsibilityRoleAssignment = {
+    '@_id': `NMR:ResponsibilityRoleAssignment:1`,
+    '@_version': '1',
+    DataRoleType: 'owns',
+    ResponsibleOrganisationRef: { '@_ref': dataOwnerRef },
+  };
+
+  const responsibilitySet = {
+    '@_id': 'NMR:ResponsibilitySet:1',
+    '@_version': '1',
+    roles: { ResponsibilityRoleAssignment },
+  };
+
+  resourceFrame.responsibilitySets = {
+    ResponsibilitySet: responsibilitySet,
+  };
+}
+
 export const xmlParser = new XMLParser({ ignoreAttributes: false });

@@ -17,12 +17,13 @@ const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
 
 export const fetchDeckPlans = async (
   applicationBaseUrl: string,
+  dataOwnerRef: string,
   token: AccessToken
 ): Promise<DeckPlanContext> => {
   const raw: { deckPlans: Page<DeckPlanWire> } = await fetchDeckPlansRequest(
     applicationBaseUrl,
     token,
-    { size: FETCH_ALL_SIZE }
+    { size: FETCH_ALL_SIZE, filter: { dataOwnerRef } }
   );
   return { deckPlans: raw.deckPlans.content.map(projectDeckPlan) };
 };

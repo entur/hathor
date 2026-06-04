@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
-import type { VehicleInput } from '../api/fetchVehicles';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations';
 
 const orUndef = <T>(s: string | undefined, value: T): T | undefined =>
   s && s.length > 0 ? value : undefined;
@@ -25,6 +25,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const { applicationBaseUrl } = useConfig();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { currentOrganisation } = useOrganisations();
 
   const save = useCallback(
     async (form: VehicleEditFormValue): Promise<SaveResult> => {
@@ -36,7 +37,8 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
       setSaving(true);
       setError(null);
       try {
-        const wireVehicle: VehicleInput = {
+        const wireVehicle = {
+          dataOwnerRef: currentOrganisation?.id,
           registrationDate: form.vehicle.registrationDate,
           description: orUndef(form.vehicle.description?.value, form.vehicle.description),
           chassisNumber: orUndef(form.vehicle.chassisNumber, form.vehicle.chassisNumber),
@@ -68,7 +70,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
   );
 
   return { save, saving, error, clearError: () => setError(null) };

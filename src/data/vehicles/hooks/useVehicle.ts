@@ -3,6 +3,7 @@ import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import { fetchVehicle } from '../api/fetchVehicles.ts';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
 
 /**
  * Fetch and parse a single VehicleGQLShaped from Sobek's GraphQL endpoint.
@@ -15,11 +16,12 @@ export function useVehicle(id: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
+  const { currentOrganisation } = useOrganisations();
 
   const doFetch = useCallback(async () => {
     if (!id) return;
-    if (!applicationBaseUrl) {
-      setError('Application base URL is not configured');
+    if (!applicationBaseUrl || !currentOrganisation?.id) {
+      setError('Application base URL is not configured or current organisation is not set');
       setLoading(false);
       return;
     }
@@ -27,7 +29,12 @@ export function useVehicle(id: string | undefined) {
     setError(null);
     try {
       const token = await getAccessToken();
-      const vehicles = await fetchVehicle(id, applicationBaseUrl, token);
+      const vehicles = await fetchVehicle(
+        id,
+        applicationBaseUrl,
+        currentOrganisation?.id || '',
+        token
+      );
       if (!vehicles?.length) {
         setError(`Vehicle "${id}" not found`);
         setData(null);
@@ -39,7 +46,7 @@ export function useVehicle(id: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [applicationBaseUrl, id, getAccessToken]);
+  }, [applicationBaseUrl, id, getAccessToken, currentOrganisation?.id]);
 
   useEffect(() => {
     doFetch();

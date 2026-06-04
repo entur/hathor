@@ -179,12 +179,13 @@ export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
  */
 export const fetchVehicleTypes = async (
   applicationBaseUrl: string,
+  dataOwnerRef: string,
   token: AccessToken
 ): Promise<VehicleTypeContext> => {
   const raw: { vehicleTypes: Page<VehicleTypeWire> } = await fetchVehicleTypesRequest(
     applicationBaseUrl,
     token,
-    { size: FETCH_ALL_SIZE }
+    { size: FETCH_ALL_SIZE, filter: { dataOwnerRef } }
   );
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
 };

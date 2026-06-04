@@ -7,6 +7,7 @@ import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext';
 import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService';
 import GenericDetailsPage from '../../pages/GenericDetailsPage';
+import { useOrganisations } from '../organisations/hooks/useOrganisations';
 
 const DeckPlanDetailsView = () => {
   const { id } = useParams();
@@ -16,6 +17,7 @@ const DeckPlanDetailsView = () => {
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl } = useConfig();
   const navigate = useNavigate();
+  const { currentOrganisation } = useOrganisations();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,6 +26,7 @@ const DeckPlanDetailsView = () => {
         setFetchError(null);
         if (!id) return;
         if (!applicationImportBaseUrl) return;
+        if (currentOrganisation?.id === undefined) return;
 
         const token = await getAccessToken();
 
@@ -37,7 +40,7 @@ const DeckPlanDetailsView = () => {
     };
 
     fetchData();
-  }, [id, applicationImportBaseUrl, getAccessToken]);
+  }, [id, applicationImportBaseUrl, getAccessToken, currentOrganisation?.id]);
 
   if (loading) {
     return <LoadingPage />;
@@ -49,8 +52,14 @@ const DeckPlanDetailsView = () => {
 
   const handleSave = async () => {
     if (!applicationImportBaseUrl) throw new Error('Import base URL not configured');
+    if (currentOrganisation?.id === undefined) throw new Error('Current organisation is not set');
     const token = await getAccessToken();
-    await saveDeckPlanAsNetexToBackend(applicationImportBaseUrl, data, token);
+    await saveDeckPlanAsNetexToBackend(
+      applicationImportBaseUrl,
+      currentOrganisation.id,
+      data,
+      token
+    );
     navigate('/deck-plans');
   };
 
