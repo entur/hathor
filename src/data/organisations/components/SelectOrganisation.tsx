@@ -11,11 +11,12 @@ export default function SelectOrganisation() {
 
   return (
     <>
-      {isAuthenticated && data.length > 0 && (
+      {isAuthenticated && data !== undefined && (
         <Autocomplete<Organisation, false>
           options={data}
           title={t('organisations.select.label', 'Select organisation')}
           getOptionLabel={option => (option.name?.value ?? '-') + ' (' + option.type + ')'}
+          noOptionsText={t('organisations.select.noOptions', 'No organisations available')}
           value={currentOrganisation}
           onChange={(_e, v) => setCurrentOrganisation(v)}
           size="small"
