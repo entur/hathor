@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
-import type { VehicleInput } from '../api/fetchVehicles';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
 import { useOrganisations } from '../../organisations/hooks/useOrganisations';
 
