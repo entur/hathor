@@ -56,14 +56,6 @@ const fetchVehicleTypesGQL = gql`
           operationalNumber
           version
         }
-        privateCode {
-          type
-          value
-        }
-        keyValues {
-          key
-          values
-        }
       }
       totalElements
       page

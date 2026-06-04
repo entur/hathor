@@ -48,8 +48,6 @@ export interface VehicleTypeWire {
         version: number;
       }[]
     | null;
-  privateCode?: { type?: string | null; value: string } | null;
-  keyValues?: { key: string; values: string[] }[] | null;
 }
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
@@ -96,10 +94,6 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
         version: v.version,
       }))
     : undefined,
-  privateCode: vt.privateCode
-    ? { type: vt.privateCode.type ?? undefined, value: vt.privateCode.value }
-    : undefined,
-  keyValues: vt.keyValues ?? undefined,
 });
 
 /**
@@ -132,8 +126,6 @@ export interface VehicleTypeInput {
   lowFloor?: boolean | null;
   selfPropelled?: boolean | null;
   hybridCategory?: HybridCategory | null;
-  privateCode?: { type?: string | null; value: string } | null;
-  keyValues?: { key: string; values: string[] }[] | null;
 }
 
 /**
@@ -143,7 +135,10 @@ export interface VehicleTypeInput {
  * `undefined` is coerced to explicit `null` so a blanked field is cleared
  * rather than silently retained (the opposite of `useVehiclePairSave`'s
  * omit-blank). `version`/`vehicles`/audit fields are intentionally dropped
- * (not part of the input contract).
+ * (not part of the input contract). `privateCode`/`keyValues` are likewise
+ * never fetched, modelled, nor emitted: echoing `keyValues` back trips
+ * sobek#149 (`INTERNAL_ERROR`). The form does not edit them, so hathor stays
+ * structurally blind. Consequence: full-replace nulls them server-side.
  *
  * @param vt Domain VehicleType (as held by the editor form).
  * @returns The mutation input payload.
@@ -171,10 +166,6 @@ export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
   lowFloor: vt.lowFloor ?? null,
   selfPropelled: vt.selfPropelled ?? null,
   hybridCategory: vt.hybridCategory ?? null,
-  // Carried through untouched — Sobek stores env values + the Autosys
-  // imported-id here; omitting them would null them under full-replace.
-  privateCode: vt.privateCode ?? null,
-  keyValues: vt.keyValues ?? null,
 });
 
 /**
