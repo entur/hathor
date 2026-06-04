@@ -1,141 +1,71 @@
 /**
- * NeTEx TransportModeEnumeration — shared by all vehicle-domain views.
+ * TransportMode — Sobek's GraphQL `TransportMode` enum, carried verbatim.
  *
- * Single source of truth for the chip filter set used on Vehicle, VehicleType,
- * and DeckPlan lists (see GH #24). The id strings are the verbatim NeTEx enum
- * values plus a synthetic `'unknown'` member that absorbs any value the
- * backend may emit that doesn't match the NeTEx vocabulary. Surfacing
- * `'unknown'` rather than `undefined` keeps the typed surface total and lets
- * downstream code drop optional-handling cruft.
+ * Hathor keeps **no curated subset**: the only mode list is the full schema
+ * enum (`TRANSPORT_MODES`, 21 members, in lockstep with the SDL). Presentation
+ * derives from it — filter chips are data-driven (see {@link transportModeFilters}),
+ * icons resolve by identity (`#tm-${mode}`) with a single `tm-fallback` glyph for
+ * members without bespoke art. A value that proves useless is dropped from the
+ * Sobek schema and surfaces there, not via hathor curation.
  */
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 
 /**
- * NeTEx TransportModeEnumeration + synthetic `'unknown'`. Keep in lockstep
- * with the schema; `'unknown'` is the catch-all for missing or unrecognised
- * values from the backend.
+ * Every `TransportMode` member — verbatim mirror of `enum TransportMode` in
+ * `src/graphql/sobek.schema.graphqls`. Keep in lockstep with the SDL.
  */
-export const UNKNOWN_TRANSPORT_MODE = 'unknown' as const;
+export const TRANSPORT_MODES = [
+  'AIR',
+  'ALL',
+  'ANY_MODE',
+  'BUS',
+  'CABLEWAY',
+  'COACH',
+  'FERRY',
+  'FUNICULAR',
+  'INTERCITY_RAIL',
+  'LIFT',
+  'METRO',
+  'OTHER',
+  'RAIL',
+  'SELF_DRIVE',
+  'SNOW_AND_ICE',
+  'TAXI',
+  'TRAM',
+  'TROLLEY_BUS',
+  'UNKNOWN',
+  'URBAN_RAIL',
+  'WATER',
+] as const;
 
-export type TransportMode =
-  | 'bus'
-  | 'tram'
-  | 'rail'
-  | 'metro'
-  | 'water'
-  | 'air'
-  | 'coach'
-  | 'taxi'
-  | 'cableway'
-  | 'funicular'
-  | 'lift'
-  | 'trolleyBus'
-  | 'snowAndIce'
-  | typeof UNKNOWN_TRANSPORT_MODE;
+export type TransportMode = (typeof TRANSPORT_MODES)[number];
 
-/**
- * Shared chip-filter set for any list view that filters by TransportMode.
- *
- * `'unknown'` is intentionally omitted here — chip filters are for
- * specific known modes; rows with `'unknown'` simply don't match any chip
- * and are hidden when any chip is active (which is the desired UX). i18n
- * keys live under `transportMode.*` in both `en` and `nb`.
- */
-export const transportModeFilters: FilterDefinition[] = [
-  { id: 'rail', labelKey: 'transportMode.rail', defaultLabel: 'Rail' },
-  { id: 'metro', labelKey: 'transportMode.metro', defaultLabel: 'Metro' },
-  { id: 'tram', labelKey: 'transportMode.tram', defaultLabel: 'Tram' },
-  { id: 'bus', labelKey: 'transportMode.bus', defaultLabel: 'Bus' },
-  { id: 'coach', labelKey: 'transportMode.coach', defaultLabel: 'Coach' },
-  { id: 'trolleyBus', labelKey: 'transportMode.trolleyBus', defaultLabel: 'Trolley bus' },
-  { id: 'water', labelKey: 'transportMode.water', defaultLabel: 'Water' },
-  { id: 'air', labelKey: 'transportMode.air', defaultLabel: 'Air' },
-  { id: 'taxi', labelKey: 'transportMode.taxi', defaultLabel: 'Taxi' },
-  { id: 'cableway', labelKey: 'transportMode.cableway', defaultLabel: 'Cableway' },
-  { id: 'funicular', labelKey: 'transportMode.funicular', defaultLabel: 'Funicular' },
-  { id: 'lift', labelKey: 'transportMode.lift', defaultLabel: 'Lift' },
-  { id: 'snowAndIce', labelKey: 'transportMode.snowAndIce', defaultLabel: 'Snow & ice' },
-];
+/** Sobek's catch-all member; also the projection default for a null mode. */
+export const UNKNOWN_TRANSPORT_MODE = 'UNKNOWN' satisfies TransportMode;
 
-const KNOWN_TRANSPORT_MODES: ReadonlySet<TransportMode> = new Set(
-  transportModeFilters.map(f => f.id as TransportMode)
-);
+/** Synthetic sprite id for any mode without a bespoke `<symbol>`. */
+export const FALLBACK_MODE_SPRITE = 'fallback' as const;
 
-const ALL_TRANSPORT_MODES: ReadonlySet<TransportMode> = new Set<TransportMode>([
-  ...KNOWN_TRANSPORT_MODES,
-  UNKNOWN_TRANSPORT_MODE,
-]);
+const MODE_SET: ReadonlySet<string> = new Set(TRANSPORT_MODES);
 
-/**
- * Runtime guard — narrows an unknown string to a NeTEx `TransportMode`
- * (including the synthetic `'unknown'`). Use when you need a typed *or
- * nothing* result; prefer {@link toTransportMode} when you want a total
- * mapping.
- */
+/** Runtime guard — narrows a string to a `TransportMode` (one of the 21). */
 export const isTransportMode = (s: string | null | undefined): s is TransportMode =>
-  typeof s === 'string' && ALL_TRANSPORT_MODES.has(s as TransportMode);
-
-/**
- * Normalised lookup key — strips underscores and lowercases. Lets a
- * GraphQL-style `'TROLLEY_BUS'` enum, a NeTEx-canonical `'trolleyBus'`, and
- * an aggressively-uppercased `'TROLLEYBUS'` all resolve to the same mode.
- */
-const normalizeKey = (s: string): string => s.replace(/_/g, '').toLowerCase();
-
-/**
- * Map of normalised-key → canonical `TransportMode`. Built once at module
- * init from {@link KNOWN_TRANSPORT_MODES} so backend value variants
- * (`'bus'`, `'BUS'`, …) collapse to the canonical camelCase form used
- * everywhere else in the codebase (i18n keys, sprite symbol ids, etc.).
- */
-const NORMALIZED_TO_CANONICAL: ReadonlyMap<string, TransportMode> = new Map(
-  Array.from(KNOWN_TRANSPORT_MODES, m => [normalizeKey(m), m])
-);
-
-/**
- * Total mapping from an arbitrary backend value to a canonical
- * `TransportMode`. Case-insensitive and underscore-tolerant so:
- *
- * - `'bus'` (NeTEx XML) → `'bus'`
- * - `'BUS'` (GraphQL enum) → `'bus'`
- * - `'trolleyBus'` → `'trolleyBus'`
- * - `'TROLLEY_BUS'` (GraphQL enum, snake-cased) → `'trolleyBus'`
- * - `'TROLLEYBUS'` (aggressively uppercased) → `'trolleyBus'`
- *
- * Unknown / missing / null and anything outside the NeTEx enum become
- * `'unknown'` rather than `undefined`, so callers can treat the result as
- * a non-optional union member.
- */
-export const toTransportMode = (s: string | null | undefined): TransportMode => {
-  if (typeof s !== 'string' || s.length === 0) return UNKNOWN_TRANSPORT_MODE;
-  return NORMALIZED_TO_CANONICAL.get(normalizeKey(s)) ?? UNKNOWN_TRANSPORT_MODE;
-};
-
-/**
- * Inverse of {@link toTransportMode} for write paths: canonical camelCase
- * `TransportMode` → Sobek's GraphQL `TransportMode` enum value
- * (SCREAMING_SNAKE), e.g. `'bus' → 'BUS'`, `'trolleyBus' → 'TROLLEY_BUS'`,
- * `'snowAndIce' → 'SNOW_AND_ICE'`. `'unknown'`, `null`, and `undefined` map to
- * `null` — the backend enum has no slot for them, so a mutation must omit the
- * value rather than send an invalid name. Mirrors the SDL `TransportMode` enum.
- *
- * @param mode Canonical mode held by the editor form.
- * @returns The Sobek enum name, or `null` when unmapped/absent.
- */
-export const toSobekTransportMode = (
-  mode: TransportMode | string | null | undefined
-): string | null => {
-  if (!mode || mode === UNKNOWN_TRANSPORT_MODE) return null;
-  return mode.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase();
-};
+  typeof s === 'string' && MODE_SET.has(s);
 
 /** Map a `TransportMode` to its i18n key. */
 export const transportModeLabelKey = (mode: TransportMode): string => `transportMode.${mode}`;
 
+/** Sort key — the enum id verbatim; `UNKNOWN` sorts at its alphabetical slot. */
+export const transportModeSortValue = (mode: TransportMode): string => mode;
+
 /**
- * Sort key for a `TransportMode`. `'unknown'` returns `''` so it sinks to
- * the end via {@link compareWithEmptyLast}; others sort alphabetically by
- * their enum id.
+ * Data-driven chip set: one filter per distinct mode present in the data,
+ * deduped and sorted. No curated subset — chips reflect what the rows carry.
+ *
+ * @param modes The transport modes present in the loaded rows.
+ * @returns One {@link FilterDefinition} per distinct mode.
  */
-export const transportModeSortValue = (mode: TransportMode): string =>
-  mode === UNKNOWN_TRANSPORT_MODE ? '' : mode;
+export const transportModeFilters = (modes: Iterable<TransportMode>): FilterDefinition[] =>
+  [...new Set(modes)]
+    .sort()
+    .map(mode => ({ id: mode, labelKey: transportModeLabelKey(mode), defaultLabel: mode }));

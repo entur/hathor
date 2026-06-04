@@ -11,11 +11,7 @@ import type {
 import type { AccessToken } from '../../../auth';
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
-import {
-  toTransportMode,
-  toSobekTransportMode,
-  UNKNOWN_TRANSPORT_MODE,
-} from '../../netex/transportMode.ts';
+import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transportMode.ts';
 
 export interface VehicleTypeWire {
   netexId: string;
@@ -23,7 +19,7 @@ export interface VehicleTypeWire {
   name?: Name | null;
   shortName?: Name | null;
   description?: Name | null;
-  transportMode?: string | null;
+  transportMode?: TransportMode | null;
   length?: number | null;
   width?: number | null;
   height?: number | null;
@@ -62,27 +58,14 @@ const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
   return out && out.length ? out : undefined;
 };
 
-/**
- * Normalise a backend transport-mode string to its canonical TransportMode, or
- * `undefined` when missing/unrecognised. Keeps the stored value identical to
- * what the form Select renders (no case skew, no out-of-range `'unknown'`).
- */
-const canonTransportMode = (m?: string | null): string | undefined => {
-  if (m == null) return undefined;
-  const canon = toTransportMode(m);
-  return canon === UNKNOWN_TRANSPORT_MODE ? undefined : canon;
-};
-
 export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
   name: vt.name ?? undefined,
   shortName: vt.shortName ?? undefined,
   description: vt.description ?? undefined,
-  // Canonical form for chips/icons, but fall back to the raw Sobek value for
-  // modes outside hathor's filter set (FERRY, INTERCITY_RAIL, …) so a save
-  // round-trips them instead of nulling the field under full-replace.
-  transportMode: canonTransportMode(vt.transportMode) ?? vt.transportMode ?? undefined,
+  // Sobek's enum verbatim; null (Sobek does not default) → UNKNOWN.
+  transportMode: vt.transportMode ?? UNKNOWN_TRANSPORT_MODE,
   length: vt.length ?? undefined,
   width: vt.width ?? undefined,
   height: vt.height ?? undefined,
@@ -173,7 +156,7 @@ export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
   euroClass: vt.euroClass ?? null,
   propulsionTypes: vt.propulsionTypes ?? null,
   fuelTypes: vt.fuelTypes ?? null,
-  transportMode: toSobekTransportMode(vt.transportMode),
+  transportMode: vt.transportMode ?? null,
   passengerCapacity: vt.passengerCapacity ?? null,
   deckPlan: vt.deckPlan ? { netexId: vt.deckPlan.id, name: vt.deckPlan.name ?? null } : null,
   formDragCoefficient: vt.formDragCoefficient ?? null,

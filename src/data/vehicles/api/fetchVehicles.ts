@@ -1,5 +1,5 @@
 import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
-import { toTransportMode } from '../../netex/transportMode.ts';
+import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transportMode.ts';
 import { FETCH_ALL_SIZE, type Page } from '../../../graphql/paginationTypes.ts';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 import type { AccessToken } from '../../../auth';
@@ -20,7 +20,7 @@ export interface VehicleWire {
         netexId: string;
         version: number;
         name?: Name | undefined;
-        transportMode?: string | undefined;
+        transportMode?: TransportMode | null;
       }
     | null
     | undefined;
@@ -84,7 +84,7 @@ export async function fetchVehicles(
           id: v.transportType.netexId,
           version: v.transportType.version,
           name: v.transportType.name || undefined,
-          transportMode: toTransportMode(v.transportType.transportMode),
+          transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
         }
       : undefined,
   }));
@@ -127,7 +127,7 @@ export async function fetchVehicle(
           id: v.transportType.netexId,
           version: v.transportType.version,
           name: v.transportType.name || undefined,
-          transportMode: toTransportMode(v.transportType.transportMode),
+          transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
         }
       : undefined,
   }));

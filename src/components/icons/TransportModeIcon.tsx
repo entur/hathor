@@ -1,7 +1,7 @@
 import { Tooltip, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { transportModeLabelKey, type TransportMode } from '../../data/netex/transportMode.ts';
-import { symbolIdFor, colorVarFor } from './transportModeIconHelpers.ts';
+import { colorVarFor } from './transportModeIconHelpers.ts';
 
 const ICON_SIZE = 16;
 
@@ -44,7 +44,7 @@ export default function TransportModeIcon({ mode, iconPosition }: TransportModeI
       aria-label={iconPosition === undefined ? label : undefined}
       style={{ color: colorVarFor(mode), flexShrink: 0 }}
     >
-      <use href={`#tm-${symbolIdFor(mode)}`} />
+      <use href={`#tm-${mode}`} />
     </svg>
   );
 

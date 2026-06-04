@@ -1,13 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box, Typography } from '@mui/material';
 import TransportModeIcon from './TransportModeIcon';
-import type { TransportMode } from '../../data/netex/transportMode';
-import { UNKNOWN_TRANSPORT_MODE, transportModeFilters } from '../../data/netex/transportMode';
+import { TRANSPORT_MODES, type TransportMode } from '../../data/netex/transportMode';
 
-const ALL_MODES: TransportMode[] = [
-  ...transportModeFilters.map(f => f.id as TransportMode),
-  UNKNOWN_TRANSPORT_MODE,
-];
+const ALL_MODES: readonly TransportMode[] = TRANSPORT_MODES;
 
 const meta: Meta<typeof TransportModeIcon> = {
   title: 'components/icons/TransportModeIcon',
@@ -39,15 +35,15 @@ export default meta;
 type Story = StoryObj<typeof TransportModeIcon>;
 
 export const WithControls: Story = {
-  args: { mode: 'rail' },
+  args: { mode: 'RAIL' },
 };
 
 export const LabelLeft: Story = {
-  args: { mode: 'bus', iconPosition: 'left' },
+  args: { mode: 'BUS', iconPosition: 'left' },
 };
 
 export const LabelRight: Story = {
-  args: { mode: 'water', iconPosition: 'right' },
+  args: { mode: 'WATER', iconPosition: 'right' },
 };
 
 /**

@@ -70,6 +70,6 @@ export const getDeckPlanViewConfig = (navigate: ReturnType<typeof useNavigate>) 
   columns: getDeckPlanColumns(navigate),
   getFilterKey: getDeckPlanFilterKey,
   getSortValue: getDeckPlanSortValue,
-  filters: DeckPlanFilters,
+  filters: () => DeckPlanFilters,
   title: 'Deck Plans',
 });

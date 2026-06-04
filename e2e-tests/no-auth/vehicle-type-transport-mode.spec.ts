@@ -35,8 +35,8 @@ test.describe('#23 — TransportMode column + filter-dropdown icons', () => {
       const icon = rows.nth(i).locator('svg[role="img"]').first();
       await expect(icon).toBeVisible();
       const href = await icon.locator('use').getAttribute('href');
-      // Symbol id must resolve to either a covered mode or the unknown fallback.
-      expect(href).toMatch(/^#tm-(bus|coach|rail|tram|metro|water|air|unknown)$/);
+      // Symbol id is the Sobek enum value verbatim (UPPER_CASE).
+      expect(href).toMatch(/^#tm-(BUS|COACH|RAIL|TRAM|METRO|WATER|AIR|UNKNOWN)$/);
     }
   });
 
