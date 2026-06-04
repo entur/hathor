@@ -80,7 +80,9 @@ Localhost backend config (`.github/environments/config-localhost.json`) points t
 
 **IMPORTANT — GQL fixtures must stay in sync with the GQL fetcher code.** Every mock and fixture that simulates a Sobek GraphQL response (vitest mocks in `*.test.ts` files, Playwright fixtures under `e2e-tests/fixtures/*-mock.json`) must mirror the exact wire shape the corresponding query in `src/graphql/vehicles/queries/` requests. When a query selection changes (field rename, addition, removal, or aliasing), the matching mocks/fixtures **must** be updated in the same change — otherwise tests pass against stale shapes and silently mask runtime breakage against the real backend. Mock values must also reflect real Sobek semantics: e.g. NeTEx ids are full `Codespace:Type:Number` form, never bare DB row ids.
 
-When in doubt about whether a hathor query has drifted from Sobek's current schema, fetch the canonical schema with `curl -s https://entur.github.io/sobek/schema.graphqls` and grep for the type/field in question.
+**IMPORTANT — check the Sobek schema upfront in any hathor session.** Before touching GraphQL queries, mutations, fixtures, or data-shape code, verify hathor's queries have not drifted from Sobek's live schema. A vendored snapshot lives at `src/graphql/sobek.schema.graphqls`; the canonical source is `curl -s https://entur.github.io/sobek/schema.graphqls`. Diff the two (`curl -s https://entur.github.io/sobek/schema.graphqls | diff src/graphql/sobek.schema.graphqls -`) at the start of any schema-adjacent work — Sobek evolves independently of hathor, so the snapshot goes stale silently. If they differ, refresh the snapshot (`curl -s https://entur.github.io/sobek/schema.graphqls -o src/graphql/sobek.schema.graphqls`), confirm every field selected by `src/graphql/vehicles/**` still exists in the live schema, and flag any breaking removal/rename before proceeding.
+
+When in doubt about whether a single hathor query has drifted, grep the canonical schema for the type/field in question.
 
 ### Routing
 
