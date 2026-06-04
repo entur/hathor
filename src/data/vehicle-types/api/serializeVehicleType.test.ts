@@ -36,19 +36,19 @@ describe('serializeVehicleType', () => {
     expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } });
   });
 
-  it('maps canonical transportMode back to the Sobek SCREAMING_SNAKE enum', () => {
-    // Sobek's TransportMode enum rejects the canonical lowercase form — the
-    // fetch lowercases (BUS→bus); serialize must invert it (bus→BUS).
-    expect(serializeVehicleType({ id: 'x', version: 1, transportMode: 'bus' }).transportMode).toBe(
+  it('passes the Sobek enum value through unchanged (model already holds it)', () => {
+    // The model carries Sobek's UPPER_CASE enum verbatim, so serialize is a
+    // passthrough — no SCREAMING_SNAKE re-mapping.
+    expect(serializeVehicleType({ id: 'x', version: 1, transportMode: 'BUS' }).transportMode).toBe(
       'BUS'
     );
     expect(
-      serializeVehicleType({ id: 'x', version: 1, transportMode: 'trolleyBus' }).transportMode
+      serializeVehicleType({ id: 'x', version: 1, transportMode: 'TROLLEY_BUS' }).transportMode
     ).toBe('TROLLEY_BUS');
     expect(
-      serializeVehicleType({ id: 'x', version: 1, transportMode: 'snowAndIce' }).transportMode
+      serializeVehicleType({ id: 'x', version: 1, transportMode: 'SNOW_AND_ICE' }).transportMode
     ).toBe('SNOW_AND_ICE');
-    // No mode → null (not an invalid enum name).
+    // No mode → null (the input contract omits it rather than send a blank).
     expect(serializeVehicleType({ id: 'x', version: 1 }).transportMode).toBeNull();
   });
 
