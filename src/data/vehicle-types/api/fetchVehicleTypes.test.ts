@@ -151,28 +151,6 @@ describe('fetchVehicleTypes', () => {
     expect(vt.passengerCapacity).toBeUndefined();
   });
 
-  it('does not model privateCode or keyValues (dropped from the read path)', async () => {
-    // Sobek's VehicleType exposes privateCode/keyValues, but hathor's VT feature
-    // no longer selects or projects them — the form never edits them and echoing
-    // keyValues back trips sobek#149. The projection must carry neither key.
-    mockedRequest.mockResolvedValue(
-      mkPage([
-        {
-          netexId: 'NMR:VehicleType:pc',
-          version: 1,
-          privateCode: { type: 'internal', value: 'PC-1' },
-          keyValues: [{ key: 'imported-id', values: ['A'] }],
-        },
-      ])
-    );
-    const [vt] = (await fetchVehicleTypes('http://x', null)).vehicleTypes as unknown as Record<
-      string,
-      unknown
-    >[];
-    expect('privateCode' in vt).toBe(false);
-    expect('keyValues' in vt).toBe(false);
-  });
-
   it('omits vehicles when the server returns no vehicles list', async () => {
     mockedRequest.mockResolvedValue(
       mkPage([

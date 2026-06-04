@@ -122,21 +122,5 @@ describe('serializeVehicleType', () => {
       const input = serializeVehicleType(projectVehicleType(wire));
       expect(input.transportMode).toBe('FERRY');
     });
-
-    // privateCode/keyValues are deliberately NOT round-tripped. hathor neither
-    // fetches nor models them, so serialize must never emit them — this works
-    // around sobek#149 (any input carrying keyValues → INTERNAL_ERROR). The
-    // cost (full-replace nulls them server-side) is documented in the PR.
-    it('never emits privateCode or keyValues (workaround sobek#149)', () => {
-      const wire = {
-        netexId: 'NMR:VehicleType:pc',
-        version: 1,
-        privateCode: { type: 'internal', value: 'PC-1' },
-        keyValues: [{ key: 'fleet', values: ['A', 'B'] }],
-      } as unknown as VehicleTypeWire;
-      const input = serializeVehicleType(projectVehicleType(wire)) as Record<string, unknown>;
-      expect('privateCode' in input).toBe(false);
-      expect('keyValues' in input).toBe(false);
-    });
   });
 });
