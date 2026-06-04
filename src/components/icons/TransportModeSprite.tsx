@@ -19,7 +19,7 @@
  *
  * Symbols sourced from `concept-sandbox/claude-design.html` (lines
  * 2079–2167) on the `ui-sandboxing` branch, with one edit:
- * - `id="tm-ferry"` renamed to `id="tm-water"` to match NeTEx
+ * - `id="tm-ferry"` renamed to `id="tm-WATER"` to match NeTEx
  *   `TransportModeEnumeration`.
  *
  * Edits to either side of the mirror must be kept in lockstep. See
@@ -35,7 +35,7 @@ export default function TransportModeSprite() {
     <svg style={{ display: 'none' }} xmlns="http://www.w3.org/2000/svg" aria-hidden={true}>
       <defs>
         {/* ────────── Road ────────── */}
-        <symbol id="tm-bus" viewBox="0 0 16 16">
+        <symbol id="tm-BUS" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -45,7 +45,7 @@ export default function TransportModeSprite() {
           <circle cx="4.7" cy="12" r="1" fill="currentColor" />
           <circle cx="11.3" cy="12" r="1" fill="currentColor" />
         </symbol>
-        <symbol id="tm-coach" viewBox="0 0 16 16">
+        <symbol id="tm-COACH" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -68,7 +68,7 @@ export default function TransportModeSprite() {
          * UNVERIFIED. See file-level warning above. Replace with an
          * independently authored shape before any non-Entur publication.
          */}
-        <symbol id="tm-taxi" viewBox="0 0 16 16">
+        <symbol id="tm-TAXI" viewBox="0 0 16 16">
           <path fill="currentColor" d="M6.5 1.4h3v1.6h-3z" />
           <path
             fill="currentColor"
@@ -83,7 +83,7 @@ export default function TransportModeSprite() {
          * wire across the canvas top with two pantograph poles dropping
          * from the wire to the bus roof. No third-party source.
          */}
-        <symbol id="tm-trolleyBus" viewBox="0 0 16 16">
+        <symbol id="tm-TROLLEY_BUS" viewBox="0 0 16 16">
           <path fill="currentColor" d="M.5 1.5h15v.6H.5z" />
           <path fill="currentColor" d="M5.5 2.1h.5v2.9h-.5z" />
           <path fill="currentColor" d="M10 2.1h.5v2.9H10z" />
@@ -97,7 +97,7 @@ export default function TransportModeSprite() {
           <circle cx="11.3" cy="12" r="1" fill="currentColor" />
         </symbol>
         {/* ────────── Rail ────────── */}
-        <symbol id="tm-rail" viewBox="0 0 16 16">
+        <symbol id="tm-RAIL" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -106,7 +106,7 @@ export default function TransportModeSprite() {
           />
           <path fill="currentColor" d="M2 13h12v.6H2z" />
         </symbol>
-        <symbol id="tm-tram" viewBox="0 0 16 16">
+        <symbol id="tm-TRAM" viewBox="0 0 16 16">
           <path fill="currentColor" d="M7.7 1.5h.6v1.2h-.6z" />
           <path fill="currentColor" d="M5.5 2.7h5v.6h-5z" />
           <path
@@ -119,7 +119,7 @@ export default function TransportModeSprite() {
           <circle cx="10.3" cy="11.5" r=".9" fill="currentColor" />
           <path fill="currentColor" d="M2 13.6h12v.5H2z" />
         </symbol>
-        <symbol id="tm-metro" viewBox="0 0 16 16">
+        <symbol id="tm-METRO" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -138,7 +138,7 @@ export default function TransportModeSprite() {
          * @warning Direct lift from a third-party asset whose license is
          * UNVERIFIED. See file-level warning above.
          */}
-        <symbol id="tm-cableway" viewBox="0 0 16 16">
+        <symbol id="tm-CABLEWAY" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -155,7 +155,7 @@ export default function TransportModeSprite() {
          * @warning Direct lift from a third-party asset whose license is
          * UNVERIFIED. See file-level warning above.
          */}
-        <symbol id="tm-funicular" viewBox="0 0 16 16">
+        <symbol id="tm-FUNICULAR" viewBox="0 0 16 16">
           <path fill="currentColor" d="M15 9.125L1 13.135v.99l14-4.01v-.99z" />
           <path
             fill="currentColor"
@@ -178,7 +178,7 @@ export default function TransportModeSprite() {
          * @warning Same proprietary-asset risk as tm-cableway since the
          * silhouette is derived from Entur Linje. See file-level warning.
          */}
-        <symbol id="tm-lift" viewBox="0 0 16 16">
+        <symbol id="tm-LIFT" viewBox="0 0 16 16">
           <g transform="translate(16 1) scale(-1 0.88)">
             <path
               fill="currentColor"
@@ -189,7 +189,7 @@ export default function TransportModeSprite() {
           </g>
         </symbol>
         {/* ────────── Water ────────── */}
-        <symbol id="tm-water" viewBox="0 0 16 16">
+        <symbol id="tm-WATER" viewBox="0 0 16 16">
           <path fill="currentColor" d="M7 3.2h2v1.6H7z" />
           <path fill="currentColor" d="M5.5 5h5l.5 1.5h-6z" />
           <path
@@ -204,7 +204,7 @@ export default function TransportModeSprite() {
           />
         </symbol>
         {/* ────────── Air ────────── */}
-        <symbol id="tm-air" viewBox="0 0 16 16">
+        <symbol id="tm-AIR" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -219,13 +219,13 @@ export default function TransportModeSprite() {
          * three vertical rects rotated 0°, 60°, 120° around (8, 8).
          * No third-party source.
          */}
-        <symbol id="tm-snowAndIce" viewBox="0 0 16 16">
+        <symbol id="tm-SNOW_AND_ICE" viewBox="0 0 16 16">
           <path fill="currentColor" d="M7.4 1h1.2v14H7.4z" />
           <path fill="currentColor" d="M7.4 1h1.2v14H7.4z" transform="rotate(60 8 8)" />
           <path fill="currentColor" d="M7.4 1h1.2v14H7.4z" transform="rotate(120 8 8)" />
         </symbol>
-        {/* ────────── Fallback ────────── */}
-        <symbol id="tm-unknown" viewBox="0 0 16 16">
+        {/* ────────── Unknown (its own glyph; not the catch-all) ────────── */}
+        <symbol id="tm-UNKNOWN" viewBox="0 0 16 16">
           <path
             fill="currentColor"
             fillRule="evenodd"
@@ -236,6 +236,37 @@ export default function TransportModeSprite() {
             fill="currentColor"
             d="M6.2 6.4c0-1 .8-1.8 1.9-1.8s1.9.8 1.9 1.8c0 .7-.4 1.2-1 1.5-.6.3-.9.6-.9 1v.5H7v-.6c0-.7.4-1.1 1-1.4.4-.2.7-.5.7-.9 0-.5-.4-.9-.9-.9s-.9.4-.9.9H6.2Zm1.3 4.5h1.1V12H7.5v-1.1Z"
           />
+        </symbol>
+        {/*
+         * Generic fallback glyph — shared by every enum member without bespoke
+         * art (OTHER, FERRY, INTERCITY_RAIL, URBAN_RAIL, SELF_DRIVE, ANY_MODE,
+         * ALL). Each aliases `#tm-fallback`, so `#tm-${mode}` always resolves.
+         */}
+        <g id="tm-fallback">
+          <rect x="3" y="5" width="10" height="6.5" rx="1.4" fill="currentColor" />
+          <circle cx="5.6" cy="12.4" r="1" fill="currentColor" />
+          <circle cx="10.4" cy="12.4" r="1" fill="currentColor" />
+        </g>
+        <symbol id="tm-OTHER" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
+        </symbol>
+        <symbol id="tm-FERRY" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
+        </symbol>
+        <symbol id="tm-INTERCITY_RAIL" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
+        </symbol>
+        <symbol id="tm-URBAN_RAIL" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
+        </symbol>
+        <symbol id="tm-SELF_DRIVE" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
+        </symbol>
+        <symbol id="tm-ANY_MODE" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
+        </symbol>
+        <symbol id="tm-ALL" viewBox="0 0 16 16">
+          <use href="#tm-fallback" />
         </symbol>
       </defs>
     </svg>

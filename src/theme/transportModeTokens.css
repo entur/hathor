@@ -5,36 +5,39 @@
  * Mirror point: src/components/icons/TransportModeSprite.tsx. See
  * FORK_DECISIONS.md → "Transport-mode icon strategy".
  *
- * `--tm-unknown` is the catch-all fallback used by `colorVarFor(mode)` when a
- * mode has no specific token.
+ * `--tm-fallback` is the generic base fallback used by `colorVarFor(mode)`
+ * when a mode has no specific token. `--tm-UNKNOWN` is `UNKNOWN`'s own token,
+ * not the catch-all.
  */
 :root {
-  --tm-bus: #c5044e;
-  --tm-tram: #642e88;
-  --tm-coach: #8a1414;
-  --tm-rail: #00367f;
-  --tm-metro: #bf5826;
-  --tm-water: #0c6693;
-  --tm-air: #800664;
-  --tm-trolleyBus: #a11440;
-  --tm-cableway: #642e88;
-  --tm-funicular: #78469a;
-  --tm-taxi: #181c56;
-  --tm-lift: #2d6a4f;
-  --tm-snowAndIce: #1a76a8;
-  --tm-unknown: #6a6b78;
+  --tm-fallback: #6a6b78;
+
+  --tm-BUS: #c5044e;
+  --tm-TRAM: #642e88;
+  --tm-COACH: #8a1414;
+  --tm-RAIL: #00367f;
+  --tm-METRO: #bf5826;
+  --tm-WATER: #0c6693;
+  --tm-AIR: #800664;
+  --tm-TROLLEY_BUS: #a11440;
+  --tm-CABLEWAY: #642e88;
+  --tm-FUNICULAR: #78469a;
+  --tm-TAXI: #181c56;
+  --tm-LIFT: #2d6a4f;
+  --tm-SNOW_AND_ICE: #1a76a8;
+  --tm-UNKNOWN: #6a6b78;
 
   /*
-   * `--tm-cableway` deliberately shares the tram hue — same family of rail
+   * `--tm-CABLEWAY` deliberately shares the tram hue — same family of rail
    * transit.
    *
-   * `--tm-lift` is a placeholder forest-green chosen so the lift
+   * `--tm-LIFT` is a placeholder forest-green chosen so the lift
    * silhouette (derived from cableway but mirrored, shortened, and with
    * one fewer window — see `TransportModeSprite.tsx`) renders in a
    * distinct hue from the cableway purple. Swap when design provides an
    * authoritative color.
    *
-   * `--tm-snowAndIce` is a placeholder ice-blue — distinct from the
-   * water hue and from --tm-unknown gray. Swap when design provides one.
+   * `--tm-SNOW_AND_ICE` is a placeholder ice-blue — distinct from the
+   * water hue and from --tm-UNKNOWN gray. Swap when design provides one.
    */
 }

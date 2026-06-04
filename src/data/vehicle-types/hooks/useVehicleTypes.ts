@@ -32,7 +32,10 @@ export function useVehicleTypes() {
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    fetchVehicleTypes(applicationBaseUrl, token)
+    // Return the chain so callers (`refetch` as `onSaved`) can await a fully
+    // applied refresh — the post-save re-baseline depends on `setData` having
+    // run before the success signal fires.
+    return fetchVehicleTypes(applicationBaseUrl, token)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
       })
@@ -58,13 +61,18 @@ export function useVehicleTypes() {
         } else {
           setError('An unexpected error occurred');
         }
+        // Re-throw so `refetch()` honestly rejects on failure (e.g. a failed
+        // post-save refresh) instead of resolving and masking the error.
+        throw err;
       })
       .finally(() => setLoading(false));
   }, [applicationBaseUrl, getAccessToken]);
 
-  // Refetch when applicationBaseUrl changes or when filter param changes (after import)
+  // Refetch when applicationBaseUrl changes or when filter param changes (after
+  // import). Fire-and-forget: the error is already in state, so swallow the
+  // rejection here (only awaiting callers like the post-save refresh care).
   useEffect(() => {
-    doFetch();
+    void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
 
   const handleRequestSort = (property: OrderBy) => {

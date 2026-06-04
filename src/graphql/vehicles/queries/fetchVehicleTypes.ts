@@ -13,6 +13,9 @@ const fetchVehicleTypesGQL = gql`
         shortName {
           value
         }
+        description {
+          value
+        }
         transportMode
         length
         width

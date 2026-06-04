@@ -177,8 +177,8 @@ export interface ViewConfig<T, K extends string> {
   getFilterKey?: (item: T) => string | readonly string[];
   /** Derives a sortable value for a given column key. */
   getSortValue: (item: T, key: K) => string | number;
-  /** Filter chips shown in the search bar. */
-  filters?: FilterDefinition[];
+  /** Data-driven filter chips: derived from the rows currently loaded. */
+  filters?: (items: T[]) => FilterDefinition[];
   /** Page title rendered in the content header. */
   title?: string;
   /**

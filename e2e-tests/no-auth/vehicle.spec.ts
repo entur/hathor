@@ -54,8 +54,8 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     // and the remaining BUS-001 row pads to 10 (the unknown-mode row UNK-001
     // and RAIL-009..012 are paginated to page 1).
     const tbody = table.locator('tbody');
-    await expect(tbody.locator('use[href="#tm-bus"]')).toHaveCount(2);
-    await expect(tbody.locator('use[href="#tm-rail"]')).toHaveCount(8);
+    await expect(tbody.locator('use[href="#tm-BUS"]')).toHaveCount(2);
+    await expect(tbody.locator('use[href="#tm-RAIL"]')).toHaveCount(8);
   });
 
   test('Rail chip filter narrows rows to rail-mode only', async ({ page }) => {

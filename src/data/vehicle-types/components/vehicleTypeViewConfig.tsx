@@ -9,8 +9,9 @@ import type { ColumnDefinition } from '../../../components/data/dataTableTypes.t
 import type { OrderBy } from '../hooks/useVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
+import { deckPlanLabel } from '../utils/deckPlanLabel.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
-import { toTransportMode, transportModeFilters } from '../../netex/transportMode.ts';
+import { transportModeFilters, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 import { useVehicleTypeUrlSelection } from '../hooks/useVehicleTypeUrlSelection.tsx';
 import { vehicleTypeSelectedHref } from '../utils/vehicleTypeUrlParams.ts';
 
@@ -42,7 +43,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'transportMode',
     headerLabel: 'Transport Mode',
     isSortable: true,
-    renderCell: item => <TransportModeIcon mode={toTransportMode(item.transportMode)} />,
+    renderCell: item => <TransportModeIcon mode={item.transportMode ?? UNKNOWN_TRANSPORT_MODE} />,
     align: 'center',
     display: 'always',
   },
@@ -61,7 +62,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'deckPlanName',
     headerLabel: 'Deck Plan',
     isSortable: true,
-    renderCell: item => item.deckPlan?.name?.value,
+    renderCell: item => deckPlanLabel(item.deckPlan),
     display: 'desktop-only',
   },
   {
@@ -84,7 +85,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
  */
 const getVehicleTypeFilterKey = (item: VehicleType): readonly string[] => [
   item.id,
-  toTransportMode(item.transportMode),
+  item.transportMode ?? UNKNOWN_TRANSPORT_MODE,
 ];
 
 /** Whole-row click opens the read-only sidebar via `/vehicle-types?selected=<id>`. */
@@ -101,7 +102,8 @@ export const vehicleTypeViewConfig = {
   columns: vehicleTypeColumns,
   getFilterKey: getVehicleTypeFilterKey,
   getSortValue: getVehicleTypeSortValue,
-  filters: transportModeFilters,
+  filters: (items: VehicleType[]) =>
+    transportModeFilters(items.map(i => i.transportMode ?? UNKNOWN_TRANSPORT_MODE)),
   title: 'Vehicle Types',
   useUrlEffect: useVehicleTypeUrlSelection,
   useRowClick: useVehicleTypeRowClick,

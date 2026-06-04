@@ -15,7 +15,11 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
-import { transportModeFilters } from '../../netex/transportMode.ts';
+import {
+  TRANSPORT_MODES,
+  transportModeLabelKey,
+  type TransportMode,
+} from '../../netex/transportMode.ts';
 import { vehicleSelectedHref } from '../../vehicles/utils/vehicleUrlParams.ts';
 import {
   PROPULSION_TYPES,
@@ -141,7 +145,11 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               id="vtype-name"
               value={value.name?.value ?? ''}
               onChange={e =>
-                setField({ name: textOr(e.target.value) ? { value: e.target.value } : undefined })
+                setField({
+                  name: textOr(e.target.value)
+                    ? { ...value.name, value: e.target.value }
+                    : undefined,
+                })
               }
               disabled={ro}
               size="small"
@@ -159,7 +167,11 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               // at projection, so it always matches an option or the blank one
               // below — no MUI out-of-range value, no read/write skew.
               value={value.transportMode ?? ''}
-              onChange={e => setField({ transportMode: e.target.value || undefined })}
+              onChange={e =>
+                setField({
+                  transportMode: (e.target.value || undefined) as TransportMode | undefined,
+                })
+              }
               disabled={ro}
               size="small"
               fullWidth
@@ -167,9 +179,9 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               <MenuItem value="">
                 <em>{t('common.none', 'None')}</em>
               </MenuItem>
-              {transportModeFilters.map(f => (
-                <MenuItem key={f.id} value={f.id}>
-                  {t(f.labelKey, f.defaultLabel)}
+              {TRANSPORT_MODES.map(mode => (
+                <MenuItem key={mode} value={mode}>
+                  {t(transportModeLabelKey(mode), mode)}
                 </MenuItem>
               ))}
             </TextField>

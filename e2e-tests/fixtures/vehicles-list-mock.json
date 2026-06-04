@@ -22,7 +22,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -45,7 +45,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -68,7 +68,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -91,7 +91,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -114,7 +114,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -137,7 +137,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -160,7 +160,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -183,7 +183,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -206,7 +206,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -229,7 +229,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -252,7 +252,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -275,7 +275,7 @@
             "name": {
               "value": "Rail Type"
             },
-            "transportMode": "rail"
+            "transportMode": "RAIL"
           }
         },
         {
@@ -298,7 +298,7 @@
             "name": {
               "value": "Bus Type"
             },
-            "transportMode": "bus"
+            "transportMode": "BUS"
           }
         },
         {
@@ -321,7 +321,7 @@
             "name": {
               "value": "Bus Type"
             },
-            "transportMode": "bus"
+            "transportMode": "BUS"
           }
         },
         {
@@ -344,7 +344,7 @@
             "name": {
               "value": "Mystery Type"
             },
-            "transportMode": "someUnknownNetexValue"
+            "transportMode": "UNKNOWN"
           }
         }
       ],

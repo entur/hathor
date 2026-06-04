@@ -1,7 +1,7 @@
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import type { OrderBy } from '../hooks/useVehicleTypes.ts';
 import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
-import { toTransportMode, transportModeSortValue } from '../../netex/transportMode.ts';
+import { transportModeSortValue, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 
 export const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string | number => {
   switch (key) {
@@ -14,7 +14,7 @@ export const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string
     case 'deckPlanName':
       return item.deckPlan?.name?.value || '';
     case 'transportMode':
-      return transportModeSortValue(toTransportMode(item.transportMode));
+      return transportModeSortValue(item.transportMode ?? UNKNOWN_TRANSPORT_MODE);
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

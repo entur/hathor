@@ -1,3 +1,5 @@
+import type { TransportMode } from '../../netex/transportMode.ts';
+
 export type Name = {
   value: string;
   lang?: string;
@@ -70,7 +72,8 @@ export type VehicleType = {
   version: number;
   name?: Name;
   shortName?: Name;
-  transportMode?: string;
+  description?: Name;
+  transportMode?: TransportMode;
   deckPlan?: DeckPlan;
   length?: number;
   width?: number;

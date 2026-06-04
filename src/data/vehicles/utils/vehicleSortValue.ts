@@ -26,7 +26,9 @@ export const getVehicleSortValue = (
     case 'transportTypeName':
       return item.transportType?.name?.value || '';
     case 'transportTypeMode':
-      return transportModeSortValue(vehicleMode(item));
+      // A present mode (incl. UNKNOWN) sorts at its slot; a missing
+      // transportType is genuinely empty → empty-last (like the name above).
+      return item.transportType ? transportModeSortValue(vehicleMode(item)) : '';
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

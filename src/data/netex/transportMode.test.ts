@@ -1,63 +1,56 @@
 import { describe, it, expect } from 'vitest';
 import {
   isTransportMode,
-  toTransportMode,
   transportModeFilters,
   transportModeLabelKey,
   transportModeSortValue,
 } from './transportMode.ts';
-import type { TransportMode } from './transportMode.ts';
 
-describe('toTransportMode', () => {
-  it('passes known NeTEx modes through unchanged', () => {
-    expect(toTransportMode('rail')).toBe('rail');
-    expect(toTransportMode('trolleyBus')).toBe('trolleyBus');
-    expect(toTransportMode('snowAndIce')).toBe('snowAndIce');
-  });
-
-  it("maps null, undefined, and empty string to 'unknown'", () => {
-    expect(toTransportMode(null)).toBe('unknown');
-    expect(toTransportMode(undefined)).toBe('unknown');
-    expect(toTransportMode('')).toBe('unknown');
-  });
-
-  it("maps unrecognised backend strings to 'unknown'", () => {
-    expect(toTransportMode('boat')).toBe('unknown');
-    expect(toTransportMode('TRAIN')).toBe('unknown'); // 'train' is not a NeTEx mode
-    expect(toTransportMode('underground')).toBe('unknown');
-  });
-
-  it('case-folds uppercase GraphQL-enum values onto the canonical NeTEx form', () => {
-    expect(toTransportMode('BUS')).toBe('bus');
-    expect(toTransportMode('RAIL')).toBe('rail');
-    expect(toTransportMode('TRAM')).toBe('tram');
-    expect(toTransportMode('METRO')).toBe('metro');
-    expect(toTransportMode('WATER')).toBe('water');
-    expect(toTransportMode('AIR')).toBe('air');
-    expect(toTransportMode('COACH')).toBe('coach');
-    expect(toTransportMode('TAXI')).toBe('taxi');
-    expect(toTransportMode('LIFT')).toBe('lift');
-  });
-
-  it('accepts GraphQL snake-cased enums for camelCase NeTEx modes', () => {
-    expect(toTransportMode('TROLLEY_BUS')).toBe('trolleyBus');
-    expect(toTransportMode('SNOW_AND_ICE')).toBe('snowAndIce');
-  });
-
-  it('accepts aggressively uppercased forms without separators', () => {
-    expect(toTransportMode('TROLLEYBUS')).toBe('trolleyBus');
-    expect(toTransportMode('SNOWANDICE')).toBe('snowAndIce');
-  });
-});
+/**
+ * Mirror of `enum TransportMode` in `src/graphql/sobek.schema.graphqls` — all
+ * 21 members. The canonical `TransportMode` union must keep this exact count
+ * (the 13-mode chip set and 14-mode sprite set are presentation subsets; the
+ * enum itself stays in lockstep with the schema).
+ */
+const SCHEMA_ENUM: string[] = [
+  'AIR',
+  'ALL',
+  'ANY_MODE',
+  'BUS',
+  'CABLEWAY',
+  'COACH',
+  'FERRY',
+  'FUNICULAR',
+  'INTERCITY_RAIL',
+  'LIFT',
+  'METRO',
+  'OTHER',
+  'RAIL',
+  'SELF_DRIVE',
+  'SNOW_AND_ICE',
+  'TAXI',
+  'TRAM',
+  'TROLLEY_BUS',
+  'UNKNOWN',
+  'URBAN_RAIL',
+  'WATER',
+];
 
 describe('isTransportMode', () => {
-  it("returns true for known modes and 'unknown'", () => {
-    expect(isTransportMode('rail')).toBe(true);
-    expect(isTransportMode('unknown')).toBe(true);
+  it('recognises every one of the 21 Sobek schema enum members (enum count in lockstep with schema)', () => {
+    expect(SCHEMA_ENUM).toHaveLength(21);
+    SCHEMA_ENUM.forEach(mode => expect(isTransportMode(mode)).toBe(true));
   });
 
-  it('returns false for unrecognised strings, null, undefined', () => {
+  it('returns true for the Sobek enum members (incl. UNKNOWN)', () => {
+    expect(isTransportMode('RAIL')).toBe(true);
+    expect(isTransportMode('TROLLEY_BUS')).toBe(true);
+    expect(isTransportMode('UNKNOWN')).toBe(true);
+  });
+
+  it('returns false for unrecognised strings, lowercase, null, undefined', () => {
     expect(isTransportMode('boat')).toBe(false);
+    expect(isTransportMode('rail')).toBe(false); // canonical form is now UPPER_CASE
     expect(isTransportMode(null)).toBe(false);
     expect(isTransportMode(undefined)).toBe(false);
     expect(isTransportMode('')).toBe(false);
@@ -66,47 +59,27 @@ describe('isTransportMode', () => {
 
 describe('transportModeLabelKey', () => {
   it('returns the i18n key matching the locale files', () => {
-    expect(transportModeLabelKey('rail')).toBe('transportMode.rail');
-    expect(transportModeLabelKey('unknown')).toBe('transportMode.unknown');
+    expect(transportModeLabelKey('RAIL')).toBe('transportMode.RAIL');
+    expect(transportModeLabelKey('UNKNOWN')).toBe('transportMode.UNKNOWN');
   });
 });
 
 describe('transportModeSortValue', () => {
-  it("returns '' for 'unknown' so it sinks via compareWithEmptyLast", () => {
-    expect(transportModeSortValue('unknown')).toBe('');
-  });
-
-  it('returns the enum id verbatim for known modes', () => {
-    expect(transportModeSortValue('rail')).toBe('rail');
-    expect(transportModeSortValue('bus')).toBe('bus');
+  it('returns the enum id verbatim — UNKNOWN is no longer forced last', () => {
+    expect(transportModeSortValue('UNKNOWN')).toBe('UNKNOWN');
+    expect(transportModeSortValue('RAIL')).toBe('RAIL');
+    expect(transportModeSortValue('BUS')).toBe('BUS');
   });
 });
 
-describe('transportModeFilters', () => {
-  it("intentionally omits 'unknown' — chip filters are for specific known modes only", () => {
-    expect(transportModeFilters.some(f => f.id === 'unknown')).toBe(false);
+describe('transportModeFilters (data-driven — no curated subset)', () => {
+  it('derives one chip per distinct mode present in the data, deduped and sorted', () => {
+    const filters = transportModeFilters(['RAIL', 'BUS', 'RAIL', 'FERRY']);
+    expect(filters.map(f => f.id)).toEqual(['BUS', 'FERRY', 'RAIL']);
+    expect(filters.every(f => f.labelKey === `transportMode.${f.id}`)).toBe(true);
   });
 
-  it('includes a filter entry for every known TransportMode (regression net for forgotten additions)', () => {
-    const knownModes: TransportMode[] = [
-      'bus',
-      'tram',
-      'rail',
-      'metro',
-      'water',
-      'air',
-      'coach',
-      'taxi',
-      'cableway',
-      'funicular',
-      'lift',
-      'trolleyBus',
-      'snowAndIce',
-    ];
-    const filterIds = new Set(transportModeFilters.map(f => f.id));
-    knownModes.forEach(mode => {
-      expect(filterIds.has(mode)).toBe(true);
-    });
-    expect(transportModeFilters).toHaveLength(knownModes.length);
+  it('returns an empty chip list when the data carries no modes', () => {
+    expect(transportModeFilters([])).toEqual([]);
   });
 });
