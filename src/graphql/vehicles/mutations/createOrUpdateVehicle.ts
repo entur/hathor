@@ -1,6 +1,6 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth';
-import type { VehicleWire } from '../../../data/vehicles/api/fetchVehicles.ts';
+import type { VehicleInput } from '../../../data/vehicles/api/fetchVehicles.ts';
 
 const createOrUpdateVehicleMutation = gql`
   mutation MutateVehicle($input: VehicleInput!) {
@@ -11,7 +11,7 @@ const createOrUpdateVehicleMutation = gql`
 export const createOrUpdateVehicleRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
-  vehicleData: VehicleWire
+  vehicleData: VehicleInput
 ) =>
   request<{ createOrUpdateVehicle: string | null }>(
     applicationBaseUrl,

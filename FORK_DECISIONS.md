@@ -364,6 +364,8 @@ under `vehicle-types/`.
 
 ## Transport-mode icon strategy: inline SVG sprite over file-per-icon _(2026-05-26)_
 
+> **Superseded in part (2026-06-04)** by _"TransportMode carries Sobek's UPPER_CASE enum; UNKNOWN de-specialized"_ at the end of this file. The sprite-over-file-per-icon decision stands. What changed: the `var(--tm-${mode}, var(--tm-unknown))` colour fallback and the "any mode not in the sprite → `#tm-unknown`" symbol fallback are replaced by a dedicated `tm-fallback` glyph; `UNKNOWN` and `OTHER` become ordinary modes with no special branch; mode ids are UPPER_CASE; all hand-curated subsets are removed (chips are data-driven, icons resolve by identity) — the only mode list is the 21-member schema enum.
+
 ### Context
 
 VehicleType list (#23) and Vehicle list (#24, partially shipped via #26) both need
@@ -523,3 +525,29 @@ Replace the Drawer entirely with a Material 3 Navigation Rail (MUI Mini-Variant 
 - Nav state persisted across reloads under `localStorage` key `hathor:navRailExpanded`. Recognize during any future localStorage-clearing migration.
 - One e2e smoke test added in `e2e-tests/no-auth/no-auth.spec.ts`: clears the localStorage key, asserts rail visible, toggles via `aria-expanded` round-trip. Width assertions skipped because Playwright timing during 200ms transitions is flaky — `aria-expanded` is the stable signal.
 - Closes hathor#65; supersedes that issue's addendum (which proposed the simpler Drawer-flip approach).
+
+---
+
+## TransportMode carries Sobek's UPPER_CASE enum; UNKNOWN de-specialized _(2026-06-04)_
+
+Supersedes part of _"Transport-mode icon strategy"_ (2026-05-26) — the fallback/colour contract and the synthetic `'unknown'` member. The sprite-rendering decision itself is unchanged.
+
+### Context
+
+Hathor canonicalized transport modes to a **camelCase** vocabulary and ran a tolerant normalization engine (`toTransportMode` → `normalizeKey` + `NORMALIZED_TO_CANONICAL`) to fold every backend casing variant onto it. That engine existed only because hathor once ingested two representations — NeTEx XML (camelCase) and the GraphQL enum (UPPER_CASE). Today every vehicle / vehicle-type field arrives via GraphQL typed as the `TransportMode` enum, so the casing-fold is dead weight — and it masked a fixture bug (Playwright fixtures carried `"bus"`, not the real wire value `"BUS"`). Raised by Gunnar on PR #114 (`fetchVehicleTypes.ts`): _"Why not just go UPPER CASE?"_
+
+Confirmed against the Sobek source: the backend (`AllPublicTransportModesEnumeration`, from netex-java-model) treats all 21 enum members uniformly — no curation, no validation, no defaulting; `transportMode` is nullable and passed through verbatim. The "13 real modes" is therefore a **hathor presentation choice only**, not a backend contract.
+
+### Decision
+
+- **The GraphQL enum's UPPER_CASE string values are hathor's canonical `TransportMode`** — a string-literal union of all 21 members. The model field stores exactly what Sobek sends; projection is `transportMode: vt.transportMode ?? 'UNKNOWN'` (null coalesced — Sobek does not default, so null genuinely arrives). The casing-normalization layer is deleted.
+- **Both directions collapse to passthrough.** The casing-fold was bidirectional on PR #114: read used `canonTransportMode(toTransportMode(…))`, write used `toSobekTransportMode(…)` in `serializeVehicleType`. With the model holding the Sobek enum verbatim, the read projection is a passthrough and `toSobekTransportMode` becomes identity — deleted. The `?? vt.transportMode` raw-value fallback added on PR #114 to round-trip undrawn modes (FERRY, INTERCITY_RAIL) is also obsolete: the raw value *is* the canonical value.
+- **`UNKNOWN` is an ordinary mode, not a special case.** It owns the `tm-unknown` glyph + `--tm-unknown` token, matched only by itself — like `BUS` matches `tm-bus`. No sort branch, no universal-fallback role, no "omitted from filters" carve-out.
+- **No curated subset anywhere — icon resolution is identity.** Every one of the 21 enum members has a `<symbol id="tm-MODE">`; the ones without bespoke art are one-line aliases `<use href="#tm-fallback"/>` to a single generic glyph. The icon component references `#tm-${mode}` **directly** — no `symbolIdFor`, no `SPRITE_MODES` set. `colorVarFor(mode) = var(--tm-${mode}, var(--tm-fallback))` lets CSS fall back per-token without a list.
+- **Filter chips are data-driven, not a hand-curated list.** `transportModeFilters` becomes a one-liner over the modes actually present in the loaded rows: `[...new Set(modes)].sort().map(m => ({ id: m, labelKey: transportModeLabelKey(m), defaultLabel: m }))`. The chip bar reflects the data, never a maintained subset. **Rationale (the user's call):** hathor must not decide which enum values "matter" — a useless value is removed from the Sobek schema and surfaces *there*, not via hathor curation. The only mode list in hathor is the 21-member `TRANSPORT_MODES` enum, in lockstep with the SDL (`isTransportMode` has a regression test asserting all 21).
+
+### Consequences
+
+- **~140 fewer LOC net** (vs ~100 in the earlier subset draft): beyond the casing engine it also deletes `toSobekTransportMode`, `symbolIdFor`, `SPRITE_MODES`, the `KNOWN_/ALL_/NORMALIZED_` sets, and collapses the 15-line `transportModeFilters` array to a one-liner. `transportMode.ts` 141→~56, `transportModeIconHelpers.ts` 46→~8. Partly offset by ~+45 lines of additive sprite-alias markup + 7 new i18n keys per locale (chips now span all 21). Exact figure from the impl `git diff --stat`.
+- Playwright fixtures flip camelCase → UPPER_CASE to mirror the real Sobek wire shape (the normalizer had hidden the mismatch).
+- `WATER` (general water transport) stays drawn; `FERRY` (distinct NeTEx ferry-specific mode) rides `tm-fallback` until it earns a glyph — flagged follow-up, not a `WATER` alias.

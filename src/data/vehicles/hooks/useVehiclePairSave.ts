@@ -2,10 +2,10 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
-import type { VehicleWire } from '../api/fetchVehicles';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations';
 
-const orUndef = (s: string | undefined, value: unknown): unknown =>
+const orUndef = <T>(s: string | undefined, value: T): T | undefined =>
   s && s.length > 0 ? value : undefined;
 
 interface SaveResult {
@@ -25,6 +25,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const { applicationBaseUrl } = useConfig();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { currentOrganisation } = useOrganisations();
 
   const save = useCallback(
     async (form: VehicleEditFormValue): Promise<SaveResult> => {
@@ -37,6 +38,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
       setError(null);
       try {
         const wireVehicle = {
+          dataOwnerRef: currentOrganisation?.id,
           registrationDate: form.vehicle.registrationDate,
           description: orUndef(form.vehicle.description?.value, form.vehicle.description),
           chassisNumber: orUndef(form.vehicle.chassisNumber, form.vehicle.chassisNumber),
@@ -56,7 +58,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
                 netexId: form.vehicle.transportType.id ?? '',
               }
             : undefined,
-        } as VehicleWire;
+        };
         const token = await getAccessToken();
         const body = await createOrUpdateVehicleRequest(applicationBaseUrl, token, wireVehicle);
         return { newId: body.createOrUpdateVehicle, error: null };
@@ -68,7 +70,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
   );
 
   return { save, saving, error, clearError: () => setError(null) };

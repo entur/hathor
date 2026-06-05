@@ -1,11 +1,8 @@
 {
   "name": "hathor",
   "private": true,
-  "version": "0.70.0",
+  "version": "0.74.0",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "predev": "run-p --race copy:theme copy:config",
     "dev": "vite",

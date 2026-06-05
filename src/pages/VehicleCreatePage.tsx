@@ -18,6 +18,7 @@ import { waitForVehicleInList } from '../data/vehicles/api/waitForVehicleInList'
 import { vehicleSelectedHref } from '../data/vehicles/utils/vehicleUrlParams';
 import { useAuth } from '../auth/authUtils';
 import { useConfig } from '../contexts/configContext';
+import { useOrganisations } from '../data/organisations/hooks/useOrganisations';
 
 const BLANK_FORM_KEY = JSON.stringify(BLANK_FORM);
 
@@ -32,6 +33,7 @@ export default function VehicleCreatePage() {
   const [savedKey, setSavedKey] = useState(BLANK_FORM_KEY);
   const [confirmingBack, setConfirmingBack] = useState(false);
   const { save, error, clearError } = useVehiclePairSave();
+  const { currentOrganisation } = useOrganisations();
 
   // Baseline advances to the saved form on success, so a saved-then-untouched
   // form reads as clean — no spurious discard dialog, no beforeunload block.
@@ -65,10 +67,10 @@ export default function VehicleCreatePage() {
 
   const handleViewInList = async () => {
     const id = savedNewId;
-    if (id && applicationBaseUrl) {
+    if (id && applicationBaseUrl && currentOrganisation?.id) {
       // Wait for the backend to index the new vehicle so the slider on the
       // next page resolves to a found row instead of the not-found body.
-      await waitForVehicleInList(id, applicationBaseUrl, getAccessToken);
+      await waitForVehicleInList(id, applicationBaseUrl, currentOrganisation.id, getAccessToken);
     }
     setSaved(false);
     // TODO: clear active ?search= filter before deep-link — a filter may

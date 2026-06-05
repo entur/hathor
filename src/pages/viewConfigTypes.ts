@@ -181,8 +181,8 @@ export interface ViewConfig<T, K extends string> {
   getFilterKey?: (item: T) => string | readonly string[];
   /** Derives a sortable value for a given column key. */
   getSortValue: (item: T, key: K) => string | number;
-  /** Filter chips shown in the search bar. */
-  filters?: FilterDefinition[];
+  /** Data-driven filter chips: derived from the rows currently loaded. */
+  filters?: (items: T[]) => FilterDefinition[];
   /** Literal page title rendered in the list-head (fallback for {@link titleKey}). */
   title?: string;
   /** i18n key resolved to the list-head title and breadcrumb leaf. Takes precedence over {@link title}. */

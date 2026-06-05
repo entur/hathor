@@ -19,7 +19,7 @@ describe('fetchVehicles', () => {
 
   it('returns an empty array when content is empty', async () => {
     mockedRequest.mockResolvedValue(mkPage([]));
-    expect(await fetchVehicles('http://x', null)).toEqual([]);
+    expect(await fetchVehicles('http://x', 'NOG:Authority:1', null)).toEqual([]);
   });
 
   it('projects a vehicle with a full transportType into the nested row shape', async () => {
@@ -39,12 +39,12 @@ describe('fetchVehicles', () => {
             netexId: 'NMR:VehicleType:rail',
             version: 3,
             name: { value: 'Rail Type' },
-            transportMode: 'rail',
+            transportMode: 'RAIL',
           },
         },
       ])
     );
-    expect(await fetchVehicles('http://x', null)).toEqual([
+    expect(await fetchVehicles('http://x', 'NOG:Authority:1', null)).toEqual([
       {
         id: 'NMR:Vehicle:1',
         version: 2,
@@ -59,7 +59,7 @@ describe('fetchVehicles', () => {
           id: 'NMR:VehicleType:rail',
           version: 3,
           name: { value: 'Rail Type' },
-          transportMode: 'rail',
+          transportMode: 'RAIL',
         },
       },
     ]);
@@ -76,11 +76,14 @@ describe('fetchVehicles', () => {
         },
       ])
     );
-    const [row] = await fetchVehicles('http://x', null);
+    const [row] = await fetchVehicles('http://x', 'NOG:Authority:1', null);
     expect(row.transportType).toBeUndefined();
   });
 
-  it("collapses an unrecognised transportType.transportMode to 'unknown'", async () => {
+  it("coalesces a null/missing transportType.transportMode to 'UNKNOWN'", async () => {
+    // Sobek types transportMode as the GraphQL enum; the only non-enum value it
+    // can send is null. The projection coalesces null → 'UNKNOWN' (Sobek does
+    // not default) and otherwise passes the enum value through verbatim.
     mockedRequest.mockResolvedValue(
       mkPage([
         {
@@ -90,13 +93,13 @@ describe('fetchVehicles', () => {
           transportType: {
             netexId: 'NMR:VehicleType:weird',
             version: 1,
-            transportMode: 'someUnknownNetexValue',
+            transportMode: null,
           },
         },
       ])
     );
-    const [row] = await fetchVehicles('http://x', null);
-    expect(row.transportType?.transportMode).toBe('unknown');
+    const [row] = await fetchVehicles('http://x', 'NOG:Authority:1', null);
+    expect(row.transportType?.transportMode).toBe('UNKNOWN');
   });
 
   it('omits operationalNumber on the row when the server returns null', async () => {
@@ -110,7 +113,7 @@ describe('fetchVehicles', () => {
         },
       ])
     );
-    const [row] = await fetchVehicles('http://x', null);
+    const [row] = await fetchVehicles('http://x', 'NOG:Authority:1', null);
     expect(row.operationalNumber).toBeUndefined();
   });
 
@@ -130,14 +133,14 @@ describe('fetchVehicles', () => {
           /* totalElements */ 42
         )
       );
-      await fetchVehicles('http://x', null);
+      await fetchVehicles('http://x', 'NOG:Authority:1', null);
       expect(warnSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy.mock.calls[0][0]).toMatch(/truncated/);
     });
 
     it('does not warn when content.length === totalElements', async () => {
       mockedRequest.mockResolvedValue(mkPage([]));
-      await fetchVehicles('http://x', null);
+      await fetchVehicles('http://x', 'NOG:Authority:1', null);
       expect(warnSpy).not.toHaveBeenCalled();
     });
   });

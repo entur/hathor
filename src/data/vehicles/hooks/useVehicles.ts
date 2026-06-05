@@ -5,6 +5,7 @@ import type { Order } from '../../../components/data/dataTableTypes.ts';
 import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShaped.ts';
 import { fetchVehiclesAndApply } from '../api/fetchVehiclesAndApply.ts';
 import { compareVehicles } from '../utils/vehicleSortValue.ts';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
 
 /**
  * Data hook for the `/vehicles` list. Mirrors `useVehicleTypes` — single fetch
@@ -24,9 +25,10 @@ export function useVehicles() {
 
   const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
+  const { currentOrganisation } = useOrganisations();
 
   const doFetch = useCallback(async () => {
-    if (!applicationBaseUrl) return;
+    if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
     try {
       await fetchVehiclesAndApply({
@@ -34,11 +36,12 @@ export function useVehicles() {
         getAccessToken,
         setData,
         setError,
+        dataOwnerRef: currentOrganisation?.id || '',
       });
     } finally {
       setLoading(false);
     }
-  }, [applicationBaseUrl, getAccessToken]);
+  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
 
   useEffect(() => {
     doFetch();

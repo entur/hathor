@@ -18,7 +18,7 @@ const withTType = (
     transportType: {
       id: 'NMR:VehicleType:x',
       version: 1,
-      transportMode: 'unknown',
+      transportMode: 'UNKNOWN',
       ...tt,
     },
   });
@@ -93,20 +93,21 @@ describe('compareVehicles', () => {
     expect(sorted.map(r => r.id)).toEqual(['aa', 'zz', 'ws-1', 'ws-2']);
   });
 
-  it("sorts by transportType mode and parks 'unknown' / missing rows at the end", () => {
+  it('sorts by transportType mode (UNKNOWN at its slot); only a missing transportType parks last', () => {
     const rows = [
-      withTType({ id: 'a' }, { transportMode: 'unknown' }),
-      withTType({ id: 'b' }, { transportMode: 'tram' }),
-      withTType({ id: 'c' }, { transportMode: 'bus' }),
-      mk({ id: 'd' }),
+      withTType({ id: 'a' }, { transportMode: 'UNKNOWN' }),
+      withTType({ id: 'b' }, { transportMode: 'TRAM' }),
+      withTType({ id: 'c' }, { transportMode: 'BUS' }),
+      mk({ id: 'd' }), // no transportType → genuinely empty → parks last
     ];
     const sorted = [...rows].sort(compareVehicles('transportTypeMode', 'asc'));
+    // BUS < TRAM < UNKNOWN (alphabetical), then the transportType-less row last.
     expect(sorted.map(r => r.id)).toEqual(['c', 'b', 'a', 'd']);
   });
 });
 
 describe('getVehicleSortValue', () => {
-  it("returns empty string for missing transportType and for 'unknown' mode", () => {
+  it('returns empty string for a missing transportType', () => {
     const r = mk({});
     expect(getVehicleSortValue(r, 'transportTypeName')).toBe('');
     expect(getVehicleSortValue(r, 'transportTypeMode')).toBe('');

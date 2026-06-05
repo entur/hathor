@@ -80,7 +80,7 @@ export const vehicleViewConfig = {
   columns: vehicleColumns,
   getFilterKey: getVehicleFilterKey,
   getSortValue: getVehicleSortValue,
-  filters: transportModeFilters,
+  filters: (items: VehicleGQLShaped[]) => transportModeFilters(items.map(vehicleMode)),
   titleKey: 'vehicles.title',
   useUrlEffect: useVehicleUrlSelection,
   useRowClick: useVehicleRowClick,

@@ -15,8 +15,9 @@ import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackba
 import { useVehicle } from '../hooks/useVehicle.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
-import { useEditorDirty } from '../../../contexts/EditingContext.tsx';
-import { commitSave } from '../api/commitSave.ts';
+import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
+import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { commitSave } from '../../../utils/commitSave.ts';
 import {
   edit,
   hydrate,
@@ -42,7 +43,7 @@ interface VehicleDetailsProps {
 
 export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = formState;
@@ -63,24 +64,9 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
 
   const isDirty = isFormDirty(formState);
   useDirtyFormBlock(isDirty);
+  useLiftEditorDirty(isDirty);
 
-  // Lift the editor's dirty signal onto EditingContext so chrome (sort /
-  // pagination guards, #91) can react without reaching into the feature.
-  // Clear on unmount so the signal doesn't leak across routes.
-  const { setEditorDirty } = useEditorDirty();
-  useEffect(() => {
-    setEditorDirty(isDirty);
-  }, [isDirty, setEditorDirty]);
-  useEffect(() => () => setEditorDirty(false), [setEditorDirty]);
-
-  const closeSlider = () =>
-    setSearchParams(
-      params => {
-        params.delete(VEHICLE_SELECTED_PARAM);
-        return params;
-      },
-      { replace: true }
-    );
+  const closeSlider = useCloseSliderParam(VEHICLE_SELECTED_PARAM);
 
   const handleSave = async () => {
     const result = await commitSave(save, form, onSaved);

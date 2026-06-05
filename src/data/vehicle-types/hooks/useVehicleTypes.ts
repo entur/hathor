@@ -7,6 +7,7 @@ import { fetchVehicleTypes } from '../api/fetchVehicleTypes.ts';
 import { compareVehicleTypes } from '../utils/vehicleTypeSortValue.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
 
 export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 
@@ -23,16 +24,20 @@ export function useVehicleTypes() {
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
   const [searchParams] = useSearchParams();
+  const { currentOrganisation } = useOrganisations();
 
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
 
   const doFetch = useCallback(async () => {
-    if (!applicationBaseUrl) return;
+    if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    fetchVehicleTypes(applicationBaseUrl, token)
+    // Return the chain so callers (`refetch` as `onSaved`) can await a fully
+    // applied refresh — the post-save re-baseline depends on `setData` having
+    // run before the success signal fires.
+    fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
       })
@@ -58,13 +63,18 @@ export function useVehicleTypes() {
         } else {
           setError('An unexpected error occurred');
         }
+        // Re-throw so `refetch()` honestly rejects on failure (e.g. a failed
+        // post-save refresh) instead of resolving and masking the error.
+        throw err;
       })
       .finally(() => setLoading(false));
-  }, [applicationBaseUrl, getAccessToken]);
+  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
 
-  // Refetch when applicationBaseUrl changes or when filter param changes (after import)
+  // Refetch when applicationBaseUrl changes or when filter param changes (after
+  // import). Fire-and-forget: the error is already in state, so swallow the
+  // rejection here (only awaiting callers like the post-save refresh care).
   useEffect(() => {
-    doFetch();
+    void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
 
   const handleRequestSort = (property: OrderBy) => {

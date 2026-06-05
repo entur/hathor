@@ -83,11 +83,11 @@ export default function GenericDataViewPage<T, K extends string>({
   useSearchRegistration(allData, dataLoading);
 
   useEffect(() => {
-    registerFilterConfig('data', filters || []);
+    registerFilterConfig('data', filters && allData ? filters(allData) : []);
     return () => {
       registerFilterConfig('data', null);
     };
-  }, [registerFilterConfig, filters]);
+  }, [registerFilterConfig, filters, allData]);
 
   const { dataForTable, currentTotalForTable } = useTableLogic({
     allData: allData,
