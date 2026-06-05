@@ -84,27 +84,37 @@ the `E2E_BACKEND` branch points) before editing specs or helpers.
 
 Sobek requires a Bearer token and there is **no automated login** in the harness today (no
 `globalSetup`, no `storageState`, no OIDC completion). So a human logs in once and we capture the
-session token. Use a config that actually enables OIDC *and* points at `:37999` —
-`config-with-auth.json` already does both; `config-no-auth.json` does not.
+session token. This is the **proven recipe** (verified end-to-end):
 
-Procedure:
-1. Copy an OIDC-enabled config to `public/config.json` (e.g. `config-with-auth.json`).
-2. Launch a **headed** browser to the app, navigate to a protected route, and **pause** for the
-   human (`await page.pause()` in a tiny setup script, or a Playwright global-setup project).
+1. **Serve the app authenticated against local Sobek:** `npm run local`. Its `prelocal` hook copies
+   `.github/environments/config-localhost.json` → `public/config.json`, which already has **both**
+   `oidcConfig` (partner.dev.entur) **and** the `:37999` backend — so this single command is the
+   login vehicle. Don't hand-copy `config-with-auth.json`; and note `npm run dev` points at the dev
+   API instead (`config-dev.json`), which is *not* what you want here.
+2. **Run the capture script from INSIDE the repo tree — not `/tmp`.** It `import`s
+   `@playwright/test`, so it must sit where node resolves `node_modules`; a `/tmp` script dies with
+   `ERR_MODULE_NOT_FOUND`. Put it in a gitignored dir — `playwright/.auth/capture.mjs`
+   (`/playwright/.auth/` is already gitignored). It launches a **headed** browser to
+   `localhost:5000` and polls until the OIDC user appears. Ready-to-run script (and the re-seed +
+   verify steps) are in `references/harness-internals.md`.
 3. The human completes the Entur login in that window.
-4. **Capture the token from `sessionStorage`** — oidc-client-ts stores the signed-in user under
-   `oidc.user:<authority>:<client_id>` in **sessionStorage**, and its `access_token` is the JWT.
-   ⚠️ Playwright's `storageState` persists cookies + **localStorage only, not sessionStorage** —
-   so you cannot rely on `storageState` alone. Read the `oidc.user:*` entry explicitly and re-seed
-   it (via an `addInitScript` that writes it back into `sessionStorage` on each page) so the serial
-   run stays authenticated. Details + a ready snippet live in `references/harness-internals.md`.
-5. Decode the JWT and sanity-check it before running: it must carry the role/permission claim Sobek
-   reads for `organisations(onlyUserAuthorized:true)` — a token missing role assignments makes the
-   org dropdown throw, which cascades into the same "Loading data…" stall. If the org fetch throws,
-   that's a token/permissions problem (or a Sobek bug), not a hathor query bug.
+4. The script captures `oidc.user:<authority>:<client_id>`, checking **both** `sessionStorage` and
+   `localStorage` (oidc-client-ts defaults to sessionStorage), and writes `{ k, v }` to a gitignored
+   file; `.v.access_token` is the JWT.
+   ⚠️ Playwright's `storageState` persists cookies + **localStorage only, not sessionStorage** — so
+   you cannot rely on `storageState`. Capture the `oidc.user:*` entry explicitly and re-seed it via
+   `addInitScript` for the serial run (snippet in harness-internals).
+5. **Verify the token before running — make-or-break.** Decode the JWT payload and confirm a
+   **`roles` claim exists**. A `partner.dev` token with only `scope: openid` and **no `roles`
+   claim** makes `organisations(onlyUserAuthorized:true)` return `INTERNAL_ERROR` (confirmed live) →
+   the org dropdown throws → `currentOrganisation` null → the "Loading data…" stall. That's a
+   token/permissions problem (roles not provisioned) or a Sobek bug — **not** a hathor query bug;
+   hathor's org query shape is correct. The non-authorized `organisations` path returns all orgs
+   fine, so use it to sanity-check connectivity. Fix paths: provision the login with role
+   assignments, guard Sobek's `getRoleAssignmentsForUser`, or have hathor stop sending
+   `onlyUserAuthorized: true` (dev-only — shows all orgs).
 
-Never paste the JWT into chat or commit it. Keep it in a gitignored file (e.g. `/tmp/…`) for the
-run only; tokens are short-lived.
+Never paste the JWT into chat or commit it. Keep it in a gitignored file for the run only; short-lived.
 
 ## Running
 

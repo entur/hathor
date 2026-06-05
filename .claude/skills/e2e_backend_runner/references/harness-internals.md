@@ -62,28 +62,66 @@ against a secured Sobek. For an authenticated live run, use an OIDC-enabled conf
 
 `oidc-client-ts` (under `react-oidc-context`) stores the signed-in user in **sessionStorage** by
 default, under key `oidc.user:<authority>:<client_id>`; its `.access_token` is the Bearer JWT
-(`src/auth/Auth.tsx`).
+(`src/auth/Auth.tsx`). Playwright `storageState` saves cookies + **localStorage only** — *not*
+sessionStorage — so a saved `storageState` will **not** keep you logged in. Capture the entry
+explicitly instead.
 
-Playwright `storageState` saves cookies + **localStorage only** — *not* sessionStorage. So a saved
-`storageState` will **not** keep you logged in. Two workable options:
+### 1. Serve + capture (proven)
 
-1. **Capture + re-seed sessionStorage** (closest to "JWT in session"):
-   ```ts
-   // after the human logs in, in the same page:
-   const oidc = await page.evaluate(() => {
-     const k = Object.keys(sessionStorage).find(k => k.startsWith('oidc.user:'));
-     return k ? { k, v: sessionStorage.getItem(k)! } : null;
-   });
-   // persist `oidc` to a gitignored file, then for the serial run:
-   await context.addInitScript(({ k, v }) => sessionStorage.setItem(k, v), oidc);
-   ```
-2. **Inject the Bearer directly** — pull `access_token` out of that JSON and add
-   `Authorization: Bearer <jwt>` via `context.setExtraHTTPHeaders` / a route handler. Simpler, but
-   bypasses the app's own auth wiring (less faithful to real usage).
+Serve with `npm run local` (config-localhost = oidc + `:37999`). The capture script **must live
+inside the repo** so node resolves `node_modules` — a `/tmp` copy fails `ERR_MODULE_NOT_FOUND`. Put
+it at `playwright/.auth/capture.mjs` (gitignored). Output the token to a gitignored path too.
 
-Decode the JWT (`base64 -d` the middle segment) and confirm it carries the role/permission claim
-Sobek's `RoleAssignmentExtractor` reads — without it, `organisations(onlyUserAuthorized:true)`
-throws and the org dropdown never fills → "Loading data…" stall.
+```js
+// playwright/.auth/capture.mjs  — run: node playwright/.auth/capture.mjs (with npm run local up)
+import { chromium } from '@playwright/test';
+import fs from 'node:fs';
+const OUT = 'playwright/.auth/oidc-user.json';                 // gitignored
+const readOidc = () => {                                       // runs in the page
+  const scan = (s) => { for (const k of Object.keys(s)) {
+    if (!k.startsWith('oidc.user:')) continue;
+    try { const v = JSON.parse(s.getItem(k)); if (v?.access_token) return { k, v }; } catch {}
+  } return null; };
+  return scan(sessionStorage) || scan(localStorage);           // sessionStorage first
+};
+const browser = await chromium.launch({ headless: false });    // headed: human logs in
+const page = await browser.newPage();
+await page.goto('http://localhost:5000', { waitUntil: 'domcontentloaded' }).catch(() => {});
+let user = null;
+for (let i = 0; i < 600; i++) {                                // poll ~10 min
+  user = await page.evaluate(readOidc).catch(() => null);
+  if (user) break;
+  await page.waitForTimeout(1000);
+}
+if (!user) { console.log('NO_TOKEN_CAPTURED'); await browser.close(); process.exit(1); }
+fs.writeFileSync(OUT, JSON.stringify(user));
+console.log('CAPTURED ' + user.k); await browser.close();
+```
+
+### 2. Verify the token (do this before any run)
+
+```bash
+TOK=$(jq -r '.v.access_token' playwright/.auth/oidc-user.json)
+# decode payload — MUST contain a `roles` claim
+echo "$TOK" | cut -d. -f2 | sed 's/-/+/g;s/_/\//g' | base64 -d 2>/dev/null | jq 'keys'
+# live: this throws INTERNAL_ERROR if the token has no roles claim
+curl -s -X POST http://localhost:37999/services/vehicles/graphql -H "Authorization: Bearer $TOK" \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"query($f:OrganisationsFilter){organisations(filter:$f,size:3){totalElements}}","variables":{"f":{"onlyUserAuthorized":true}}}'
+# sanity (always works): the non-authorized path returns all orgs (~339)
+curl -s -X POST http://localhost:37999/services/vehicles/graphql -H "Authorization: Bearer $TOK" \
+  -H 'Content-Type: application/json' -d '{"query":"{organisations(size:3){totalElements}}"}'
+```
+A `partner.dev` token with `scope:openid` and **no `roles`** → `organisations(onlyUserAuthorized:true)`
+`INTERNAL_ERROR` (confirmed 2026-06-05). That's the role-claim gap, not a hathor bug.
+
+### 3. Use it in the run
+
+- **Re-seed sessionStorage** (faithful): for the serial run, before each page,
+  `await context.addInitScript(({k,v}) => sessionStorage.setItem(k, JSON.stringify(v)), oidc)` with
+  the captured `{k,v}`. Pair with an oidc-enabled config (config-localhost).
+- **Inject the Bearer directly** (simpler, less faithful): pull `.v.access_token` and add
+  `Authorization: Bearer <jwt>` via `context.setExtraHTTPHeaders`.
 
 ## Reusable helpers
 
