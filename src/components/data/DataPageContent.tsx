@@ -75,6 +75,7 @@ export default function DataPageContent<
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const resolvedTitle = titleKey ? t(titleKey) : title;
+  const hasActions = Boolean(addAction || importAction);
   const containerRef = useRef<HTMLDivElement>(null);
   const compact = useContainerResponsiveView(containerRef, COMPACT_VIEW_THRESHOLD, loading);
 
@@ -120,11 +121,15 @@ export default function DataPageContent<
             data-filter-count={urlFilterInfo.filterCount}
           />
         )}
-        <Box sx={{ flexGrow: 1 }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {addAction}
-          {importAction}
-        </Box>
+        {hasActions && (
+          <>
+            <Box sx={{ flexGrow: 1 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {addAction}
+              {importAction}
+            </Box>
+          </>
+        )}
       </Box>
 
       <TableContainer sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
