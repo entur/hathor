@@ -104,7 +104,7 @@ export const vehicleTypeViewConfig = {
   getSortValue: getVehicleTypeSortValue,
   filters: (items: VehicleType[]) =>
     transportModeFilters(items.map(i => i.transportMode ?? UNKNOWN_TRANSPORT_MODE)),
-  title: 'Vehicle Types',
+  titleKey: 'vehicleType.title',
   useUrlEffect: useVehicleTypeUrlSelection,
   useRowClick: useVehicleTypeRowClick,
 };

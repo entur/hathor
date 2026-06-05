@@ -1,5 +1,5 @@
 import { Add } from '@mui/icons-material';
-import { Fab, Tooltip } from '@mui/material';
+import { Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,16 +8,16 @@ export default function NewVehicleFab() {
   const navigate = useNavigate();
   const label = t('vehicles.actions.new', 'New Vehicle');
   return (
-    <Tooltip title={label}>
-      <Fab
-        size="small"
-        color="primary"
-        onClick={() => navigate('/vehicles/new')}
-        data-testid="create-vehicle-fab"
-        aria-label={label}
-      >
-        <Add />
-      </Fab>
-    </Tooltip>
+    <Button
+      variant="contained"
+      color="primary"
+      startIcon={<Add />}
+      onClick={() => navigate('/vehicles/new')}
+      data-testid="create-vehicle-fab"
+      aria-label={label}
+      sx={{ textTransform: 'none' }}
+    >
+      {label}
+    </Button>
   );
 }

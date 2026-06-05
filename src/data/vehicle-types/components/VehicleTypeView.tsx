@@ -10,7 +10,7 @@ export default function VehicleTypeView() {
 
   return (
     <GenericDataViewPage<VehicleType, OrderBy>
-      viewConfig={{ ...vehicleTypeViewConfig, floatingAction: <AutosysImportFloatingMenu /> }}
+      viewConfig={{ ...vehicleTypeViewConfig, importAction: <AutosysImportFloatingMenu /> }}
       urlFilterInfo={{ hasUrlFilters, clearUrlFilters, filterCount }}
     />
   );

@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import DataTableHeader from './DataTableHeader.tsx';
 import DataTableRow from './DataTableRow.tsx';
+import HeadBreadcrumbs from './HeadBreadcrumbs.tsx';
 import { useTranslation } from 'react-i18next';
 import type { Order, ColumnDefinition } from './dataTableTypes.ts';
 import MobileDetailRow from './MobileDetailRow.tsx';
@@ -34,9 +35,14 @@ interface DataPageContentProps<T, K extends string> {
   setRowsPerPage: (rowsPerPage: number) => void;
   columns: ColumnDefinition<T, K>[];
   title?: string;
+  /** i18n key for the title; resolved here and used for the breadcrumb leaf. Takes precedence over {@link title}. */
+  titleKey?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   onRowClick?: (item: T) => void;
-  floatingAction?: ReactNode;
+  /** "Add new" action, right-aligned in the list-head. */
+  addAction?: ReactNode;
+  /** "Import" action, right-aligned in the list-head after {@link addAction}. */
+  importAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
   /** Forwarded to {@link DataTableHeader}; when true, every sortable header
    *  is dimmed, click is suppressed, and hover shows the lock tooltip. */
@@ -59,13 +65,17 @@ export default function DataPageContent<
   setRowsPerPage,
   columns,
   title,
+  titleKey,
   handleColumnEvent,
   onRowClick,
-  floatingAction,
+  addAction,
+  importAction,
   urlFilterInfo,
   sortLocked,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
+  const resolvedTitle = titleKey ? t(titleKey) : title;
+  const hasActions = Boolean(addAction || importAction);
   const containerRef = useRef<HTMLDivElement>(null);
   const compact = useContainerResponsiveView(containerRef, COMPACT_VIEW_THRESHOLD, loading);
 
@@ -85,14 +95,17 @@ export default function DataPageContent<
       ref={containerRef}
       sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
-      {title && (
-        <Box p={2}>
-          <Typography variant="h4" component="h2" align="center">
-            {title}
-          </Typography>
+      {resolvedTitle && (
+        <Box px={2} pt={2} pb={0.5}>
+          <HeadBreadcrumbs title={resolvedTitle} />
         </Box>
       )}
       <Box px={2} pb={1} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {resolvedTitle && (
+          <Typography variant="h5" component="h2">
+            {resolvedTitle}
+          </Typography>
+        )}
         <Typography data-testid="total-entries" data-count={totalCount}>
           {t('data.totalEntries', { count: totalCount })}
         </Typography>
@@ -107,6 +120,15 @@ export default function DataPageContent<
             data-testid="url-filter-chip"
             data-filter-count={urlFilterInfo.filterCount}
           />
+        )}
+        {hasActions && (
+          <>
+            <Box sx={{ flexGrow: 1 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {addAction}
+              {importAction}
+            </Box>
+          </>
         )}
       </Box>
 
@@ -147,7 +169,6 @@ export default function DataPageContent<
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {floatingAction}
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component="div"

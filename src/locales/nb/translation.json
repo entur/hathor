@@ -54,6 +54,8 @@
   "home.features.vehicletypes.description": "En liste over kjøretøytyper som brukes i kollektivtransport.",
   "home.features.deckplans.headline": "Setekart",
   "home.features.deckplans.description": "En liste over setekart for kjøretøy som brukes i kollektivtransport.",
+  "deckPlans.title": "Setekart",
+  "breadcrumbs.home": "Hjem",
 
   "home.notLoggedIn": "Du må logge inn for å bruke registeret",
   "home.noOrganisation": "Du må velge en organisasjon for å bruke registeret. Dette gjøres i velgeren øverst til høyre på siden. Hvis du ikke ser noen organisasjoner å velge, kontakt administratoren din for å få tilgang.",
@@ -101,6 +103,7 @@
   "transportMode.URBAN_RAIL": "Bybane",
   "transportMode.WATER": "Båt",
 
+  "vehicleType.title": "Kjøretøytyper",
   "vehicleType.detailsTitle": "Kjøretøytypedetaljer",
   "vehicleType.notFound": "Kjøretøytype ikke funnet",
   "vehicleType.saveSuccess": "Kjøretøytype lagret",

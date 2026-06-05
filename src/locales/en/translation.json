@@ -54,6 +54,8 @@
   "home.features.vehicletypes.description": "A list of vehicle types used in public transport.",
   "home.features.deckplans.headline": "Deck Plans",
   "home.features.deckplans.description": "A list of deck plans for vehicles used in public transport.",
+  "deckPlans.title": "Deck Plans",
+  "breadcrumbs.home": "Home",
 
   "home.notLoggedIn": "You need to log in to use the registry",
   "home.noOrganisation": "You need to choose an organisation to use the registry. This is done in the selector at the top right of the page. If you do not see any organisations to select, please contact your administrator to grant you access.",
@@ -101,6 +103,7 @@
   "transportMode.URBAN_RAIL": "Urban rail",
   "transportMode.WATER": "Water",
 
+  "vehicleType.title": "Vehicle Types",
   "vehicleType.detailsTitle": "Vehicle Type Details",
   "vehicleType.notFound": "Vehicle type not found",
   "vehicleType.saveSuccess": "Vehicle type saved",

@@ -128,14 +128,18 @@ export interface PageContentComponentProps<T, K extends string> {
   setRowsPerPage: (rowsPerPage: number) => void;
   /** Column definitions driving the table header and cell rendering. */
   columns: ColumnDefinition<T, K>[];
-  /** Optional page title rendered above the table. */
+  /** Optional literal page title rendered in the list-head (fallback for {@link titleKey}). */
   title?: string;
+  /** Optional i18n key resolved to the list-head title and breadcrumb leaf. Takes precedence over {@link title}. */
+  titleKey?: string;
   /** Callback fired when a column-level action is triggered (e.g. inline edit). */
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   /** Optional whole-row click handler (non-compact mode only). */
   onRowClick?: (item: T) => void;
-  /** Optional floating action (e.g. SpeedDial) rendered in the bottom bar beside pagination. */
-  floatingAction?: ReactNode;
+  /** Optional "add new" action rendered right-aligned in the list-head (e.g. a Fab). */
+  addAction?: ReactNode;
+  /** Optional "import" action rendered right-aligned in the list-head, after {@link addAction}. */
+  importAction?: ReactNode;
   /** Optional URL filter info for displaying a filter indicator chip. */
   urlFilterInfo?: UrlFilterInfo;
   /**
@@ -179,13 +183,14 @@ export interface ViewConfig<T, K extends string> {
   getSortValue: (item: T, key: K) => string | number;
   /** Data-driven filter chips: derived from the rows currently loaded. */
   filters?: (items: T[]) => FilterDefinition[];
-  /** Page title rendered in the content header. */
+  /** Literal page title rendered in the list-head (fallback for {@link titleKey}). */
   title?: string;
-  /**
-   * Optional floating action rendered in the bottom-right of the content area.
-   * Useful for a MUI `SpeedDial`, `Fab`, or similar overlay component.
-   */
-  floatingAction?: ReactNode;
+  /** i18n key resolved to the list-head title and breadcrumb leaf. Takes precedence over {@link title}. */
+  titleKey?: string;
+  /** "Add new" action rendered right-aligned in the list-head (e.g. a Fab). */
+  addAction?: ReactNode;
+  /** "Import" action rendered right-aligned in the list-head, after {@link addAction}. */
+  importAction?: ReactNode;
   /**
    * Optional hook fired by {@link GenericDataViewPage} after data is loaded
    * and table-logic has produced `dataForTable`. Lets a page reconcile URL
