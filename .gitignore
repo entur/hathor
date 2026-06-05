@@ -38,7 +38,8 @@ build/
 coverage
 .wolf/
 docs/superpowers
-.claude
+.claude/*
+!.claude/skills/
 .vite
 
 *storybook.log

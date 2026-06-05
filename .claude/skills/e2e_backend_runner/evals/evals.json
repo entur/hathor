@@ -1,0 +1,23 @@
+{
+  "skill_name": "e2e_backend_runner",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "my vehicle-type e2e tests just hang on 'Loading data...' forever when I point them at my local sobek on 37999. mocked run is fine. wtf is going on",
+      "expected_output": "Diagnoses the org-selection gate (useVehicleTypes early-returns on !currentOrganisation?.id; no spec selects/mocks an org), ties it to the live path, and proposes selecting/mocking an organisation first. May also flag the 401/login-handoff and stale :5000 dev server traps from preflight.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want E2E_BACKEND=true to actually authenticate against the real backend. set it up so I log in once in a browser and the suite reuses my session/jwt",
+      "expected_output": "Sets up the manual-login handoff: OIDC-enabled config (config-with-auth pointing at :37999), headed login pause, capture of the oidc.user from sessionStorage (calling out that Playwright storageState does NOT persist sessionStorage), re-seed via addInitScript, token kept out of git. Notes the role-claim check.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "go through our playwright no-auth specs and tell me which ones would break against a real database instead of the mocks",
+      "expected_output": "Audits specs against the conformance checklist: flags hardcoded row counts (vehicle.spec 15/12, vehicle-type-filter 3/1/2, deck-plan-name-sort 10), mock-only mutation-capture assertions that need read-back, and unjustified E2E_BACKEND skips. Returns a per-spec table. Calls out the non-uniform create surfaces.",
+      "files": []
+    }
+  ]
+}
