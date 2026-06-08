@@ -105,6 +105,7 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
  */
 export interface VehicleTypeInput {
   netexId?: string | null;
+  dataOwnerRef: string;
   name?: Name | null;
   shortName?: Name | null;
   description?: Name | null;
@@ -143,8 +144,9 @@ export interface VehicleTypeInput {
  * @param vt Domain VehicleType (as held by the editor form).
  * @returns The mutation input payload.
  */
-export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
-  netexId: vt.id,
+export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
+  netexId: vt.id == '' ? undefined : vt.id, // Omit `netexId` for creates (blank id factory), include for updates.
+  dataOwnerRef: dataOwnerRef,
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,
   description: vt.description ?? null,
