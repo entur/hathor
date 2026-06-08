@@ -42,6 +42,9 @@ export function useVehicleTypeUrlSelection({
     setPage,
     loading,
     getId: vt => vt.id,
-    renderEditor: row => <VehicleTypeDetails vehicleType={row} onSaved={refetch} />,
+    getEmptyRow: () => ({ id: '', version: 0 }), // "new" selection factory
+    renderEditor: (row, mode) => (
+      <VehicleTypeDetails vehicleType={row} onSaved={refetch} mode={mode} />
+    ),
   });
 }

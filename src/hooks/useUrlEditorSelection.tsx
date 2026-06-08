@@ -14,12 +14,14 @@ interface UrlEditorSelectionParams<T> {
   loading: boolean;
   /** Extract the comparable id from an item. */
   getId: (item: T) => string;
+  /** Return a new empty item for the "new" selection (id='new'). Optional. */
+  getEmptyRow?: () => T;
   /**
    * Render the editor for a resolved item. The argument is `null` when the
    * id was not found in `allData` after the initial fetch completed (the
    * editor is still opened and should display a not-found body).
    */
-  renderEditor: (item: T | null) => ReactNode;
+  renderEditor: (item: T | null, mode: 'edit' | 'view') => ReactNode;
 }
 
 /**
@@ -52,6 +54,7 @@ export function useUrlEditorSelection<T>({
   setPage,
   loading,
   getId,
+  getEmptyRow,
   renderEditor,
 }: UrlEditorSelectionParams<T>): void {
   const [searchParams] = useSearchParams();
@@ -78,15 +81,17 @@ export function useUrlEditorSelection<T>({
     if (loading) return;
     if (allData === null) return;
 
-    const idx = allData.findIndex(v => getIdRef.current(v) === selected);
-    const row = idx >= 0 ? allData[idx] : null;
+    const idx = selected === 'new' ? -1 : allData.findIndex(v => getIdRef.current(v) === selected);
+    const row = idx == -1 ? (getEmptyRow?.() ?? null) : idx >= 0 ? allData[idx] : null;
 
     const idChanged = lastCommittedIdRef.current !== selected;
     const resolvedFromMissing = lastCommittedRowRef.current === null && row !== null;
     if (idChanged || resolvedFromMissing) {
       setEditingItem({
         id: selected,
-        EditorComponent: () => <>{renderEditorRef.current(row)}</>,
+        EditorComponent: () => (
+          <>{renderEditorRef.current(row, selected === 'new' ? 'edit' : 'view')}</>
+        ),
       });
       lastCommittedIdRef.current = selected;
       lastCommittedRowRef.current = row;
@@ -95,7 +100,7 @@ export function useUrlEditorSelection<T>({
     if (idx >= 0 && !dataForTable.some(v => getIdRef.current(v) === selected)) {
       setPage(Math.floor(idx / rowsPerPage));
     }
-  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem]);
+  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem, getEmptyRow]);
 
   useEffect(() => {
     return () => {

@@ -39,6 +39,8 @@ interface VehicleTypeDetailsProps {
    * values + bumped version before the success snackbar appears. Optional.
    */
   onSaved?: () => Promise<void>;
+
+  mode?: 'view' | 'edit';
 }
 
 type FormState = { form: VehicleType; baseline: VehicleType };
@@ -60,11 +62,16 @@ function formReducer(state: FormState, action: FormAction): FormState {
  *
  * @param vehicleType Resolved row, or `null` for a not-found deep link.
  * @param onSaved Optional list refetch run after a successful save (table freshness).
+ * @param mode Optional initial mode ('view' or 'edit').
  */
-export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleTypeDetailsProps) {
+export default function VehicleTypeDetails({
+  vehicleType,
+  onSaved,
+  mode: initialMode,
+}: VehicleTypeDetailsProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
@@ -74,12 +81,12 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
   useEffect(() => {
     if (vehicleType) {
       dispatch({ type: 'hydrate', row: vehicleType });
-      setMode('view');
+      setMode(initialMode ?? 'view');
       // Don't let a prior save snackbar / stale-list warning bleed into the next row.
       setSavedAt(null);
       setRefreshError(null);
     }
-  }, [vehicleType]);
+  }, [initialMode, vehicleType]);
 
   const isDirty =
     !!vehicleType &&
@@ -102,6 +109,11 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
     const result = await save(state.form);
     if (result.error) return;
 
+    if (state.form.id === '') {
+      // Blank id factory → a create that returns the new id, so update the form
+      state.form.id = result.newId ?? '';
+      state.form.version = 1; // New entities start at version 1.
+    }
     // Save committed: re-baseline from the submitted form (the commit guard in
     // useUrlEditorSelection won't push the refetched row into an open editor).
     dispatch({ type: 'hydrate', row: state.form });
@@ -171,13 +183,15 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
             </>
           )}
         </Typography>
-        <NetexId
-          id={vehicleType.id}
-          version={vehicleType.version}
-          copy="onHover"
-          size="small"
-          sx={{ justifySelf: 'start' }}
-        />
+        {state.form.id && (
+          <NetexId
+            id={state.form.id}
+            version={state.form.version}
+            copy="onHover"
+            size="small"
+            sx={{ justifySelf: 'start' }}
+          />
+        )}
       </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
