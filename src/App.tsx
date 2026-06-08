@@ -20,7 +20,6 @@ import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx
 import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
-import VehicleCreatePage from './pages/VehicleCreatePage.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
 import './theme/transportModeTokens.css';
@@ -70,10 +69,6 @@ export default function App() {
                     <Route
                       path="/vehicles"
                       element={<ProtectedRoute element={<VehicleView />} />}
-                    />
-                    <Route
-                      path="/vehicles/new"
-                      element={<ProtectedRoute element={<VehicleCreatePage />} />}
                     />
                     <Route
                       path="/deck-plans"

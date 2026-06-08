@@ -39,12 +39,17 @@ interface VehicleDetailsProps {
    * snackbar appears. Optional — callers without a list channel can omit.
    */
   onSaved?: () => Promise<void>;
+  mode?: 'view' | 'edit';
 }
 
-export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps) {
+export default function VehicleDetails({
+  vehicle,
+  onSaved,
+  mode: initialMode,
+}: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode || 'view');
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = formState;
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
@@ -143,10 +148,10 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
             </>
           )}
         </Typography>
-        {vehicle.id && (
+        {form.vehicle.id && (
           <NetexId
-            id={vehicle.id}
-            version={vehicle.version}
+            id={form.vehicle.id}
+            version={form.vehicle.version}
             copy="onHover"
             size="small"
             sx={{ justifySelf: 'start' }}

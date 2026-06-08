@@ -12,7 +12,7 @@ export default function NewVehicleFab() {
       variant="contained"
       color="primary"
       startIcon={<Add />}
-      onClick={() => navigate('/vehicles/new')}
+      onClick={() => navigate('/vehicles?selected=new')}
       data-testid="create-vehicle-fab"
       aria-label={label}
       sx={{ textTransform: 'none' }}
