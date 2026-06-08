@@ -109,14 +109,15 @@ export default function VehicleTypeDetails({
     const result = await save(state.form);
     if (result.error) return;
 
+    const hydrateRow = { ...state.form };
     if (state.form.id === '') {
       // Blank id factory → a create that returns the new id, so update the form
-      state.form.id = result.newId ?? '';
-      state.form.version = 1; // New entities start at version 1.
+      hydrateRow.id = result.newId ?? '';
+      hydrateRow.version = 1; // New entities start at version 1.
     }
     // Save committed: re-baseline from the submitted form (the commit guard in
     // useUrlEditorSelection won't push the refetched row into an open editor).
-    dispatch({ type: 'hydrate', row: state.form });
+    dispatch({ type: 'hydrate', row: hydrateRow });
     setMode('view');
     try {
       await onSaved?.();
