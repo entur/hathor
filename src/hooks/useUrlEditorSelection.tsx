@@ -81,8 +81,9 @@ export function useUrlEditorSelection<T>({
     if (loading) return;
     if (allData === null) return;
 
-    const idx = selected === 'new' ? -1 : allData.findIndex(v => getIdRef.current(v) === selected);
-    const row = idx == -1 ? (getEmptyRow?.() ?? null) : idx >= 0 ? allData[idx] : null;
+    const isNew = selected === 'new';
+    const idx = isNew ? -1 : allData.findIndex(v => getIdRef.current(v) === selected);
+    const row = isNew ? (getEmptyRow?.() ?? null) : idx >= 0 ? allData[idx] : null;
 
     const idChanged = lastCommittedIdRef.current !== selected;
     const resolvedFromMissing = lastCommittedRowRef.current === null && row !== null;
