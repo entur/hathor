@@ -111,7 +111,8 @@ const interceptVehiclesList = (page: Page) =>
         body: JSON.stringify(mockVehiclesPayload()),
       });
     } else {
-      await route.continue();
+      // fallback so the mock `organisations` query reaches seedAuth's route.
+      await route.fallback();
     }
   });
 

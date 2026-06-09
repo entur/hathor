@@ -25,6 +25,43 @@ interface OidcUser {
 let cached: OidcUser | null = null;
 
 /**
+ * Synthetic OIDC user for MOCK mode. Key = config-with-auth's authority+client_id
+ * so react-oidc-context reads it. The token is never validated (all GraphQL is
+ * intercepted), so a structurally-valid, far-future-expiry user is enough to flip
+ * `isAuthenticated` true without a redirect — the mock counterpart to the live
+ * captured JWT, so the SAME spec body runs in both modes (only the data differs).
+ */
+const MOCK_OIDC: OidcUser = {
+  k: 'oidc.user:https://partner.dev.entur.org:0gQVx7xpSkg7lJDYuewMSr1sXKr7OJ3z',
+  v: {
+    access_token: 'mock-access-token',
+    token_type: 'Bearer',
+    scope: 'openid',
+    profile: {
+      sub: 'mock',
+      iss: 'https://partner.dev.entur.org',
+      aud: 'mock',
+      iat: 0,
+      exp: 4102444800,
+    },
+    expires_at: 4102444800, // year 2100
+  },
+};
+
+/** One synthetic organisation so `useOrganisations` auto-selects in mock (the
+ *  list hooks early-return on `!currentOrganisation?.id`). */
+const MOCK_ORGANISATIONS = {
+  data: {
+    organisations: {
+      content: [{ netexId: 'MOCK:Authority:1', name: { value: 'Mock Org' }, type: 'AUTHORITY' }],
+      totalElements: 1,
+      page: 0,
+      size: 10000,
+    },
+  },
+};
+
+/**
  * Load the JWT captured by the login handoff (`playwright/.auth/capture.mjs`).
  * Throws with a runnable hint if absent OR expired — fail fast with the right
  * remedy (re-capture) instead of letting a stale token 401 and surface as a
@@ -46,29 +83,46 @@ export const loadOidcUser = (): OidcUser => {
 };
 
 /**
- * Write `public/config.json` for this run. Live mode ships the oidc-enabled
- * localhost config (partner.dev + Sobek `:37999` + `claimsNamespace`) so the app
- * authenticates and renders the organisation picker; mock mode ships the
- * no-auth config the interceptors expect. Call from `beforeAll`.
+ * Write `public/config.json` for this run — the oidc-enabled localhost config in
+ * BOTH modes so the app authenticates and renders the org picker. Live seeds a
+ * real JWT + hits Sobek `:37999`; mock seeds a synthetic user + intercepts all
+ * GraphQL (so the `:37999` URL is never reached). Call from `beforeAll`.
  */
 export const writeConfig = () => {
-  const src = IS_LIVE ? 'config-with-auth.json' : 'config-no-auth.json';
-  fs.copyFileSync(path.join(fixturesDir, src), targetConfig);
+  fs.copyFileSync(path.join(fixturesDir, 'config-with-auth.json'), targetConfig);
 };
 
 /**
- * Seed the captured OIDC user into `sessionStorage` before any app code runs, so
- * `react-oidc-context` boots already-authenticated and skips the login redirect.
- * sessionStorage (not localStorage) because oidc-client-ts defaults there and
- * Playwright `storageState` cannot carry it. No-op in mock mode.
+ * Seed an OIDC user into `sessionStorage` before any app code runs, so
+ * `react-oidc-context` boots already-authenticated (no redirect) — the real
+ * captured JWT under live, a synthetic user under mock. sessionStorage (not
+ * localStorage) because oidc-client-ts defaults there and Playwright
+ * `storageState` cannot carry it. Under mock it also intercepts the
+ * `organisations` query with one synthetic org so the app auto-selects it,
+ * letting the SAME spec body run in both modes.
  */
 export const seedAuth = async (context: BrowserContext) => {
-  if (!IS_LIVE) return;
-  const { k, v } = loadOidcUser();
+  const { k, v } = IS_LIVE ? loadOidcUser() : MOCK_OIDC;
   await context.addInitScript(([key, val]) => window.sessionStorage.setItem(key, val), [
     k,
     JSON.stringify(v),
   ] as const);
+  if (IS_LIVE) return;
+  // Mock: claim only the `organisations` query at the context level; each spec's
+  // page-level list interceptors run first and handle their own queries (they
+  // must `fallback()` non-matches so the org query reaches this route).
+  await context.route('**/graphql', async route => {
+    const query: string = route.request().postDataJSON()?.query ?? '';
+    if (query.includes('organisations')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(MOCK_ORGANISATIONS),
+      });
+    } else {
+      await route.fallback();
+    }
+  });
 };
 
 /**
@@ -77,7 +131,8 @@ export const seedAuth = async (context: BrowserContext) => {
  * `!currentOrganisation?.id`, the "Loading data…" stall). `useOrganisations`
  * auto-selects `options[0]` once the authorized-orgs query resolves; this waits
  * for that, and explicitly picks the first option if auto-select hasn't filled
- * the input. No-op in mock mode (no picker is rendered).
+ * the input. No-op in mock — the single synthetic org (seedAuth) auto-selects, so
+ * no explicit pick is needed; this readiness wait is only for the live picker.
  */
 export const selectFirstOrg = async (page: Page) => {
   if (!IS_LIVE) return;
