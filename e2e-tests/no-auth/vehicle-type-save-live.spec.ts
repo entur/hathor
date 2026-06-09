@@ -1,36 +1,52 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import { fixturesDir, targetConfig } from './autosys-helpers';
+import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, readNetexIds } from './live-auth-helpers';
 
 /**
- * LIVE round-trip for the wired-in `createOrUpdateVehicleType` mutation against
- * a running Sobek (no-auth mode). Unlike `vehicle-type-sidebar.spec.ts`, this
- * does **not** mock GraphQL — the save hits real Sobek, exercising the full
- * path: form → `serializeVehicleType` (full document) → mutation → persistence.
+ * /vehicle-types sidebar save — LIVE-ONLY real `createOrUpdateVehicleType` round-trip against a running, authenticated Sobek (no GraphQL mock).
  *
- * Gated to `E2E_BACKEND=true` (skipped in CI / mock runs). Dev-only: targets a
- * VehicleType known to exist on the local instance and restores its name on
- * teardown, so the DB is left as found (modulo an unavoidable version bump).
+ * Workflow:
+ *   seedAuth → goto /vehicle-types → selectFirstOrg (AtB) → readNetexIds(1) to derive a real org-owned VehicleType id
+ *   → open ?selected=<id> → capture original #vtype-name → editor-rail-edit → fill name=marker → editor-rail-save
+ *   → assert "Vehicle type saved" → full reload of ?selected=<id> → assert details title == marker (persisted)
+ *   → teardown: edit → restore original name → save → assert "Vehicle type saved"
+ * Covers:
+ *   - Real save path: form → serializeVehicleType (full document) → mutation → persistence, verified across a fresh reload/refetch.
+ *   - Non-destructive full-replace: name-only edit re-sends every other field unchanged (euroClass/transportMode/dims/capacity survive).
+ *   - DB left as found (modulo an unavoidable version bump) via the restore teardown.
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): n/a — live-only; the whole describe is skipped when !IS_LIVE.
+ *   - live (E2E_BACKEND=true): writeConfig + seedAuth (JWT in session) + selectFirstOrg (AtB) → real Sobek save round-trip.
+ *   - skip-live: skipped unless IS_LIVE — "Requires a running, authenticated Sobek backend".
  *
- * Non-destructive: the editor hydrates the full row, so a name-only edit
- * re-sends every other field unchanged (the whole point of the full-document
- * serialise) — euroClass/transportMode/dims/capacity survive the full-replace.
+ * KNOWN RED (live finding, 2026-06-09): Sobek's `VehicleTypeInput` now requires
+ * `dataOwnerRef: String!`, but hathor's vtype mutation serializer never sends it
+ * (it exists only as a read filter), so the save 400s with
+ * "Field 'dataOwnerRef' has coerced Null value for NonNull type 'String!'". The
+ * vendored `sobek.schema.graphqls` snapshot is also stale (missing the field).
+ * This test asserts the *correct* round-trip and is intentionally left failing
+ * to surface the gap — do NOT weaken it to green; fix the serializer (src/) and
+ * refresh the snapshot instead.
  */
-const VT = 'NMR:VehicleType:5';
-const SELECTED = `/vehicle-types?selected=${encodeURIComponent(VT)}`;
+test.describe('VehicleType sidebar save — LIVE Sobek', () => {
+  test.skip(() => !IS_LIVE, 'Requires a running, authenticated Sobek backend');
 
-test.describe('VehicleType sidebar save — LIVE Sobek (no-auth)', () => {
-  test.skip(() => process.env.E2E_BACKEND !== 'true', 'Requires a running Sobek backend');
-
-  test.beforeAll(() => {
-    fs.copyFileSync(`${fixturesDir}/config-no-auth.json`, targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
+  test.beforeEach(async ({ context }) => seedAuth(context));
 
   test('edit name → real save → persists across a full reload', async ({ page }) => {
     const marker = `E2E-live-${Date.now()}`;
 
+    // Derive a real org-owned VehicleType id from the live list.
+    await page.goto('/vehicle-types');
+    await selectFirstOrg(page);
+    await page.waitForLoadState('networkidle');
+    const [vtId] = await readNetexIds(page, 1);
+    expect(vtId, 'expected an org-owned VehicleType to edit').toBeTruthy();
+    const selected = `/vehicle-types?selected=${encodeURIComponent(vtId)}`;
+
     // Capture the original name so we can restore it on teardown.
-    await page.goto(SELECTED);
+    await page.goto(selected);
+    await selectFirstOrg(page);
     await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
     const original = await page.locator('#vtype-name').inputValue();
@@ -42,7 +58,8 @@ test.describe('VehicleType sidebar save — LIVE Sobek (no-auth)', () => {
     await expect(page.getByText('Vehicle type saved')).toBeVisible();
 
     // Reload from scratch → fresh fetch from Sobek → the edit persisted.
-    await page.goto(SELECTED);
+    await page.goto(selected);
+    await selectFirstOrg(page);
     await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText(marker);
 

@@ -20,21 +20,21 @@ const VEHICLE_ID = 'NMR:Vehicle:rail-1';
 const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
 
 /**
- * Regression coverage for the remaining bugs in hathor #80, realigned to the
- * GraphQL read/save paths after #101 retired the NeTEx-XML single-vehicle
- * fetch:
+ * /vehicles slider form — fetched Name/dates hydrate the editor and a successful save re-baselines dirty state (hathor #80, GraphQL read/save path post-#101).
  *
- *   1. Vehicle Name renders in title + form field — now sourced from the
- *      `vehicles(filter:{netexIds})` `name.value`, the shape `useVehicle`
- *      consumes via `fetchVehicle`.
- *   2. Build/Registration dates render as native date pickers bound to the
- *      fetched value.
- *   4. After a successful save the dirty baseline advances (the single-vehicle
- *      refetch re-hydrates the form), so closing the slider with `>>` does not
- *      wrongly raise the discard dialog.
- *
- * Mock-only — the asserted Name/date values are fixture-controlled, so this
- * spec is meaningless against a live backend.
+ * Workflow:
+ *   1. copy config-no-auth → per test, intercept list `vehicles(` + by-id `vehicles(filter:{netexIds})` → goto /vehicles?selected=<id>.
+ *   2. Name: by-id returns name.value "Oslo Tram 4" → vehicle-details-title text = "Oslo Tram 4" and #vehicle-name input = "Oslo Tram 4".
+ *   3. Dates: by-id returns buildDate/registrationDate → #vehicle-build-date and #vehicle-registration-date are type=date inputs bound to the fetched values.
+ *   4. Post-save: stateful list + save mutation → editor-rail-edit → rename #vehicle-name → editor-rail-save → "Vehicle saved" snackbar → editor-rail-collapse → no Discard dialog, URL drops selected= (post-save single-vehicle refetch advanced the dirty baseline).
+ * Covers:
+ *   - Name sourced from vehicles(filter:{netexIds}) name.value shows in title + form field.
+ *   - Build/Registration dates render as native date pickers bound to fetched value.
+ *   - Closing the slider after a successful save does not wrongly raise the discard dialog.
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): intercepts list, by-id, and save mutation; Name/date values are fixture-controlled.
+ *   - live (E2E_BACKEND=true): no live path — the whole describe skips.
+ *   - skip-live: entire describe ("/vehicles slider form — fetch + post-save dirty baseline") — mock-only regression spec; asserted Name/date values are fixture-controlled, meaningless against live data.
  */
 test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-auth)', () => {
   test.skip(process.env.E2E_BACKEND === 'true', 'mock-only regression spec');

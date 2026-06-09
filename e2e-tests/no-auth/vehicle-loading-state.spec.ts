@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
+import { IS_LIVE } from './live-auth-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,21 @@ const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 
 const SELECTED_ID = 'NMR:Vehicle:bus-1';
 const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
+
+/**
+ * /vehicles slider loading guards — useVehicle/useVehiclePairSave must resolve to a visible error, never a stuck spinner or silent failure (PR #74 B1).
+ *
+ * Workflow:
+ *   1. NOT-FOUND: copy config-no-auth → intercept list `vehicles(` (no filter.netexIds) to return the row → intercept by-id `vehicles(filter:{netexIds})` to return empty → goto /vehicles?selected=<id> → slider opens with title → "Loading vehicle…" hides → "<id> not found" shown → form field absent.
+ *   2. NO-BASE-URL: copy config-no-baseurl (deliberately broken) → goto /vehicles/new → fill Registration Number + Vehicle Type ID → Save → "Application base URL is not configured" snackbar, no "View in list", URL stays /vehicles/new → afterAll restores config-no-auth.
+ * Covers:
+ *   - useVehicle not-found branch sets error + loading=false (spinner disappears, reason surfaced, form stays hidden).
+ *   - useVehiclePairSave base-URL guard short-circuits before any request (error snackbar, no navigation).
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): both describes intercept the `/graphql` route for the list + by-id queries; not-found stages list-has-row vs byid-empty; no-base-url uses a broken config fixture.
+ *   - live (E2E_BACKEND=true): no live path — both describes skip (no seedAuth/org select here).
+ *   - skip-live: "useVehicle — single-vehicle fetch with no match" (needs a list-has-row + byid-empty mismatch a real backend cannot produce) and "save with no applicationBaseUrl" (mock-only — drives a deliberately broken config).
+ */
 
 /**
  * Regression test for B1 (PR #74 review): `useVehicle` must never hang on the
@@ -28,6 +44,11 @@ const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
  * driving `useVehicle` into its not-found error branch.
  */
 test.describe('useVehicle — a single-vehicle fetch with no match errors, never hangs (no-auth)', () => {
+  // Stages a row that the LIST returns but the by-id fetch does not — a
+  // contradiction only a mock can produce (a live row found in the list is
+  // always fetchable by id). The not-found error branch is therefore mock-only.
+  test.skip(IS_LIVE, 'requires a list-has-row + byid-empty mismatch a real backend cannot produce');
+
   test.beforeAll(() => {
     fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
   });

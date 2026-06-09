@@ -1,52 +1,51 @@
 import { test, expect, type Page } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import {
   interceptStatefulVehicleListQuery,
   interceptVehicleByIdQuery,
   interceptVehicleSaveMutation,
   vehicleRow,
 } from './vehicle-list-helpers';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
+import { IS_LIVE, writeConfig, seedAuth, liveVehicleTypeInt } from './live-auth-helpers';
 
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const ENCODED_NEW_ID = encodeURIComponent(NEW_ID);
 
 /**
- * Regression coverage for the new-vehicle save → "View in list" flow.
+ * /vehicles/new — save → "View in list" feedback + slider redirect (regression
+ * for the silent "fast close" save that previously landed deep-links on
+ * "Vehicle not found" before the just-created id was in the refetched list).
  *
- *   1. `/vehicles/new` saved silently — no success snackbar, just an immediate
- *      `navigate('/vehicles?selected=<newId>')` (the "fast close").
- *
- *   2. The deep-link landed on the "Vehicle not found" body because the
- *      freshly-fetched list didn't include the just-imported id, and
- *      `useVehicleUrlSelection`'s idempotence guard locked the slider on
- *      null.
- *
- * The mock simulates the realistic race: `addCreated` is called from inside
- * the POST handler (mirrors Sobek persisting before responding), and the
- * `lagCalls` arg lets us model read-after-write replica lag where the next N
- * list responses still miss the new id.
+ * Workflow:
+ *   /vehicles/new → fill reg + Vehicle Type ID → Save → success snackbar with
+ *   "View in list" action (no auto-nav) → click action → navigate
+ *   /vehicles?selected=<assignedId> → slider resolves the row (poll past read-after-write lag).
+ * Covers:
+ *   - Save surfaces a "View in list" snackbar and does NOT auto-navigate
+ *   - Action navigates to the slider on the new id (zero-lag) and id-agnostically on whatever id the redirect mints
+ *   - Name round-trips POST → persist → GET → parse → render (#80 item-1: bare <Name> w/o lang attr)
+ *   - Action polls out replica lag, then the slider resolves
+ *   - Lag beyond the poll budget still navigates; slider degrades to not-found
+ *   - Deep-link straight to a known id resolves the slider (cross-route nav)
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): wireCreateFlow intercepts createOrUpdateVehicle + stateful
+ *     list (addCreated + lag) + by-id (name 'Newly created'); simulates read-after-write race
+ *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select (AtB) → real create with unique
+ *     reg E2E-<ts> + real VehicleType int (liveVehicleTypeInt); runs the snackbar/no-auto-nav,
+ *     id-agnostic redirect, and Name-round-trip tests against real Sobek
+ *   - skip-live:
+ *       'action navigates to the slider on the new id (zero-lag backend)' — pins mock-assigned NEW_ID
+ *       'action waits out replica lag, then slider resolves (poll-until-found)' — simulated, uncontrollable live
+ *       'lag exceeds polling budget…graceful degradation' — forces poll-budget exhaustion via mock lag
+ *       'deep-link to a known id resolves the slider…' — deep-links the mock-assigned NEW_ID
  */
 test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
-  test.beforeAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
+  test.beforeEach(async ({ context }) => seedAuth(context));
 
   /** Wires the stateful list + `createOrUpdateVehicle` mutation + single-vehicle
-   *  by-id fetch. `lag` = list calls that still return baseline after the save
-   *  mutation resolves. Mirrors real Sobek behaviour: a save without a real
-   *  `transportType.netexId` persists but stays invisible to the GraphQL
-   *  `vehicles()` resolver (probe 2026-05-19) — so the mock only flips
-   *  `addCreated` when the mutation input carries a numeric VehicleType ref. */
+   *  by-id fetch (mock only). No-op under live (requests hit Sobek). */
   const wireCreateFlow = async (page: Page, { lag = 0 } = {}) => {
-    if (process.env.E2E_BACKEND === 'true') return null;
+    if (IS_LIVE) return null;
     const list = await interceptStatefulVehicleListQuery(page);
     await interceptVehicleByIdQuery(page, id =>
       id === NEW_ID ? vehicleRow(id, { name: { value: 'Newly created' } }) : null
@@ -58,22 +57,22 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
     return list;
   };
 
-  /** Shared helper — fills the two required-for-save fields so the existing
-   *  feedback/redirect tests stay focused on the snackbar/polling flow rather
-   *  than the form-completeness gate. */
-  const fillRequiredFields = async (page: Page) => {
-    await page.getByLabel('Registration Number').fill('NEW-001');
-    await page.getByLabel(/Vehicle Type ID/).fill('2');
+  /** Fill the two save-gating fields. Live uses a unique reg + a real org-owned
+   *  VehicleType id; mock uses fixed fixture values. */
+  const fillRequiredFields = async (page: Page, over: { reg?: string; vtInt?: string } = {}) => {
+    await page.getByLabel('Registration Number').fill(over.reg ?? 'NEW-001');
+    await page.getByLabel(/Vehicle Type ID/).fill(over.vtInt ?? '2');
   };
 
   test('save shows success snackbar with a "View in list" action and does not auto-navigate', async ({
     page,
   }) => {
+    const over = IS_LIVE ? { reg: `E2E-${Date.now()}`, vtInt: await liveVehicleTypeInt(page) } : {};
     await wireCreateFlow(page);
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
 
-    await fillRequiredFields(page);
+    await fillRequiredFields(page, over);
     await page.getByRole('button', { name: 'Save' }).click();
 
     const action = page.getByRole('button', { name: 'View in list' });
@@ -82,6 +81,9 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   });
 
   test('action navigates to the slider on the new id (zero-lag backend)', async ({ page }) => {
+    // Pins the mock-assigned NEW_ID; a live Sobek mints its own id.
+    test.skip(IS_LIVE, 'asserts the mock-assigned NEW_ID; live mints its own id');
+
     await wireCreateFlow(page, { lag: 0 });
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
@@ -98,15 +100,14 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   test('save → View in list resolves the slider on the assigned id (id-agnostic, backend-safe)', async ({
     page,
   }) => {
-    // Unlike the tests above, this one does not assume `NEW_ID` — it reads
-    // back whatever id the redirect produced. That makes it valid against a
-    // live Sobek (`E2E_BACKEND=true`), where the assigned id is unknown
-    // until the import POST responds.
+    // Reads back whatever id the redirect produced — valid against a live Sobek,
+    // where the assigned id is unknown until the save responds.
+    const over = IS_LIVE ? { reg: `E2E-${Date.now()}`, vtInt: await liveVehicleTypeInt(page) } : {};
     await wireCreateFlow(page, { lag: 0 });
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
 
-    await fillRequiredFields(page);
+    await fillRequiredFields(page, over);
     await page.getByRole('button', { name: 'Save' }).click();
     await page.getByRole('button', { name: 'View in list' }).click();
 
@@ -118,19 +119,19 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   test('save with a Name → View in list → sidebar shows that Name (round-trip, backend-only)', async ({
     page,
   }) => {
-    // Backend-only: the mock single-vehicle GET returns a fixed body, so a
-    // name round-trip can only be proven against a live Sobek. End-to-end
-    // check for the #80 item-1 parser fix — a bare <Name> with no lang
-    // attribute must survive POST → persist → GET → parse → render.
-    test.skip(process.env.E2E_BACKEND !== 'true', 'backend-only — needs real name persistence');
+    // Backend-only: the mock single-vehicle GET returns a fixed body, so a name
+    // round-trip can only be proven against a live Sobek. End-to-end check for
+    // the #80 item-1 parser fix — a bare <Name> with no lang attribute must
+    // survive POST → persist → GET → parse → render.
+    test.skip(!IS_LIVE, 'backend-only — needs real name persistence');
 
     const name = `E2E Name ${Date.now()}`;
-    await wireCreateFlow(page);
+    const vtInt = await liveVehicleTypeInt(page);
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
 
     await page.locator('#vehicle-name').fill(name);
-    await fillRequiredFields(page);
+    await fillRequiredFields(page, { reg: `E2E-${Date.now()}`, vtInt });
     await page.getByRole('button', { name: 'Save' }).click();
     await page.getByRole('button', { name: 'View in list' }).click();
 
@@ -142,9 +143,10 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   test('action waits out replica lag, then slider resolves (poll-until-found)', async ({
     page,
   }) => {
-    // First THREE post-POST list calls still miss the new id; the polling
-    // warm in handleViewInList must keep trying so navigation doesn't fire
-    // before the backend has surfaced the row to GraphQL.
+    // Models read-after-write replica lag via the stateful mock — a mock-only
+    // construct (live timing isn't controllable).
+    test.skip(IS_LIVE, 'mock-only — simulates controllable replica lag');
+
     const list = await wireCreateFlow(page, { lag: 3 });
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
@@ -165,9 +167,9 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   test('lag exceeds polling budget: navigation still happens; slider shows not-found (graceful degradation)', async ({
     page,
   }) => {
-    // 99 lag calls means the poll exhausts its attempts and the mount
-    // fetch on /vehicles still misses. Per the spec's graceful-degrade
-    // contract, we navigate anyway and let the user retry.
+    // 99 lag calls exhaust the poll — a mock-only degradation scenario.
+    test.skip(IS_LIVE, 'mock-only — forces poll-budget exhaustion via simulated lag');
+
     await wireCreateFlow(page, { lag: 99 });
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
@@ -185,6 +187,9 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   test('deep-link to a known id resolves the slider (regression for cross-route nav)', async ({
     page,
   }) => {
+    // Deep-links the mock-assigned NEW_ID; live has no such fixed id.
+    test.skip(IS_LIVE, 'deep-links the mock-assigned NEW_ID');
+
     const list = await wireCreateFlow(page, { lag: 0 });
     list?.addCreated(NEW_ID, 0);
 
