@@ -17,15 +17,6 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, readNetexIds } from './
  *   - mock (E2E_SUITE=no-auth): n/a — live-only; the whole describe is skipped when !IS_LIVE.
  *   - live (E2E_BACKEND=true): writeConfig + seedAuth (JWT in session) + selectFirstOrg (AtB) → real Sobek save round-trip.
  *   - skip-live: skipped unless IS_LIVE — "Requires a running, authenticated Sobek backend".
- *
- * KNOWN RED (live finding, 2026-06-09): Sobek's `VehicleTypeInput` now requires
- * `dataOwnerRef: String!`, but hathor's vtype mutation serializer never sends it
- * (it exists only as a read filter), so the save 400s with
- * "Field 'dataOwnerRef' has coerced Null value for NonNull type 'String!'". The
- * vendored `sobek.schema.graphqls` snapshot is also stale (missing the field).
- * This test asserts the *correct* round-trip and is intentionally left failing
- * to surface the gap — do NOT weaken it to green; fix the serializer (src/) and
- * refresh the snapshot instead.
  */
 test.describe('VehicleType sidebar save — LIVE Sobek', () => {
   test.skip(() => !IS_LIVE, 'Requires a running, authenticated Sobek backend');
