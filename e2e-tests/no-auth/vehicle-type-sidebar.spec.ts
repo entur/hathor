@@ -30,7 +30,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
- *     warning (test.fixme — flags the open doFetch #117 src regression, fixed elsewhere).
+ *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_SUITE=no-auth): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -283,15 +283,10 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
   // The mutation commits but the post-save list refresh 500s. The user must not
   // get a bare "saved" success over a stale table — the refresh failure should be
-  // surfaced (handleSave awaits onSaved and catches → stale-list warning).
-  //
-  // fixme (not parked-red, so it can't mask the suite exit): this catches a real
-  // #117 regression — useVehicleTypes.doFetch dropped its `return`, so the async
-  // fn resolves before the refetch settles, `await onSaved()` doesn't wait, and
-  // the warning never fires. The one-word `return fetchVehicleTypes(...)` fix is a
-  // src change tracked separately (see project_hathor_dofetch_missing_return);
-  // this spec stays e2e-only. Remove the fixme when that lands — it'll flag here.
-  test.fixme('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
+  // surfaced (handleSave awaits onSaved and catches → stale-list warning). This
+  // works because useVehicleTypes.doFetch returns its fetch chain, so the awaited
+  // onSaved() rejects on a failed refresh instead of resolving early (#117 fix).
+  test('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
     page,
   }) => {
     await interceptVehicleTypesWithSave(page, { failRefetch: true });
