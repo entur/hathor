@@ -30,12 +30,15 @@ export interface VehicleWire {
  * Sobek `VehicleInput` — the mutation-accepted shape (mirrors `input
  * VehicleInput` in the SDL). Strict subset of the fetched {@link VehicleWire}:
  * no `version` (server-managed; Sobek resolves the live version by `netexId`)
- * and `transportType` is a bare ref (only `netexId` is sent, though the SDL
- * type is `VehicleTypeInput`). Mirrors the `<Entity>Input` convention used by
+ * and `transportType` is a Sobek `VehicleTypeReferenceInput` (only `netexId`).
+ * `dataOwnerRef` is a required input field, threaded in by the caller (current
+ * organisation). Mirrors the `<Entity>Input` convention used by
  * `VehicleTypeInput`.
  */
 export interface VehicleInput {
   netexId?: string | null;
+  /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleInput`. */
+  dataOwnerRef: string;
   name?: Name | null;
   description?: Name | null;
   registrationNumber?: string | null;

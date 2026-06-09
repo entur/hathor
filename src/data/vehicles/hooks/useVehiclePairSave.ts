@@ -38,7 +38,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
       setError(null);
       try {
         const wireVehicle = {
-          dataOwnerRef: currentOrganisation?.id,
+          dataOwnerRef: currentOrganisation?.id ?? '',
           registrationDate: form.vehicle.registrationDate,
           description: orUndef(form.vehicle.description?.value, form.vehicle.description),
           chassisNumber: orUndef(form.vehicle.chassisNumber, form.vehicle.chassisNumber),
