@@ -1,19 +1,22 @@
 ---
-name: e2e_backend_runner
+name: e2e_runner
 description: >-
-  Run AND verify hathor's Playwright e2e suite against a LIVE local Sobek backend
-  (E2E_BACKEND=true) using the exact same sequential flow as a mocked run, so the two
-  modes stay identical. Use this whenever the user wants to run e2e against a real
+  Run AND keep healthy hathor's Playwright e2e suite — both mocked and against a LIVE
+  local Sobek backend (E2E_BACKEND=true) — using the exact same sequential flow so the
+  two modes stay identical, AND keeping the suite slim and true (no duplicate coverage,
+  no unit-test-shaped specs). Use this whenever the user wants to run e2e against a real
   database / local backend, set up the manual-login + JWT-in-session (storageState)
   handoff, debug the "Loading data…" organisation-selection stall or a 401 from Sobek
-  :37999 in tests, make mocked and live e2e behave the same way, or audit that every
-  spec follows the canonical login → select-org → navigate+count → create → edit-verify
-  → edit sequence. Trigger eagerly on E2E_BACKEND, `e2e:local-backend`, "live backend
-  e2e", "run e2e against the real DB", organisation-select stalls in tests, or "why do
-  my backend e2e tests hang / 401" — even when the user doesn't name this skill.
+  :37999 in tests, make mocked and live e2e behave the same way, audit that every spec
+  follows the canonical login → select-org → navigate+count → create → edit-verify →
+  edit sequence, or prune the suite (flag pure duplicate coverage and e2e tests that
+  belong in vitest). Trigger eagerly on E2E_BACKEND, `e2e:local-backend`, "live backend
+  e2e", "run e2e against the real DB", organisation-select stalls in tests, "why do my
+  e2e tests hang / 401", "is this spec a duplicate", or "should this be a unit test" —
+  even when the user doesn't name this skill.
 ---
 
-# e2e_backend_runner
+# e2e_runner
 
 Hathor's e2e suite runs in two modes that are *supposed* to be interchangeable:
 
@@ -79,6 +82,32 @@ Interpret:
 
 Read `references/harness-internals.md` for the full mechanics (config swap, helpers, fixtures,
 the `E2E_BACKEND` branch points) before editing specs or helpers.
+
+### Suite-hygiene gate (part of preflight — alert, don't accept)
+
+The live suite is slow and mutates a real DB, so every spec must earn its seat. Two failure
+modes silently bloat it; catch both here and **raise them in the session rather than waving
+them through**. This gate is not optional cleanup — a bloated or mis-targeted suite makes every
+later step (run, audit, debug) slower and noisier.
+
+- **No pure duplicate coverage.** Two specs (or two `test()`s) that assert the *same* behaviour
+  over the same surface add runtime and maintenance for zero extra signal. Scan for it by
+  comparing each spec's file-level JSDoc keynote — its `Workflow` and `Covers` sections (the same
+  machine-readable summary the sibling **`spec-flowchart-viz`** skill renders). Overlapping
+  `Covers` bullets on the same route + same testids are the tell. When you find a pure dup,
+  **stop and surface it**: name both specs, show the overlapping coverage, and propose the merge
+  or delete — then let the user decide. Do not proceed as though the duplication is fine.
+- **No unit-test-shaped e2e.** An e2e test that pins pure logic (a formatter, serializer, reducer,
+  parse/`restruct` helper) with no UI-visible, browser-or-backend-dependent behaviour belongs in
+  vitest, not Playwright — there it runs in milliseconds and asserts the logic directly instead of
+  through the DOM. Project rule of thumb: **UI-visible behaviour → Playwright `no-auth/`; pure
+  logic → vitest.** When a spec is really exercising logic a unit test could pin, flag it and
+  propose moving it down to a `*.test.ts`. Keeping these out is what keeps the e2e suite *slim and
+  true* — every remaining spec is here because it genuinely needs a real browser + backend.
+
+Treat both as **alerts to address in-flow**, at the natural point in the session — during the
+audit, or right before a live run when the DB-mutation cost is about to be paid — not findings to
+note and ignore. Pair this with the conformance checklist under "Verify / audit" below.
 
 ## Login handoff (live mode, step 1b)
 
@@ -152,6 +181,13 @@ A spec is **conformant** when:
   workaround for an assertion that *could* be written mode-agnostically.
 - It relies only on stable testids (`editor-rail-edit/save/cancel/collapse`, `create-vehicle-fab`,
   `vtype-*`, `organisation-select`, `total-entries`) — see `references/surfaces-and-testids.md`.
+- Its **file-level JSDoc keynote** (the `Title → Workflow → Covers → Modes` block above the first
+  `test(`) still matches what the spec actually does. This keynote is the spec's curated,
+  machine-readable summary — the sibling **`spec-flowchart-viz`** skill reads exactly these blocks
+  (never the test bodies) to render the suite as flowcharts. So when an audit changes a spec's flow,
+  modes, or coverage, update its keynote in the **same** edit; a stale keynote silently lies to both
+  the next human reader and the diagram generator. Keep the `Modes:` section honest about
+  mock / live / skip-live — that's the same mode-agnosticism this skill is verifying, just written down.
 
 **Known structural mismatch to call out, not paper over:** the three entities don't share a create
 surface. Vehicles have a real create form (`/vehicles/new`, `create-vehicle-fab`); vehicle-types are

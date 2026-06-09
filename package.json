@@ -1,7 +1,7 @@
 {
   "name": "hathor",
   "private": true,
-  "version": "0.75.0",
+  "version": "0.76.0",
   "type": "module",
   "scripts": {
     "predev": "run-p --race copy:theme copy:config",
@@ -55,7 +55,7 @@
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2",
     "react-oidc-context": "^3.3.0",
-    "react-router-dom": "^6.30.0"
+    "react-router-dom": "^7.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
