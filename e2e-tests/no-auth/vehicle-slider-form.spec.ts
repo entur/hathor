@@ -1,7 +1,4 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import {
   interceptVehicleListQuery,
   interceptStatefulVehicleListQuery,
@@ -9,12 +6,7 @@ import {
   interceptVehicleSaveMutation,
   vehicleRow,
 } from './vehicle-list-helpers';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
+import { writeConfig } from './live-auth-helpers';
 
 const VEHICLE_ID = 'NMR:Vehicle:rail-1';
 const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
@@ -39,9 +31,7 @@ const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
 test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-auth)', () => {
   test.skip(process.env.E2E_BACKEND === 'true', 'mock-only regression spec');
 
-  test.beforeAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
 
   test('Name from the vehicles() fetch shows in the title and form field', async ({ page }) => {
     await interceptVehicleListQuery(page);

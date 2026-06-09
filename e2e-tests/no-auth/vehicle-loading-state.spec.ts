@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
-import { IS_LIVE } from './live-auth-helpers';
+import { IS_LIVE, writeConfig } from './live-auth-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,9 +49,7 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
   // always fetchable by id). The not-found error branch is therefore mock-only.
   test.skip(IS_LIVE, 'requires a list-has-row + byid-empty mismatch a real backend cannot produce');
 
-  test.beforeAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
 
   test.beforeEach(async ({ page }) => {
     if (process.env.E2E_BACKEND === 'true') return;
@@ -132,9 +130,9 @@ test.describe('save with no applicationBaseUrl surfaces a config error, not sile
     fs.copyFileSync(path.join(fixturesDir, 'config-no-baseurl.json'), targetConfig);
   });
 
-  test.afterAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
-  });
+  // Restore via writeConfig() so a live run lands config-with-auth (not a raw
+  // config-no-auth) for the next serial spec.
+  test.afterAll(() => writeConfig());
 
   test('saving a new vehicle with no base URL shows the config error and does not navigate', async ({
     page,

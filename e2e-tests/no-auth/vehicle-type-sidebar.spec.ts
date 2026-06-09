@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
@@ -8,10 +8,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
   await selectFirstOrg(page);
   await page.waitForLoadState('networkidle');
   await expect(page.locator('table')).toBeVisible();
-  await page.locator('table tbody tr').first().click();
-  await expect(page).toHaveURL(/selected=/);
-  await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
-  return decodeURIComponent(new URL(page.url()).searchParams.get('selected') ?? '');
+  return openFirstRow(page, 'vehicle-type-details-title');
 }
 
 /**

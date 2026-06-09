@@ -4,15 +4,14 @@ import {
   interceptVehicleByIdQuery,
   mockVehicleById,
 } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers';
-
-/** Open the first data row's sidebar and return its `?selected=` netexId. */
-async function openFirstRow(page: import('@playwright/test').Page): Promise<string> {
-  await page.locator('table tbody tr').first().click();
-  await expect(page).toHaveURL(/selected=/);
-  await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
-  return decodeURIComponent(new URL(page.url()).searchParams.get('selected') ?? '');
-}
+import {
+  IS_LIVE,
+  writeConfig,
+  seedAuth,
+  selectFirstOrg,
+  rowCount,
+  openFirstRow,
+} from './live-auth-helpers';
 
 /**
  * /vehicles — list rendering, TransportMode column, chip filter, sidebar deep-link.
@@ -125,7 +124,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     await expect(page.locator('table')).toBeVisible();
 
     if (IS_LIVE) {
-      await openFirstRow(page);
+      await openFirstRow(page, 'vehicle-details-title');
       return;
     }
 
@@ -147,7 +146,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
       await selectFirstOrg(page);
       await page.waitForLoadState('networkidle');
       await expect(page.locator('table')).toBeVisible();
-      await openFirstRow(page);
+      await openFirstRow(page, 'vehicle-details-title');
       const context = page.getByTestId('vehicle-context');
       await expect(context).toBeVisible();
       await page.getByRole('button', { name: 'Edit' }).click();
@@ -172,7 +171,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
       await selectFirstOrg(page);
       await page.waitForLoadState('networkidle');
       await expect(page.locator('table')).toBeVisible();
-      await openFirstRow(page);
+      await openFirstRow(page, 'vehicle-details-title');
     } else {
       await page.goto('/vehicles?selected=NMR:Vehicle:bus-1');
       await page.waitForLoadState('networkidle');

@@ -5,7 +5,7 @@ import {
   interceptVehicleSaveMutation,
   vehicleRow,
 } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, liveVehicleTypeInt } from './live-auth-helpers';
+import { IS_LIVE, writeConfig, seedAuth, liveCreateOverrides } from './live-auth-helpers';
 
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const ENCODED_NEW_ID = encodeURIComponent(NEW_ID);
@@ -67,7 +67,7 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   test('save shows success snackbar with a "View in list" action and does not auto-navigate', async ({
     page,
   }) => {
-    const over = IS_LIVE ? { reg: `E2E-${Date.now()}`, vtInt: await liveVehicleTypeInt(page) } : {};
+    const over = IS_LIVE ? await liveCreateOverrides(page) : {};
     await wireCreateFlow(page);
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
@@ -102,7 +102,7 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
   }) => {
     // Reads back whatever id the redirect produced — valid against a live Sobek,
     // where the assigned id is unknown until the save responds.
-    const over = IS_LIVE ? { reg: `E2E-${Date.now()}`, vtInt: await liveVehicleTypeInt(page) } : {};
+    const over = IS_LIVE ? await liveCreateOverrides(page) : {};
     await wireCreateFlow(page, { lag: 0 });
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
@@ -126,12 +126,12 @@ test.describe('/vehicles/new save feedback + redirect (no-auth)', () => {
     test.skip(!IS_LIVE, 'backend-only — needs real name persistence');
 
     const name = `E2E Name ${Date.now()}`;
-    const vtInt = await liveVehicleTypeInt(page);
+    const { reg, vtInt } = await liveCreateOverrides(page);
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
 
     await page.locator('#vehicle-name').fill(name);
-    await fillRequiredFields(page, { reg: `E2E-${Date.now()}`, vtInt });
+    await fillRequiredFields(page, { reg, vtInt });
     await page.getByRole('button', { name: 'Save' }).click();
     await page.getByRole('button', { name: 'View in list' }).click();
 

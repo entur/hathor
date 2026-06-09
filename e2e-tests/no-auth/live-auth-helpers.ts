@@ -26,17 +26,22 @@ let cached: OidcUser | null = null;
 
 /**
  * Load the JWT captured by the login handoff (`playwright/.auth/capture.mjs`).
- * Throws with a runnable hint if absent — live mode is impossible without it.
+ * Throws with a runnable hint if absent OR expired — fail fast with the right
+ * remedy (re-capture) instead of letting a stale token 401 and surface as a
+ * confusing "Loading data…" org-select stall mid-run. `expires_at` is epoch
+ * seconds (oidc-client-ts).
  */
 export const loadOidcUser = (): OidcUser => {
   if (cached) return cached;
+  const recapture = `Run \`npm run local\` (oidc + :37999), then \`node playwright/.auth/capture.mjs\` and log in.`;
   if (!fs.existsSync(authFile)) {
-    throw new Error(
-      `Live e2e needs a captured token at ${authFile}.\n` +
-        `Run \`npm run local\` (oidc + :37999), then \`node playwright/.auth/capture.mjs\` and log in.`
-    );
+    throw new Error(`Live e2e needs a captured token at ${authFile}.\n${recapture}`);
   }
-  cached = JSON.parse(fs.readFileSync(authFile, 'utf-8')) as OidcUser;
+  const user = JSON.parse(fs.readFileSync(authFile, 'utf-8')) as OidcUser;
+  if (user.v.expires_at && user.v.expires_at * 1000 < Date.now()) {
+    throw new Error(`Captured token at ${authFile} has expired.\n${recapture}`);
+  }
+  cached = user;
   return cached;
 };
 
@@ -134,3 +139,25 @@ export const liveVehicleTypeInt = async (page: Page): Promise<string> => {
   expect(m, 'expected a numeric live VehicleType id to build a transportType ref').toBeTruthy();
   return m![1];
 };
+
+/**
+ * Click the first data row, assert its `?selected=` sidebar opened (title testid
+ * visible), and return the decoded netexId. Assumes the page is already on the
+ * list with an org selected. Shared by the vehicles + vehicle-types specs.
+ */
+export const openFirstRow = async (page: Page, titleTestId: string): Promise<string> => {
+  await page.locator('table tbody tr').first().click();
+  await expect(page).toHaveURL(/selected=/);
+  await expect(page.getByTestId(titleTestId)).toBeVisible();
+  return decodeURIComponent(new URL(page.url()).searchParams.get('selected') ?? '');
+};
+
+/**
+ * Live create-form overrides: a per-run-unique registration number and a real
+ * org-owned VehicleType int. Centralises the reg scheme so a future change (e.g.
+ * a collision-avoiding prefix) lands in one place across the create specs.
+ */
+export const liveCreateOverrides = async (page: Page): Promise<{ reg: string; vtInt: string }> => ({
+  reg: `E2E-${Date.now()}`,
+  vtInt: await liveVehicleTypeInt(page),
+});

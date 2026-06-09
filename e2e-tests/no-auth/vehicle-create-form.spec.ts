@@ -5,7 +5,7 @@ import {
   interceptVehicleSaveMutation,
   vehicleRow,
 } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, liveVehicleTypeInt } from './live-auth-helpers';
+import { IS_LIVE, writeConfig, seedAuth, liveCreateOverrides } from './live-auth-helpers';
 
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const VT_ID_INT = '2';
@@ -60,8 +60,7 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
     page,
   }) => {
     if (IS_LIVE) {
-      const vtInt = await liveVehicleTypeInt(page);
-      const reg = `E2E-${Date.now()}`;
+      const { reg, vtInt } = await liveCreateOverrides(page);
       await page.goto('/vehicles/new');
       await page.waitForLoadState('networkidle');
 
@@ -142,8 +141,9 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
   test('Back button after a successful save navigates without a discard dialog', async ({
     page,
   }) => {
-    const reg = IS_LIVE ? `E2E-${Date.now()}` : 'NEW-001';
-    const vtInt = IS_LIVE ? await liveVehicleTypeInt(page) : VT_ID_INT;
+    const { reg, vtInt } = IS_LIVE
+      ? await liveCreateOverrides(page)
+      : { reg: 'NEW-001', vtInt: VT_ID_INT };
 
     await wireCreateFlow(page);
     await page.goto('/vehicles/new');

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import { fixturesDir, targetConfig, REG_NR, interceptAutosysQuery } from './autosys-helpers';
+import { REG_NR, interceptAutosysQuery } from './autosys-helpers';
+import { writeConfig } from './live-auth-helpers';
 
 /**
  * /vehicle-types Autosys import → VehicleType detail navigation — import one reg-nr, then open its route-based detail page.
@@ -26,9 +26,9 @@ import { fixturesDir, targetConfig, REG_NR, interceptAutosysQuery } from './auto
 test.describe('Import → detail page navigation', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test.beforeAll(() => {
-    fs.copyFileSync(`${fixturesDir}/config-no-auth.json`, targetConfig);
-  });
+  // writeConfig() so a live run leaves config-with-auth on disk for the next
+  // serial spec (this one is always skipped).
+  test.beforeAll(() => writeConfig());
 
   // Live-only flow that fetches from the shepet Autosys backend (:37998) and
   // submits the import to Sobek. shepet is a separate app outside this run (not
