@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { REG_NR, interceptAutosysQuery, interceptVehicleTypesQuery } from './autosys-helpers';
-import { IS_LIVE, writeConfig } from './live-auth-helpers';
+import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
 
 /**
  * /vehicle-types Autosys multi-import dialog — drive the multi-vehicle import wizard to its 1/1/1/1 confirm summary.
@@ -30,6 +30,7 @@ test.describe('Autosys multi-import dialog', () => {
   // config-with-auth on disk for the next serial spec, even though this one
   // skips under live — avoids clobbering the shared public/config.json.
   test.beforeAll(() => writeConfig());
+  test.beforeEach(async ({ context }) => seedAuth(context));
 
   test(`skip upload, add "${REG_NR}", confirm shows 1/1/1/1`, async ({ page }) => {
     if (!IS_LIVE) {

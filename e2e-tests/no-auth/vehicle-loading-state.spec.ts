@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig } from './live-auth-helpers';
+import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,8 +24,8 @@ const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
  *   - useVehicle not-found branch sets error + loading=false (spinner disappears, reason surfaced, form stays hidden).
  *   - useVehiclePairSave base-URL guard short-circuits before any request (error snackbar, no navigation).
  * Modes:
- *   - mock (E2E_SUITE=no-auth): both describes intercept the `/graphql` route for the list + by-id queries; not-found stages list-has-row vs byid-empty; no-base-url uses a broken config fixture.
- *   - live (E2E_BACKEND=true): no live path — both describes skip (no seedAuth/org select here).
+ *   - mock (E2E_SUITE=no-auth): seedAuth provides a synthetic user + org so the list resolves; both describes intercept the `/graphql` route for the list + by-id queries; not-found stages list-has-row vs byid-empty; no-base-url uses a broken config fixture.
+ *   - live (E2E_BACKEND=true): no live path — both describes skip.
  *   - skip-live: "useVehicle — single-vehicle fetch with no match" (needs a list-has-row + byid-empty mismatch a real backend cannot produce) and "save with no applicationBaseUrl" (mock-only — drives a deliberately broken config).
  */
 
@@ -51,8 +51,9 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
 
   test.beforeAll(() => writeConfig());
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
     if (process.env.E2E_BACKEND === 'true') return;
+    await seedAuth(context);
 
     // List query (no `filter.netexIds`) → the row exists, so the slider opens
     // on a found row and renders a title.

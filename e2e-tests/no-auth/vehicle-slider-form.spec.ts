@@ -6,7 +6,7 @@ import {
   interceptVehicleSaveMutation,
   vehicleRow,
 } from './vehicle-list-helpers';
-import { writeConfig } from './live-auth-helpers';
+import { writeConfig, seedAuth } from './live-auth-helpers';
 
 const VEHICLE_ID = 'NMR:Vehicle:rail-1';
 const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
@@ -32,6 +32,7 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
   test.skip(process.env.E2E_BACKEND === 'true', 'mock-only regression spec');
 
   test.beforeAll(() => writeConfig());
+  test.beforeEach(async ({ context }) => seedAuth(context));
 
   test('Name from the vehicles() fetch shows in the title and form field', async ({ page }) => {
     await interceptVehicleListQuery(page);
