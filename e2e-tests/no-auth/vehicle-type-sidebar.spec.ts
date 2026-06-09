@@ -27,14 +27,16 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form (RED)
- *   - describe 2: save fires the mutation + success + returns to view; payload is the full
- *     document (untouched fields survive, server-managed version/vehicles excluded); re-baseline
+ *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag (RED); failed post-save list refresh surfaces a
- *     stale-list warning, not a bare success
+ *     stale-list warning, not a bare success. (Full-document WIRE SHAPE is unit-tested in
+ *     serializeVehicleType.test.ts, not spied on here.)
  * Modes:
  *   - mock (E2E_SUITE=no-auth): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
- *     describe 2 captures createOrUpdateVehicleType input + drives a stateful fixture.
+ *     describe 2 drives a stateful fixture for behavioural read-back + fault injection
+ *     (the only remaining input-capture is the lang-tag wire check; full-document shape
+ *     is unit-tested in serializeVehicleType.test.ts).
  *     Fixture (vehicle-types-mock.json), sorted by name asc:
  *       Type Alpha (NMR:VehicleType:1, bus) · Type Beta (…:2, rail, name lang 'nb') · Type Gamma (…:3, lowFloor null)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select (AtB); describe 1 runs the
@@ -46,7 +48,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *         vehicle chip target (AA-101 → NMR:Vehicle:101) absent live;
  *       'toggling a null-baseline Low Floor switch on then off should not dirty the form' —
  *         needs a null-lowFloor-baseline row (fixture Gamma) not reproducible live
- *       describe 2 (all tests): mock-bound mutation-capture assertions; a real save would mutate dev data
+ *       describe 2 (all tests): behavioural/fault-injection/lang-wire assertions over a stateful
+ *         fixture; a real save would mutate dev data (real live round-trip → vehicle-type-save-live.spec.ts)
  */
 test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
   test.beforeAll(() => writeConfig());
@@ -187,21 +190,23 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
  * not null untouched fields; on success the list refetch re-resolves the row
  * and re-hydrates the form (advancing the dirty baseline).
  *
- * Mocked path only: assertions read the captured mutation input + a stateful
- * fixture, and a real save would mutate the dev DB. (The Sobek `@Transactional`
- * bug that previously blocked real UPDATEs is fixed in PR #145.) So these skip
- * under `E2E_BACKEND=true`.
+ * Mock-only here: behavioural flow over a stateful fixture (success snackbar,
+ * return-to-view, re-baseline) plus fault-injection (save error, stale post-save
+ * refresh) and the lang-tag wire check — none reproducible against a real backend,
+ * and a real save would mutate the dev DB. The full-document WIRE SHAPE is unit-
+ * tested in serializeVehicleType.test.ts; the real live round-trip lives in
+ * vehicle-type-save-live.spec.ts. So these skip under `E2E_BACKEND=true`.
  */
 test.describe('/vehicle-types sidebar save (no-auth)', () => {
   test.beforeAll(() => writeConfig());
 
   test.beforeEach(() => {
-    // Mock-bound: assertions read the captured mutation input + a stateful
-    // fixture, and a real save would mutate dev data. The real live vtype save
-    // round-trip lives in vehicle-type-save-live.spec.ts.
+    // Mock-only: behavioural + fault-injection + lang-wire assertions over a
+    // stateful fixture; a real save would mutate dev data. The real live vtype
+    // save round-trip lives in vehicle-type-save-live.spec.ts.
     test.skip(
       IS_LIVE,
-      'Mocked mutation path — assertions are mock-bound; a real save would mutate dev data'
+      'Mock-only — fault-injection/wire assertions; a real save would mutate dev data'
     );
   });
 
@@ -222,27 +227,12 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await expect(page.locator('#vtype-name')).toBeDisabled();
   });
 
-  test('save payload is the full document — untouched fields are not dropped', async ({ page }) => {
-    const { lastInput } = await interceptVehicleTypesWithSave(page);
-    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
-
-    await page.getByTestId('editor-rail-edit').click();
-    await page.locator('#vtype-name').fill('Type Alpha X');
-    await page.getByTestId('editor-rail-save').click();
-    await expect(page.getByText('Vehicle type saved')).toBeVisible();
-
-    const input = lastInput();
-    expect(input?.netexId).toBe('NMR:VehicleType:1');
-    expect(input?.name).toEqual({ value: 'Type Alpha X' });
-    // Fields the user never touched must survive the full-replace serialise.
-    expect(input?.euroClass).toBe('EURO6');
-    expect(input?.maximumEngineEffectKW).toBe(250);
-    expect((input?.passengerCapacity as { totalCapacity?: number })?.totalCapacity).toBe(90);
-    // Server-managed fields must NOT be in the input contract.
-    expect('version' in (input ?? {})).toBe(false);
-    expect('vehicles' in (input ?? {})).toBe(false);
-  });
+  // The full-document-replace WIRE SHAPE (untouched fields emitted, server-
+  // managed version/vehicles excluded, blanks→null) is unit-tested in
+  // src/data/vehicle-types/api/serializeVehicleType.test.ts — a pure function
+  // belongs there, not in an e2e mutation-input spy. The behavioural round-trip
+  // (a name-only save preserves a sibling field through Sobek) is covered live
+  // in vehicle-type-save-live.spec.ts.
 
   test('after save the form re-baselines — collapse raises no discard dialog', async ({ page }) => {
     await interceptVehicleTypesWithSave(page);
