@@ -146,9 +146,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         <TextField
           id="vehicle-description"
           value={v.description?.value ?? ''}
-          onChange={e =>
-            setV({ description: { lang: v.description?.lang, value: e.target.value } })
-          }
+          onChange={e => setV({ description: mergeNameText(v.description, e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
