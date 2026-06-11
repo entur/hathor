@@ -105,6 +105,8 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
  */
 export interface VehicleTypeInput {
   netexId?: string | null;
+  /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleTypeInput`. */
+  dataOwnerRef: string;
   name?: Name | null;
   shortName?: Name | null;
   description?: Name | null;
@@ -113,7 +115,7 @@ export interface VehicleTypeInput {
   fuelTypes?: (FuelType | null)[] | null;
   transportMode?: string | null;
   passengerCapacity?: PassengerCapacity | null;
-  deckPlan?: { netexId?: string | null; name?: Name | null } | null;
+  deckPlan?: { netexId: string } | null;
   formDragCoefficient?: number | null;
   rollResistanceCoefficient?: number | null;
   maximumEngineEffectKW?: number | null;
@@ -140,11 +142,17 @@ export interface VehicleTypeInput {
  * sobek#149 (`INTERNAL_ERROR`). The form does not edit them, so hathor stays
  * structurally blind. Consequence: full-replace nulls them server-side.
  *
+ * `deckPlan` is emitted as a Sobek `DeckPlanReferenceInput` (`netexId` only —
+ * `name` is not part of the reference input). `dataOwnerRef` is a required
+ * field on the input and is threaded in by the caller (current organisation).
+ *
  * @param vt Domain VehicleType (as held by the editor form).
+ * @param dataOwnerRef Owning organisation ref (required by Sobek's input).
  * @returns The mutation input payload.
  */
-export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
+export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
   netexId: vt.id,
+  dataOwnerRef,
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,
   description: vt.description ?? null,
@@ -153,7 +161,7 @@ export const serializeVehicleType = (vt: VehicleType): VehicleTypeInput => ({
   fuelTypes: vt.fuelTypes ?? null,
   transportMode: vt.transportMode ?? null,
   passengerCapacity: vt.passengerCapacity ?? null,
-  deckPlan: vt.deckPlan ? { netexId: vt.deckPlan.id, name: vt.deckPlan.name ?? null } : null,
+  deckPlan: vt.deckPlan ? { netexId: vt.deckPlan.id } : null,
   formDragCoefficient: vt.formDragCoefficient ?? null,
   rollResistanceCoefficient: vt.rollResistanceCoefficient ?? null,
   maximumEngineEffectKW: vt.maximumEngineEffectKW ?? null,

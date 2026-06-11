@@ -6,6 +6,9 @@ import {
 } from './fetchVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 
+/** Owning-organisation ref threaded into every serialize call (required input field). */
+const OWNER = 'NMR:Organisation:1';
+
 /**
  * serializeVehicleType is the domain→input inverse of projectVehicleType.
  * It must (a) rename id→netexId at every level, (b) emit the full document
@@ -27,33 +30,37 @@ describe('serializeVehicleType', () => {
       passengerCapacity: { totalCapacity: 90, seatingCapacity: 40 },
       deckPlan: { id: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } },
     };
-    const input = serializeVehicleType(vt);
+    const input = serializeVehicleType(vt, OWNER);
     expect(input.netexId).toBe('NMR:VehicleType:1');
+    expect(input.dataOwnerRef).toBe(OWNER);
     expect(input.name).toEqual({ value: 'Type Alpha' });
     expect(input.euroClass).toBe('EURO6');
     expect(input.maximumEngineEffectKW).toBe(250);
     expect(input.passengerCapacity).toEqual({ totalCapacity: 90, seatingCapacity: 40 });
-    expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } });
+    // deckPlan is a DeckPlanReferenceInput — netexId only, no name.
+    expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1' });
   });
 
   it('passes the Sobek enum value through unchanged (model already holds it)', () => {
     // The model carries Sobek's UPPER_CASE enum verbatim, so serialize is a
     // passthrough — no SCREAMING_SNAKE re-mapping.
-    expect(serializeVehicleType({ id: 'x', version: 1, transportMode: 'BUS' }).transportMode).toBe(
-      'BUS'
-    );
     expect(
-      serializeVehicleType({ id: 'x', version: 1, transportMode: 'TROLLEY_BUS' }).transportMode
+      serializeVehicleType({ id: 'x', version: 1, transportMode: 'BUS' }, OWNER).transportMode
+    ).toBe('BUS');
+    expect(
+      serializeVehicleType({ id: 'x', version: 1, transportMode: 'TROLLEY_BUS' }, OWNER)
+        .transportMode
     ).toBe('TROLLEY_BUS');
     expect(
-      serializeVehicleType({ id: 'x', version: 1, transportMode: 'SNOW_AND_ICE' }).transportMode
+      serializeVehicleType({ id: 'x', version: 1, transportMode: 'SNOW_AND_ICE' }, OWNER)
+        .transportMode
     ).toBe('SNOW_AND_ICE');
     // No mode → null (the input contract omits it rather than send a blank).
-    expect(serializeVehicleType({ id: 'x', version: 1 }).transportMode).toBeNull();
+    expect(serializeVehicleType({ id: 'x', version: 1 }, OWNER).transportMode).toBeNull();
   });
 
   it('emits blanked optionals as explicit null, not absent (full-replace)', () => {
-    const input = serializeVehicleType({ id: 'NMR:VehicleType:2', version: 1 });
+    const input = serializeVehicleType({ id: 'NMR:VehicleType:2', version: 1 }, OWNER);
     // Untouched optionals are present and null so Sobek clears them on replace.
     expect(input.name).toBeNull();
     expect(input.euroClass).toBeNull();
@@ -64,14 +71,17 @@ describe('serializeVehicleType', () => {
   });
 
   it('drops server-managed fields the input contract rejects', () => {
-    const input = serializeVehicleType({
-      id: 'NMR:VehicleType:3',
-      version: 9,
-      created: '2026-01-01',
-      changed: '2026-01-02',
-      changedBy: 'kdm',
-      vehicles: [{ id: 'NMR:Vehicle:1', registrationNumber: 'R1', version: 1 }],
-    });
+    const input = serializeVehicleType(
+      {
+        id: 'NMR:VehicleType:3',
+        version: 9,
+        created: '2026-01-01',
+        changed: '2026-01-02',
+        changedBy: 'kdm',
+        vehicles: [{ id: 'NMR:Vehicle:1', registrationNumber: 'R1', version: 1 }],
+      },
+      OWNER
+    );
     expect('version' in input).toBe(false);
     expect('created' in input).toBe(false);
     expect('changed' in input).toBe(false);
@@ -87,10 +97,10 @@ describe('serializeVehicleType', () => {
       euroClass: 'EURO6',
       deckPlan: { netexId: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } },
     };
-    const input = serializeVehicleType(projectVehicleType(wire));
+    const input = serializeVehicleType(projectVehicleType(wire), OWNER);
     expect(input.netexId).toBe('NMR:VehicleType:rail');
     expect(input.name).toEqual({ value: 'Rail Type' });
-    expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } });
+    expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1' });
   });
 
   // Full-document-replace contract: a no-op edit (project → serialize) must NOT
@@ -105,7 +115,7 @@ describe('serializeVehicleType', () => {
         name: { value: 'Has description' },
         description: { value: 'Long-form description' },
       } as VehicleTypeWire;
-      const input = serializeVehicleType(projectVehicleType(wire));
+      const input = serializeVehicleType(projectVehicleType(wire), OWNER);
       expect(input.description).toEqual({ value: 'Long-form description' });
     });
 
@@ -119,7 +129,7 @@ describe('serializeVehicleType', () => {
         name: { value: 'Ferry Type' },
         transportMode: 'FERRY',
       };
-      const input = serializeVehicleType(projectVehicleType(wire));
+      const input = serializeVehicleType(projectVehicleType(wire), OWNER);
       expect(input.transportMode).toBe('FERRY');
     });
   });
