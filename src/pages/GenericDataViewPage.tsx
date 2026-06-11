@@ -14,6 +14,11 @@ const DETAILS_PANE_SIDE: Side = 'right';
 const DETAILS_PANE_MARGIN = DETAILS_PANE_SIDE === 'right' ? 'marginRight' : 'marginLeft';
 const MARGIN_TRANSITION = `${DETAILS_PANE_MARGIN} 0.2s ease`;
 const APP_HEADER_HEIGHT_PX = 64;
+// Matches EditorRail's SEGMENT_SIZE — rail is a 40px-wide fixed-position
+// vertical strip floating over the content's right edge once an editor is
+// open. Published as `--editor-rail-clear` so right-aligned chrome (the
+// add/import actions) can gutter past it via `mr: var(--editor-rail-clear)`.
+const EDITOR_RAIL_WIDTH_PX = 40;
 
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
@@ -150,6 +155,7 @@ export default function GenericDataViewPage<T, K extends string>({
         position: 'relative',
         '--sidebar-width': sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
         '--app-header-height': `${APP_HEADER_HEIGHT_PX}px`,
+        '--editor-rail-clear': editingItem ? `${EDITOR_RAIL_WIDTH_PX}px` : '0px',
       }}
     >
       <Sidebar
