@@ -24,6 +24,7 @@ import {
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
+  canSubmit,
   type FormState,
 } from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
@@ -233,6 +234,10 @@ export default function VehicleDetails({
         onSave={handleSave}
         isDirty={isDirty}
         saving={saving}
+        // Block create-with-no-TransportTypeRef: Sobek's vehicles() resolver
+        // silently excludes refless vehicles from the list (create-but-invisible).
+        // Existing rows already carry a ref, so only the create flow needs the gate.
+        canSubmit={(form.vehicle.id ?? '') !== '' || canSubmit(form)}
       />
     </Box>
   );
