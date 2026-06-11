@@ -1,20 +1,37 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import { fixturesDir, targetConfig, interceptDeckPlansQuery } from './autosys-helpers';
+import { interceptDeckPlansQuery } from './autosys-helpers';
+import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
 
 /**
- * Regression spec for issue #63: /deck-plans must show rows with a NeTEx Name
- * before rows missing one, so the Name column isn't visually empty on first
- * load. The fix lives in src/data/deck-plans/deckPlanSortValue.ts via the
- * shared compareWithEmptyLast helper.
+ * /deck-plans — Name-column sort orders blank/null names last (regression #63).
+ *
+ * Workflow:
+ *   load /deck-plans → assert table → assert named rows sort before null-name
+ *   rows on initial asc load → click the "Deck Plan" header to flip asc→desc →
+ *   assert null-name rows stay last (not flipped to top)
+ *   (fix: src/data/deck-plans/deckPlanSortValue.ts via compareWithEmptyLast)
+ * Covers:
+ *   - first load (name asc): 5 named rows ("Plan Alpha".."Plan Echo") in lex
+ *     order before any null-name row; row 0 is "Plan Alpha"
+ *   - desc toggle keeps null-name rows last; row 0 becomes "Plan Echo"
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): intercepts `deckPlans` with the 10-row fixture
+ *     (5 named + 5 null-name); asserts exact count 10 and the named ordering
+ *   - skip-live: whole describe skips under live — AtB deck plans are all
+ *     blank-named, so blanks-last can't be exercised (would be vacuously green)
  */
 test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
-  test.beforeAll(() => {
-    fs.copyFileSync(`${fixturesDir}/config-no-auth.json`, targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
+  test.beforeEach(async ({ context }) => seedAuth(context));
+
+  // Blanks-last ordering needs a mix of named and unnamed rows. Live AtB deck
+  // plans are *all* blank-named, so the comparator can't be exercised against
+  // real data — assertions would be vacuously green. Kept mock-only (honest
+  // data limitation, not a hidden defect).
+  test.skip(IS_LIVE, 'AtB deck plans are all blank-named; blanks-last needs named rows');
 
   test('first load by name asc puts rows with names first', async ({ page }) => {
-    if (process.env.E2E_BACKEND !== 'true') {
+    if (!IS_LIVE) {
       await interceptDeckPlansQuery(page);
     }
 
@@ -38,7 +55,7 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
   });
 
   test('toggling to desc keeps null-name rows last (not flipped to top)', async ({ page }) => {
-    if (process.env.E2E_BACKEND !== 'true') {
+    if (!IS_LIVE) {
       await interceptDeckPlansQuery(page);
     }
 

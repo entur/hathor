@@ -1,3 +1,10 @@
+# Block commits when a critical npm vulnerability is present (dependabot parity).
+npm audit --audit-level=critical || {
+  echo "❌ Critical npm vulnerability detected (or npm audit failed) — commit blocked."
+  echo "   Inspect with 'npm audit'; remediate with 'npm audit fix'."
+  exit 1
+}
+
 npx lint-staged
 npm run check
 tsc -b

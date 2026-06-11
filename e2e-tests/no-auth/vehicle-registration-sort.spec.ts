@@ -1,13 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
+import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 const POST_CLICK_SETTLE_MS = 500;
 
@@ -119,7 +111,8 @@ const interceptVehiclesList = (page: Page) =>
         body: JSON.stringify(mockVehiclesPayload()),
       });
     } else {
-      await route.continue();
+      // fallback so the mock `organisations` query reaches seedAuth's route.
+      await route.fallback();
     }
   });
 
@@ -151,7 +144,46 @@ const runSortStabilityTests = (params: {
         ? `sort by "${target.key}" is locked while sidebar is open (click no-op, hover surfaces tooltip)`
         : `sort by "${target.key}" toggles and persists (no flicker/revert)`;
 
+      // The per-column asc-leader identities (expectedFirstReg) are bound to the
+      // synthetic 3-row distinct-leader fixture; live AtB data has no predictable
+      // per-column leader, so the unlocked toggle-identity check can't be made
+      // honest against the backend. The locked check is data-agnostic (sort must
+      // NOT change while a row is selected) and runs live against a real row.
+      test.skip(
+        IS_LIVE && !params.locked,
+        'per-column asc-leader identity needs the synthetic distinct-leader fixture'
+      );
+
       test(title, async ({ page }) => {
+        const firstRow = page.locator('table tbody tr').first();
+        const header = page.getByRole('button', { name: target.headerName });
+
+        // Live: only the locked case runs (unlocked leaders are fixture-bound,
+        // skipped above). Open a real row's sidebar, then assert the sort lock
+        // by row-identity stability — compare the first row's own innerText
+        // before/after the click (avoids fixture ids and whitespace-normalization
+        // pitfalls of cross-source text matching).
+        if (IS_LIVE) {
+          await page.goto('/vehicles');
+          await selectFirstOrg(page);
+          await page.waitForLoadState('networkidle');
+          await expect(page.locator('table')).toBeVisible();
+
+          await firstRow.click();
+          await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
+          const baseline = await firstRow.innerText();
+
+          await header.hover();
+          await expect(page.getByText(LOCK_TOOLTIP_TEXT)).toBeVisible();
+
+          await header.click();
+          expect(await firstRow.innerText()).toBe(baseline);
+
+          await page.waitForTimeout(POST_CLICK_SETTLE_MS);
+          expect(await firstRow.innerText()).toBe(baseline);
+          return;
+        }
+
         await page.goto(params.route);
         await page.waitForLoadState('networkidle');
 
@@ -159,11 +191,7 @@ const runSortStabilityTests = (params: {
           await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
         }
         await expect(page.locator('table')).toBeVisible();
-
-        const firstRow = page.locator('table tbody tr').first();
         await expect(firstRow).toContainText(params.defaultFirstReg);
-
-        const header = page.getByRole('button', { name: target.headerName });
 
         if (params.locked) {
           // Hover surfaces the lock affordance tooltip.
@@ -193,27 +221,25 @@ const runSortStabilityTests = (params: {
 };
 
 /**
- * Regression spec for sort behaviour on projected list views.
+ * /vehicles sort stability — header sort toggles cleanly when closed, is locked while the sidebar editor is open.
  *
- *   - Sidebar closed: header click toggles sort cleanly, order persists.
- *   - Sidebar open  : sort is LOCKED on every sortable column — clicks are
- *                     no-ops and hover surfaces a "Close details to change
- *                     sort" tooltip with a lock icon. Decision: sorting under
- *                     an open selection caused observable flicker/revert
- *                     (sort interacts with `useVehicleUrlSelection`'s
- *                     URL→editor→setPage cascade), so the UX call is to lock
- *                     sort while a row is being edited.
- *
- * Uses a self-contained `vehicles(` intercept with a 3-row fixture (rather
- * than the shared `vehicle-list-helpers.ts` 15-row mock) so each column's
- * asc-leader is provably distinct from the default first row.
+ * Workflow:
+ *   1. writeConfig (auth/no-auth) → seedAuth → (mock) intercept `vehicles(` list with the 3-row distinct-leader fixture.
+ *   2. Sidebar CLOSED, per column: goto /vehicles → click header → assert first row becomes target.expectedFirstReg → settle 500ms → still that leader (no flicker/revert).
+ *   3. Sidebar OPEN, per column: goto /vehicles?selected=<row> → assert vehicle-details-title visible → hover header surfaces "Close details to change sort" tooltip → click is a no-op (first row stays defaultFirstReg) → settle 500ms → still unchanged.
+ * Covers:
+ *   - Closed: each sortable column (registrationNumber, operationalNumber, transportTypeName, transportTypeMode, version) toggles to its distinct asc-leader and persists.
+ *   - Open: sort LOCKED on every column — click no-op + hover tooltip (UX call: sorting under an open selection caused flicker/revert via useVehicleUrlSelection's URL→editor→setPage cascade).
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): self-contained `vehicles(` intercept with a 3-row fixture (NMR:Vehicle:aaa-1/mid-1/zzz-1, totalElements 3) whose per-column asc-leaders are provably distinct; asserts exact expectedFirstReg per column.
+ *   - live (E2E_BACKEND=true): only the LOCKED cases run — seedAuth JWT + selectFirstOrg (AtB), open a real first row, assert lock by row-identity stability (firstRow.innerText unchanged before/after click), data-agnostic so no fixture ids needed.
+ *   - skip-live: all sidebar-CLOSED (unlocked) cases — per-column asc-leader identity is bound to the synthetic distinct-leader fixture; live AtB data has no predictable per-column leader.
  */
-test.beforeAll(() => {
-  fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
-});
+test.beforeAll(() => writeConfig());
 
-test.beforeEach(async ({ page }) => {
-  if (process.env.E2E_BACKEND !== 'true') {
+test.beforeEach(async ({ page, context }) => {
+  await seedAuth(context);
+  if (!IS_LIVE) {
     await interceptVehiclesList(page);
   }
 });

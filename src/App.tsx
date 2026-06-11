@@ -43,7 +43,7 @@ export default function App() {
   const { theme } = useAppTheme(useCustomFeatures);
 
   return (
-    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
+    <BrowserRouter>
       <SearchProvider>
         <ThemeProvider theme={theme}>
           <NavRailProvider>
