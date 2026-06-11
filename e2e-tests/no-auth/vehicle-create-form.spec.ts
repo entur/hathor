@@ -1,19 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import {
   interceptStatefulVehicleListQuery,
   interceptVehicleByIdQuery,
   interceptVehicleSaveMutation,
   vehicleRow,
 } from './vehicle-list-helpers';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
+import { IS_LIVE, writeConfig, seedAuth, liveCreateOverrides } from './live-auth-helpers';
 
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const VT_ID_INT = '2';
@@ -21,25 +13,40 @@ const EXPECTED_REF = `NMR:VehicleType:${VT_ID_INT}`;
 const REF_PATTERN = /^NMR:VehicleType:\d+$/;
 
 /**
- * Regression coverage for the coupled VehicleEditForm edits, realigned to the
- * GraphQL save path after #101 retired the NeTEx-XML import POST:
- *   - #82 — TransportType field required + writable
- *   - #81 — Back button on /vehicles/new with dirty-form discard dialog
+ * /vehicles/new — VehicleEditForm save gates + dirty-form back-nav (GraphQL save
+ * path after #101 retired the NeTEx-XML import POST; #82 transportType required,
+ * #81 back-button discard dialog).
  *
- * The TransportType field is a TEMP bare numeric input until Sobek's
- * VehicleTypeFilter gains a `name` field. The onChange prefixes
- * `NMR:VehicleType:` before binding to form state — this spec asserts on the
- * full prefixed shape in the `createOrUpdateVehicle` mutation input.
+ * Workflow:
+ *   /vehicles/new → fill Registration Number (Save disabled) → fill Vehicle Type ID
+ *   (Save enabled) → Save → "View in list" → ?selected= slider resolves → editor-rail
+ *   Edit → read back reg + bare transport-type int.
+ * Covers:
+ *   - Save stays disabled until both reg + Vehicle Type ID are filled
+ *   - transportType ref round-trips as prefixed NMR:VehicleType:<int>
+ *   - Back on a clean form navigates straight to /vehicles
+ *   - Back on a dirty form opens the discard dialog (Cancel stays, Discard navigates)
+ *   - Back after a successful save re-baselines → no discard dialog
+ *   - A non-numeric existing TransportTypeRef shows raw + read-only (TEMP numeric input fallback)
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): wireCreateFlow intercepts createOrUpdateVehicle +
+ *     stateful list + by-id; captures mutation input, asserts transportType.netexId === EXPECTED_REF
+ *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select (AtB) → real create with
+ *     unique reg E2E-<ts> + real VehicleType int via liveVehicleTypeInt → read-back through
+ *     the slider proves reg + ref survived Sobek round-trip
+ *   - skip-live: 'slider edit: an existing non-numeric TransportTypeRef shows raw + read-only'
+ *     — fixture-pinned non-numeric ref shape the live data can't reproduce
  */
+
 test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
-  test.beforeAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-auth.json'), targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
+  test.beforeEach(async ({ context }) => seedAuth(context));
 
   /** Captures the most recent `createOrUpdateVehicle` mutation input so specs
-   *  can assert on its shape (e.g. the prefixed `transportType.netexId`). */
+   *  can assert on its shape (e.g. the prefixed `transportType.netexId`). No-op
+   *  under live (requests hit Sobek). */
   const wireCreateFlow = async (page: Page) => {
-    if (process.env.E2E_BACKEND === 'true') return { input: () => null };
+    if (IS_LIVE) return { input: () => null };
     const list = await interceptStatefulVehicleListQuery(page);
     await interceptVehicleByIdQuery(page, id => (id === NEW_ID ? vehicleRow(id) : null));
     return interceptVehicleSaveMutation(page, NEW_ID, input => {
@@ -49,9 +56,37 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
     });
   };
 
-  test('Save disabled until Vehicle Type ID entered; mutation input carries prefixed transportType ref', async ({
+  test('Save disabled until Vehicle Type ID entered; transportType ref round-trips prefixed', async ({
     page,
   }) => {
+    if (IS_LIVE) {
+      const { reg, vtInt } = await liveCreateOverrides(page);
+      await page.goto('/vehicles/new');
+      await page.waitForLoadState('networkidle');
+
+      const save = page.getByRole('button', { name: 'Save' });
+      await page.getByLabel('Registration Number').fill(reg);
+      await expect(save).toBeDisabled();
+      await page.getByLabel(/Vehicle Type ID/).fill(vtInt);
+      await expect(save).toBeEnabled();
+
+      await save.click();
+      await page.getByRole('button', { name: 'View in list' }).click();
+
+      // Read-back through the slider: the created vehicle resolves and its
+      // persisted fields prove the prefixed ref + reg survived the round-trip.
+      await expect.poll(() => page.url(), { timeout: 15_000 }).toMatch(/[?&]selected=/);
+      await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
+      await expect(page.getByText('Vehicle not found')).toHaveCount(0);
+      await page.getByTestId('editor-rail-edit').click();
+      await expect(page.locator('#vehicle-registration-number')).toHaveValue(reg);
+      // The TEMP numeric TransportType input renders the bare int (the
+      // `NMR:VehicleType:` prefix is added on change, stripped for display), so
+      // the round-trip is proven by the int coming back linked to the vehicle.
+      await expect(page.locator('#vehicle-transport-type')).toHaveValue(vtInt);
+      return;
+    }
+
     const capture = await wireCreateFlow(page);
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
@@ -106,12 +141,16 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
   test('Back button after a successful save navigates without a discard dialog', async ({
     page,
   }) => {
+    const { reg, vtInt } = IS_LIVE
+      ? await liveCreateOverrides(page)
+      : { reg: 'NEW-001', vtInt: VT_ID_INT };
+
     await wireCreateFlow(page);
     await page.goto('/vehicles/new');
     await page.waitForLoadState('networkidle');
 
-    await page.getByLabel('Registration Number').fill('NEW-001');
-    await page.getByLabel(/Vehicle Type ID/).fill(VT_ID_INT);
+    await page.getByLabel('Registration Number').fill(reg);
+    await page.getByLabel(/Vehicle Type ID/).fill(vtInt);
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(page.getByRole('button', { name: 'View in list' })).toBeVisible();
 
@@ -128,8 +167,9 @@ test.describe('/vehicles/new form gates + back nav (no-auth)', () => {
   }) => {
     // The TEMP numeric input cannot represent a non-numeric ref — the form
     // must fall back to a disabled raw display so the value is neither
-    // misrepresented as blank nor accidentally overwritten.
-    test.skip(process.env.E2E_BACKEND === 'true', 'mock-only — fixture-pinned ref shape');
+    // misrepresented as blank nor accidentally overwritten. Fixture-pinned ref
+    // shape, so mock-only.
+    test.skip(IS_LIVE, 'mock-only — fixture-pinned non-numeric ref shape');
 
     const vehicleId = 'NMR:Vehicle:rail-1';
     const rawRef = 'NMR:VehicleType:rail';

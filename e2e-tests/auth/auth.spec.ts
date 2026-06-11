@@ -11,6 +11,22 @@ const LOAD_AUTH_TXT = 'Loading authentication status...';
 const REDIRECT_AUTH_TXT = 'Redirecting to login provider...';
 const APP_CSS_ID = '.app-content';
 
+/**
+ * Auth profile (OIDC enabled) — verify the app enforces OIDC and shows the unauthenticated UI.
+ *
+ * Workflow:
+ *   beforeAll: copy fixtures/config-with-auth.json → public/config.json (oidcConfig present)
+ *   Test 1 "app loads + OIDC active": goto / → assert title /Hathor|Vehicle/ + .app-content visible
+ *     → goto /vehicle-types (protected) → assert URL hit OIDC host (partner.dev.entur.org) OR auth loading/redirect text shown.
+ *   Test 2 "protected route requires auth": goto /vehicle-types directly (no login) → same redirect-or-auth-UI assertion.
+ *   Test 3 "login button shown": goto / unauthenticated → assert header "Log in" button visible.
+ * Covers:
+ *   - Protected routes redirect to the OIDC provider (or surface "Loading authentication status..." / "Redirecting to login provider...").
+ *   - Unauthenticated header renders a "Log in" button instead of the user icon.
+ * Modes:
+ *   - mock (E2E_SUITE=auth): the whole suite IS this mode — runs the real React app under config-with-auth.json; no GraphQL is reached (auth gate fires first).
+ *   - live (E2E_BACKEND=true): n/a — these assert pre-login OIDC behaviour, independent of any backend.
+ */
 test.describe('Authentication', () => {
   test.beforeAll(async () => {
     // Ensure config with oidcConfig is in place

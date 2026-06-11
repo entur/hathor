@@ -1,34 +1,75 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import {
-  fixturesDir,
-  targetConfig,
-  interceptVehicleTypesQuery,
-  interceptVehicleTypesWithSave,
-} from './autosys-helpers';
+import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
+import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
+
+/** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
+async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
+  await page.goto('/vehicle-types');
+  await selectFirstOrg(page);
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('table')).toBeVisible();
+  return openFirstRow(page, 'vehicle-type-details-title');
+}
 
 /**
- * hathor#105 — editable `?selected=` sidebar for /vehicle-types (replaces the
- * old route-based `/vehicle-types/:id` editor). Whole-row click writes the
- * param; the sidebar hosts a tabbed VehicleTypeForm (Edit · Propulsion &
- * Performance · Passenger Capacity · Environment) hydrated from the resolved
- * list row. EditorRail drives view↔edit. The collapse rail drops the param.
+ * /vehicle-types — editable ?selected= sidebar deep-link (#105) + sidebar save
+ * (#109/#15). Two describes in this file.
  *
- * Fixture (vehicle-types-mock.json), sorted by name asc:
- *   Type Alpha (NMR:VehicleType:1, bus) · Type Beta (…:2, rail) · Type Gamma (…:3, none)
+ * Workflow (describe 1 — deep-link sidebar):
+ *   /vehicle-types → row click writes ?selected=<vtId> → tabbed VehicleTypeForm
+ *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the resolved row →
+ *   navigate tabs → editor-rail collapse drops ?selected= and hides the sidebar.
+ * Workflow (describe 2 — sidebar save):
+ *   ?selected=<vtId> → editor-rail Edit → edit name → editor-rail Save fires
+ *   createOrUpdateVehicleType (full-document serialize) → success snackbar →
+ *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
+ * Covers:
+ *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
+ *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
+ *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form
+ *   - describe 2: save fires the mutation + success + returns to view; re-baseline
+ *     after save → no discard on collapse; save error stays in edit mode; editing name text
+ *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
+ *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
+ *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
+ * Modes:
+ *   - mock (E2E_SUITE=no-auth): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
+ *     describe 2 drives a stateful fixture for behavioural read-back + fault injection
+ *     (the only remaining input-capture is the lang-tag wire check; full-document shape
+ *     is unit-tested in serializeVehicleType.test.ts).
+ *     Fixture (vehicle-types-mock.json), sorted by name asc:
+ *       Type Alpha (NMR:VehicleType:1, bus) · Type Beta (…:2, rail, name lang 'nb') · Type Gamma (…:3, lowFloor null)
+ *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select (AtB); describe 1 runs the
+ *     structural tests (row click → ?selected=, tab navigation, collapse) against the org's
+ *     real first row (data-agnostic). Describe 2 is entirely skip-live (the real live vtype save
+ *     round-trip lives in vehicle-type-save-live.spec.ts).
+ *   - skip-live:
+ *       describe 1: 'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
+ *         vehicle chip target (AA-101 → NMR:Vehicle:101) absent live;
+ *       'toggling a null-baseline Low Floor switch on then off should not dirty the form' —
+ *         needs a null-lowFloor-baseline row (fixture Gamma) not reproducible live
+ *       describe 2 (all tests): behavioural/fault-injection/lang-wire assertions over a stateful
+ *         fixture; a real save would mutate dev data (real live round-trip → vehicle-type-save-live.spec.ts)
  */
 test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
-  test.beforeAll(() => {
-    fs.copyFileSync(`${fixturesDir}/config-no-auth.json`, targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
 
-  test.beforeEach(async ({ page }) => {
-    if (process.env.E2E_BACKEND !== 'true') {
+  test.beforeEach(async ({ page, context }) => {
+    await seedAuth(context);
+    if (!IS_LIVE) {
       await interceptVehicleTypesQuery(page);
     }
   });
 
   test('row click opens the sidebar and writes ?selected= to the URL', async ({ page }) => {
+    if (IS_LIVE) {
+      // Data-agnostic: open the org's first real row, assert the deep-link + the
+      // Edit tab are present (fixture name/id don't exist live).
+      await openFirstVtype(page);
+      await expect(page.getByTestId('vtype-tab-edit')).toBeVisible();
+      return;
+    }
+
     await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
@@ -43,6 +84,24 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
   test('tabs group the fields; Edit holds name + dimensions, others are reachable', async ({
     page,
   }) => {
+    if (IS_LIVE) {
+      // Live: assert tab *navigation* is structurally intact (each panel
+      // renders). The concrete field values are fixture-pinned, so only the
+      // mock run asserts them.
+      await openFirstVtype(page);
+      await expect(page.locator('#vtype-name')).toBeVisible();
+
+      await page.getByRole('tab', { name: 'Propulsion/perf.' }).click();
+      await expect(page.getByTestId('vtype-tab-propulsion')).toBeVisible();
+
+      await page.getByRole('tab', { name: 'Environment' }).click();
+      await expect(page.getByTestId('vtype-tab-environment')).toBeVisible();
+
+      await page.getByRole('tab', { name: 'Vehicles' }).click();
+      await expect(page.getByTestId('vtype-tab-vehicles')).toBeVisible();
+      return;
+    }
+
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
     await page.waitForLoadState('networkidle');
 
@@ -68,6 +127,10 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
   test('vehicle chip in the row routes to /vehicles?selected= (not hijacked by row click)', async ({
     page,
   }) => {
+    // The asserted chip targets a fixture vehicle (AA-101 → NMR:Vehicle:101);
+    // live rows link to real ids, so this exact-target check is mock-only.
+    test.skip(IS_LIVE, 'mock-only — asserts a fixture vehicle chip target');
+
     await page.goto('/vehicle-types');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
@@ -79,9 +142,13 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
   });
 
   test('collapse rail drops ?selected= and hides the sidebar', async ({ page }) => {
-    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+    if (IS_LIVE) {
+      await openFirstVtype(page);
+    } else {
+      await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+      await page.waitForLoadState('networkidle');
+      await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+    }
 
     await page.getByTestId('editor-rail-collapse').click();
 
@@ -90,14 +157,19 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page.getByTestId('vehicle-type-details-title')).not.toBeVisible();
   });
 
-  // RED — VehicleType:3 (Gamma) has lowFloor:null → projection omits it from the
-  // baseline, but the Switch writes a literal boolean, so toggling on then off
-  // leaves form.lowFloor=false ≠ (absent) baseline → JSON-compare reports dirty.
-  // A no-op toggle must not dirty the form; fails until the dirty-compare
-  // tolerates undefined-vs-false.
+  // Regression guard: VehicleType:3 (Gamma) has lowFloor:null → the projection
+  // omits it from the baseline, but the Switch writes a literal boolean, so
+  // toggling on then off leaves form.lowFloor=false vs an absent baseline. A
+  // no-op toggle must NOT dirty the form — the dirty-compare tolerates
+  // undefined-vs-false (regressed once; this pins it).
   test('toggling a null-baseline Low Floor switch on then off should not dirty the form', async ({
     page,
   }) => {
+    // Needs a row with a *null* lowFloor baseline (the fixture's Gamma); live
+    // rows have arbitrary lowFloor values, so the null-baseline case isn't
+    // reproducible against real data.
+    test.skip(IS_LIVE, 'mock-only — needs a null-lowFloor-baseline row');
+
     await page.goto('/vehicle-types?selected=NMR:VehicleType:3');
     await page.waitForLoadState('networkidle');
     await page.getByTestId('editor-rail-edit').click();
@@ -118,21 +190,25 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
  * not null untouched fields; on success the list refetch re-resolves the row
  * and re-hydrates the form (advancing the dirty baseline).
  *
- * Mocked path only: assertions read the captured mutation input + a stateful
- * fixture, and a real save would mutate the dev DB. (The Sobek `@Transactional`
- * bug that previously blocked real UPDATEs is fixed in PR #145.) So these skip
- * under `E2E_BACKEND=true`.
+ * Mock-only here: behavioural flow over a stateful fixture (success snackbar,
+ * return-to-view, re-baseline) plus fault-injection (save error, stale post-save
+ * refresh) and the lang-tag wire check — none reproducible against a real backend,
+ * and a real save would mutate the dev DB. The full-document WIRE SHAPE is unit-
+ * tested in serializeVehicleType.test.ts; the real live round-trip lives in
+ * vehicle-type-save-live.spec.ts. So these skip under `E2E_BACKEND=true`.
  */
 test.describe('/vehicle-types sidebar save (no-auth)', () => {
-  test.beforeAll(() => {
-    fs.copyFileSync(`${fixturesDir}/config-no-auth.json`, targetConfig);
-  });
+  test.beforeAll(() => writeConfig());
 
-  test.beforeEach(() => {
+  test.beforeEach(async ({ context }) => {
+    // Mock-only: behavioural + fault-injection + lang-wire assertions over a
+    // stateful fixture; a real save would mutate dev data. The real live vtype
+    // save round-trip lives in vehicle-type-save-live.spec.ts.
     test.skip(
-      process.env.E2E_BACKEND === 'true',
-      'Mocked mutation path — assertions are mock-bound; a real save would mutate dev data'
+      IS_LIVE,
+      'Mock-only — fault-injection/wire assertions; a real save would mutate dev data'
     );
+    await seedAuth(context);
   });
 
   test('edit name → save fires the mutation, shows success, returns to view', async ({ page }) => {
@@ -152,27 +228,12 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await expect(page.locator('#vtype-name')).toBeDisabled();
   });
 
-  test('save payload is the full document — untouched fields are not dropped', async ({ page }) => {
-    const { lastInput } = await interceptVehicleTypesWithSave(page);
-    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
-
-    await page.getByTestId('editor-rail-edit').click();
-    await page.locator('#vtype-name').fill('Type Alpha X');
-    await page.getByTestId('editor-rail-save').click();
-    await expect(page.getByText('Vehicle type saved')).toBeVisible();
-
-    const input = lastInput();
-    expect(input?.netexId).toBe('NMR:VehicleType:1');
-    expect(input?.name).toEqual({ value: 'Type Alpha X' });
-    // Fields the user never touched must survive the full-replace serialise.
-    expect(input?.euroClass).toBe('EURO6');
-    expect(input?.maximumEngineEffectKW).toBe(250);
-    expect((input?.passengerCapacity as { totalCapacity?: number })?.totalCapacity).toBe(90);
-    // Server-managed fields must NOT be in the input contract.
-    expect('version' in (input ?? {})).toBe(false);
-    expect('vehicles' in (input ?? {})).toBe(false);
-  });
+  // The full-document-replace WIRE SHAPE (untouched fields emitted, server-
+  // managed version/vehicles excluded, blanks→null) is unit-tested in
+  // src/data/vehicle-types/api/serializeVehicleType.test.ts — a pure function
+  // belongs there, not in an e2e mutation-input spy. The behavioural round-trip
+  // (a name-only save preserves a sibling field through Sobek) is covered live
+  // in vehicle-type-save-live.spec.ts.
 
   test('after save the form re-baselines — collapse raises no discard dialog', async ({ page }) => {
     await interceptVehicleTypesWithSave(page);
@@ -204,9 +265,9 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await expect(page.locator('#vtype-name')).toBeEnabled();
   });
 
-  // RED — VehicleType:2's name carries lang 'nb'. Editing only the text must
-  // keep the lang tag, else full-replace clears it. VehicleTypeForm's name
-  // onChange rebuilds `{ value }`, dropping lang → fails until the edit merges it.
+  // Regression guard: VehicleType:2's name carries lang 'nb'. Editing only the
+  // text must keep the lang tag, else the full-replace clears it — the form's
+  // name onChange merges the existing lang rather than rebuilding `{ value }`.
   test('editing the name text preserves the existing lang tag', async ({ page }) => {
     const { lastInput } = await interceptVehicleTypesWithSave(page);
     await page.goto('/vehicle-types?selected=NMR:VehicleType:2');
@@ -221,8 +282,10 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   });
 
   // The mutation commits but the post-save list refresh 500s. The user must not
-  // get a bare "saved" success over a stale table — the refresh failure is
-  // surfaced (useVehicleTypes.doFetch no longer swallows; handleSave catches).
+  // get a bare "saved" success over a stale table — the refresh failure should be
+  // surfaced (handleSave awaits onSaved and catches → stale-list warning). This
+  // works because useVehicleTypes.doFetch returns its fetch chain, so the awaited
+  // onSaved() rejects on a failed refresh instead of resolving early (#117 fix).
   test('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
     page,
   }) => {
