@@ -31,7 +31,7 @@ export function useVehicles() {
   // is duplicated in `useVehicleTypes` and `useDeckPlans` — here it's
   // delegated to `fetchVehiclesAndApply` (setter-injection variant, no
   // rethrow). The duplication and variant drift is tracked for lift in
-  // hathor#130 — keep variants in sync until then.
+  // hathor#119 — keep variants in sync until then.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);

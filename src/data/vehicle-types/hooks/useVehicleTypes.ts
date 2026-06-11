@@ -31,7 +31,7 @@ export function useVehicleTypes() {
 
   // This doFetch shape (gate → fetch chain → translate error → setLoading)
   // is duplicated in `useDeckPlans` and `useVehicles`. The duplication is
-  // tracked for lift in hathor#130 — keep variants in sync until then.
+  // tracked for lift in hathor#119 — keep variants in sync until then.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
