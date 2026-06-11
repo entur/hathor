@@ -28,6 +28,13 @@ interface EditorRailProps {
   onSave?: () => void | Promise<void>;
   isDirty?: boolean;
   saving?: boolean;
+  /**
+   * Additional Save gate (AND'd with `isDirty && !saving`). Default `true`.
+   * Set to `false` when the form is dirty but missing a structurally required
+   * field — e.g. a new Vehicle without a TransportTypeRef, which Sobek's
+   * `vehicles()` resolver silently excludes from listings (create-but-invisible).
+   */
+  canSubmit?: boolean;
   /** Sidebar side this rail decorates. Drives positioning and chevron direction. */
   side?: Side;
 }
@@ -48,6 +55,7 @@ export default function EditorRail({
   onSave,
   isDirty = false,
   saving = false,
+  canSubmit = true,
   side = 'left',
 }: EditorRailProps) {
   const theme = useTheme();
@@ -85,9 +93,12 @@ export default function EditorRail({
 
   const saveLabel = saving
     ? t('saving', 'Saving…')
-    : isDirty
-      ? t('save', 'Save')
-      : t('vehicles.rail.saveDisabled', 'Save (no changes)');
+    : !isDirty
+      ? t('vehicles.rail.saveDisabled', 'Save (no changes)')
+      : !canSubmit
+        ? t('vehicles.rail.saveMissingFields', 'Save (required fields missing)')
+        : t('save', 'Save');
+  const saveDisabled = !isDirty || saving || !canSubmit;
 
   return (
     <>
@@ -173,13 +184,13 @@ export default function EditorRail({
                   onClick={onSave}
                   aria-label={saveLabel}
                   data-testid="editor-rail-save"
-                  disabled={!isDirty || saving}
+                  disabled={saveDisabled}
                   sx={{
                     width: SEGMENT_SIZE,
                     height: SEGMENT_SIZE,
                     borderRadius: 0,
-                    color: isDirty && !saving ? 'primary.main' : 'inherit',
-                    '&:hover': { color: isDirty && !saving ? 'primary.dark' : undefined },
+                    color: !saveDisabled ? 'primary.main' : 'inherit',
+                    '&:hover': { color: !saveDisabled ? 'primary.dark' : undefined },
                   }}
                 >
                   {saving ? <CircularProgress size={SPINNER_SIZE} color="inherit" /> : <SaveIcon />}

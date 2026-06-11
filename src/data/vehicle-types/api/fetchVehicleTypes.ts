@@ -151,7 +151,7 @@ export interface VehicleTypeInput {
  * @returns The mutation input payload.
  */
 export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
-  netexId: vt.id,
+  netexId: vt.id === '' ? undefined : vt.id,
   dataOwnerRef,
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,

@@ -10,6 +10,7 @@ import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.ts
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
@@ -39,6 +40,8 @@ interface VehicleTypeDetailsProps {
    * values + bumped version before the success snackbar appears. Optional.
    */
   onSaved?: () => Promise<void>;
+
+  mode?: 'view' | 'edit';
 }
 
 type FormState = { form: VehicleType; baseline: VehicleType };
@@ -60,11 +63,16 @@ function formReducer(state: FormState, action: FormAction): FormState {
  *
  * @param vehicleType Resolved row, or `null` for a not-found deep link.
  * @param onSaved Optional list refetch run after a successful save (table freshness).
+ * @param mode Optional initial mode ('view' or 'edit').
  */
-export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleTypeDetailsProps) {
+export default function VehicleTypeDetails({
+  vehicleType,
+  onSaved,
+  mode: initialMode,
+}: VehicleTypeDetailsProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
@@ -74,12 +82,12 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
   useEffect(() => {
     if (vehicleType) {
       dispatch({ type: 'hydrate', row: vehicleType });
-      setMode('view');
+      setMode(initialMode ?? 'view');
       // Don't let a prior save snackbar / stale-list warning bleed into the next row.
       setSavedAt(null);
       setRefreshError(null);
     }
-  }, [vehicleType]);
+  }, [initialMode, vehicleType]);
 
   const isDirty =
     !!vehicleType &&
@@ -89,6 +97,7 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
+  const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
 
   // Fire the mutation, then refresh the list (`onSaved`) so the table reflects
   // the edit. The sidebar's own re-baseline is from the submitted form, not the
@@ -102,12 +111,31 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
     const result = await save(state.form);
     if (result.error) return;
 
+    const wasCreate = state.form.id === '';
+    const hydrateRow = { ...state.form };
+    if (wasCreate) {
+      // Blank id factory → a create. A successful save with no `newId` is a
+      // Sobek invariant break: silently re-baselining to id='' would let the
+      // next Edit→Save fire CREATE again and mint a duplicate.
+      if (!result.newId) {
+        setRefreshError(
+          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+        );
+        return;
+      }
+      hydrateRow.id = result.newId;
+      hydrateRow.version = 1; // bridge until the refetched list lands the real row
+    }
     // Save committed: re-baseline from the submitted form (the commit guard in
     // useUrlEditorSelection won't push the refetched row into an open editor).
-    dispatch({ type: 'hydrate', row: state.form });
+    dispatch({ type: 'hydrate', row: hydrateRow });
     setMode('view');
     try {
       await onSaved?.();
+      // Advance `?selected=new` → `?selected=<newId>` only after the list
+      // refetch has landed, so useUrlEditorSelection re-resolves into the
+      // fresh row (not a transient "not found" between save and refetch).
+      if (wasCreate) advanceCreated(result.newId);
       setSavedAt(Date.now()); // success only once the list is fresh
     } catch {
       // Save is real, but the list couldn't refresh — warn instead of a clean
@@ -171,13 +199,15 @@ export default function VehicleTypeDetails({ vehicleType, onSaved }: VehicleType
             </>
           )}
         </Typography>
-        <NetexId
-          id={vehicleType.id}
-          version={vehicleType.version}
-          copy="onHover"
-          size="small"
-          sx={{ justifySelf: 'start' }}
-        />
+        {state.form.id && (
+          <NetexId
+            id={state.form.id}
+            version={state.form.version}
+            copy="onHover"
+            size="small"
+            sx={{ justifySelf: 'start' }}
+          />
+        )}
       </FormLayout>
       <Divider sx={{ mb: 2 }} />
 

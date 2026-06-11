@@ -242,7 +242,7 @@ export default function HomePage() {
               }}
             >
               <CreateAction
-                to="/vehicle-types/new"
+                to="/vehicle-types?selected=new"
                 icon="vehicleTypes"
                 label={t('home.createNew.vehicleType', 'Vehicle Type')}
               />
@@ -252,7 +252,7 @@ export default function HomePage() {
                 sx={{ display: { xs: 'none', sm: 'block' } }}
               />
               <CreateAction
-                onClick={() => setComingOpen(true)}
+                to="/vehicles?selected=new"
                 icon="vehicles"
                 label={t('home.createNew.train', 'Train')}
               />

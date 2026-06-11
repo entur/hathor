@@ -17,12 +17,14 @@ import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { commitSave } from '../../../utils/commitSave.ts';
 import {
   edit,
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
+  canSubmit,
   type FormState,
 } from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
@@ -39,16 +41,22 @@ interface VehicleDetailsProps {
    * snackbar appears. Optional — callers without a list channel can omit.
    */
   onSaved?: () => Promise<void>;
+  mode?: 'view' | 'edit';
 }
 
-export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps) {
+export default function VehicleDetails({
+  vehicle,
+  onSaved,
+  mode: initialMode,
+}: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = formState;
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
 
   const {
@@ -67,17 +75,42 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(VEHICLE_SELECTED_PARAM);
+  const advanceCreated = useSidebarCreateAdvance(VEHICLE_SELECTED_PARAM);
 
   const handleSave = async () => {
+    const wasCreate = (form.vehicle.id ?? '') === '';
     const result = await commitSave(save, form, onSaved);
-    if (!result.error) {
-      // Re-pull the persisted vehicle so the `hydrate` effect advances the
-      // dirty baseline (and picks up the bumped version). Without this the
-      // form stays dirty after save and `>>` wrongly raises the discard dialog.
+    if (result.error) return;
+
+    if (wasCreate) {
+      // Sobek's mutation must mint a newId on create; null here = invariant
+      // break. Re-baselining with id='' would let the next Edit→Save fire
+      // CREATE again and mint a duplicate.
+      if (!result.newId) {
+        setCommitError(
+          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+        );
+        return;
+      }
+      // Re-baseline the form with the assigned id so isDirty=false immediately,
+      // bridging until the URL advance below re-resolves the row from the list.
+      dispatch({
+        type: 'hydrate',
+        xmlVehicle: { ...form.vehicle, id: result.newId, version: 1 },
+      });
+      // useVehicle('') short-circuited; advance ?selected=new → ?selected=<newId>
+      // so useUrlEditorSelection re-resolves into the just-created row and the
+      // single-vehicle fetch lands the real version.
+      advanceCreated(result.newId);
+    } else {
+      // Existing row — re-pull the persisted vehicle so the `hydrate` effect
+      // advances the dirty baseline (and picks up the bumped version). Without
+      // this the form stays dirty after save and `>>` wrongly raises the
+      // discard dialog.
       await refetchXml();
-      setSavedAt(Date.now());
-      setMode('view');
     }
+    setSavedAt(Date.now());
+    setMode('view');
   };
 
   if (!vehicle) {
@@ -143,10 +176,10 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
             </>
           )}
         </Typography>
-        {vehicle.id && (
+        {form.vehicle.id && (
           <NetexId
-            id={vehicle.id}
-            version={vehicle.version}
+            id={form.vehicle.id}
+            version={form.vehicle.version}
             copy="onHover"
             size="small"
             sx={{ justifySelf: 'start' }}
@@ -179,6 +212,11 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
       )}
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
+      <SaveErrorSnackbar
+        error={commitError}
+        severity="warning"
+        onClose={() => setCommitError(null)}
+      />
       <SaveSuccessSnackbar
         open={savedAt !== null}
         message={t('vehicles.saveSuccess', 'Vehicle saved')}
@@ -196,6 +234,10 @@ export default function VehicleDetails({ vehicle, onSaved }: VehicleDetailsProps
         onSave={handleSave}
         isDirty={isDirty}
         saving={saving}
+        // Block create-with-no-TransportTypeRef: Sobek's vehicles() resolver
+        // silently excludes refless vehicles from the list (create-but-invisible).
+        // Existing rows already carry a ref, so only the create flow needs the gate.
+        canSubmit={(form.vehicle.id ?? '') !== '' || canSubmit(form)}
       />
     </Box>
   );

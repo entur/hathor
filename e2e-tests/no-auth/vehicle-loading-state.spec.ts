@@ -1,32 +1,37 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
 import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
 
 const SELECTED_ID = 'NMR:Vehicle:bus-1';
 const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
 
 /**
- * /vehicles slider loading guards — useVehicle/useVehiclePairSave must resolve to a visible error, never a stuck spinner or silent failure (PR #74 B1).
+ * /vehicles slider loading guards — useVehicle must resolve a not-found single-
+ * vehicle fetch to a visible error, never a stuck spinner (PR #74 B1).
+ *
+ * The companion "save with no applicationBaseUrl" describe was retired with
+ * PR #121: the standalone `/vehicles/new` route is gone and the sidebar create
+ * form is reachable only AFTER the list query resolves, which the broken
+ * config fixture deliberately blocks — `useVehiclePairSave`'s base-URL guard
+ * is therefore no longer reachable through the UI. The guard still exists at
+ * `useVehiclePairSave.ts:32-36`; it would need a unit test, not an e2e one.
  *
  * Workflow:
- *   1. NOT-FOUND: copy config-no-auth → intercept list `vehicles(` (no filter.netexIds) to return the row → intercept by-id `vehicles(filter:{netexIds})` to return empty → goto /vehicles?selected=<id> → slider opens with title → "Loading vehicle…" hides → "<id> not found" shown → form field absent.
- *   2. NO-BASE-URL: copy config-no-baseurl (deliberately broken) → goto /vehicles/new → fill Registration Number + Vehicle Type ID → Save → "Application base URL is not configured" snackbar, no "View in list", URL stays /vehicles/new → afterAll restores config-no-auth.
+ *   NOT-FOUND: copy config-no-auth → intercept list `vehicles(` (no
+ *   filter.netexIds) to return the row → intercept by-id
+ *   `vehicles(filter:{netexIds})` to return empty → goto /vehicles?selected=<id>
+ *   → slider opens with title → "Loading vehicle…" hides → "<id> not found"
+ *   shown → form field absent.
  * Covers:
- *   - useVehicle not-found branch sets error + loading=false (spinner disappears, reason surfaced, form stays hidden).
- *   - useVehiclePairSave base-URL guard short-circuits before any request (error snackbar, no navigation).
+ *   - useVehicle not-found branch sets error + loading=false (spinner
+ *     disappears, reason surfaced, form stays hidden).
  * Modes:
- *   - mock (E2E_SUITE=no-auth): seedAuth provides a synthetic user + org so the list resolves; both describes intercept the `/graphql` route for the list + by-id queries; not-found stages list-has-row vs byid-empty; no-base-url uses a broken config fixture.
- *   - live (E2E_BACKEND=true): no live path — both describes skip.
- *   - skip-live: "useVehicle — single-vehicle fetch with no match" (needs a list-has-row + byid-empty mismatch a real backend cannot produce) and "save with no applicationBaseUrl" (mock-only — drives a deliberately broken config).
+ *   - mock (E2E_SUITE=no-auth): seedAuth provides a synthetic user + org so
+ *     the list resolves; intercepts the `/graphql` route for the list + by-id
+ *     queries; stages list-has-row vs byid-empty.
+ *   - live (E2E_BACKEND=true): no live path — the describe skips.
+ *   - skip-live: "useVehicle — single-vehicle fetch with no match" needs a
+ *     list-has-row + byid-empty mismatch a real backend cannot produce.
  */
 
 /**
@@ -111,44 +116,5 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
 
     // Form area stays hidden because the fetch errored.
     await expect(page.locator('#vehicle-registration-number')).toHaveCount(0);
-  });
-});
-
-const MISSING_BASE_URL_ERROR = 'Application base URL is not configured';
-
-/**
- * Restores coverage of the PR #74 B1 invariant — a missing `applicationBaseUrl`
- * must surface a user-visible error, never fail silently. `useVehicle`'s copy
- * of this guard can't be isolated end-to-end (it shares the key with the list
- * hook, which simply renders no rows when the key is absent), but its sibling
- * in `useVehiclePairSave` is reachable: `/vehicles/new` renders the form with
- * no list, so a save with no base URL drives the guard directly.
- */
-test.describe('save with no applicationBaseUrl surfaces a config error, not silent failure (no-auth)', () => {
-  test.skip(process.env.E2E_BACKEND === 'true', 'mock-only — drives a deliberately broken config');
-
-  test.beforeAll(() => {
-    fs.copyFileSync(path.join(fixturesDir, 'config-no-baseurl.json'), targetConfig);
-  });
-
-  // Restore via writeConfig() so a live run lands config-with-auth (not a raw
-  // config-no-auth) for the next serial spec.
-  test.afterAll(() => writeConfig());
-
-  test('saving a new vehicle with no base URL shows the config error and does not navigate', async ({
-    page,
-  }) => {
-    await page.goto('/vehicles/new');
-    await page.waitForLoadState('networkidle');
-
-    await page.getByLabel('Registration Number').fill('NEW-001');
-    await page.getByLabel(/Vehicle Type ID/).fill('2');
-    await page.getByRole('button', { name: 'Save' }).click();
-
-    // The guard short-circuits before any request: error snackbar, no success
-    // action, still on /vehicles/new.
-    await expect(page.getByText(MISSING_BASE_URL_ERROR)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'View in list' })).toHaveCount(0);
-    await expect(page).toHaveURL(/\/vehicles\/new$/);
   });
 });

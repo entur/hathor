@@ -139,6 +139,7 @@
   "vehicleType.field.maximumEngineEffectKW": "Max Engine Effect (kW)",
   "vehicleType.field.hybridCategory": "Hybrid Category",
   "common.none": "None",
+  "common.saveNoIdReturned": "Saved, but no id was returned — please refresh.",
 
   "vehicles": "Vehicles",
   "vehicles.title": "Vehicles",
