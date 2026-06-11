@@ -17,7 +17,7 @@ import {
 } from './contexts/NavRailContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx';
-import DeckPlanView from './data/deck-plans/DeckPlanView.tsx';
+import DeckPlanView from './data/deck-plans/components/DeckPlanView.tsx';
 import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';

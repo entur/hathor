@@ -1,6 +1,6 @@
 import { XMLBuilder } from 'fast-xml-parser';
-import { authHeader, type AccessToken } from '../../auth';
-import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../netex/xmlUtils';
+import { authHeader, type AccessToken } from '../../../auth';
+import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../../netex/xmlUtils';
 
 /**
  * Fetch NeTEx XML for a single deck plan from Sobek

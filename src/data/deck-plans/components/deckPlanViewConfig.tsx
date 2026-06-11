@@ -1,14 +1,14 @@
 import { createElement } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDeckPlans, type OrderBy } from './useDeckPlans';
-import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
-import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
-import DataPageContent from '../../components/data/DataPageContent.tsx';
-import NetexId from '../netex/NetexId.tsx';
-import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
-import type { FilterDefinition } from '../../components/search/searchTypes.ts';
-import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
-import { getDeckPlanSortValue } from './deckPlanSortValue.ts';
+import { useDeckPlans, type OrderBy } from '../hooks/useDeckPlans.ts';
+import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
+import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
+import DataPageContent from '../../../components/data/DataPageContent.tsx';
+import NetexId from '../../netex/NetexId.tsx';
+import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
+import type { FilterDefinition } from '../../../components/search/searchTypes.ts';
+import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import { getDeckPlanSortValue } from '../utils/deckPlanSortValue.ts';
 
 const deckPlanColumns: ColumnDefinition<DeckPlan, OrderBy>[] = [
   {

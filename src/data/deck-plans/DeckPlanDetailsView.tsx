@@ -5,7 +5,7 @@ import LoadingPage from '../../components/common/LoadingPage';
 import ErrorPage from '../../components/common/ErrorPage';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext';
-import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService';
+import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './api/deckPlanDetailsService';
 import GenericDetailsPage from '../../pages/GenericDetailsPage';
 import { useOrganisations } from '../organisations/hooks/useOrganisations';
 

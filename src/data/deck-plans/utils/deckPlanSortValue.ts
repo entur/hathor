@@ -1,6 +1,6 @@
-import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
-import type { OrderBy } from './useDeckPlans.ts';
-import { compareWithEmptyLast } from '../../utils/compareWithEmptyLast.ts';
+import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { OrderBy } from '../hooks/useDeckPlans.ts';
+import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
 
 /**
  * Resolve the sort value for a DeckPlan column key. Optional NeTEx fields
