@@ -18,6 +18,8 @@ interface Props<T, K extends string> {
   colSpan: number;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   onRowClick?: (item: T) => void;
+  /** Highlights the row via MUI's built-in `selected` styling (`palette.action.selected`). */
+  selected?: boolean;
 }
 
 export default function DataTableRow<T, K extends string>({
@@ -29,6 +31,7 @@ export default function DataTableRow<T, K extends string>({
   colSpan,
   handleColumnEvent,
   onRowClick,
+  selected,
 }: Props<T, K>) {
   const [open, setOpen] = useState(false);
   const rowOnClick = useCompactView
@@ -46,7 +49,12 @@ export default function DataTableRow<T, K extends string>({
 
   return (
     <>
-      <TableRow hover onClick={rowOnClick} sx={{ cursor: rowOnClick ? 'pointer' : 'inherit' }}>
+      <TableRow
+        hover
+        selected={selected}
+        onClick={rowOnClick}
+        sx={{ cursor: rowOnClick ? 'pointer' : 'inherit' }}
+      >
         {useCompactView && (
           <TableCell padding="none">
             <IconButton

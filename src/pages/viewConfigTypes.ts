@@ -136,6 +136,8 @@ export interface PageContentComponentProps<T, K extends string> {
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   /** Optional whole-row click handler (non-compact mode only). */
   onRowClick?: (item: T) => void;
+  /** NeTEx id of the currently-selected row (drives the row highlight). `null` when nothing is selected. */
+  selectedId?: string | null;
   /** Optional "add new" action rendered right-aligned in the list-head (e.g. a Fab). */
   addAction?: ReactNode;
   /** Optional "import" action rendered right-aligned in the list-head, after {@link addAction}. */

@@ -191,6 +191,7 @@ export default function GenericDataViewPage<T, K extends string>({
           titleKey={viewConfig.titleKey}
           handleColumnEvent={viewConfig.handleColumnEvent}
           onRowClick={onRowClick}
+          selectedId={editingItem?.id ?? null}
           addAction={addAction}
           importAction={importAction}
           urlFilterInfo={urlFilterInfo}

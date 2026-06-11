@@ -29,6 +29,17 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
             '&.MuiTableRow-hover:hover': {
               backgroundColor: alpha(theme.palette.primary.main, 0.08),
             },
+            // Selected row sits two stops above hover and carries a left
+            // accent stripe; hover-while-selected nudges one stop further so
+            // the hover affordance still reads but never collapses back to
+            // an unselected look.
+            '&.Mui-selected': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.18),
+              borderLeft: `3px solid ${theme.palette.primary.main}`,
+            },
+            '&.Mui-selected.MuiTableRow-hover:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.24),
+            },
             ...userRootStyles,
           }),
         },

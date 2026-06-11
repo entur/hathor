@@ -39,6 +39,8 @@ interface DataPageContentProps<T, K extends string> {
   titleKey?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
   onRowClick?: (item: T) => void;
+  /** NeTEx id of the row currently shown in the sidebar editor; that row gets a highlight. */
+  selectedId?: string | null;
   /** "Add new" action, right-aligned in the list-head. */
   addAction?: ReactNode;
   /** "Import" action, right-aligned in the list-head after {@link addAction}. */
@@ -68,6 +70,7 @@ export default function DataPageContent<
   titleKey,
   handleColumnEvent,
   onRowClick,
+  selectedId,
   addAction,
   importAction,
   urlFilterInfo,
@@ -154,6 +157,7 @@ export default function DataPageContent<
                 colSpan={colSpan}
                 handleColumnEvent={handleColumnEvent}
                 onRowClick={onRowClick}
+                selected={selectedId != null && item.id === selectedId}
               />
             ))}
             {data.length === 0 && !loading && (
