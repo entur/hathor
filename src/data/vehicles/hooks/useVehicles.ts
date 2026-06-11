@@ -27,6 +27,11 @@ export function useVehicles() {
   const { getAccessToken } = useAuth();
   const { currentOrganisation } = useOrganisations();
 
+  // This doFetch shape (gate → fetch chain → translate error → setLoading)
+  // is duplicated in `useVehicleTypes` and `useDeckPlans` — here it's
+  // delegated to `fetchVehiclesAndApply` (setter-injection variant, no
+  // rethrow). The duplication and variant drift is tracked for lift in
+  // hathor#130 — keep variants in sync until then.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);

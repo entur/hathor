@@ -31,17 +31,24 @@ export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlRes
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState<number>(0);
 
+  const enabled = !!id && !!applicationImportBaseUrl && currentOrganisation?.id !== undefined;
+
   useEffect(() => {
-    if (!id) return;
-    if (!applicationImportBaseUrl) return;
-    if (currentOrganisation?.id === undefined) return;
+    // Precondition unmet — clear loading so a spinner from a prior, now-
+    // cancelled fetch doesn't hang. (The previous effect's cleanup gates
+    // setLoading(false) behind `!cancelled`, so without this the next
+    // early-return run would leave `loading=true` forever.)
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
     (async () => {
       try {
         const token = await getAccessToken();
-        const data = await fetchDeckPlanDetails(applicationImportBaseUrl, id, token);
+        const data = await fetchDeckPlanDetails(applicationImportBaseUrl, id!, token);
         if (!cancelled) setXml(data);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
@@ -52,7 +59,7 @@ export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlRes
     return () => {
       cancelled = true;
     };
-  }, [id, applicationImportBaseUrl, getAccessToken, currentOrganisation?.id, tick]);
+  }, [enabled, id, applicationImportBaseUrl, getAccessToken, currentOrganisation?.id, tick]);
 
   return { xml, loading, error, refetch: () => setTick(t => t + 1) };
 }

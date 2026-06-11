@@ -30,12 +30,18 @@ export function useDeckPlans() {
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
 
+  // This doFetch shape (gate → fetch chain → translate error → setLoading)
+  // is duplicated in `useVehicleTypes` and `useVehicles`. The duplication
+  // is tracked for lift in hathor#130 — keep variants in sync until then.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    fetchDeckPlans(applicationBaseUrl, currentOrganisation.id, token)
+    // Return the chain so callers (`refetch` as `onSaved`) can await a fully
+    // applied refresh — the post-save re-baseline depends on `setData` having
+    // run before the success signal fires.
+    return fetchDeckPlans(applicationBaseUrl, currentOrganisation.id, token)
       .then((ctx: DeckPlanContext) => {
         setData(ctx.deckPlans);
       })
@@ -61,13 +67,18 @@ export function useDeckPlans() {
         } else {
           setError('An unexpected error occurred');
         }
+        // Re-throw so `refetch()` honestly rejects on failure (e.g. a failed
+        // post-save refresh) instead of resolving and masking the error.
+        throw err;
       })
       .finally(() => setLoading(false));
   }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
 
-  // Refetch when applicationBaseUrl changes or when filter param changes (after import)
+  // Refetch when applicationBaseUrl changes or when filter param changes (after
+  // import). Fire-and-forget: the error is already in state, so swallow the
+  // rejection here (only awaiting callers like the post-save refresh care).
   useEffect(() => {
-    doFetch();
+    void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
 
   const handleRequestSort = (property: OrderBy) => {
