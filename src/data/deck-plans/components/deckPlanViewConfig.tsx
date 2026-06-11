@@ -9,6 +9,8 @@ import type { ColumnDefinition } from '../../../components/data/dataTableTypes.t
 import type { FilterDefinition } from '../../../components/search/searchTypes.ts';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 import { getDeckPlanSortValue } from '../utils/deckPlanSortValue.ts';
+import { useDeckPlanUrlSelection } from '../hooks/useDeckPlanUrlSelection.tsx';
+import { deckPlanSelectedHref } from '../utils/deckPlanUrlParams.ts';
 
 const deckPlanColumns: ColumnDefinition<DeckPlan, OrderBy>[] = [
   {
@@ -40,10 +42,10 @@ const DeckPlanFilters: FilterDefinition[] = [
   { id: 'liftStation', labelKey: 'types.lift', defaultLabel: 'Lift' },
 ];
 
-/** Whole-row click opens the route-based deck-plan editor at `/deck-plans/<id>`. */
+/** Whole-row click opens the read-only sidebar via `/deck-plans?selected=<id>`. */
 const useDeckPlanRowClick = () => {
   const navigate = useNavigate();
-  return (item: DeckPlan) => navigate(`/deck-plans/${encodeURIComponent(item.id)}`);
+  return (item: DeckPlan) => navigate(deckPlanSelectedHref(item.id));
 };
 
 export const deckPlanViewConfig = {
@@ -56,5 +58,6 @@ export const deckPlanViewConfig = {
   getSortValue: getDeckPlanSortValue,
   filters: () => DeckPlanFilters,
   titleKey: 'deckPlans.title',
+  useUrlEffect: useDeckPlanUrlSelection,
   useRowClick: useDeckPlanRowClick,
 };

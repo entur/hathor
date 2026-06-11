@@ -9,7 +9,7 @@ import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
  *   load /deck-plans → assert table → assert named rows sort before null-name
  *   rows on initial asc load → click the "Deck Plan" header to flip asc→desc →
  *   assert null-name rows stay last (not flipped to top)
- *   (fix: src/data/deck-plans/deckPlanSortValue.ts via compareWithEmptyLast)
+ *   (fix: src/data/deck-plans/utils/deckPlanSortValue.ts via compareWithEmptyLast)
  * Covers:
  *   - first load (name asc): 5 named rows ("Plan Alpha".."Plan Echo") in lex
  *     order before any null-name row; row 0 is "Plan Alpha"
@@ -62,9 +62,10 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
     await page.goto('/deck-plans');
     await page.waitForLoadState('networkidle');
 
-    // Header label for the name column is "Deck Plan" (deckPlanViewConfig.ts:22).
-    // First click flips orderBy='name' from asc → desc.
-    await page.getByRole('button', { name: /deck plan/i }).click();
+    // Header label for the name column is "Deck Plan" (deckPlanViewConfig.tsx:22).
+    // First click flips orderBy='name' from asc → desc. Exact match: avoids
+    // colliding with the "New Deck Plan" action-row button.
+    await page.getByRole('button', { name: 'Deck Plan', exact: true }).click();
 
     const firstRow = page.locator('table tbody tr').first();
     await expect(firstRow).toContainText('Plan Echo');
