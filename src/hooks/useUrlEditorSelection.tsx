@@ -43,8 +43,8 @@ interface UrlEditorSelectionParams<T> {
  * unmemoised client-side sort) must NOT replace the editor — remounting
  * would wipe its view/edit mode and drop any in-flight snackbar.
  *
- * `getId` and `renderEditor` are stashed in refs so the consumer is free
- * to pass inline closures without triggering effect re-runs.
+ * `getId`, `renderEditor`, and `getEmptyRow` are stashed in refs so the
+ * consumer is free to pass inline closures without triggering effect re-runs.
  */
 export function useUrlEditorSelection<T>({
   paramKey,
@@ -65,6 +65,8 @@ export function useUrlEditorSelection<T>({
   getIdRef.current = getId;
   const renderEditorRef = useRef(renderEditor);
   renderEditorRef.current = renderEditor;
+  const getEmptyRowRef = useRef(getEmptyRow);
+  getEmptyRowRef.current = getEmptyRow;
 
   const lastCommittedIdRef = useRef<string | null>(null);
   const lastCommittedRowRef = useRef<T | null>(null);
@@ -83,7 +85,7 @@ export function useUrlEditorSelection<T>({
 
     const isNew = selected === 'new';
     const idx = isNew ? -1 : allData.findIndex(v => getIdRef.current(v) === selected);
-    const row = isNew ? (getEmptyRow?.() ?? null) : idx >= 0 ? allData[idx] : null;
+    const row = isNew ? (getEmptyRowRef.current?.() ?? null) : idx >= 0 ? allData[idx] : null;
 
     const idChanged = lastCommittedIdRef.current !== selected;
     const resolvedFromMissing = lastCommittedRowRef.current === null && row !== null;
@@ -101,7 +103,7 @@ export function useUrlEditorSelection<T>({
     if (idx >= 0 && !dataForTable.some(v => getIdRef.current(v) === selected)) {
       setPage(Math.floor(idx / rowsPerPage));
     }
-  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem, getEmptyRow]);
+  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem]);
 
   useEffect(() => {
     return () => {

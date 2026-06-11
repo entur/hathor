@@ -51,7 +51,7 @@ export default function VehicleDetails({
 }: VehicleDetailsProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'view' | 'edit'>(initialMode || 'view');
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = formState;
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
