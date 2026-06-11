@@ -36,7 +36,7 @@ export function useResizableSidebar(
     }
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  const toggle = () => setCollapsed(prev => !prev);
+  const toggle = useCallback(() => setCollapsed(prev => !prev), []);
 
   return {
     width,

@@ -20,11 +20,7 @@ export function useVehicle(id: string | undefined) {
 
   const doFetch = useCallback(async () => {
     if (!id) return;
-    if (!applicationBaseUrl || !currentOrganisation?.id) {
-      setError('Application base URL is not configured or current organisation is not set');
-      setLoading(false);
-      return;
-    }
+    if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
     setError(null);
     try {

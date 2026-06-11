@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ClientError } from 'graphql-request';
 import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../../contexts/configContext.ts';
@@ -37,7 +37,7 @@ export function useVehicleTypes() {
     // Return the chain so callers (`refetch` as `onSaved`) can await a fully
     // applied refresh — the post-save re-baseline depends on `setData` having
     // run before the success signal fires.
-    fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token)
+    return fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
       })
@@ -83,7 +83,10 @@ export function useVehicleTypes() {
     setOrderBy(property);
   };
 
-  const sorted = [...data].sort(compareVehicleTypes(orderBy, order));
+  const sorted = useMemo(
+    () => [...data].sort(compareVehicleTypes(orderBy, order)),
+    [data, orderBy, order]
+  );
 
   const paginated = sorted.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 

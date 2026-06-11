@@ -21,6 +21,7 @@ import {
   type TransportMode,
 } from '../../netex/transportMode.ts';
 import { vehicleSelectedHref } from '../../vehicles/utils/vehicleUrlParams.ts';
+import { mergeNameText } from '../../netex/multilingualString.ts';
 import {
   PROPULSION_TYPES,
   FUEL_TYPES,
@@ -144,13 +145,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             <TextField
               id="vtype-name"
               value={value.name?.value ?? ''}
-              onChange={e =>
-                setField({
-                  name: textOr(e.target.value)
-                    ? { ...value.name, value: e.target.value }
-                    : undefined,
-                })
-              }
+              onChange={e => setField({ name: mergeNameText(value.name, e.target.value) })}
               disabled={ro}
               size="small"
               fullWidth

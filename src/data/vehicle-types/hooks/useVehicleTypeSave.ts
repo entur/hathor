@@ -4,6 +4,7 @@ import { useConfig } from '../../../contexts/configContext';
 import { serializeVehicleType } from '../api/fetchVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { createOrUpdateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicleType';
+import { useOrganisations } from '../../organisations/hooks/useOrganisations';
 
 interface SaveResult {
   newId: string | null;
@@ -29,6 +30,7 @@ interface UseVehicleTypeSaveResult {
 export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
+  const { currentOrganisation } = useOrganisations();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +41,11 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         setError(message);
         return { newId: null, error: message };
       }
+      if (!currentOrganisation?.id) {
+        const message = 'No organisation selected — cannot save vehicle type';
+        setError(message);
+        return { newId: null, error: message };
+      }
       setSaving(true);
       setError(null);
       try {
@@ -46,7 +53,7 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         const body = await createOrUpdateVehicleTypeRequest(
           applicationBaseUrl,
           token,
-          serializeVehicleType(form)
+          serializeVehicleType(form, currentOrganisation.id)
         );
         return { newId: body.createOrUpdateVehicleType, error: null };
       } catch (err) {
@@ -57,7 +64,7 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
   );
 
   return { save, saving, error, clearError: () => setError(null) };

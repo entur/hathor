@@ -34,6 +34,20 @@ async function openHomePage(page: Page) {
   };
 }
 
+/**
+ * Auth-config UI — the app reflects whether oidcConfig is present, without ever logging in or selecting an org.
+ *
+ * Workflow (serial — scenarios swap config.json on disk):
+ *   1. No-auth profile: copy config-no-auth (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip and no Log in button; nav rail toggle flips aria-expanded false↔true↔false.
+ *   2. Auth profile: copy config-with-auth (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows Log in button and hides the "Auth off" chip.
+ * Covers:
+ *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip.
+ *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button.
+ *   - Nav rail collapsed/expanded toggle (localStorage hathor:navRailExpanded cleared first).
+ * Modes:
+ *   - mode-agnostic: NO E2E_BACKEND branching, NO seedAuth, NO org selection — it deliberately does not authenticate or pick an org, asserting only the pre-login auth-config UI. Runs identically regardless of E2E_BACKEND.
+ */
+
 // Scenarios share config.json on disk — must run serially.
 test.describe.configure({ mode: 'serial' });
 

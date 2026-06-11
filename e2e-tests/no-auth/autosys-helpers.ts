@@ -40,7 +40,9 @@ const interceptGraphQLQuery = async (
         body: JSON.stringify(body),
       });
     } else {
-      await route.continue();
+      // fallback (not continue) so unmatched queries — e.g. the mock
+      // `organisations` query — reach the context-level interceptor in seedAuth.
+      await route.fallback();
     }
   });
 };
@@ -147,7 +149,9 @@ export async function interceptVehicleTypesWithSave(
       return;
     }
 
-    await route.continue();
+    // fallback (not continue) so the mock `organisations` query reaches the
+    // context-level interceptor in seedAuth and the org auto-selects.
+    await route.fallback();
   });
 
   return { lastInput: () => lastInput };

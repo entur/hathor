@@ -1,6 +1,7 @@
 import { TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { intToRef, refToInt } from '../utils/transportTypeRef';
+import { mergeNameText } from '../../netex/multilingualString.ts';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
 
@@ -36,7 +37,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         <TextField
           id="vehicle-name"
           value={v.name?.value ?? ''}
-          onChange={e => setV({ name: { lang: v.name?.lang, value: e.target.value } })}
+          onChange={e => setV({ name: mergeNameText(v.name, e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
@@ -145,9 +146,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         <TextField
           id="vehicle-description"
           value={v.description?.value ?? ''}
-          onChange={e =>
-            setV({ description: { lang: v.description?.lang, value: e.target.value } })
-          }
+          onChange={e => setV({ description: mergeNameText(v.description, e.target.value) })}
           disabled={ro}
           size="small"
           fullWidth
