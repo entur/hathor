@@ -10,6 +10,7 @@ import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.ts
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
@@ -96,6 +97,7 @@ export default function VehicleTypeDetails({
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
+  const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
 
   // Fire the mutation, then refresh the list (`onSaved`) so the table reflects
   // the edit. The sidebar's own re-baseline is from the submitted form, not the
@@ -109,11 +111,20 @@ export default function VehicleTypeDetails({
     const result = await save(state.form);
     if (result.error) return;
 
+    const wasCreate = state.form.id === '';
     const hydrateRow = { ...state.form };
-    if (state.form.id === '') {
-      // Blank id factory → a create that returns the new id, so update the form
-      hydrateRow.id = result.newId ?? '';
-      hydrateRow.version = 1; // New entities start at version 1.
+    if (wasCreate) {
+      // Blank id factory → a create. A successful save with no `newId` is a
+      // Sobek invariant break: silently re-baselining to id='' would let the
+      // next Edit→Save fire CREATE again and mint a duplicate.
+      if (!result.newId) {
+        setRefreshError(
+          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+        );
+        return;
+      }
+      hydrateRow.id = result.newId;
+      hydrateRow.version = 1; // bridge until the refetched list lands the real row
     }
     // Save committed: re-baseline from the submitted form (the commit guard in
     // useUrlEditorSelection won't push the refetched row into an open editor).
@@ -121,6 +132,10 @@ export default function VehicleTypeDetails({
     setMode('view');
     try {
       await onSaved?.();
+      // Advance `?selected=new` → `?selected=<newId>` only after the list
+      // refetch has landed, so useUrlEditorSelection re-resolves into the
+      // fresh row (not a transient "not found" between save and refetch).
+      if (wasCreate) advanceCreated(result.newId);
       setSavedAt(Date.now()); // success only once the list is fresh
     } catch {
       // Save is real, but the list couldn't refresh — warn instead of a clean
