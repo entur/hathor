@@ -18,7 +18,6 @@ import {
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx';
 import DeckPlanView from './data/deck-plans/components/DeckPlanView.tsx';
-import DeckPlanDetailsView from './data/deck-plans/DeckPlanDetailsView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
@@ -73,10 +72,6 @@ export default function App() {
                     <Route
                       path="/deck-plans"
                       element={<ProtectedRoute element={<DeckPlanView />} />}
-                    />
-                    <Route
-                      path="/deck-plans/:id"
-                      element={<ProtectedRoute element={<DeckPlanDetailsView />} />}
                     />
                   </Routes>
                 </Box>
