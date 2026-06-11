@@ -17,6 +17,7 @@ import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { commitSave } from '../../../utils/commitSave.ts';
 import {
   edit,
@@ -54,6 +55,7 @@ export default function VehicleDetails({
   const { form } = formState;
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
 
   const {
@@ -72,17 +74,42 @@ export default function VehicleDetails({
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(VEHICLE_SELECTED_PARAM);
+  const advanceCreated = useSidebarCreateAdvance(VEHICLE_SELECTED_PARAM);
 
   const handleSave = async () => {
+    const wasCreate = (form.vehicle.id ?? '') === '';
     const result = await commitSave(save, form, onSaved);
-    if (!result.error) {
-      // Re-pull the persisted vehicle so the `hydrate` effect advances the
-      // dirty baseline (and picks up the bumped version). Without this the
-      // form stays dirty after save and `>>` wrongly raises the discard dialog.
+    if (result.error) return;
+
+    if (wasCreate) {
+      // Sobek's mutation must mint a newId on create; null here = invariant
+      // break. Re-baselining with id='' would let the next Edit→Save fire
+      // CREATE again and mint a duplicate.
+      if (!result.newId) {
+        setCommitError(
+          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+        );
+        return;
+      }
+      // Re-baseline the form with the assigned id so isDirty=false immediately,
+      // bridging until the URL advance below re-resolves the row from the list.
+      dispatch({
+        type: 'hydrate',
+        xmlVehicle: { ...form.vehicle, id: result.newId, version: 1 },
+      });
+      // useVehicle('') short-circuited; advance ?selected=new → ?selected=<newId>
+      // so useUrlEditorSelection re-resolves into the just-created row and the
+      // single-vehicle fetch lands the real version.
+      advanceCreated(result.newId);
+    } else {
+      // Existing row — re-pull the persisted vehicle so the `hydrate` effect
+      // advances the dirty baseline (and picks up the bumped version). Without
+      // this the form stays dirty after save and `>>` wrongly raises the
+      // discard dialog.
       await refetchXml();
-      setSavedAt(Date.now());
-      setMode('view');
     }
+    setSavedAt(Date.now());
+    setMode('view');
   };
 
   if (!vehicle) {
@@ -184,6 +211,11 @@ export default function VehicleDetails({
       )}
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
+      <SaveErrorSnackbar
+        error={commitError}
+        severity="warning"
+        onClose={() => setCommitError(null)}
+      />
       <SaveSuccessSnackbar
         open={savedAt !== null}
         message={t('vehicles.saveSuccess', 'Vehicle saved')}
