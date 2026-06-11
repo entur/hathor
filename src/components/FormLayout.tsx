@@ -17,7 +17,9 @@ interface FormLayoutProps {
 /**
  * Container-query-aware two-column form grid. Stacks (single column) when the
  * nearest inline-size container is narrower than `STACK_BELOW`; otherwise
- * renders label-column + value-column with a 12rem cap on the label.
+ * renders a content-sized label column (capped at 12rem via `fit-content`) and
+ * gives all remaining width to the value column. Short labels collapse to
+ * their natural width so the input gets the room it needs.
  *
  * The wrapper sets `containerType: inline-size` on itself so the inner grid
  * queries this component's own width — drop a `<FormLayout>` anywhere and it
@@ -47,7 +49,7 @@ export function FormLayout({
           display: 'grid',
           gridTemplateColumns: '1fr',
           [`@container (min-width: ${STACK_BELOW})`]: {
-            gridTemplateColumns: `minmax(0, ${LABEL_COL_MAX}) 1fr`,
+            gridTemplateColumns: `fit-content(${LABEL_COL_MAX}) 1fr`,
           },
           columnGap: COL_GAP,
           rowGap,
