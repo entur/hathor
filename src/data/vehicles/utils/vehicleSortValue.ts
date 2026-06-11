@@ -17,6 +17,8 @@ export const getVehicleSortValue = (
   key: VehicleColumnKey
 ): string | number => {
   switch (key) {
+    case 'id':
+      return item.id;
     case 'registrationNumber':
       return item.registrationNumber || '';
     case 'operationalNumber':

@@ -1,26 +1,21 @@
 import { createElement } from 'react';
-import Button from '@mui/material/Button';
+import { useNavigate } from 'react-router-dom';
 import { useDeckPlans, type OrderBy } from './useDeckPlans';
 import { useDataViewSearch } from '../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../components/data/DataPageContent.tsx';
+import NetexId from '../netex/NetexId.tsx';
 import type { ColumnDefinition } from '../../components/data/dataTableTypes.ts';
 import type { FilterDefinition } from '../../components/search/searchTypes.ts';
 import type { DeckPlan } from '../vehicle-types/types/vehicleTypeTypes.ts';
-import { useNavigate } from 'react-router-dom';
 import { getDeckPlanSortValue } from './deckPlanSortValue.ts';
 
-/**
- * Defines the columns for the DeckPlan data table.
- */
-const getDeckPlanColumns = (
-  navigate: ReturnType<typeof useNavigate>
-): ColumnDefinition<DeckPlan, OrderBy>[] => [
+const deckPlanColumns: ColumnDefinition<DeckPlan, OrderBy>[] = [
   {
     id: 'id',
     headerLabel: 'ID',
     isSortable: true,
-    renderCell: item => item.id,
+    renderCell: item => createElement(NetexId, { id: item.id, size: 'small' }),
     display: 'always',
   },
   {
@@ -30,26 +25,9 @@ const getDeckPlanColumns = (
     renderCell: item => item.name?.value,
     display: 'always',
   },
-  {
-    id: 'edit',
-    headerLabel: 'Edit',
-    isSortable: false,
-    renderCell: item =>
-      createElement(
-        Button,
-        { variant: 'text', onClick: () => navigate(`/deck-plans/${encodeURIComponent(item.id)}`) },
-        'Edit'
-      ),
-    display: 'always',
-  },
 ];
 
-/**
- * A function to extract the key used for filtering DeckPlans by category.
- */
-const getDeckPlanFilterKey = (item: DeckPlan): string => {
-  return item.id;
-};
+const getDeckPlanFilterKey = (item: DeckPlan): string => item.id;
 
 const DeckPlanFilters: FilterDefinition[] = [
   { id: 'parentDeckPlan', labelKey: 'types.parent', defaultLabel: 'Parent Vehicle Type' },
@@ -62,14 +40,21 @@ const DeckPlanFilters: FilterDefinition[] = [
   { id: 'liftStation', labelKey: 'types.lift', defaultLabel: 'Lift' },
 ];
 
-export const getDeckPlanViewConfig = (navigate: ReturnType<typeof useNavigate>) => ({
+/** Whole-row click opens the route-based deck-plan editor at `/deck-plans/<id>`. */
+const useDeckPlanRowClick = () => {
+  const navigate = useNavigate();
+  return (item: DeckPlan) => navigate(`/deck-plans/${encodeURIComponent(item.id)}`);
+};
+
+export const deckPlanViewConfig = {
   useData: useDeckPlans,
   useSearchRegistration: useDataViewSearch<DeckPlan>,
   useTableLogic: useDataViewTableLogic,
   PageContentComponent: DataPageContent,
-  columns: getDeckPlanColumns(navigate),
+  columns: deckPlanColumns,
   getFilterKey: getDeckPlanFilterKey,
   getSortValue: getDeckPlanSortValue,
   filters: () => DeckPlanFilters,
   titleKey: 'deckPlans.title',
-});
+  useRowClick: useDeckPlanRowClick,
+};

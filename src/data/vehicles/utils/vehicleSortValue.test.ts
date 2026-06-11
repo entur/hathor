@@ -112,4 +112,8 @@ describe('getVehicleSortValue', () => {
     expect(getVehicleSortValue(r, 'transportTypeName')).toBe('');
     expect(getVehicleSortValue(r, 'transportTypeMode')).toBe('');
   });
+
+  it('returns the NeTEx id verbatim for the id column', () => {
+    expect(getVehicleSortValue(mk({ id: 'NMR:Vehicle:42' }), 'id')).toBe('NMR:Vehicle:42');
+  });
 });

@@ -5,6 +5,7 @@ import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
 import DataPageContent from '../../../components/data/DataPageContent.tsx';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import NetexId from '../../netex/NetexId.tsx';
 import { getVehicleSortValue } from '../utils/vehicleSortValue.ts';
 import { useVehicleUrlSelection } from '../hooks/useVehicleUrlSelection.tsx';
 import { vehicleSelectedHref } from '../utils/vehicleUrlParams.ts';
@@ -17,6 +18,13 @@ import {
 } from '../types/vehicleGqlShaped.ts';
 
 const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
+  {
+    id: 'id',
+    headerLabel: 'vehicles.field.id',
+    isSortable: true,
+    renderCell: item => <NetexId id={item.id} size="small" />,
+    display: 'always',
+  },
   {
     id: 'registrationNumber',
     headerLabel: 'vehicles.field.registrationNumber',
