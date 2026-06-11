@@ -24,22 +24,26 @@ interface OidcUser {
 
 let cached: OidcUser | null = null;
 
+// Derive authority + client_id from the fixture so MOCK_OIDC.k can't drift.
+const _authCfg = JSON.parse(
+  fs.readFileSync(path.join(fixturesDir, 'config-with-auth.json'), 'utf8')
+).oidcConfig as { authority: string; client_id: string };
+
 /**
- * Synthetic OIDC user for MOCK mode. Key = config-with-auth's authority+client_id
- * so react-oidc-context reads it. The token is never validated (all GraphQL is
- * intercepted), so a structurally-valid, far-future-expiry user is enough to flip
- * `isAuthenticated` true without a redirect — the mock counterpart to the live
- * captured JWT, so the SAME spec body runs in both modes (only the data differs).
+ * Synthetic OIDC user for MOCK mode. Key derived from config-with-auth.json so it
+ * stays in sync if authority or client_id ever changes. The token is never validated
+ * (all GraphQL is intercepted) — a structurally-valid, far-future-expiry user is
+ * enough to flip `isAuthenticated` true without a redirect.
  */
 const MOCK_OIDC: OidcUser = {
-  k: 'oidc.user:https://partner.dev.entur.org:0gQVx7xpSkg7lJDYuewMSr1sXKr7OJ3z',
+  k: `oidc.user:${_authCfg.authority}:${_authCfg.client_id}`,
   v: {
     access_token: 'mock-access-token',
     token_type: 'Bearer',
     scope: 'openid',
     profile: {
       sub: 'mock',
-      iss: 'https://partner.dev.entur.org',
+      iss: _authCfg.authority,
       aud: 'mock',
       iat: 0,
       exp: 4102444800,

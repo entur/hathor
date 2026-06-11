@@ -34,11 +34,16 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         setError(message);
         return { newId: null, error: message };
       }
+      if (!currentOrganisation?.id) {
+        const message = 'No organisation selected — cannot save vehicle';
+        setError(message);
+        return { newId: null, error: message };
+      }
       setSaving(true);
       setError(null);
       try {
         const wireVehicle = {
-          dataOwnerRef: currentOrganisation?.id ?? '',
+          dataOwnerRef: currentOrganisation.id,
           registrationDate: form.vehicle.registrationDate,
           description: orUndef(form.vehicle.description?.value, form.vehicle.description),
           chassisNumber: orUndef(form.vehicle.chassisNumber, form.vehicle.chassisNumber),

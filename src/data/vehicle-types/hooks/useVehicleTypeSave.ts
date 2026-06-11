@@ -41,6 +41,11 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         setError(message);
         return { newId: null, error: message };
       }
+      if (!currentOrganisation?.id) {
+        const message = 'No organisation selected — cannot save vehicle type';
+        setError(message);
+        return { newId: null, error: message };
+      }
       setSaving(true);
       setError(null);
       try {
@@ -48,7 +53,7 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         const body = await createOrUpdateVehicleTypeRequest(
           applicationBaseUrl,
           token,
-          serializeVehicleType(form, currentOrganisation?.id ?? '')
+          serializeVehicleType(form, currentOrganisation.id)
         );
         return { newId: body.createOrUpdateVehicleType, error: null };
       } catch (err) {
