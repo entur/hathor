@@ -138,9 +138,6 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
 
       {tab === 'edit' && (
         <FormLayout data-testid="vtype-tab-edit">
-          <FieldRow id="vtype-id" label={t('vehicles.field.id', 'ID')}>
-            <TextField id="vtype-id" value={value.id} disabled size="small" fullWidth />
-          </FieldRow>
           <FieldRow id="vtype-name" label={t('vehicleType.field.name', 'Name')}>
             <TextField
               id="vtype-name"

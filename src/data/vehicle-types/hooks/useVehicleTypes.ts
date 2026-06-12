@@ -29,6 +29,9 @@ export function useVehicleTypes() {
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
 
+  // This doFetch shape (gate → fetch chain → translate error → setLoading)
+  // is duplicated in `useDeckPlans` and `useVehicles`. The duplication is
+  // tracked for lift in hathor#119 — keep variants in sync until then.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);

@@ -25,6 +25,7 @@ export interface VehicleGQLShaped {
 }
 
 export type VehicleColumnKey =
+  | 'id'
   | 'registrationNumber'
   | 'operationalNumber'
   | 'version'

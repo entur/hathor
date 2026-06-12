@@ -137,10 +137,14 @@ export interface VehicleTypeInput {
  * `undefined` is coerced to explicit `null` so a blanked field is cleared
  * rather than silently retained (the opposite of `useVehiclePairSave`'s
  * omit-blank). `version`/`vehicles`/audit fields are intentionally dropped
- * (not part of the input contract). `privateCode`/`keyValues` are likewise
- * never fetched, modelled, nor emitted: echoing `keyValues` back trips
- * sobek#149 (`INTERNAL_ERROR`). The form does not edit them, so hathor stays
- * structurally blind. Consequence: full-replace nulls them server-side.
+ * (not part of the input contract). Environmental extras
+ * (`formDragCoefficient`, `rollResistanceCoefficient`, `maximumEngineEffectKW`,
+ * `hybridCategory`) are first-class on Sobek's schema — Sobek surface-lifts
+ * them from the underlying `keyValues` bag — so they round-trip directly here.
+ * `privateCode` and the rest of `keyValues` (notably the Autosys `imported-id`
+ * provenance link) are not modelled or emitted: the input shape has no
+ * `keyValues` field (sobek#149 — echoing one trips `INTERNAL_ERROR`), so any
+ * unlifted keyValues entry is cleared by full-replace on save.
  *
  * `deckPlan` is emitted as a Sobek `DeckPlanReferenceInput` (`netexId` only —
  * `name` is not part of the reference input). `dataOwnerRef` is a required

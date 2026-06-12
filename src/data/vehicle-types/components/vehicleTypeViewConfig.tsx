@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Chip, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useVehicleTypes } from '../hooks/useVehicleTypes.ts';
 import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
 import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
@@ -11,6 +11,7 @@ import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
 import { deckPlanLabel } from '../utils/deckPlanLabel.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import NetexId from '../../netex/NetexId.tsx';
 import { transportModeFilters, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 import { useVehicleTypeUrlSelection } from '../hooks/useVehicleTypeUrlSelection.tsx';
 import { vehicleTypeSelectedHref } from '../utils/vehicleTypeUrlParams.ts';
@@ -29,7 +30,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     id: 'id',
     headerLabel: 'ID',
     isSortable: true,
-    renderCell: item => <Chip label={item.id} size="small" variant="outlined" />,
+    renderCell: item => <NetexId id={item.id} size="small" />,
     display: 'always',
   },
   {

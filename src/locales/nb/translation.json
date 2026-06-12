@@ -55,6 +55,12 @@
   "home.features.deckplans.headline": "Setekart",
   "home.features.deckplans.description": "En liste over setekart for kjøretøy som brukes i kollektivtransport.",
   "deckPlans.title": "Setekart",
+  "deckPlans.detailsTitle": "Setekart-detaljer",
+  "deckPlans.notFound": "Fant ikke setekartet",
+  "deckPlans.saveSuccess": "Setekart lagret",
+  "deckPlans.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "deckPlans.newComingSoon": "Kommer snart",
+  "deckPlans.actions.new": "Nytt setekart",
   "breadcrumbs.home": "Hjem",
 
   "home.notLoggedIn": "Du må logge inn for å bruke registeret",

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
+  <PublicationTimestamp>2026-06-11T00:00:00</PublicationTimestamp>
+  <ParticipantRef>NMR</ParticipantRef>
+  <dataObjects>
+    <ResourceFrame id="NMR:ResourceFrame:1" version="1"/>
+  </dataObjects>
+</PublicationDelivery>

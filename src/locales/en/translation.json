@@ -55,6 +55,12 @@
   "home.features.deckplans.headline": "Deck Plans",
   "home.features.deckplans.description": "A list of deck plans for vehicles used in public transport.",
   "deckPlans.title": "Deck Plans",
+  "deckPlans.detailsTitle": "Deck Plan Details",
+  "deckPlans.notFound": "Deck plan not found",
+  "deckPlans.saveSuccess": "Deck plan saved",
+  "deckPlans.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
+  "deckPlans.newComingSoon": "Coming soon",
+  "deckPlans.actions.new": "New Deck Plan",
   "breadcrumbs.home": "Home",
 
   "home.notLoggedIn": "You need to log in to use the registry",
