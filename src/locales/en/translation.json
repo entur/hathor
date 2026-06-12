@@ -116,7 +116,7 @@
   "vehicleType.saveSuccess": "Vehicle type saved",
   "vehicleType.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
   "vehicleType.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
-  "vehicleTypes.deactivateSuccess": "Vehicle type deactivated",
+  "vehicleType.deactivateSuccess": "Vehicle type deactivated",
   "vehicleType.deactivateConfirmTitle": "Deactivate vehicle type?",
   "vehicleType.deactivateConfirmMessage": "This vehicle type will be deactivated.",
   "vehicleType.tab.edit": "Edit",
