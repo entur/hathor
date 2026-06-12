@@ -28,6 +28,7 @@ import {
   type FormState,
 } from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
+import { useVehicleDeactivate } from '../hooks/useVehicleDeactivate.ts';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
@@ -58,6 +59,8 @@ export default function VehicleDetails({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
+  const { deactivate } = useVehicleDeactivate();
+  const [deactivatedOK, setDeactivatedOK] = useState(false);
 
   const {
     data: xmlVehicle,
@@ -76,6 +79,27 @@ export default function VehicleDetails({
 
   const closeSlider = useCloseSliderParam(VEHICLE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_SELECTED_PARAM);
+
+  const handleDeactivate = async () => {
+    const result = await deactivate(form.vehicle);
+    if (result.error) {
+      setCommitError(result.error);
+      return;
+    }
+    setMode('view');
+    try {
+      setDeactivatedOK(true);
+      await onSaved?.();
+      setCommitError(null);
+    } catch {
+      setCommitError(
+        t(
+          'vehicle.deactivateStaleList',
+          'Deactivated — but the list could not refresh; it may be stale.'
+        )
+      );
+    }
+  };
 
   const handleSave = async () => {
     const wasCreate = (form.vehicle.id ?? '') === '';
@@ -222,11 +246,17 @@ export default function VehicleDetails({
         message={t('vehicles.saveSuccess', 'Vehicle saved')}
         onClose={() => setSavedAt(null)}
       />
+      <SaveSuccessSnackbar
+        open={deactivatedOK}
+        message={t('vehicles.deactivateSuccess', 'Vehicle deactivated')}
+        onClose={closeSlider}
+      />
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}
-        mode={mode}
+        mode={deactivatedOK ? 'view' : mode}
         onEnterEdit={() => setMode('edit')}
+        onDeactivate={handleDeactivate}
         onCancelEdit={() => {
           dispatch({ type: 'hydrate', xmlVehicle });
           setMode('view');

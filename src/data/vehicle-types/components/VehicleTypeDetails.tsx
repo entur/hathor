@@ -79,6 +79,7 @@ export default function VehicleTypeDetails({
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
   const { save, saving, error, clearError } = useVehicleTypeSave();
   const { deactivate } = useVehicleTypeDeactivate();
+  const [deactivatedOK, setDeactivatedOK] = useState(false);
 
   // Re-hydrate (and drop back to view) whenever the deep-link resolves a new row.
   useEffect(() => {
@@ -109,6 +110,7 @@ export default function VehicleTypeDetails({
     }
     setMode('view');
     try {
+      setDeactivatedOK(true);
       await onSaved?.();
       setRefreshError(null);
     } catch {
@@ -252,10 +254,15 @@ export default function VehicleTypeDetails({
         message={t('vehicleType.saveSuccess', 'Vehicle type saved')}
         onClose={() => setSavedAt(null)}
       />
+      <SaveSuccessSnackbar
+        open={deactivatedOK}
+        message={t('vehicleTypes.deactivateSuccess', 'Vehicle type deactivated')}
+        onClose={closeSlider}
+      />
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}
-        mode={mode}
+        mode={deactivatedOK ? 'view' : mode}
         onEnterEdit={() => setMode('edit')}
         onDeactivate={handleDeactivate}
         onCancelEdit={() => {
