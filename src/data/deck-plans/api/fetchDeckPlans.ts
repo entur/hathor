@@ -5,6 +5,21 @@ import type { DeckPlan, Name } from '../../vehicle-types/types/vehicleTypeTypes.
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 
+/**
+ * Sobek `DeckPlanInput` — the mutation-accepted shape (mirrors `input
+ * DeckPlanInput` in the SDL). Strict subset of the fetched {@link DeckPlanWire}:
+ * no `version` (server-managed; Sobek resolves the live version by `netexId`)
+ * `dataOwnerRef` is a required input field, threaded in by the caller (current
+ * organisation). Mirrors the `<Entity>Input` convention used by
+ * `VehicleTypeInput`.
+ * */
+export interface DeckPlanInput {
+  netexId?: string | null;
+  /** Owning organisation ref (NeTEx codespace). Required by Sobek `DeckPlanInput`. */
+  dataOwnerRef: string;
+  name?: Name | null;
+}
+
 interface DeckPlanWire {
   netexId: string;
   name?: Name | null;
@@ -13,6 +28,12 @@ interface DeckPlanWire {
 const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
   id: dp.netexId,
   name: dp.name ?? undefined,
+});
+
+export const serializeDeckPlan = (dp: DeckPlan, dataOwnerRef: string): DeckPlanInput => ({
+  netexId: dp.id === '' ? undefined : dp.id,
+  dataOwnerRef,
+  name: dp.name ?? null,
 });
 
 export const fetchDeckPlans = async (
