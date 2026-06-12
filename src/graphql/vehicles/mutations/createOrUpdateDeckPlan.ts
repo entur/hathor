@@ -16,11 +16,11 @@ export interface CreateOrUpdateDeckPlanResponse {
 export const createOrUpdateDeckPlanRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
-  DeckPlanData: DeckPlanInput
+  deckPlanData: DeckPlanInput
 ): Promise<CreateOrUpdateDeckPlanResponse> =>
   request<CreateOrUpdateDeckPlanResponse>(
     applicationBaseUrl,
     createOrUpdateDeckPlanMutation,
-    { input: DeckPlanData },
+    { input: deckPlanData },
     authHeader(token)
   );
