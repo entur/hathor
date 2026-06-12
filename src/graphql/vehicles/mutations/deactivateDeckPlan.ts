@@ -11,7 +11,7 @@ const deactivateDeckPlanMutation = gql`
   }
 `;
 
-/** Mutation response: the persisted Vehicle's NeTEx id (nullable per SDL). */
+/** Mutation response: the persisted DeckPlan's NeTEx id + version (nullable per SDL). */
 export interface DeactivateDeckPlanResponse {
   deactivateDeckPlan: {
     netexId: string;
@@ -22,11 +22,11 @@ export interface DeactivateDeckPlanResponse {
 export const deactivateDeckPlanRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
-  vehicleData: DeactivateInput
+  deckPlanData: DeactivateInput
 ): Promise<DeactivateDeckPlanResponse> =>
   request<DeactivateDeckPlanResponse>(
     applicationBaseUrl,
     deactivateDeckPlanMutation,
-    { input: vehicleData },
+    { input: deckPlanData },
     authHeader(token)
   );
