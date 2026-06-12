@@ -3,6 +3,9 @@ import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import { useOrganisations } from '../../organisations/hooks/useOrganisations';
 import { saveDeckPlanAsNetexToBackend } from '../api/deckPlanDetailsService';
+import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes';
+import { createOrUpdateDeckPlanRequest } from '../../../graphql/vehicles/mutations/createOrUpdateDeckPlan';
+import { serializeDeckPlan } from '../api/fetchDeckPlans';
 
 interface SaveResult {
   error: string | null;
@@ -10,6 +13,7 @@ interface SaveResult {
 
 interface UseDeckPlanSaveResult {
   save: (xml: string) => Promise<SaveResult>;
+  saveGQL: (form: DeckPlan) => Promise<{ newId: string | null; error: string | null }>;
   saving: boolean;
   error: string | null;
   clearError: () => void;
@@ -27,7 +31,7 @@ interface UseDeckPlanSaveResult {
  */
 export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const { getAccessToken } = useAuth();
-  const { applicationImportBaseUrl } = useConfig();
+  const { applicationImportBaseUrl, applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisations();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,5 +70,38 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
     [applicationImportBaseUrl, getAccessToken, currentOrganisation?.id]
   );
 
-  return { save, saving, error, clearError: () => setError(null) };
+  const saveGQL = useCallback(
+    async (form: DeckPlan): Promise<{ newId: string | null; error: string | null }> => {
+      if (!applicationBaseUrl) {
+        const message = 'Application base URL is not configured';
+        setError(message);
+        return { newId: null, error: message };
+      }
+      if (!currentOrganisation?.id) {
+        const message = 'No organisation selected — cannot save deck plan';
+        setError(message);
+        return { newId: null, error: message };
+      }
+      setSaving(true);
+      setError(null);
+      try {
+        const token = await getAccessToken();
+        const body = await createOrUpdateDeckPlanRequest(
+          applicationBaseUrl,
+          token,
+          serializeDeckPlan(form, currentOrganisation.id)
+        );
+        return { newId: body.createOrUpdateDeckPlan, error: null };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+        return { newId: null, error: message };
+      } finally {
+        setSaving(false);
+      }
+    },
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
+  );
+
+  return { save, saveGQL, saving, error, clearError: () => setError(null) };
 }
