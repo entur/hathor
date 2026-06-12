@@ -16,9 +16,8 @@ interface UrlSelectionParams {
 /**
  * DeckPlan binding for the generic {@link useUrlEditorSelection} hook:
  * param key `selected`, id is the full NeTEx id, editor is
- * `<DeckPlanDetails>`. `getEmptyRow` is required by the contract but
- * never UI-reachable: deck-plan creation is not a current product flow
- * (`?selected=new` would render the not-found view).
+ * `<DeckPlanDetails>`. `getEmptyRow` powers the create flow when
+ * `?selected=new` is opened from the New Deck Plan action.
  */
 export function useDeckPlanUrlSelection({
   allData,
