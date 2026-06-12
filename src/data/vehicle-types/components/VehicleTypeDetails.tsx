@@ -257,7 +257,7 @@ export default function VehicleTypeDetails({
       />
       <SaveSuccessSnackbar
         open={deactivatedOK}
-        message={t('vehicleTypes.deactivateSuccess', 'Vehicle type deactivated')}
+        message={t('vehicleType.deactivateSuccess', 'Vehicle type deactivated')}
         onClose={closeSlider}
       />
       <EditorRail
