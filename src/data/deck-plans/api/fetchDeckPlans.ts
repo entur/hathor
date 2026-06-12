@@ -12,6 +12,7 @@ import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
  * `dataOwnerRef` is a required input field, threaded in by the caller (current
  * organisation). Mirrors the `<Entity>Input` convention used by
  * `VehicleTypeInput`.
+ * */
 export interface DeckPlanInput {
   netexId?: string | null;
   /** Owning organisation ref (NeTEx codespace). Required by Sobek `DeckPlanInput`. */

@@ -61,6 +61,7 @@
   "deckPlans.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
   "deckPlans.newComingSoon": "Kommer snart",
   "deckPlans.actions.new": "Nytt setekart",
+  "deckPlans.field.name": "Navn",
   "breadcrumbs.home": "Hjem",
 
   "home.notLoggedIn": "Du må logge inn for å bruke registeret",
