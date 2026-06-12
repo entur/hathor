@@ -22,7 +22,7 @@ export default function DeckPlanCreateForm({ value, onChange, mode }: DeckPlanCr
 
   return (
     <FormLayout>
-      <FieldRow id="DeckPlan-name" label={t('DeckPlans.field.name', 'Name')}>
+      <FieldRow id="DeckPlan-name" label={t('deckPlans.field.name', 'Name')}>
         <TextField
           id="DeckPlan-name"
           value={v.name?.value ?? ''}
