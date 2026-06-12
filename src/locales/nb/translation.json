@@ -116,7 +116,7 @@
   "vehicleType.saveSuccess": "Kjøretøytype lagret",
   "vehicleType.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
   "vehicleType.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert.",
-  "vehicleTypes.deactivateSuccess": "Kjøretøytype deaktivert",
+  "vehicleType.deactivateSuccess": "Kjøretøytype deaktivert",
   "vehicleType.deactivateConfirmTitle": "Deaktivere kjøretøytype?",
   "vehicleType.deactivateConfirmMessage": "Denne kjøretøytypen vil bli deaktivert.",
   "vehicleType.tab.edit": "Rediger",
