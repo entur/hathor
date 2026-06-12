@@ -59,6 +59,7 @@
   "deckPlans.notFound": "Fant ikke setekartet",
   "deckPlans.saveSuccess": "Setekart lagret",
   "deckPlans.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "deckPlan.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert.",
   "deckPlans.newComingSoon": "Kommer snart",
   "deckPlans.actions.new": "Nytt setekart",
   "breadcrumbs.home": "Hjem",
@@ -114,6 +115,10 @@
   "vehicleType.notFound": "Kjøretøytype ikke funnet",
   "vehicleType.saveSuccess": "Kjøretøytype lagret",
   "vehicleType.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "vehicleType.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "vehicleTypes.deactivateSuccess": "Kjøretøytype deaktivert",
+  "vehicleType.deactivateConfirmTitle": "Deaktivere kjøretøytype?",
+  "vehicleType.deactivateConfirmMessage": "Denne kjøretøytypen vil bli deaktivert.",
   "vehicleType.tab.edit": "Rediger",
   "vehicleType.tab.propulsion": "Fremdrift/yt.",
   "vehicleType.tab.capacity": "Passasjerkapasitet",
@@ -155,6 +160,10 @@
   "vehicles.notFound": "Kjøretøy ikke funnet",
   "vehicles.loading": "Laster kjøretøy…",
   "vehicles.saveSuccess": "Kjøretøy lagret",
+  "vehicle.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "vehicles.deactivateSuccess": "Kjøretøy deaktivert",
+  "vehicle.deactivateConfirmTitle": "Deaktivere kjøretøy?",
+  "vehicle.deactivateConfirmMessage": "Dette kjøretøyet vil bli deaktivert.",
   "vehicles.saveSuccess.viewInList": "Vis i liste",
   "vehicles.actions.back": "Tilbake til liste",
   "vehicles.field.transportType": "Kjøretøytype-ID",
@@ -194,6 +203,8 @@
   "rail.label": "Hovedmeny",
   "rail.collapse": "Skjul meny",
   "rail.expand": "Vis meny",
+  "vehicles.rail.deactivateTooltip": "Deaktiver",
+  "vehicles.rail.deactivateAria": "Deaktiver",
 
   "import.result.fuelTypeEnum.battery": "Elektrisk",
   "import.result.seatingCapacity": "{{count}} sitteplasser",
@@ -210,5 +221,10 @@
   "product": "Produkt",
 
   "organisations.select.label": "Velg organisasjon",
-  "organisations.select.noOptions": "Ingen organisasjoner tilgjengelig"
+  "organisations.select.noOptions": "Ingen organisasjoner tilgjengelig",
+  "deckPlan.deactivateConfirmTitle": "Deaktivere setekart?",
+  "deckPlan.deactivateConfirmMessage": "Dette setekartet vil bli deaktivert.",
+  "common.deactivateConfirmTitle": "Deaktivere dette elementet?",
+  "common.deactivateConfirmMessage": "Denne handlingen deaktiverer det valgte elementet. Vil du fortsette?",
+  "common.deactivate": "Deaktiver"
 }

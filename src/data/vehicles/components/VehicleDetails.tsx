@@ -71,6 +71,7 @@ export default function VehicleDetails({
 
   useEffect(() => {
     dispatch({ type: 'hydrate', xmlVehicle });
+    setDeactivatedOK(false);
   }, [xmlVehicle]);
 
   const isDirty = isFormDirty(formState);
@@ -257,6 +258,12 @@ export default function VehicleDetails({
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
+        deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle', 'Deactivate vehicle?')}
+        deactivateConfirmMessage={t(
+          'vehicle.deactivateConfirmMessage',
+          'This vehicle will be deactivated.'
+        )}
+        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
           dispatch({ type: 'hydrate', xmlVehicle });
           setMode('view');

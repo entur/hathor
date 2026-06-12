@@ -1,5 +1,18 @@
 import { useState } from 'react';
-import { Box, CircularProgress, Divider, IconButton, Tooltip, useTheme } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  IconButton,
+  Tooltip,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from '@mui/material';
 import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   KeyboardDoubleArrowLeft,
@@ -27,6 +40,12 @@ interface EditorRailProps {
   onCancelEdit?: () => void;
   /** Shown in view mode as the deactivate segment. Fires the deactivation flow (which includes its own confirmation). */
   onDeactivate?: () => void;
+  /** Optional heading for the deactivate confirmation dialog. */
+  deactivateConfirmTitle?: string;
+  /** Optional body text for the deactivate confirmation dialog. */
+  deactivateConfirmMessage?: string;
+  /** Optional primary action label in the deactivate confirmation dialog. */
+  deactivateConfirmActionLabel?: string;
   /** Omit to hide the Save segment. Save is also hidden when `mode !== 'edit'`. */
   onSave?: () => void | Promise<void>;
   isDirty?: boolean;
@@ -55,6 +74,9 @@ export default function EditorRail({
   mode,
   onEnterEdit,
   onDeactivate,
+  deactivateConfirmTitle,
+  deactivateConfirmMessage,
+  deactivateConfirmActionLabel,
   onCancelEdit,
   onSave,
   isDirty = false,
@@ -65,6 +87,7 @@ export default function EditorRail({
   const theme = useTheme();
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState<'collapse' | 'cancel' | null>(null);
+  const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
 
   const isEdit = mode === 'edit';
   const showPen = mode === 'view' && onEnterEdit != null;
@@ -94,6 +117,16 @@ export default function EditorRail({
   const handleSaveFromDialog = async () => {
     setConfirming(null);
     if (onSave) await onSave();
+  };
+
+  const handleDeactivateClick = () => {
+    if (!onDeactivate) return;
+    setConfirmDeactivateOpen(true);
+  };
+
+  const handleDeactivateConfirm = () => {
+    setConfirmDeactivateOpen(false);
+    onDeactivate?.();
   };
 
   const saveLabel = saving
@@ -167,7 +200,7 @@ export default function EditorRail({
               arrow
             >
               <IconButton
-                onClick={onDeactivate}
+                onClick={handleDeactivateClick}
                 aria-label={t('vehicles.rail.deactivateAria', 'Deactivate')}
                 data-testid="editor-rail-deactivate"
                 sx={{
@@ -238,6 +271,27 @@ export default function EditorRail({
         onDiscard={handleDiscard}
         onSave={onSave ? handleSaveFromDialog : undefined}
       />
+
+      <Dialog open={confirmDeactivateOpen} onClose={() => setConfirmDeactivateOpen(false)}>
+        <DialogTitle>
+          {deactivateConfirmTitle ?? t('common.deactivateConfirmTitle', 'Deactivate this item?')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {deactivateConfirmMessage ??
+              t(
+                'common.deactivateConfirmMessage',
+                'This action deactivates the selected item. You can continue?'
+              )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeactivateOpen(false)}>{t('cancel', 'Cancel')}</Button>
+          <Button color="error" variant="contained" onClick={handleDeactivateConfirm}>
+            {deactivateConfirmActionLabel ?? t('common.deactivate', 'Deactivate')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

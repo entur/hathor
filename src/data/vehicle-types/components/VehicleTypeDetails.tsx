@@ -89,6 +89,7 @@ export default function VehicleTypeDetails({
       // Don't let a prior save snackbar / stale-list warning bleed into the next row.
       setSavedAt(null);
       setRefreshError(null);
+      setDeactivatedOK(false);
     }
   }, [initialMode, vehicleType]);
 
@@ -265,6 +266,12 @@ export default function VehicleTypeDetails({
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
+        deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle', 'Deactivate vehicle type?')}
+        deactivateConfirmMessage={t(
+          'vehicleType.deactivateConfirmMessage',
+          'This vehicle type will be deactivated.'
+        )}
+        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
           // Revert to the last committed baseline (post-save = saved values),
           // not the `vehicleType` prop which goes stale after a same-id save.

@@ -75,6 +75,7 @@ export default function DeckPlanDetails({
       setMode(initialMode ?? 'view');
       setSavedAt(null);
       setRefreshError(null);
+      setDeactivatedOK(false);
     }
   }, [initialMode, deckPlan, xml]);
 
@@ -215,6 +216,12 @@ export default function DeckPlanDetails({
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
+        deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle', 'Deactivate deck plan?')}
+        deactivateConfirmMessage={t(
+          'deckPlan.deactivateConfirmMessage',
+          'This deck plan will be deactivated.'
+        )}
+        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
           dispatch({ type: 'hydrate', xml: state.baseline });
           setMode('view');
