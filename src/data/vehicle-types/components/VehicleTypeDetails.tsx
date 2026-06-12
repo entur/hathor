@@ -15,6 +15,7 @@ import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
+import { useVehicleTypeDeactivate } from '../hooks/useVehicleTypeDeactivate.ts';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
@@ -77,6 +78,7 @@ export default function VehicleTypeDetails({
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
   const { save, saving, error, clearError } = useVehicleTypeSave();
+  const { deactivate } = useVehicleTypeDeactivate();
 
   // Re-hydrate (and drop back to view) whenever the deep-link resolves a new row.
   useEffect(() => {
@@ -98,6 +100,26 @@ export default function VehicleTypeDetails({
 
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
+
+  const handleDeactivate = async () => {
+    const result = await deactivate(state.form);
+    if (result.error) {
+      setRefreshError(result.error);
+      return;
+    }
+    setMode('view');
+    try {
+      await onSaved?.();
+      setRefreshError(null);
+    } catch {
+      setRefreshError(
+        t(
+          'vehicleType.deactivateStaleList',
+          'Deactivated — but the list could not refresh; it may be stale.'
+        )
+      );
+    }
+  };
 
   // Fire the mutation, then refresh the list (`onSaved`) so the table reflects
   // the edit. The sidebar's own re-baseline is from the submitted form, not the
@@ -235,6 +257,7 @@ export default function VehicleTypeDetails({
         onCollapse={closeSlider}
         mode={mode}
         onEnterEdit={() => setMode('edit')}
+        onDeactivate={handleDeactivate}
         onCancelEdit={() => {
           // Revert to the last committed baseline (post-save = saved values),
           // not the `vehicleType` prop which goes stale after a same-id save.

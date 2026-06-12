@@ -6,6 +6,7 @@ import {
   KeyboardDoubleArrowRight,
   Edit as EditIcon,
   Save as SaveIcon,
+  Block as BlockIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +25,8 @@ interface EditorRailProps {
   onEnterEdit?: () => void;
   /** Shown in edit mode as the cancel segment. Host should revert form + return to view mode. Rail confirms when dirty. */
   onCancelEdit?: () => void;
+  /** Shown in view mode as the deactivate segment. Fires the deactivation flow (which includes its own confirmation). */
+  onDeactivate?: () => void;
   /** Omit to hide the Save segment. Save is also hidden when `mode !== 'edit'`. */
   onSave?: () => void | Promise<void>;
   isDirty?: boolean;
@@ -51,6 +54,7 @@ export default function EditorRail({
   onCollapse,
   mode,
   onEnterEdit,
+  onDeactivate,
   onCancelEdit,
   onSave,
   isDirty = false,
@@ -64,6 +68,7 @@ export default function EditorRail({
 
   const isEdit = mode === 'edit';
   const showPen = mode === 'view' && onEnterEdit != null;
+  const showDeactivate = mode === 'view' && onDeactivate != null;
   const showCancel = isEdit && onCancelEdit != null;
   const showSave = onSave != null && isEdit;
   const collapseIcon =
@@ -148,6 +153,32 @@ export default function EditorRail({
                 }}
               >
                 <EditIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+
+        {showDeactivate && (
+          <>
+            <Divider sx={{ opacity: DIVIDER_OPACITY }} />
+            <Tooltip
+              title={t('vehicles.rail.deactivateTooltip', 'Deactivate')}
+              placement="left"
+              arrow
+            >
+              <IconButton
+                onClick={onDeactivate}
+                aria-label={t('vehicles.rail.deactivateAria', 'Deactivate')}
+                data-testid="editor-rail-deactivate"
+                sx={{
+                  width: SEGMENT_SIZE,
+                  height: SEGMENT_SIZE,
+                  borderRadius: 0,
+                  color: 'primary.main',
+                  '&:hover': { color: 'primary.dark' },
+                }}
+              >
+                <BlockIcon />
               </IconButton>
             </Tooltip>
           </>

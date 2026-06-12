@@ -96,6 +96,12 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
     : undefined,
 });
 
+export interface DeactivateInput {
+  netexId: string;
+  version: number;
+  deactivateAt: string;
+}
+
 /**
  * Sobek `VehicleTypeInput` — the mutation-accepted shape. Strict subset of the
  * fetched {@link VehicleTypeWire}: no `version`/`created`/`changed`/`changedBy`
