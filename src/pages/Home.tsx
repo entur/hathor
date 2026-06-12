@@ -1,13 +1,4 @@
-import { useState } from 'react';
-import {
-  Box,
-  Typography,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogActions,
-  Button,
-} from '@mui/material';
+import { Box, Typography, Divider } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
@@ -126,7 +117,6 @@ function NavTile({
  */
 export default function HomePage() {
   const { t } = useTranslation();
-  const [comingOpen, setComingOpen] = useState(false);
   const { currentOrganisation } = useOrganisations();
   const { isAuthenticated } = useAuth();
 
@@ -254,7 +244,7 @@ export default function HomePage() {
               <CreateAction
                 to="/vehicles?selected=new"
                 icon="vehicles"
-                label={t('home.createNew.train', 'Train')}
+                label={t('home.createNew.vehicle', 'Vehicle')}
               />
               <Divider
                 flexItem
@@ -262,7 +252,7 @@ export default function HomePage() {
                 sx={{ display: { xs: 'none', sm: 'block' } }}
               />
               <CreateAction
-                onClick={() => setComingOpen(true)}
+                to="/deck-plans?selected=new"
                 icon="deckPlans"
                 label={t('home.createNew.deckPlan', 'Deck Plan')}
               />
@@ -287,13 +277,6 @@ export default function HomePage() {
           </Box>
         )}
       </Box>
-
-      <Dialog open={comingOpen} onClose={() => setComingOpen(false)}>
-        <DialogTitle>{t('home.createNew.comingSoon', 'Coming soon')}</DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setComingOpen(false)}>{t('close', 'Close')}</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }
