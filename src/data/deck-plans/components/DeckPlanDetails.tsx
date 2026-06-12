@@ -103,7 +103,7 @@ export default function DeckPlanDetails({
       const result = await saveGQL(draft);
       if (result.error) return;
 
-      // Advance the slider to the new id so the URL reflects the persisted entity, and future refetchs hit the backend not cache.
+      // Advance the slider to the new id so the URL reflects the persisted entity, and future refetches hit the backend not cache.
       const newId = result.newId;
       if (newId) {
         // Avoid a transient dirty-edit state while the selected row switches from `new` to persisted id.
@@ -112,7 +112,7 @@ export default function DeckPlanDetails({
 
         const nextSearchParams = new URLSearchParams(searchParams);
         nextSearchParams.set(DECK_PLAN_SELECTED_PARAM, newId);
-        setSearchParams(nextSearchParams, { replace: true });
+
         try {
           await onSaved?.();
           setSavedAt(Date.now());
@@ -121,6 +121,10 @@ export default function DeckPlanDetails({
             t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
           );
         }
+
+        // Advance after the attempted refresh so useUrlEditorSelection can resolve the new row from the list,
+        // avoiding a transient not-found editor between save and refetch.
+        setSearchParams(nextSearchParams, { replace: true });
       } else {
         setRefreshError(
           t('deckPlans.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
