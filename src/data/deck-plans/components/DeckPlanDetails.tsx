@@ -15,6 +15,7 @@ import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { DECK_PLAN_SELECTED_PARAM } from '../utils/deckPlanUrlParams.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import { useDeckPlanDeactivate } from '../hooks/useDeckPlanDeactivate.ts';
 
 const RAIL_SIDE = 'right' as const;
 const BLANK_NAME = 'unnamed';
@@ -64,6 +65,8 @@ export default function DeckPlanDetails({
   const id = deckPlan?.id ?? null;
   const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(id);
   const { save, saving, error, clearError } = useDeckPlanSave();
+  const { deactivate } = useDeckPlanDeactivate();
+  const [deactivatedOK, setDeactivatedOK] = useState(false);
 
   // Hydrate (and drop to view) whenever a fresh XML body arrives for the current row.
   useEffect(() => {
@@ -80,6 +83,28 @@ export default function DeckPlanDetails({
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
+
+  const handleDeactivate = async () => {
+    if (!deckPlan) return;
+    const result = await deactivate(deckPlan);
+    if (result.error) {
+      setRefreshError(result.error);
+      return;
+    }
+    setMode('view');
+    try {
+      setDeactivatedOK(true);
+      await onSaved?.();
+      setRefreshError(null);
+    } catch {
+      setRefreshError(
+        t(
+          'deckPlan.deactivateStaleList',
+          'Deactivated — but the list could not refresh; it may be stale.'
+        )
+      );
+    }
+  };
 
   const handleSave = async () => {
     setRefreshError(null);
@@ -188,7 +213,8 @@ export default function DeckPlanDetails({
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => setMode('edit')}
+        onEnterEdit={() => !deactivatedOK && setMode('edit')}
+        onDeactivate={handleDeactivate}
         onCancelEdit={() => {
           dispatch({ type: 'hydrate', xml: state.baseline });
           setMode('view');

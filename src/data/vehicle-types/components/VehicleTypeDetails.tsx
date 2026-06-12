@@ -262,8 +262,8 @@ export default function VehicleTypeDetails({
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}
-        mode={deactivatedOK ? 'view' : mode}
-        onEnterEdit={() => setMode('edit')}
+        mode={mode}
+        onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
         onCancelEdit={() => {
           // Revert to the last committed baseline (post-save = saved values),

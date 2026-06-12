@@ -254,8 +254,8 @@ export default function VehicleDetails({
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}
-        mode={deactivatedOK ? 'view' : mode}
-        onEnterEdit={() => setMode('edit')}
+        mode={mode}
+        onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
         onCancelEdit={() => {
           dispatch({ type: 'hydrate', xmlVehicle });
