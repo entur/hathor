@@ -7,6 +7,7 @@ export type Name = {
 
 export type DeckPlan = {
   id: string;
+  version?: number;
   name?: Name;
 };
 

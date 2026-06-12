@@ -8,11 +8,13 @@ import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 interface DeckPlanWire {
   netexId: string;
   name?: Name | null;
+  version: number;
 }
 
 const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
   id: dp.netexId,
   name: dp.name ?? undefined,
+  version: dp.version,
 });
 
 export const fetchDeckPlans = async (

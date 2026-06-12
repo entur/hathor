@@ -1,11 +1,25 @@
 import { useState } from 'react';
-import { Box, CircularProgress, Divider, IconButton, Tooltip, useTheme } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  IconButton,
+  Tooltip,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from '@mui/material';
 import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
   Edit as EditIcon,
   Save as SaveIcon,
+  Block as BlockIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +38,14 @@ interface EditorRailProps {
   onEnterEdit?: () => void;
   /** Shown in edit mode as the cancel segment. Host should revert form + return to view mode. Rail confirms when dirty. */
   onCancelEdit?: () => void;
+  /** Shown in view mode as the deactivate segment. Fires the deactivation flow (which includes its own confirmation). */
+  onDeactivate?: () => void;
+  /** Optional heading for the deactivate confirmation dialog. */
+  deactivateConfirmTitle?: string;
+  /** Optional body text for the deactivate confirmation dialog. */
+  deactivateConfirmMessage?: string;
+  /** Optional primary action label in the deactivate confirmation dialog. */
+  deactivateConfirmActionLabel?: string;
   /** Omit to hide the Save segment. Save is also hidden when `mode !== 'edit'`. */
   onSave?: () => void | Promise<void>;
   isDirty?: boolean;
@@ -51,6 +73,10 @@ export default function EditorRail({
   onCollapse,
   mode,
   onEnterEdit,
+  onDeactivate,
+  deactivateConfirmTitle,
+  deactivateConfirmMessage,
+  deactivateConfirmActionLabel,
   onCancelEdit,
   onSave,
   isDirty = false,
@@ -61,9 +87,11 @@ export default function EditorRail({
   const theme = useTheme();
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState<'collapse' | 'cancel' | null>(null);
+  const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
 
   const isEdit = mode === 'edit';
   const showPen = mode === 'view' && onEnterEdit != null;
+  const showDeactivate = mode === 'view' && onDeactivate != null;
   const showCancel = isEdit && onCancelEdit != null;
   const showSave = onSave != null && isEdit;
   const collapseIcon =
@@ -89,6 +117,16 @@ export default function EditorRail({
   const handleSaveFromDialog = async () => {
     setConfirming(null);
     if (onSave) await onSave();
+  };
+
+  const handleDeactivateClick = () => {
+    if (!onDeactivate) return;
+    setConfirmDeactivateOpen(true);
+  };
+
+  const handleDeactivateConfirm = () => {
+    setConfirmDeactivateOpen(false);
+    onDeactivate?.();
   };
 
   const saveLabel = saving
@@ -153,6 +191,32 @@ export default function EditorRail({
           </>
         )}
 
+        {showDeactivate && (
+          <>
+            <Divider sx={{ opacity: DIVIDER_OPACITY }} />
+            <Tooltip
+              title={t('vehicles.rail.deactivateTooltip', 'Deactivate')}
+              placement="left"
+              arrow
+            >
+              <IconButton
+                onClick={handleDeactivateClick}
+                aria-label={t('vehicles.rail.deactivateAria', 'Deactivate')}
+                data-testid="editor-rail-deactivate"
+                sx={{
+                  width: SEGMENT_SIZE,
+                  height: SEGMENT_SIZE,
+                  borderRadius: 0,
+                  color: 'primary.main',
+                  '&:hover': { color: 'primary.dark' },
+                }}
+              >
+                <BlockIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+
         {showCancel && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
@@ -207,6 +271,27 @@ export default function EditorRail({
         onDiscard={handleDiscard}
         onSave={onSave ? handleSaveFromDialog : undefined}
       />
+
+      <Dialog open={confirmDeactivateOpen} onClose={() => setConfirmDeactivateOpen(false)}>
+        <DialogTitle>
+          {deactivateConfirmTitle ?? t('common.deactivateConfirmTitle', 'Deactivate this item?')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {deactivateConfirmMessage ??
+              t(
+                'common.deactivateConfirmMessage',
+                'This action deactivates the selected item. Do you want to continue?'
+              )
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeactivateOpen(false)}>{t('cancel', 'Cancel')}</Button>
+          <Button color="error" variant="contained" onClick={handleDeactivateConfirm}>
+            {deactivateConfirmActionLabel ?? t('common.deactivate', 'Deactivate')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
