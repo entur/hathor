@@ -23,11 +23,13 @@ export interface DeckPlanInput {
 interface DeckPlanWire {
   netexId: string;
   name?: Name | null;
+  version: number;
 }
 
 const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
   id: dp.netexId,
   name: dp.name ?? undefined,
+  version: dp.version,
 });
 
 export const serializeDeckPlan = (dp: DeckPlan, dataOwnerRef: string): DeckPlanInput => ({

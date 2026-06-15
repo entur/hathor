@@ -16,6 +16,7 @@ import { DECK_PLAN_SELECTED_PARAM } from '../utils/deckPlanUrlParams.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 import DeckPlanCreateForm from './DeckPlanCreateForm.tsx';
+import { useDeckPlanDeactivate } from '../hooks/useDeckPlanDeactivate.ts';
 
 const RAIL_SIDE = 'right' as const;
 const BLANK_NAME = 'unnamed';
@@ -67,6 +68,8 @@ export default function DeckPlanDetails({
   const id = isCreate ? null : (deckPlan?.id ?? null);
   const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(id);
   const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
+  const { deactivate } = useDeckPlanDeactivate();
+  const [deactivatedOK, setDeactivatedOK] = useState(false);
 
   // Initialise create form state whenever `?selected=new` opens the editor.
   useEffect(() => {
@@ -84,6 +87,7 @@ export default function DeckPlanDetails({
     setMode(initialMode ?? 'view');
     setSavedAt(null);
     setRefreshError(null);
+    setDeactivatedOK(false);
   }, [initialMode, isCreate, deckPlan, xml]);
 
   const isDirty = isCreate
@@ -93,6 +97,28 @@ export default function DeckPlanDetails({
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
+
+  const handleDeactivate = async () => {
+    if (!deckPlan) return;
+    const result = await deactivate(deckPlan);
+    if (result.error) {
+      setRefreshError(result.error);
+      return;
+    }
+    setMode('view');
+    try {
+      setDeactivatedOK(true);
+      await onSaved?.();
+      setRefreshError(null);
+    } catch {
+      setRefreshError(
+        t(
+          'deckPlan.deactivateStaleList',
+          'Deactivated — but the list could not refresh; it may be stale.'
+        )
+      );
+    }
+  };
 
   const handleSave = async () => {
     setRefreshError(null);
@@ -246,7 +272,14 @@ export default function DeckPlanDetails({
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => setMode('edit')}
+        onEnterEdit={() => !deactivatedOK && setMode('edit')}
+        onDeactivate={handleDeactivate}
+        deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle', 'Deactivate deck plan?')}
+        deactivateConfirmMessage={t(
+          'deckPlan.deactivateConfirmMessage',
+          'This deck plan will be deactivated.'
+        )}
+        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
           if (isCreate) {
             setCreateForm(deckPlan);

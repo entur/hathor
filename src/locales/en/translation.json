@@ -59,6 +59,7 @@
   "deckPlans.notFound": "Deck plan not found",
   "deckPlans.saveSuccess": "Deck plan saved",
   "deckPlans.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
+  "deckPlan.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
   "deckPlans.newComingSoon": "Coming soon",
   "deckPlans.actions.new": "New Deck Plan",
   "deckPlans.field.name": "Name",
@@ -115,6 +116,10 @@
   "vehicleType.notFound": "Vehicle type not found",
   "vehicleType.saveSuccess": "Vehicle type saved",
   "vehicleType.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
+  "vehicleType.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
+  "vehicleType.deactivateSuccess": "Vehicle type deactivated",
+  "vehicleType.deactivateConfirmTitle": "Deactivate vehicle type?",
+  "vehicleType.deactivateConfirmMessage": "This vehicle type will be deactivated.",
   "vehicleType.tab.edit": "Edit",
   "vehicleType.tab.propulsion": "Propulsion/perf.",
   "vehicleType.tab.capacity": "Passenger Capacity",
@@ -156,6 +161,10 @@
   "vehicles.notFound": "Vehicle not found",
   "vehicles.loading": "Loading vehicle…",
   "vehicles.saveSuccess": "Vehicle saved",
+  "vehicle.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
+  "vehicles.deactivateSuccess": "Vehicle deactivated",
+  "vehicle.deactivateConfirmTitle": "Deactivate vehicle?",
+  "vehicle.deactivateConfirmMessage": "This vehicle will be deactivated.",
   "vehicles.saveSuccess.viewInList": "View in list",
   "vehicles.actions.back": "Back to list",
   "vehicles.field.transportType": "Vehicle Type ID",
@@ -195,6 +204,8 @@
   "rail.label": "Main navigation",
   "rail.collapse": "Collapse menu",
   "rail.expand": "Expand menu",
+  "vehicles.rail.deactivateTooltip": "Deactivate",
+  "vehicles.rail.deactivateAria": "Deactivate",
 
   "product": "Product",
   "product.electronics": "Electronics",
@@ -202,5 +213,10 @@
   "product.clothing": "Clothing",
 
   "organisations.select.label": "Select organisation",
-  "organisations.select.noOptions": "No organisations available"
+  "organisations.select.noOptions": "No organisations available",
+  "deckPlan.deactivateConfirmTitle": "Deactivate deck plan?",
+  "deckPlan.deactivateConfirmMessage": "This deck plan will be deactivated.",
+  "common.deactivateConfirmTitle": "Deactivate this item?",
+  "common.deactivateConfirmMessage": "This action deactivates the selected item. Do you want to continue?",
+  "common.deactivate": "Deactivate"
 }

@@ -46,6 +46,7 @@ const fetchVehicleTypesGQL = gql`
         changedBy
         deckPlan {
           netexId
+          version
           name {
             value
           }
