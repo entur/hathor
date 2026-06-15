@@ -282,7 +282,7 @@ export default function EditorRail({
               t(
                 'common.deactivateConfirmMessage',
                 'This action deactivates the selected item. Do you want to continue?'
-              )
+              )}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -12,6 +12,7 @@ const deactivateVehicleMutation = gql`
 `;
 
 /** Mutation response: the persisted Vehicle's NeTEx id + version (nullable per SDL). */
+export interface DeactivateVehicleResponse {
   deactivateVehicle: {
     netexId: string;
     version: number;
