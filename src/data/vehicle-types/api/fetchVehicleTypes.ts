@@ -121,7 +121,7 @@ export interface VehicleTypeInput {
   fuelTypes?: (FuelType | null)[] | null;
   transportMode?: string | null;
   passengerCapacity?: PassengerCapacity | null;
-  deckPlan?: { netexId: string; version: number | null } | null;
+  deckPlan?: { netexId: string } | null;
   formDragCoefficient?: number | null;
   rollResistanceCoefficient?: number | null;
   maximumEngineEffectKW?: number | null;
@@ -171,7 +171,7 @@ export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): Veh
   fuelTypes: vt.fuelTypes ?? null,
   transportMode: vt.transportMode ?? null,
   passengerCapacity: vt.passengerCapacity ?? null,
-  deckPlan: vt.deckPlan ? { netexId: vt.deckPlan.id, version: vt.deckPlan.version ?? null } : null,
+  deckPlan: vt.deckPlan ? { netexId: vt.deckPlan.id } : null,
   formDragCoefficient: vt.formDragCoefficient ?? null,
   rollResistanceCoefficient: vt.rollResistanceCoefficient ?? null,
   maximumEngineEffectKW: vt.maximumEngineEffectKW ?? null,
