@@ -264,6 +264,11 @@ export default function DeckPlanDetails({
         message={t('deckPlans.saveSuccess', 'Deck plan saved')}
         onClose={() => setSavedAt(null)}
       />
+      <SaveSuccessSnackbar
+        open={deactivatedOK}
+        message={t('deckPlan.deactivateSuccess', 'Deck plan deactivated')}
+        onClose={closeSlider}
+      />
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}

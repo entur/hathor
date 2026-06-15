@@ -60,6 +60,7 @@
   "deckPlans.saveSuccess": "Deck plan saved",
   "deckPlans.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
   "deckPlan.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
+  "deckPlan.deactivateSuccess": "Deck plan deactivated",
   "deckPlans.actions.new": "New Deck Plan",
   "deckPlans.field.name": "Name",
   "breadcrumbs.home": "Home",

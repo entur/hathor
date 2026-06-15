@@ -60,6 +60,7 @@
   "deckPlans.saveSuccess": "Setekart lagret",
   "deckPlans.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
   "deckPlan.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "deckPlan.deactivateSuccess": "Setekart deaktivert",
   "deckPlans.actions.new": "Nytt setekart",
   "deckPlans.field.name": "Navn",
   "breadcrumbs.home": "Hjem",
