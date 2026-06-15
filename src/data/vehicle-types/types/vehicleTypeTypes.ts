@@ -9,6 +9,7 @@ export type DeckPlan = {
   id: string;
   version?: number;
   name?: Name;
+  description?: Name;
 };
 
 export type Vehicle = {

@@ -20,14 +20,16 @@ interface UseDeckPlanSaveResult {
 }
 
 /**
- * Save a deck plan by POSTing its NeTEx XML to the import endpoint. Mirrors
- * {@link useVehicleTypeSave} (config base URL + bearer token, saving/error
- * state) but works on a raw XML string rather than a serialised domain form
- * — the existing route view already used the same wire format.
+ * Save a deck plan via one of two paths sharing `saving`/`error` state:
+ * - `save(xml)` — POSTs the full NeTEx XML to the import endpoint (edit flow
+ *   for existing rows; keeps the route view's wire format).
+ * - `saveGQL(form)` — fires the `createOrUpdateDeckPlan` GraphQL mutation with
+ *   {@link serializeDeckPlan}'s full-replace input (create flow); resolves to
+ *   `{ newId, error }` so the caller can advance the sidebar URL.
  *
- * Resolves to `{ error }`. Never throws; failures flow through `error`/`save()`'s
- * return so the editor can surface them via SaveErrorSnackbar without unmounting
- * the slider.
+ * Both resolve to a result object; never throw. Failures flow through `error`
+ * and the per-call return so the editor surfaces them via SaveErrorSnackbar
+ * without unmounting the slider.
  */
 export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const { getAccessToken } = useAuth();

@@ -10,6 +10,7 @@ import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.ts
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
 import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { DECK_PLAN_SELECTED_PARAM } from '../utils/deckPlanUrlParams.ts';
@@ -57,7 +58,7 @@ export default function DeckPlanDetails({
   mode: initialMode,
 }: DeckPlanDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -91,12 +92,13 @@ export default function DeckPlanDetails({
   }, [initialMode, isCreate, deckPlan, xml]);
 
   const isDirty = isCreate
-    ? (createForm?.name?.value ?? '') !== (deckPlan?.name?.value ?? '')
+    ? (createForm?.name?.value ?? '').trim() !== (deckPlan?.name?.value ?? '').trim()
     : !!deckPlan && state.form !== state.baseline;
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
+  const advanceCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
 
   const handleDeactivate = async () => {
     if (!deckPlan) return;
@@ -129,31 +131,26 @@ export default function DeckPlanDetails({
       const result = await saveGQL(draft);
       if (result.error) return;
 
-      // Advance the slider to the new id so the URL reflects the persisted entity, and future refetches hit the backend not cache.
-      const newId = result.newId;
-      if (newId) {
-        // Avoid a transient dirty-edit state while the selected row switches from `new` to persisted id.
-        setCreateForm(deckPlan);
-        setMode('view');
-
-        const nextSearchParams = new URLSearchParams(searchParams);
-        nextSearchParams.set(DECK_PLAN_SELECTED_PARAM, newId);
-
-        try {
-          await onSaved?.();
-          setSavedAt(Date.now());
-        } catch {
-          setRefreshError(
-            t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
-          );
-        }
-
-        // Advance after the attempted refresh so useUrlEditorSelection can resolve the new row from the list,
-        // avoiding a transient not-found editor between save and refetch.
-        setSearchParams(nextSearchParams, { replace: true });
-      } else {
+      // Blank id factory → a create. A successful save with no `newId` is a
+      // Sobek invariant break: surfaced as a snackbar so the user can refresh.
+      if (!result.newId) {
         setRefreshError(
-          t('deckPlans.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+        );
+        return;
+      }
+
+      setMode('view');
+      try {
+        await onSaved?.();
+        // Advance `?selected=new` → `?selected=<newId>` only after the list
+        // refetch has landed, so useUrlEditorSelection re-resolves into the
+        // fresh row (not a transient "not found" between save and refetch).
+        advanceCreated(result.newId);
+        setSavedAt(Date.now()); // success only once the list is fresh
+      } catch {
+        setRefreshError(
+          t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
         );
       }
     } else {
@@ -195,7 +192,10 @@ export default function DeckPlanDetails({
     );
   }
 
-  const name = deckPlan.name?.value?.trim();
+  // In create mode, mirror the typed name so the title updates as the user
+  // edits — the persisted `deckPlan.name` is the blank factory until save.
+  const displayNameSource = isCreate ? createForm?.name?.value : deckPlan.name?.value;
+  const name = displayNameSource?.trim();
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -249,11 +249,7 @@ export default function DeckPlanDetails({
           />
         )}
         {isCreate && createForm && (
-          <DeckPlanCreateForm
-            value={{ DeckPlan: createForm }}
-            onChange={next => setCreateForm(next.DeckPlan)}
-            mode={mode}
-          />
+          <DeckPlanCreateForm value={createForm} onChange={setCreateForm} mode={mode} />
         )}
       </Stack>
 
@@ -273,7 +269,7 @@ export default function DeckPlanDetails({
         onCollapse={closeSlider}
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
-        onDeactivate={handleDeactivate}
+        onDeactivate={isCreate ? undefined : handleDeactivate}
         deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle', 'Deactivate deck plan?')}
         deactivateConfirmMessage={t(
           'deckPlan.deactivateConfirmMessage',

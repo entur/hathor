@@ -2,16 +2,24 @@
   "data": {
     "deckPlans": {
       "content": [
-        { "netexId": "NMR:DeckPlan:1", "name": { "value": "Plan Bravo" } },
-        { "netexId": "NMR:DeckPlan:2", "name": null },
-        { "netexId": "NMR:DeckPlan:3", "name": { "value": "Plan Echo" } },
-        { "netexId": "NMR:DeckPlan:4", "name": { "value": "\n                " } },
-        { "netexId": "NMR:DeckPlan:5", "name": { "value": "Plan Alpha" } },
-        { "netexId": "NMR:DeckPlan:6", "name": { "value": "   " } },
-        { "netexId": "NMR:DeckPlan:7", "name": { "value": "Plan Delta" } },
-        { "netexId": "NMR:DeckPlan:8", "name": null },
-        { "netexId": "NMR:DeckPlan:9", "name": { "value": "Plan Charlie" } },
-        { "netexId": "NMR:DeckPlan:10", "name": { "value": "\t\n " } }
+        { "netexId": "NMR:DeckPlan:1", "name": { "value": "Plan Bravo" }, "description": null },
+        { "netexId": "NMR:DeckPlan:2", "name": null, "description": null },
+        {
+          "netexId": "NMR:DeckPlan:3",
+          "name": { "value": "Plan Echo" },
+          "description": { "value": "Echo top-deck variant" }
+        },
+        {
+          "netexId": "NMR:DeckPlan:4",
+          "name": { "value": "\n                " },
+          "description": null
+        },
+        { "netexId": "NMR:DeckPlan:5", "name": { "value": "Plan Alpha" }, "description": null },
+        { "netexId": "NMR:DeckPlan:6", "name": { "value": "   " }, "description": null },
+        { "netexId": "NMR:DeckPlan:7", "name": { "value": "Plan Delta" }, "description": null },
+        { "netexId": "NMR:DeckPlan:8", "name": null, "description": null },
+        { "netexId": "NMR:DeckPlan:9", "name": { "value": "Plan Charlie" }, "description": null },
+        { "netexId": "NMR:DeckPlan:10", "name": { "value": "\t\n " }, "description": null }
       ],
       "totalElements": 10,
       "page": 0,
