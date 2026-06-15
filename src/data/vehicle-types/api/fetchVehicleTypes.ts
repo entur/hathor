@@ -39,7 +39,7 @@ export interface VehicleTypeWire {
   created?: string | null;
   changed?: string | null;
   changedBy?: string | null;
-  deckPlan?: { netexId: string; name?: Name | null } | null;
+  deckPlan?: { netexId: string; name?: Name | null; version: number } | null;
   vehicles?:
     | {
         netexId: string;
@@ -84,7 +84,7 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
   changed: vt.changed ?? undefined,
   changedBy: vt.changedBy ?? undefined,
   deckPlan: vt.deckPlan
-    ? { id: vt.deckPlan.netexId, name: vt.deckPlan.name ?? undefined }
+    ? { id: vt.deckPlan.netexId, name: vt.deckPlan.name ?? undefined, version: vt.deckPlan.version }
     : undefined,
   vehicles: vt.vehicles
     ? vt.vehicles.map(v => ({
@@ -95,6 +95,12 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
       }))
     : undefined,
 });
+
+export interface DeactivateInput {
+  netexId: string;
+  version: number;
+  deactivateAt: string;
+}
 
 /**
  * Sobek `VehicleTypeInput` — the mutation-accepted shape. Strict subset of the
