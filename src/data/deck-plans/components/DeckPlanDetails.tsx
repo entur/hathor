@@ -10,11 +10,13 @@ import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.ts
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
 import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { DECK_PLAN_SELECTED_PARAM } from '../utils/deckPlanUrlParams.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import DeckPlanCreateForm from './DeckPlanCreateForm.tsx';
 import { useDeckPlanDeactivate } from '../hooks/useDeckPlanDeactivate.ts';
 
 const RAIL_SIDE = 'right' as const;
@@ -61,29 +63,42 @@ export default function DeckPlanDetails({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: '', baseline: '' });
+  const [createForm, setCreateForm] = useState<DeckPlan | null>(null);
 
-  const id = deckPlan?.id ?? null;
+  const isCreate = !!deckPlan && !deckPlan.id;
+  const id = isCreate ? null : (deckPlan?.id ?? null);
   const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(id);
-  const { save, saving, error, clearError } = useDeckPlanSave();
+  const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
   const { deactivate } = useDeckPlanDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
 
-  // Hydrate (and drop to view) whenever a fresh XML body arrives for the current row.
+  // Initialise create form state whenever `?selected=new` opens the editor.
   useEffect(() => {
-    if (deckPlan && xml) {
-      dispatch({ type: 'hydrate', xml });
-      setMode(initialMode ?? 'view');
-      setSavedAt(null);
-      setRefreshError(null);
-      setDeactivatedOK(false);
-    }
-  }, [initialMode, deckPlan, xml]);
+    if (!isCreate || !deckPlan) return;
+    setCreateForm(deckPlan);
+    setMode(initialMode ?? 'edit');
+    setSavedAt(null);
+    setRefreshError(null);
+  }, [initialMode, isCreate, deckPlan]);
 
-  const isDirty = !!deckPlan && state.form !== state.baseline;
+  // Hydrate XML form state whenever a fresh XML body arrives for an existing row.
+  useEffect(() => {
+    if (isCreate || !deckPlan || !xml) return;
+    dispatch({ type: 'hydrate', xml });
+    setMode(initialMode ?? 'view');
+    setSavedAt(null);
+    setRefreshError(null);
+    setDeactivatedOK(false);
+  }, [initialMode, isCreate, deckPlan, xml]);
+
+  const isDirty = isCreate
+    ? (createForm?.name?.value ?? '').trim() !== (deckPlan?.name?.value ?? '').trim()
+    : !!deckPlan && state.form !== state.baseline;
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
+  const advanceCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
 
   const handleDeactivate = async () => {
     if (!deckPlan) return;
@@ -109,17 +124,48 @@ export default function DeckPlanDetails({
 
   const handleSave = async () => {
     setRefreshError(null);
-    const result = await save(state.form);
-    if (result.error) return;
-    dispatch({ type: 'hydrate', xml: state.form });
-    setMode('view');
-    try {
-      await onSaved?.();
-      setSavedAt(Date.now());
-    } catch {
-      setRefreshError(
-        t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
-      );
+    if (isCreate) {
+      const draft = createForm ?? deckPlan;
+      if (!draft) return;
+
+      const result = await saveGQL(draft);
+      if (result.error) return;
+
+      // Blank id factory → a create. A successful save with no `newId` is a
+      // Sobek invariant break: surfaced as a snackbar so the user can refresh.
+      if (!result.newId) {
+        setRefreshError(
+          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
+        );
+        return;
+      }
+
+      setMode('view');
+      try {
+        await onSaved?.();
+        // Advance `?selected=new` → `?selected=<newId>` only after the list
+        // refetch has landed, so useUrlEditorSelection re-resolves into the
+        // fresh row (not a transient "not found" between save and refetch).
+        advanceCreated(result.newId);
+        setSavedAt(Date.now()); // success only once the list is fresh
+      } catch {
+        setRefreshError(
+          t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
+        );
+      }
+    } else {
+      const result = await save(state.form);
+      if (result.error) return;
+      dispatch({ type: 'hydrate', xml: state.form });
+      setMode('view');
+      try {
+        await onSaved?.();
+        setSavedAt(Date.now());
+      } catch {
+        setRefreshError(
+          t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
+        );
+      }
     }
   };
 
@@ -146,7 +192,10 @@ export default function DeckPlanDetails({
     );
   }
 
-  const name = deckPlan.name?.value?.trim();
+  // In create mode, mirror the typed name so the title updates as the user
+  // edits — the persisted `deckPlan.name` is the blank factory until save.
+  const displayNameSource = isCreate ? createForm?.name?.value : deckPlan.name?.value;
+  const name = displayNameSource?.trim();
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -189,14 +238,19 @@ export default function DeckPlanDetails({
       </FormLayout>
 
       <Stack data-testid="deck-plan-context">
-        <DeckPlanForm
-          value={state.form}
-          onChange={next => dispatch({ type: 'edit', xml: next })}
-          mode={mode}
-          loading={loading}
-          fetchError={fetchError}
-          onRetry={refetch}
-        />
+        {!isCreate && (
+          <DeckPlanForm
+            value={state.form}
+            onChange={next => dispatch({ type: 'edit', xml: next })}
+            mode={mode}
+            loading={loading}
+            fetchError={fetchError}
+            onRetry={refetch}
+          />
+        )}
+        {isCreate && createForm && (
+          <DeckPlanCreateForm value={createForm} onChange={setCreateForm} mode={mode} />
+        )}
       </Stack>
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
@@ -210,12 +264,17 @@ export default function DeckPlanDetails({
         message={t('deckPlans.saveSuccess', 'Deck plan saved')}
         onClose={() => setSavedAt(null)}
       />
+      <SaveSuccessSnackbar
+        open={deactivatedOK}
+        message={t('deckPlan.deactivateSuccess', 'Deck plan deactivated')}
+        onClose={closeSlider}
+      />
       <EditorRail
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
-        onDeactivate={handleDeactivate}
+        onDeactivate={isCreate ? undefined : handleDeactivate}
         deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle', 'Deactivate deck plan?')}
         deactivateConfirmMessage={t(
           'deckPlan.deactivateConfirmMessage',
@@ -223,7 +282,11 @@ export default function DeckPlanDetails({
         )}
         deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', xml: state.baseline });
+          if (isCreate) {
+            setCreateForm(deckPlan);
+          } else {
+            dispatch({ type: 'hydrate', xml: state.baseline });
+          }
           setMode('view');
         }}
         onSave={handleSave}

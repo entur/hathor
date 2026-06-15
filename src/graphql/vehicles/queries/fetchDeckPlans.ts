@@ -9,6 +9,9 @@ const fetchDeckPlansGQL = gql`
         name {
           value
         }
+        description {
+          value
+        }
         version
       }
       totalElements
