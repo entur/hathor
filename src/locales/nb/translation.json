@@ -229,5 +229,6 @@
   "deckPlan.deactivateConfirmMessage": "Dette setekartet vil bli deaktivert.",
   "common.deactivateConfirmTitle": "Deaktivere dette elementet?",
   "common.deactivateConfirmMessage": "Denne handlingen deaktiverer det valgte elementet. Vil du fortsette?",
-  "common.deactivate": "Deaktiver"
+  "common.deactivate": "Deaktiver",
+  "common.retry": "Prøv igjen"
 }

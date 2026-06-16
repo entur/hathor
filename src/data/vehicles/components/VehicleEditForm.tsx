@@ -1,4 +1,4 @@
-import { Autocomplete, TextField } from '@mui/material';
+import { Autocomplete, Link, TextField } from '@mui/material';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
@@ -27,23 +27,34 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setV = (patch: Partial<VehicleGQLShaped>) =>
     onChange({ ...value, vehicle: { ...v, ...patch } });
 
-  const { allData: vehicleTypes, loading: vtLoading, error: vtError } = useVehicleTypes();
-  const vtOptions = useMemo<VTOption[]>(
-    () => vehicleTypes.map(vt => ({ id: vt.id, name: vt.name?.value ?? vt.id })),
-    [vehicleTypes]
-  );
+  const {
+    allData: vehicleTypes,
+    loading: vtLoading,
+    error: vtError,
+    refetch: refetchVehicleTypes,
+  } = useVehicleTypes();
   const currentVtId = v?.transportType?.id;
-  const knownVt = vtOptions.find(o => o.id === currentVtId);
-  // Preserve an externally-set ref (e.g. Autosys-imported non-numeric) as a
-  // one-off option so the user still sees it AND can swap it. Prefer the
-  // vehicle's embedded name over the bare id so the label is human-friendly
-  // before/while `vehicleTypes` resolves.
-  const orphanVt: VTOption | null =
-    currentVtId && !knownVt
-      ? { id: currentVtId, name: v.transportType?.name?.value ?? currentVtId }
-      : null;
-  const vtOptionsWithOrphan = orphanVt ? [orphanVt, ...vtOptions] : vtOptions;
-  const currentVtOption: VTOption | null = knownVt ?? orphanVt ?? null;
+  const currentVtName = v.transportType?.name?.value;
+  // One memo for the four derived bits (option list + selection) so that
+  // typing in sibling fields doesn't hand `Autocomplete` a fresh `options`
+  // reference each keystroke.
+  const { options: vtOptionsWithOrphan, value: currentVtOption } = useMemo(() => {
+    const opts: VTOption[] = vehicleTypes.map(vt => ({
+      id: vt.id,
+      name: vt.name?.value ?? vt.id,
+    }));
+    const known = opts.find(o => o.id === currentVtId);
+    // Preserve an externally-set ref (e.g. Autosys-imported non-numeric) as a
+    // one-off option so the user still sees it AND can swap it. Prefer the
+    // vehicle's embedded name over the bare id so the label is human-friendly
+    // before/while `vehicleTypes` resolves.
+    const orphan: VTOption | null =
+      currentVtId && !known ? { id: currentVtId, name: currentVtName ?? currentVtId } : null;
+    return {
+      options: orphan ? [orphan, ...opts] : opts,
+      value: known ?? orphan ?? null,
+    };
+  }, [vehicleTypes, currentVtId, currentVtName]);
 
   return (
     <FormLayout>
@@ -85,7 +96,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           value={currentVtOption as VTOption}
           disableClearable
           loading={vtLoading}
-          disabled={ro || !!vtError}
+          disabled={ro}
           getOptionLabel={o => o.name}
           isOptionEqualToValue={(a, b) => a.id === b.id}
           loadingText={t('vehicleTypePicker.loading', 'Loading vehicle types…')}
@@ -103,8 +114,21 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
               size="small"
               required
               aria-label={t('vehicles.field.transportType', 'Vehicle Type')}
-              error={!!vtError || (!ro && !currentVtId)}
-              helperText={vtError ?? undefined}
+              error={!ro && !currentVtId}
+              helperText={
+                vtError ? (
+                  <>
+                    {vtError}{' '}
+                    <Link
+                      component="button"
+                      type="button"
+                      onClick={() => void refetchVehicleTypes().catch(() => {})}
+                    >
+                      {t('common.retry', 'Retry')}
+                    </Link>
+                  </>
+                ) : undefined
+              }
             />
           )}
         />

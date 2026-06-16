@@ -220,5 +220,6 @@
   "deckPlan.deactivateConfirmMessage": "This deck plan will be deactivated.",
   "common.deactivateConfirmTitle": "Deactivate this item?",
   "common.deactivateConfirmMessage": "This action deactivates the selected item. Do you want to continue?",
-  "common.deactivate": "Deactivate"
+  "common.deactivate": "Deactivate",
+  "common.retry": "Retry"
 }
