@@ -1,9 +1,12 @@
-import { TextField } from '@mui/material';
+import { Autocomplete, TextField } from '@mui/material';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { intToRef, refToInt } from '../utils/transportTypeRef';
+import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+
+type VTOption = { id: string; name: string };
 
 export interface VehicleEditFormValue {
   vehicle: VehicleGQLShaped;
@@ -24,12 +27,19 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setV = (patch: Partial<VehicleGQLShaped>) =>
     onChange({ ...value, vehicle: { ...v, ...patch } });
 
-  const transportRef = v?.transportType?.id ?? '';
-  const transportIntValue = refToInt(v?.transportType?.id);
-  // An existing ref the TEMP numeric input can't represent (non-numeric suffix
-  // or non-NMR codespace) — render it raw + read-only rather than as a blank/
-  // error field that invites accidental overwrite.
-  const rawTransportRef = transportRef !== '' && transportIntValue === '';
+  const { allData: vehicleTypes, loading: vtLoading, error: vtError } = useVehicleTypes();
+  const vtOptions = useMemo<VTOption[]>(
+    () => vehicleTypes.map(vt => ({ id: vt.id, name: vt.name?.value ?? vt.id })),
+    [vehicleTypes]
+  );
+  const currentVtId = v?.transportType?.id;
+  const knownVt = vtOptions.find(o => o.id === currentVtId);
+  // Preserve an externally-set ref (e.g. Autosys-imported non-numeric) as a
+  // one-off option so the user still sees it AND can swap it.
+  const orphanVt: VTOption | null =
+    currentVtId && !knownVt ? { id: currentVtId, name: currentVtId } : null;
+  const vtOptionsWithOrphan = orphanVt ? [orphanVt, ...vtOptions] : vtOptions;
+  const currentVtOption: VTOption | null = knownVt ?? orphanVt ?? null;
 
   return (
     <FormLayout>
@@ -58,33 +68,33 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      {/* TEMP: bare numeric until Sobek `VehicleTypeFilter.name` lands; swap for
-          TransportTypePicker. An existing non-numeric ref renders raw + read-only. */}
       <FieldRow
         id="vehicle-transport-type"
-        label={t('vehicles.field.transportType', 'Vehicle Type ID')}
+        label={t('vehicles.field.transportType', 'Vehicle Type')}
       >
-        {rawTransportRef ? (
-          <TextField
-            id="vehicle-transport-type"
-            value={transportRef}
-            disabled
-            size="small"
-            fullWidth
-          />
-        ) : (
-          <TextField
-            id="vehicle-transport-type"
-            type="number"
-            required
-            value={transportIntValue}
-            onChange={e => setV({ transportType: { id: intToRef(e.target.value) } })}
-            disabled={ro}
-            size="small"
-            fullWidth
-            error={!ro && !transportIntValue}
-          />
-        )}
+        <Autocomplete<VTOption, false>
+          options={vtOptionsWithOrphan}
+          value={currentVtOption}
+          loading={vtLoading}
+          disabled={ro || !!vtError}
+          getOptionLabel={o => o.name}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          loadingText={t('vehicleTypePicker.loading', 'Loading vehicle types…')}
+          noOptionsText={t('vehicleTypePicker.noOptions', 'No vehicle types')}
+          onChange={(_e, opt) => setV({ transportType: opt ? { id: opt.id } : undefined })}
+          size="small"
+          fullWidth
+          renderInput={params => (
+            <TextField
+              {...params}
+              id="vehicle-transport-type"
+              size="small"
+              required
+              error={!!vtError || (!ro && !currentVtId)}
+              helperText={vtError ?? undefined}
+            />
+          )}
+        />
       </FieldRow>
 
       <FieldRow
