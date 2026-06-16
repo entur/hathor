@@ -121,7 +121,7 @@ const makeExtraVehicle = (id: string) =>
       netexId: 'NMR:VehicleType:bus',
       version: 1,
       name: { value: 'Bus Type' },
-      transportMode: 'bus',
+      transportMode: 'BUS',
     },
   });
 
@@ -164,7 +164,7 @@ export const vehicleRow = (id: string, over: Partial<VehicleRow> = {}): VehicleR
     netexId: 'NMR:VehicleType:rail',
     version: 1,
     name: { value: 'Rail Type' },
-    transportMode: 'rail',
+    transportMode: 'RAIL',
   },
   ...over,
 });
@@ -219,8 +219,8 @@ export interface VehicleTypeRow {
 }
 
 const DEFAULT_VEHICLE_TYPES: VehicleTypeRow[] = [
-  { netexId: 'NMR:VehicleType:1', version: 1, name: { value: 'Bus Type' }, transportMode: 'bus' },
-  { netexId: 'NMR:VehicleType:2', version: 1, name: { value: 'Rail Type' }, transportMode: 'rail' },
+  { netexId: 'NMR:VehicleType:1', version: 1, name: { value: 'Bus Type' }, transportMode: 'BUS' },
+  { netexId: 'NMR:VehicleType:2', version: 1, name: { value: 'Rail Type' }, transportMode: 'RAIL' },
 ];
 
 /**

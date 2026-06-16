@@ -69,7 +69,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     });
   };
 
-  test('Save disabled until Vehicle Type ID entered; URL advances to ?selected=<newId>', async ({
+  test('Save disabled until Vehicle Type picked; URL advances to ?selected=<newId>', async ({
     page,
   }) => {
     if (IS_LIVE) {
@@ -132,7 +132,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await interceptStatefulVehicleListQuery(page);
     await interceptVehicleByIdQuery(page, id =>
       vehicleRow(id, {
-        transportType: { netexId: rawRef, version: 1, name: null, transportMode: 'rail' },
+        transportType: { netexId: rawRef, version: 1, name: null, transportMode: 'RAIL' },
       })
     );
     const save = interceptVehicleSaveMutation(page, vehicleId);
