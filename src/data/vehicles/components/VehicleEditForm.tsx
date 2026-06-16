@@ -87,9 +87,13 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           renderInput={params => (
             <TextField
               {...params}
-              id="vehicle-transport-type"
+              // MUI Autocomplete sets `params.inputProps.id` on the inner input;
+              // override there so external selectors (#vehicle-transport-type,
+              // FieldRow's htmlFor) actually land on the focusable combobox.
+              inputProps={{ ...params.inputProps, id: 'vehicle-transport-type' }}
               size="small"
               required
+              aria-label={t('vehicles.field.transportType', 'Vehicle Type')}
               error={!!vtError || (!ro && !currentVtId)}
               helperText={vtError ?? undefined}
             />
