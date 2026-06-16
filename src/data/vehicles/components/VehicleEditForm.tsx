@@ -35,9 +35,13 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const currentVtId = v?.transportType?.id;
   const knownVt = vtOptions.find(o => o.id === currentVtId);
   // Preserve an externally-set ref (e.g. Autosys-imported non-numeric) as a
-  // one-off option so the user still sees it AND can swap it.
+  // one-off option so the user still sees it AND can swap it. Prefer the
+  // vehicle's embedded name over the bare id so the label is human-friendly
+  // before/while `vehicleTypes` resolves.
   const orphanVt: VTOption | null =
-    currentVtId && !knownVt ? { id: currentVtId, name: currentVtId } : null;
+    currentVtId && !knownVt
+      ? { id: currentVtId, name: v.transportType?.name?.value ?? currentVtId }
+      : null;
   const vtOptionsWithOrphan = orphanVt ? [orphanVt, ...vtOptions] : vtOptions;
   const currentVtOption: VTOption | null = knownVt ?? orphanVt ?? null;
 
@@ -72,16 +76,21 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         id="vehicle-transport-type"
         label={t('vehicles.field.transportType', 'Vehicle Type')}
       >
-        <Autocomplete<VTOption, false>
+        <Autocomplete<VTOption, false, true>
           options={vtOptionsWithOrphan}
-          value={currentVtOption}
+          // VehicleType is required, so the picker is non-clearable; MUI's
+          // type-level `disableClearable` strips null from the value type, but
+          // null is the legitimate initial state on /vehicles/new — MUI tolerates
+          // it at runtime, hence the cast.
+          value={currentVtOption as VTOption}
+          disableClearable
           loading={vtLoading}
           disabled={ro || !!vtError}
           getOptionLabel={o => o.name}
           isOptionEqualToValue={(a, b) => a.id === b.id}
           loadingText={t('vehicleTypePicker.loading', 'Loading vehicle types…')}
           noOptionsText={t('vehicleTypePicker.noOptions', 'No vehicle types')}
-          onChange={(_e, opt) => setV({ transportType: opt ? { id: opt.id } : undefined })}
+          onChange={(_e, opt) => setV({ transportType: { id: opt.id } })}
           size="small"
           fullWidth
           renderInput={params => (
