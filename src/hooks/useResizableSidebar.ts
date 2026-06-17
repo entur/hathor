@@ -5,10 +5,12 @@ const MIN_W = 100,
   MAX_W_RATIO = 0.8;
 
 export function useResizableSidebar(
-  initialWidth = 300,
+  initialWidth: number | (() => number) = 300,
   initialCollapsed = false,
   side: Side = 'left'
 ) {
+  // Accepts a lazy initialiser so callers can defer a `window.innerWidth`
+  // read to first mount instead of recomputing it every render (#77 N8).
   const [width, setWidth] = useState<number>(initialWidth);
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState<boolean>(initialCollapsed);
