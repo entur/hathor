@@ -80,11 +80,16 @@ export function useVehicleTypes() {
     void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
 
-  const handleRequestSort = (property: OrderBy) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  // Ref-stable so `DataTableHeader` doesn't re-render on every parent render
+  // (#77 N12). Deps are the sort state the toggle reads.
+  const handleRequestSort = useCallback(
+    (property: OrderBy) => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [order, orderBy]
+  );
 
   const sorted = useMemo(
     () => [...data].sort(compareVehicleTypes(orderBy, order)),

@@ -50,7 +50,7 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const theme = useTheme();
 
-  const initWidth = Math.round(window.innerWidth * DETAILS_PANE_WIDTH_FACTOR);
+  const initWidth = () => Math.round(window.innerWidth * DETAILS_PANE_WIDTH_FACTOR);
   const {
     width: sidebarWidth,
     collapsed: sidebarCollapsed,

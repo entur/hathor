@@ -52,11 +52,16 @@ export function useVehicles() {
     doFetch();
   }, [doFetch]);
 
-  const handleRequestSort = (property: VehicleColumnKey) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  // Ref-stable so `DataTableHeader` doesn't re-render on every parent render
+  // (#77 N12). Deps are the sort state the toggle reads.
+  const handleRequestSort = useCallback(
+    (property: VehicleColumnKey) => {
+      const isAsc = orderBy === property && order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+      setOrderBy(property);
+    },
+    [order, orderBy]
+  );
 
   // Memoized so that `allData` is a stable reference across renders. The
   // /vehicles URL effect (`useVehicleUrlSelection`) depends on `allData` —
