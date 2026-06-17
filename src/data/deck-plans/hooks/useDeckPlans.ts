@@ -8,7 +8,7 @@ import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 import type { DeckPlanContext } from '../types/deckPlanTypes.ts';
 import { fetchDeckPlans } from '../api/fetchDeckPlans.ts';
 import { compareDeckPlans } from '../utils/deckPlanSortValue.ts';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 
 export type OrderBy = 'name' | 'id';
 
@@ -25,7 +25,7 @@ export function useDeckPlans() {
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
   const [searchParams] = useSearchParams();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
 
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');

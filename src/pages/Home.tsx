@@ -2,7 +2,7 @@ import { Box, Typography, Divider } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
-import { useOrganisations } from '../data/organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useAuth } from '../auth/index.ts';
 
 /**
@@ -117,7 +117,7 @@ function NavTile({
  */
 export default function HomePage() {
   const { t } = useTranslation();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
   const { isAuthenticated } = useAuth();
 
   return (

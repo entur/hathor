@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useAuth } from '../../../auth';
-import { useConfig } from '../../../contexts/configContext.ts';
-import { fetchOrganisations } from '../api/fetchOrganisations.ts';
-import type { Organisation } from '../types/organisationTypes.ts';
+import { useAuth } from '../auth';
+import { useConfig } from './configContext.ts';
+import { fetchOrganisations } from '../data/organisations/api/fetchOrganisations.ts';
+import type { Organisation } from '../data/organisations/types/organisationTypes.ts';
 import { OrganisationsContext } from './useOrganisationsContext.ts';
 
 const STORAGE_KEY = 'hathor:currentOrganisationId';
@@ -36,7 +36,7 @@ export function OrganisationsProvider({ children }: OrganisationsProviderProps) 
 
   const doFetch = useCallback(async () => {
     if (!isAuthenticated) {
-      // Keep loading=true while logged out so protected routes don't observe
+      // Keep loading=true while logged out so protected routes do not observe
       // a false-ready state in the render right after auth flips to true.
       setLoading(true);
       setData([]);

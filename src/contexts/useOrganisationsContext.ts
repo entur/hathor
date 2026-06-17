@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Organisation } from '../types/organisationTypes.ts';
+import type { Organisation } from '../data/organisations/types/organisationTypes.ts';
 
 export interface OrganisationsContextType {
   data: Organisation[];
@@ -15,7 +15,7 @@ export const OrganisationsContext = createContext<OrganisationsContextType | und
 export function useOrganisationsContext(): OrganisationsContextType {
   const context = useContext(OrganisationsContext);
   if (context === undefined) {
-    throw new Error('useOrganisations must be used within an OrganisationsProvider');
+    throw new Error('useOrganisationsContext must be used within an OrganisationsProvider');
   }
 
   return context;

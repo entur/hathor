@@ -6,7 +6,7 @@ import { fetchConfig } from './config/fetchConfig.ts';
 import { ConfigContext } from './contexts/configContext.ts';
 import { AuthProvider } from './auth';
 import { CustomizationProvider } from './contexts/CustomizationContext.tsx';
-import { OrganisationsProvider } from './data/organisations/context/OrganisationsContext.tsx';
+import { OrganisationsProvider } from './contexts/OrganisationsContext.tsx';
 
 import './i18n';
 import { SessionProvider } from './contexts/SessionContext.tsx';

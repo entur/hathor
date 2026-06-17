@@ -17,7 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
 import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
-import { useOrganisations } from '../data/organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 
 const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
@@ -121,7 +121,7 @@ export default function Menu() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { expanded, toggleExpanded, mobileOpen, closeMobile } = useNavRail();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
 
   // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
   // Mobile open state is session-only (mobileOpen), NOT the persisted

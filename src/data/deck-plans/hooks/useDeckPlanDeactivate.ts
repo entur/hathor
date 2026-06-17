@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 import { deactivateDeckPlanRequest } from '../../../graphql/vehicles/mutations/deactivateDeckPlan.ts';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
@@ -25,7 +25,7 @@ interface UseDeckPlanDeactivateResult {
 export function useDeckPlanDeactivate(): UseDeckPlanDeactivateResult {
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

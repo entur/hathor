@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 import { deactivateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/deactivateVehicleType.ts';
 
 interface SaveResult {
@@ -25,7 +25,7 @@ interface UseVehicleTypeDeactivateResult {
 export function useVehicleTypeDeactivate(): UseVehicleTypeDeactivateResult {
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

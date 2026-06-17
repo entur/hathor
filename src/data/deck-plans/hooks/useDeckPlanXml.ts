@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 import { fetchDeckPlanDetails } from '../api/deckPlanDetailsService';
 
 interface UseDeckPlanXmlResult {
@@ -25,7 +25,7 @@ interface UseDeckPlanXmlResult {
 export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlResult {
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl } = useConfig();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
   const [xml, setXml] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

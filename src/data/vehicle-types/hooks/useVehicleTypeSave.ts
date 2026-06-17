@@ -4,7 +4,7 @@ import { useConfig } from '../../../contexts/configContext';
 import { serializeVehicleType } from '../api/fetchVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { createOrUpdateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicleType';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 
 interface SaveResult {
   newId: string | null;
@@ -30,7 +30,7 @@ interface UseVehicleTypeSaveResult {
 export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -5,7 +5,7 @@ import type { Order } from '../../../components/data/dataTableTypes.ts';
 import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShaped.ts';
 import { fetchVehiclesAndApply } from '../api/fetchVehiclesAndApply.ts';
 import { compareVehicles } from '../utils/vehicleSortValue.ts';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 
 /**
  * Data hook for the `/vehicles` list. Mirrors `useVehicleTypes` — single fetch
@@ -25,7 +25,7 @@ export function useVehicles() {
 
   const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
 
   // This doFetch shape (gate → fetch chain → translate error → setLoading)
   // is duplicated in `useVehicleTypes` and `useDeckPlans` — here it's
