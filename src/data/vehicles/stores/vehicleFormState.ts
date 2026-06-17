@@ -8,7 +8,6 @@
 import { createFormState, type FormState as GenericFormState } from '../../../hooks/useFormState';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
-import { TRANSPORT_TYPE_REF_PATTERN } from '../utils/transportTypeRef';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
 const vehicleForm = createFormState<VehicleEditFormValue, Partial<VehicleGQLShaped>>({
@@ -26,7 +25,9 @@ export const isDirty = vehicleForm.isDirty;
  *  Today only TransportTypeRef gates Save — Sobek's `vehicles()` resolver
  *  silently excludes refless vehicles from the list, so a create without
  *  one is unrecoverable. Drives `saveDisabled` on /vehicles/new; the slider
- *  edit doesn't gate since existing rows already carry the ref. */
+ *  edit doesn't gate since existing rows already carry the ref. The picker
+ *  (VehicleEditForm) structurally guarantees any non-empty value is a
+ *  Sobek-known ref, so the check is just "did the user pick anything?". */
 export function canSubmit(form: VehicleEditFormValue): boolean {
-  return TRANSPORT_TYPE_REF_PATTERN.test(form.vehicle.transportType?.id ?? '');
+  return !!form.vehicle.transportType?.id;
 }

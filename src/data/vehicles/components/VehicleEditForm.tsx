@@ -1,9 +1,12 @@
-import { TextField } from '@mui/material';
+import { Autocomplete, Link, TextField } from '@mui/material';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { intToRef, refToInt } from '../utils/transportTypeRef';
+import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+
+type VTOption = { id: string; name: string };
 
 export interface VehicleEditFormValue {
   vehicle: VehicleGQLShaped;
@@ -24,12 +27,34 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const setV = (patch: Partial<VehicleGQLShaped>) =>
     onChange({ ...value, vehicle: { ...v, ...patch } });
 
-  const transportRef = v?.transportType?.id ?? '';
-  const transportIntValue = refToInt(v?.transportType?.id);
-  // An existing ref the TEMP numeric input can't represent (non-numeric suffix
-  // or non-NMR codespace) — render it raw + read-only rather than as a blank/
-  // error field that invites accidental overwrite.
-  const rawTransportRef = transportRef !== '' && transportIntValue === '';
+  const {
+    allData: vehicleTypes,
+    loading: vtLoading,
+    error: vtError,
+    refetch: refetchVehicleTypes,
+  } = useVehicleTypes();
+  const currentVtId = v?.transportType?.id;
+  const currentVtName = v.transportType?.name?.value;
+  // One memo for the four derived bits (option list + selection) so that
+  // typing in sibling fields doesn't hand `Autocomplete` a fresh `options`
+  // reference each keystroke.
+  const { options: vtOptionsWithOrphan, value: currentVtOption } = useMemo(() => {
+    const opts: VTOption[] = vehicleTypes.map(vt => ({
+      id: vt.id,
+      name: vt.name?.value ?? vt.id,
+    }));
+    const known = opts.find(o => o.id === currentVtId);
+    // Preserve an externally-set ref (e.g. Autosys-imported non-numeric) as a
+    // one-off option so the user still sees it AND can swap it. Prefer the
+    // vehicle's embedded name over the bare id so the label is human-friendly
+    // before/while `vehicleTypes` resolves.
+    const orphan: VTOption | null =
+      currentVtId && !known ? { id: currentVtId, name: currentVtName ?? currentVtId } : null;
+    return {
+      options: orphan ? [orphan, ...opts] : opts,
+      value: known ?? orphan ?? null,
+    };
+  }, [vehicleTypes, currentVtId, currentVtName]);
 
   return (
     <FormLayout>
@@ -58,33 +83,55 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      {/* TEMP: bare numeric until Sobek `VehicleTypeFilter.name` lands; swap for
-          TransportTypePicker. An existing non-numeric ref renders raw + read-only. */}
       <FieldRow
         id="vehicle-transport-type"
-        label={t('vehicles.field.transportType', 'Vehicle Type ID')}
+        label={t('vehicles.field.transportType', 'Vehicle Type')}
       >
-        {rawTransportRef ? (
-          <TextField
-            id="vehicle-transport-type"
-            value={transportRef}
-            disabled
-            size="small"
-            fullWidth
-          />
-        ) : (
-          <TextField
-            id="vehicle-transport-type"
-            type="number"
-            required
-            value={transportIntValue}
-            onChange={e => setV({ transportType: { id: intToRef(e.target.value) } })}
-            disabled={ro}
-            size="small"
-            fullWidth
-            error={!ro && !transportIntValue}
-          />
-        )}
+        <Autocomplete<VTOption, false, true>
+          options={vtOptionsWithOrphan}
+          // VehicleType is required, so the picker is non-clearable; MUI's
+          // type-level `disableClearable` strips null from the value type, but
+          // null is the legitimate initial state on /vehicles/new — MUI tolerates
+          // it at runtime, hence the cast.
+          value={currentVtOption as VTOption}
+          disableClearable
+          loading={vtLoading}
+          disabled={ro}
+          getOptionLabel={o => o.name}
+          isOptionEqualToValue={(a, b) => a.id === b.id}
+          loadingText={t('vehicleTypePicker.loading', 'Loading vehicle types…')}
+          noOptionsText={t('vehicleTypePicker.noOptions', 'No vehicle types')}
+          onChange={(_e, opt) => setV({ transportType: { id: opt.id } })}
+          size="small"
+          fullWidth
+          renderInput={params => (
+            <TextField
+              {...params}
+              // MUI Autocomplete sets `params.inputProps.id` on the inner input;
+              // override there so external selectors (#vehicle-transport-type,
+              // FieldRow's htmlFor) actually land on the focusable combobox.
+              inputProps={{ ...params.inputProps, id: 'vehicle-transport-type' }}
+              size="small"
+              required
+              aria-label={t('vehicles.field.transportType', 'Vehicle Type')}
+              error={!ro && !currentVtId}
+              helperText={
+                vtError ? (
+                  <>
+                    {vtError}{' '}
+                    <Link
+                      component="button"
+                      type="button"
+                      onClick={() => void refetchVehicleTypes().catch(() => {})}
+                    >
+                      {t('common.retry', 'Retry')}
+                    </Link>
+                  </>
+                ) : undefined
+              }
+            />
+          )}
+        />
       </FieldRow>
 
       <FieldRow

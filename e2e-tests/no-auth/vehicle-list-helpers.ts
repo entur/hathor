@@ -121,7 +121,7 @@ const makeExtraVehicle = (id: string) =>
       netexId: 'NMR:VehicleType:bus',
       version: 1,
       name: { value: 'Bus Type' },
-      transportMode: 'bus',
+      transportMode: 'BUS',
     },
   });
 
@@ -164,7 +164,7 @@ export const vehicleRow = (id: string, over: Partial<VehicleRow> = {}): VehicleR
     netexId: 'NMR:VehicleType:rail',
     version: 1,
     name: { value: 'Rail Type' },
-    transportMode: 'rail',
+    transportMode: 'RAIL',
   },
   ...over,
 });
@@ -202,6 +202,87 @@ export const interceptVehicleByIdQuery = (page: Page, resolve: (id: string) => V
             totalElements: row ? 1 : 0,
             page: 0,
             size: 10000,
+          },
+        },
+      }),
+    });
+  });
+
+/** A single VehicleType row in the `vehicleTypes(...)` mock fixture — only
+ *  the fields VehicleEditForm's picker reads + a minimum to round-trip the
+ *  GraphQL → projectVehicleType pipeline. */
+export interface VehicleTypeRow {
+  netexId: string;
+  version: number;
+  name: { value: string } | null;
+  transportMode: string | null;
+}
+
+const DEFAULT_VEHICLE_TYPES: VehicleTypeRow[] = [
+  { netexId: 'NMR:VehicleType:1', version: 1, name: { value: 'Bus Type' }, transportMode: 'BUS' },
+  { netexId: 'NMR:VehicleType:2', version: 1, name: { value: 'Rail Type' }, transportMode: 'RAIL' },
+];
+
+/**
+ * Intercept the `vehicleTypes(...)` query the VehicleEditForm picker fires on
+ * mount. Other GraphQL operations pass through. The matcher checks
+ * `vehicleTypes(` so it never claims `vehicles(...)` (the list/by-id field) —
+ * the two are distinct field names that happen to share a prefix. Safe to
+ * register in any order vs. the vehicles list/by-id/save handlers.
+ *
+ * Fields the projection layer doesn't see (deckPlan, vehicles, the env extras,
+ * etc.) are returned as null — the picker only reads name.value + netexId.
+ */
+export const interceptVehicleTypesQuery = (
+  page: Page,
+  rows: VehicleTypeRow[] = DEFAULT_VEHICLE_TYPES
+) =>
+  page.route('**/graphql', async route => {
+    const postData = route.request().postDataJSON();
+    const query: string = postData?.query ?? '';
+    if (!query.includes('vehicleTypes(')) {
+      await route.fallback();
+      return;
+    }
+    const content = rows.map(r => ({
+      netexId: r.netexId,
+      version: r.version,
+      name: r.name,
+      shortName: null,
+      description: null,
+      transportMode: r.transportMode,
+      length: null,
+      width: null,
+      height: null,
+      weight: null,
+      lowFloor: null,
+      propulsionTypes: null,
+      fuelTypes: null,
+      selfPropelled: null,
+      euroClass: null,
+      maximumVelocity: null,
+      maximumRange: null,
+      formDragCoefficient: null,
+      rollResistanceCoefficient: null,
+      maximumEngineEffectKW: null,
+      hybridCategory: null,
+      passengerCapacity: null,
+      created: null,
+      changed: null,
+      changedBy: null,
+      deckPlan: null,
+      vehicles: null,
+    }));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          vehicleTypes: {
+            content,
+            totalElements: content.length,
+            page: 0,
+            size: content.length,
           },
         },
       }),
