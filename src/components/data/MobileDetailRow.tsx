@@ -34,6 +34,7 @@ export default function MobileDetailRow<T, K extends string>({
       <TableCell colSpan={colSpan} sx={{ p: 0, borderBottom: 'none' }}>
         <Collapse in={open} timeout="auto" unmountOnExit>
           <Box
+            data-testid="mobile-detail-row"
             sx={{
               m: 2,
               ml: { xs: 2, sm: 7 },

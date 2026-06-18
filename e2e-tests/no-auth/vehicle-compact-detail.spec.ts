@@ -48,14 +48,24 @@ test.describe('/vehicles compact detail row shows translated labels, not raw i18
     const firstRow = page.locator('table tbody tr').first();
     await expect(firstRow).toBeVisible();
 
-    // The compact leading cell hosts the expand chevron (the only button there).
-    await firstRow.locator('td').first().getByRole('button').click();
+    // Compact-mode precondition: the expand chevron is rendered ONLY in the
+    // compact leading cell (DataTableRow.tsx:58-70). Asserting it visible proves
+    // the container went compact — so the regression check below cannot pass
+    // vacuously off a desktop header that still shows the desktop-only column.
+    const expandBtn = firstRow.locator('td').first().getByRole('button');
+    await expect(expandBtn).toBeVisible();
+    await expandBtn.click();
 
-    const table = page.locator('table');
-    // RED before the fix: the box prints `vehicles.field.operationalNumber` etc.
-    await expect(table).not.toContainText('vehicles.field.');
-    // GREEN signal: the key resolves to its English label (desktop-only column,
-    // so this text exists ONLY in the expanded detail box, not the header).
-    await expect(table).toContainText('Operational Number');
+    // Scope to the overflow detail box (only exists in compact view) so the
+    // assertions can't be satisfied by the desktop header's translated label.
+    const detail = page.getByTestId('mobile-detail-row').first();
+    await expect(detail).toBeVisible();
+
+    // RED before the fix: the box printed `vehicles.field.operationalNumber` etc.
+    // Locale-independent — the raw key is the bug regardless of language.
+    await expect(detail).not.toContainText('vehicles.field.');
+    // GREEN signal: the key resolved to a real label. Browser locale is not
+    // pinned (i18n LanguageDetector, fallback 'en'), so accept en or nb.
+    await expect(detail).toContainText(/Operational Number|Driftsnummer/);
   });
 });
