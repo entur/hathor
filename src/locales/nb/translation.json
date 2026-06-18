@@ -225,6 +225,9 @@
 
   "organisations.select.label": "Velg organisasjon",
   "organisations.select.noOptions": "Ingen organisasjoner tilgjengelig",
+  "organisations.loadError": "Kunne ikke hente organisasjoner.",
+  "protectedRoute.loadingAuthStatus": "Sjekker autentiseringsstatus...",
+  "protectedRoute.loadingOrganisations": "Laster organisasjoner...",
   "deckPlan.deactivateConfirmTitle": "Deaktivere setekart?",
   "deckPlan.deactivateConfirmMessage": "Dette setekartet vil bli deaktivert.",
   "common.deactivateConfirmTitle": "Deaktivere dette elementet?",

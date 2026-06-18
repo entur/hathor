@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { useOrganisations } from '../hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 import { Autocomplete, TextField } from '@mui/material';
 import { useAuth } from '../../../auth/index.ts';
 import type { Organisation } from '../types/organisationTypes.ts';
 
 export default function SelectOrganisation() {
   const { t } = useTranslation();
-  const { data, currentOrganisation, setCurrentOrganisation } = useOrganisations();
+  const { data, currentOrganisation, setCurrentOrganisation } = useOrganisationsContext();
   const { isAuthenticated } = useAuth();
 
   return (

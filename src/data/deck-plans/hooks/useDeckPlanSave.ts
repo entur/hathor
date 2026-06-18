@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 import { saveDeckPlanAsNetexToBackend } from '../api/deckPlanDetailsService';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes';
 import { createOrUpdateDeckPlanRequest } from '../../../graphql/vehicles/mutations/createOrUpdateDeckPlan';
@@ -34,7 +34,7 @@ interface UseDeckPlanSaveResult {
 export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl, applicationBaseUrl } = useConfig();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -3,7 +3,7 @@ import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 
 const orUndef = <T>(s: string | undefined, value: T): T | undefined =>
   s && s.length > 0 ? value : undefined;
@@ -25,7 +25,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const { applicationBaseUrl } = useConfig();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
 
   const save = useCallback(
     async (form: VehicleEditFormValue): Promise<SaveResult> => {

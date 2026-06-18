@@ -21,7 +21,7 @@ import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumn
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 
 const CONCURRENCY_LIMIT = 5;
 
@@ -51,7 +51,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
 
   const isTableFlow = tableMeta !== null;
   const steps = isTableFlow ? TABLE_STEPS : LIST_STEPS;

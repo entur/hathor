@@ -7,7 +7,7 @@ import { fetchVehicleTypes } from '../api/fetchVehicleTypes.ts';
 import { compareVehicleTypes } from '../utils/vehicleTypeSortValue.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
-import { useOrganisations } from '../../organisations/hooks/useOrganisations.ts';
+import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 
 export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 
@@ -24,7 +24,7 @@ export function useVehicleTypes() {
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
   const [searchParams] = useSearchParams();
-  const { currentOrganisation } = useOrganisations();
+  const { currentOrganisation } = useOrganisationsContext();
 
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
