@@ -62,10 +62,10 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
     await page.goto('/deck-plans');
     await page.waitForLoadState('networkidle');
 
-    // Header label for the name column is "Deck Plan" (deckPlanViewConfig.tsx:22).
+    // Header label for the name column is "Name" (deckPlans.field.name).
     // First click flips orderBy='name' from asc → desc. Exact match: avoids
     // colliding with the "New Deck Plan" action-row button.
-    await page.getByRole('button', { name: 'Deck Plan', exact: true }).click();
+    await page.getByRole('button', { name: 'Name', exact: true }).click();
 
     const firstRow = page.locator('table tbody tr').first();
     await expect(firstRow).toContainText('Plan Echo');

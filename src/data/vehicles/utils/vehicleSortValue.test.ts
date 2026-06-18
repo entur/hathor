@@ -56,20 +56,15 @@ describe('compareVehicles', () => {
     expect(sorted.map(r => r.id)).toEqual(['d', 'b', 'a', 'c']);
   });
 
-  it('sorts version numerically (regression: never falls through to id)', () => {
+  it('sorts by name and parks rows without one at the end', () => {
     const rows = [
-      mk({ id: 'big', version: 20 }),
-      mk({ id: 'small', version: 3 }),
-      mk({ id: 'mid', version: 10 }),
+      mk({ id: 'a', name: undefined }),
+      mk({ id: 'b', name: { value: 'Zulu' } }),
+      mk({ id: 'c', name: undefined }),
+      mk({ id: 'd', name: { value: 'Alpha' } }),
     ];
-    const sorted = [...rows].sort(compareVehicles('version', 'asc'));
-    expect(sorted.map(r => r.version)).toEqual([3, 10, 20]);
-  });
-
-  it('treats version === 0 as a real value, not empty', () => {
-    const rows = [mk({ id: 'zero', version: 0 }), mk({ id: 'one', version: 1 })];
-    const sorted = [...rows].sort(compareVehicles('version', 'asc'));
-    expect(sorted.map(r => r.id)).toEqual(['zero', 'one']);
+    const sorted = [...rows].sort(compareVehicles('name', 'asc'));
+    expect(sorted.map(r => r.id)).toEqual(['d', 'b', 'a', 'c']);
   });
 
   it('sorts by transportType name and parks rows without a transportType at the end', () => {

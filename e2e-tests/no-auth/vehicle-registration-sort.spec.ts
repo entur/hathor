@@ -13,22 +13,23 @@ const LOCK_TOOLTIP_TEXT = 'Close details to change sort';
  * column's asc-leader is a distinct row, so a click on any column header
  * provably changes the first-row identity when sort is permitted.
  *
- *   reg       | op    | vtype name | mode  | version
- *   ---------- | ----- | ---------- | ----- | -------
- *   AAA-001    | OP-9  | Charlie    | water | 3
- *   MID-001    | OP-1  | Alpha      | bus   | 2
- *   ZZZ-001    | OP-5  | Bravo      | rail  | 1
+ *   name    | reg       | op    | vtype name | mode  | version
+ *   ------- | --------- | ----- | ---------- | ----- | -------
+ *   Gamma   | AAA-001   | OP-9  | Charlie    | water | 3
+ *   Alpha   | MID-001   | OP-1  | Alpha      | bus   | 2
+ *   Beta    | ZZZ-001   | OP-5  | Bravo      | rail  | 1
  *
  *   sort                       first row after click   (changes from AAA-001?)
  *   ------------------------- ----------------------- -------------------------
+ *   name               → asc   MID-001 (Alpha)         yes
  *   registrationNumber → desc  ZZZ-001                 yes
  *   operationalNumber  → asc   MID-001                 yes
  *   transportTypeName  → asc   MID-001 (Alpha)         yes
  *   transportTypeMode  → asc   MID-001 (bus)           yes
- *   version            → asc   ZZZ-001 (v1)            yes
  */
 interface Row {
   id: string;
+  name: string;
   reg: string;
   op: string | null;
   vehicleType: { id: string; name: string; mode: string };
@@ -38,6 +39,7 @@ interface Row {
 const ROWS: Row[] = [
   {
     id: 'NMR:Vehicle:aaa-1',
+    name: 'Gamma',
     reg: 'AAA-001',
     op: 'OP-9',
     vehicleType: { id: 'NMR:VehicleType:charlie', name: 'Charlie Type', mode: 'water' },
@@ -45,6 +47,7 @@ const ROWS: Row[] = [
   },
   {
     id: 'NMR:Vehicle:mid-1',
+    name: 'Alpha',
     reg: 'MID-001',
     op: 'OP-1',
     vehicleType: { id: 'NMR:VehicleType:alpha', name: 'Alpha Type', mode: 'bus' },
@@ -52,6 +55,7 @@ const ROWS: Row[] = [
   },
   {
     id: 'NMR:Vehicle:zzz-1',
+    name: 'Beta',
     reg: 'ZZZ-001',
     op: 'OP-5',
     vehicleType: { id: 'NMR:VehicleType:bravo', name: 'Bravo Type', mode: 'rail' },
@@ -72,11 +76,11 @@ interface SortTarget {
 }
 
 const SORT_TARGETS: SortTarget[] = [
+  { key: 'name', headerName: /^name$/i, expectedFirstReg: 'MID-001' },
   { key: 'registrationNumber', headerName: /registration number/i, expectedFirstReg: 'ZZZ-001' },
   { key: 'operationalNumber', headerName: /operational number/i, expectedFirstReg: 'MID-001' },
   { key: 'transportTypeName', headerName: /vehicle type/i, expectedFirstReg: 'MID-001' },
   { key: 'transportTypeMode', headerName: /transport mode/i, expectedFirstReg: 'MID-001' },
-  { key: 'version', headerName: /version/i, expectedFirstReg: 'ZZZ-001' },
 ];
 
 const mockVehiclesPayload = () => ({
@@ -85,6 +89,7 @@ const mockVehiclesPayload = () => ({
       content: ROWS.map(r => ({
         netexId: r.id,
         version: r.version,
+        name: { value: r.name },
         registrationNumber: r.reg,
         operationalNumber: r.op,
         transportType: {
@@ -228,7 +233,7 @@ const runSortStabilityTests = (params: {
  *   2. Sidebar CLOSED, per column: goto /vehicles → click header → assert first row becomes target.expectedFirstReg → settle 500ms → still that leader (no flicker/revert).
  *   3. Sidebar OPEN, per column: goto /vehicles?selected=<row> → assert vehicle-details-title visible → hover header surfaces "Close details to change sort" tooltip → click is a no-op (first row stays defaultFirstReg) → settle 500ms → still unchanged.
  * Covers:
- *   - Closed: each sortable column (registrationNumber, operationalNumber, transportTypeName, transportTypeMode, version) toggles to its distinct asc-leader and persists.
+ *   - Closed: each sortable column (name, registrationNumber, operationalNumber, transportTypeName, transportTypeMode) toggles to its distinct asc-leader and persists.
  *   - Open: sort LOCKED on every column — click no-op + hover tooltip (UX call: sorting under an open selection caused flicker/revert via useVehicleUrlSelection's URL→editor→setPage cascade).
  * Modes:
  *   - mock (E2E_SUITE=no-auth): self-contained `vehicles(` intercept with a 3-row fixture (NMR:Vehicle:aaa-1/mid-1/zzz-1, totalElements 3) whose per-column asc-leaders are provably distinct; asserts exact expectedFirstReg per column.
