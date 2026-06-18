@@ -7,6 +7,13 @@ import { OrganisationsContext } from './useOrganisationsContext.ts';
 
 const STORAGE_KEY = 'hathor:currentOrganisationId';
 
+function toErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return 'Unknown error while loading organisations';
+}
+
 function readPersistedOrganisationId(): string | null {
   if (typeof window === 'undefined') {
     return null;
@@ -65,7 +72,7 @@ export function OrganisationsProvider({ children }: OrganisationsProviderProps) 
         return organisations[0]?.id ?? null;
       });
     } catch (err) {
-      setError((err as Error).message);
+      setError(toErrorMessage(err));
     } finally {
       setLoading(false);
     }

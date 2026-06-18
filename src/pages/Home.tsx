@@ -1,4 +1,4 @@
-import { Box, Typography, Divider } from '@mui/material';
+import { Alert, Box, Button, Divider, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
@@ -117,7 +117,11 @@ function NavTile({
  */
 export default function HomePage() {
   const { t } = useTranslation();
-  const { currentOrganisation } = useOrganisationsContext();
+  const {
+    currentOrganisation,
+    error: organisationsError,
+    refetch: refetchOrganisations,
+  } = useOrganisationsContext();
   const { isAuthenticated } = useAuth();
 
   return (
@@ -274,6 +278,19 @@ export default function HomePage() {
                 'You need to choose an organisation to use the registry. This is done in the selector at the top right of the page. If you do not see any organisations to select, please contact your administrator to grant you access.'
               )}
             </Typography>
+            {organisationsError && (
+              <Alert
+                severity="error"
+                data-testid="home-organisations-load-error"
+                action={
+                  <Button color="inherit" size="small" onClick={() => void refetchOrganisations()}>
+                    {t('common.retry', 'Retry')}
+                  </Button>
+                }
+              >
+                {t('organisations.loadError', 'Could not load organisations.')} {organisationsError}
+              </Alert>
+            )}
           </Box>
         )}
       </Box>

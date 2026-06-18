@@ -216,6 +216,7 @@
 
   "organisations.select.label": "Select organisation",
   "organisations.select.noOptions": "No organisations available",
+  "organisations.loadError": "Could not load organisations.",
   "deckPlan.deactivateConfirmTitle": "Deactivate deck plan?",
   "deckPlan.deactivateConfirmMessage": "This deck plan will be deactivated.",
   "common.deactivateConfirmTitle": "Deactivate this item?",
