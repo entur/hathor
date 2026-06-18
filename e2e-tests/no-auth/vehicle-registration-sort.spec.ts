@@ -10,14 +10,17 @@ const LOCK_TOOLTIP_TEXT = 'Close details to change sort';
 
 /**
  * Three rows wired so every sortable column orders them differently. Each
- * column's asc-leader is a distinct row, so a click on any column header
- * provably changes the first-row identity when sort is permitted.
+ * column's asc-leader is a distinct row, so a click on any sortable header
+ * provably changes the first-row identity when sort is permitted. (`version`
+ * is no longer a column — it renders as the `vN` badge inside the id chip — so
+ * it is not a sort target; the fixture still carries a version per row only to
+ * feed that badge.)
  *
- *   name    | reg       | op    | vtype name | mode  | version
- *   ------- | --------- | ----- | ---------- | ----- | -------
- *   Gamma   | AAA-001   | OP-9  | Charlie    | water | 3
- *   Alpha   | MID-001   | OP-1  | Alpha      | bus   | 2
- *   Beta    | ZZZ-001   | OP-5  | Bravo      | rail  | 1
+ *   name    | reg       | op    | vtype name | mode
+ *   ------- | --------- | ----- | ---------- | -----
+ *   Gamma   | AAA-001   | OP-9  | Charlie    | water
+ *   Alpha   | MID-001   | OP-1  | Alpha      | bus
+ *   Beta    | ZZZ-001   | OP-5  | Bravo      | rail
  *
  *   sort                       first row after click   (changes from AAA-001?)
  *   ------------------------- ----------------------- -------------------------
