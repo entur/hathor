@@ -14,17 +14,18 @@ import { deckPlanSelectedHref } from '../utils/deckPlanUrlParams.ts';
 
 const deckPlanColumns: ColumnDefinition<DeckPlan, OrderBy>[] = [
   {
-    id: 'id',
-    headerLabel: 'ID',
+    id: 'name',
+    headerLabel: 'deckPlans.field.name',
     isSortable: true,
-    renderCell: item => createElement(NetexId, { id: item.id, size: 'small' }),
+    renderCell: item => item.name?.value,
     display: 'always',
   },
   {
-    id: 'name',
-    headerLabel: 'Deck Plan',
+    id: 'id',
+    headerLabel: 'deckPlans.field.id',
     isSortable: true,
-    renderCell: item => item.name?.value,
+    renderCell: item =>
+      createElement(NetexId, { id: item.id, version: item.version, size: 'small' }),
     display: 'always',
   },
 ];

@@ -27,22 +27,22 @@ const fmtDim = (v: VehicleType) => {
 
 const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
   {
-    id: 'id',
-    headerLabel: 'ID',
-    isSortable: true,
-    renderCell: item => <NetexId id={item.id} size="small" />,
-    display: 'always',
-  },
-  {
     id: 'name',
-    headerLabel: 'Name',
+    headerLabel: 'vehicleType.field.name',
     isSortable: true,
     renderCell: item => item.name?.value,
     display: 'always',
   },
   {
+    id: 'id',
+    headerLabel: 'vehicleType.field.id',
+    isSortable: true,
+    renderCell: item => <NetexId id={item.id} version={item.version} size="small" />,
+    display: 'always',
+  },
+  {
     id: 'transportMode',
-    headerLabel: 'Transport Mode',
+    headerLabel: 'vehicleType.field.transportMode',
     isSortable: true,
     renderCell: item => <TransportModeIcon mode={item.transportMode ?? UNKNOWN_TRANSPORT_MODE} />,
     align: 'center',
@@ -50,7 +50,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
   },
   {
     id: 'dimensions',
-    headerLabel: 'Dimensions',
+    headerLabel: 'vehicleType.field.dimensions',
     isSortable: true,
     renderCell: item => (
       <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
@@ -61,14 +61,14 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
   },
   {
     id: 'deckPlanName',
-    headerLabel: 'Deck Plan',
+    headerLabel: 'vehicleType.field.deckPlan',
     isSortable: true,
     renderCell: item => deckPlanLabel(item.deckPlan),
     display: 'desktop-only',
   },
   {
     id: 'vehicles',
-    headerLabel: 'Vehicles',
+    headerLabel: 'vehicleType.field.vehicles',
     isSortable: false,
     renderCell: item => <VehicleListCell vehicles={item.vehicles ?? []} />,
     sx: { maxWidth: '25%' },

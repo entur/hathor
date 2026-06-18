@@ -77,8 +77,8 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     await expect(page.getByTestId('total-entries')).toHaveAttribute('data-count', '15');
 
     // Default sort = registrationNumber asc → page 0 contains BUS-001/002 + RAIL-001..008.
-    await expect(table.getByText('BUS-001')).toBeVisible();
-    await expect(table.getByText('RAIL-001')).toBeVisible();
+    await expect(table.getByText('BUS-001', { exact: true })).toBeVisible();
+    await expect(table.getByText('RAIL-001', { exact: true })).toBeVisible();
 
     // TransportMode column renders an icon (no visible label — tooltip carries
     // the localized text). Page 0 (asc by registrationNumber, rowsPerPage=10)
@@ -114,7 +114,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     }
 
     await expect(page.getByTestId('total-entries')).toHaveAttribute('data-count', '12');
-    await expect(page.locator('table').getByText('BUS-001')).not.toBeVisible();
+    await expect(page.locator('table').getByText('BUS-001', { exact: true })).not.toBeVisible();
   });
 
   test('row click opens sidebar and writes ?selected= to URL', async ({ page }) => {
@@ -197,6 +197,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
     // Pagination text should now read "11–15 of 15" (page 1).
     await expect(page.getByTestId('pagination-displayed-rows')).toContainText('11');
-    await expect(page.locator('table').getByText('RAIL-009')).toBeVisible();
+    await expect(page.locator('table').getByText('RAIL-009', { exact: true })).toBeVisible();
   });
 });

@@ -17,14 +17,14 @@ export const getVehicleSortValue = (
   key: VehicleColumnKey
 ): string | number => {
   switch (key) {
+    case 'name':
+      return item.name?.value || '';
     case 'id':
       return item.id;
     case 'registrationNumber':
       return item.registrationNumber || '';
     case 'operationalNumber':
       return item.operationalNumber || '';
-    case 'version':
-      return item.version === undefined ? -1 : item.version; // Treat missing version as -1 to sort before any valid versions
     case 'transportTypeName':
       return item.transportType?.name?.value || '';
     case 'transportTypeMode':

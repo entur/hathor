@@ -19,10 +19,17 @@ import {
 
 const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   {
+    id: 'name',
+    headerLabel: 'vehicles.field.name',
+    isSortable: true,
+    renderCell: item => item.name?.value ?? '—',
+    display: 'always',
+  },
+  {
     id: 'id',
     headerLabel: 'vehicles.field.id',
     isSortable: true,
-    renderCell: item => <NetexId id={item.id} size="small" />,
+    renderCell: item => <NetexId id={item.id} version={item.version} size="small" />,
     display: 'always',
   },
   {
@@ -62,13 +69,6 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
     headerLabel: 'vehicles.field.parentTransportMode',
     isSortable: true,
     renderCell: item => <TransportModeIcon mode={vehicleMode(item)} />,
-    display: 'desktop-only',
-  },
-  {
-    id: 'version',
-    headerLabel: 'vehicles.field.version',
-    isSortable: true,
-    renderCell: item => item.version,
     display: 'desktop-only',
   },
 ];
