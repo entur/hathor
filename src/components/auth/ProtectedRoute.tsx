@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (isLoading) {
-    return <div>Loading authentication status...</div>;
+    return <div>{t('protectedRoute.loadingAuthStatus', 'Loading authentication status...')}</div>;
   }
 
   if (!isAuthenticated) {
@@ -35,7 +35,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (organisationsLoading) {
-    return <div>Loading organisations...</div>;
+    return <div>{t('protectedRoute.loadingOrganisations', 'Loading organisations...')}</div>;
   }
 
   if (organisationsError) {
