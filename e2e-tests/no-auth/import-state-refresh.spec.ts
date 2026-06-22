@@ -26,16 +26,17 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live
  *   - live (E2E_BACKEND=true): real import via Shepet/Sobek — needs both backends, a FRESH plate
  *     (E2E_AUTOSYS_REG_NR, e.g. a row from fixtures/some-busses.csv) and the local Shepet
  *     responsibilitySet temp-fix (Shepet HEAD omits the responsibilitySets Sobek import requires).
- *   - landed RED on purpose: `test.fixme` keeps CI/live suites green; change `test.fixme` → `test`
- *     to reproduce it red in either mode. Flips green once #141 is fixed.
+ *   - regression guard: runs in the mock CI suite and passes with the #141 fix in place; reverting
+ *     the fix in src/hooks/useUrlFilters.ts turns it red again. (Live needs both backends + a fresh plate.)
  *
- * ROOT CAUSE (verified 2026-06-22 — live plate VJ12248 AND mock): src/hooks/useUrlFilters.ts syncs the
- * `?filter=` param into SearchContext.activeFilters, but its "param removed" branch
- * (useUrlFilters.ts:47-50) only resets a useRef — it never calls updateFilters([]). So when the
- * client-side nav drops the param (clean /vehicles URL), SearchContext keeps the stale filter and the
- * sibling list stays filtered/broken (count collapses to 0/1) until F5. A filter-state leak, not a
- * refetch failure (the
- * GraphQL query runs and returns rows — matching the report's "query returned the row, list stayed stale").
+ * ROOT CAUSE (verified 2026-06-22 — live plate VJ12248 AND mock; FIXED in this branch): the URL
+ * `?filter=` drives SearchContext.activeFilters (via useUrlFilters on /vehicle-types & /deck-plans),
+ * and every list filters its rows by activeFilters (useDataViewTableLogic). But activeFilters is
+ * GLOBAL and was only cleared on a search-CONTEXT change — sibling lists share the 'data' context and
+ * /vehicles doesn't even use useUrlFilters — so navigating from the filtered /vehicle-types to
+ * /vehicles left the filter set, collapsing the list to 0/1 until F5. FIX: SearchContext clears
+ * search + filters on route (pathname) change (src/components/search/SearchContext.tsx). A filter-state
+ * leak, not a refetch failure (the GraphQL query runs and returns rows — the report's stale-list symptom).
  */
 
 /** A vehicle-type id present in the mock fixture — used to fake the post-import redirect under mock. */
@@ -121,7 +122,7 @@ test.describe('#141 import filter leaks into sibling lists', () => {
     }
   });
 
-  test.fixme('post-import filter must not survive client-nav (F5 count == client-nav count)', async ({
+  test('post-import filter must not survive client-nav (F5 count == client-nav count)', async ({
     page,
   }) => {
     // Reach the post-import filtered state and confirm the filter is genuinely applied here.
