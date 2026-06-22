@@ -1,47 +1,53 @@
 import { test, expect, type Page } from '@playwright/test';
-import { REG_NR } from './autosys-helpers';
+import { REG_NR, interceptDeckPlansQuery } from './autosys-helpers';
+import { interceptVehicleListQuery, interceptVehicleTypesQuery } from './vehicle-list-helpers';
 import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers';
 
 /**
- * #141 — app state goes stale after an Autosys import: the Vehicles and Deck Plans lists
- * do not reflect newly-imported rows until a full page reload (F5), even though their
- * GraphQL queries ran and returned the new rows. LIVE-ONLY reproduction.
+ * #141 — after an Autosys import, the id-filter from the post-import redirect leaks into the sibling
+ * list views: /vehicles and /deck-plans keep showing a "Filtering on IDs" chip (and the filtered,
+ * wrong list) instead of the org's full list, until a full reload (F5). Reproduces in BOTH modes —
+ * it is a pure frontend SearchContext bug, independent of the backend.
  *
  * Workflow:
- *   seedAuth → goto /vehicle-types → selectFirstOrg → baseline totals for /vehicles + /deck-plans
- *   (read via client-side nav-rail navigation, never page.goto)
- *   → back to /vehicle-types → drive the Autosys multi-import wizard for a FRESH reg-nr and Submit
- *   (creates 1 vehicle type + 1 vehicle + 1 deck plan; app redirects to /vehicle-types?filter=<ids>)
- *   → control: the vehicle-types list reflects the import (it watches ?filter)
- *   → THE BUG: client-nav (nav-rail click, no reload) to /vehicles → assert total grew by the import
- *     → then page.reload() (the "F5") → assert the new vehicle is now present AND that the
- *       client-nav total equalled the post-reload total (the #141 signature: nav state == reload state)
- *   → repeat the same nav-vs-reload comparison for /deck-plans.
+ *   seedAuth → reach the post-import filtered state (/vehicle-types?filter=<typeIds>):
+ *     live  — select org, drive the real Autosys import (Submit), which redirects there;
+ *     mock  — goto that URL directly (exactly what the import's onImportComplete navigate() does).
+ *   → confirm the "Filtering on IDs" chip IS shown on /vehicle-types (the filter is genuinely applied)
+ *   → for each sibling list (/vehicles, /deck-plans): record the full-reload (F5) count, then
+ *     re-establish the filtered state and client-nav via the nav-rail (NOT page.goto — a full load ≈ F5
+ *     that clears the leak) and assert the list count equals the F5 count. The leak filters the sibling
+ *     list (count collapses to 0/1) while F5 shows the full org list — so the two counts diverge.
  * Covers:
- *   - Post-import list freshness on client-side navigation (the exact repro steps in #141).
- *   - Proof it is a STATE bug not a DATA bug: a full reload surfaces what client-nav missed.
- *   - Both affected surfaces named in the report: /vehicles and /deck-plans.
+ *   - The exact #141 symptom on both affected surfaces, asserted mode-agnostically as F5-count == client-nav-count.
+ *   - Same red in mock and live — the bug is SearchContext state, not data, so the fixture suite shows it too.
  * Modes:
- *   - mock (E2E_SUITE=no-auth): n/a — live-only; the whole describe is skipped when !IS_LIVE.
- *     (The stale state is a real-app React-context effect that a clean mocked remount does not
- *     exhibit, so a mocked repro would go green and give a false all-clear — hence live-only.)
- *   - live (E2E_BACKEND=true): needs a running, authenticated Sobek (:37999) AND Shepet (:37998),
- *     and a FRESH, not-yet-imported reg-nr — set E2E_AUTOSYS_REG_NR to a real SVV plate the org
- *     does not already own (the default fixture reg "A-1" is not a real Autosys plate).
- *   - landed RED on purpose: `test.fixme` documents the open bug so CI/live suites stay green.
- *     Change `test.fixme` → `test` to reproduce it red; it flips green once #141 is fixed.
+ *   - mock (E2E_SUITE=no-auth): intercepts the three list queries; reaches the filtered state by URL. Self-contained.
+ *   - live (E2E_BACKEND=true): real import via Shepet/Sobek — needs both backends, a FRESH plate
+ *     (E2E_AUTOSYS_REG_NR, e.g. a row from fixtures/some-busses.csv) and the local Shepet
+ *     responsibilitySet temp-fix (Shepet HEAD omits the responsibilitySets Sobek import requires).
+ *   - landed RED on purpose: `test.fixme` keeps CI/live suites green; change `test.fixme` → `test`
+ *     to reproduce it red in either mode. Flips green once #141 is fixed.
+ *
+ * ROOT CAUSE (verified 2026-06-22 — live plate VJ12248 AND mock): src/hooks/useUrlFilters.ts syncs the
+ * `?filter=` param into SearchContext.activeFilters, but its "param removed" branch
+ * (useUrlFilters.ts:47-50) only resets a useRef — it never calls updateFilters([]). So when the
+ * client-side nav drops the param (clean /vehicles URL), SearchContext keeps the stale filter and the
+ * sibling list stays filtered/broken (count collapses to 0/1) until F5. A filter-state leak, not a
+ * refetch failure (the
+ * GraphQL query runs and returns rows — matching the report's "query returned the row, list stayed stale").
  */
+
+/** A vehicle-type id present in the mock fixture — used to fake the post-import redirect under mock. */
+const MOCK_FILTER_TYPE_ID = 'NMR:VehicleType:1';
 
 /** Per-href URL matcher anchored so /vehicles never matches /vehicle-types. */
 const onPath = (href: string) => new RegExp(href.replace(/[/-]/g, '\\$&') + '(\\?|$)');
 
 /**
- * Navigate via the persistent left nav-rail's real <a href> — a CLIENT-SIDE route
- * change. This is the crux of the repro: `page.goto`/`page.reload` do a full document
- * load (≈ F5) which resets app state and HIDES #141. The bug only shows under SPA nav.
- *
- * @param page Playwright page.
- * @param href Route to click (`/vehicles`, `/deck-plans`, `/vehicle-types`).
+ * Navigate via the persistent left nav-rail's real <a href> — a CLIENT-SIDE route change. This is
+ * the crux: page.goto/page.reload do a full document load (≈ F5) which resets SearchContext and HIDES
+ * #141. The leak only survives SPA navigation.
  */
 async function railNavigate(page: Page, href: string): Promise<void> {
   await page.locator(`[data-testid="nav-rail"] a[href="${href}"]`).click();
@@ -49,21 +55,14 @@ async function railNavigate(page: Page, href: string): Promise<void> {
 }
 
 /**
- * Drive the Autosys multi-import wizard for one reg-nr through to a successful Submit.
- * (Same wizard flow as autosys-multi-import.spec.ts, carried through Submit.) Throws if
- * Submit errors — #141 needs a genuinely
- * NEW import, and a duplicate (already-imported reg) surfaces as a submit error with no
- * new rows, which cannot demonstrate the bug.
- *
- * @param page Playwright page, already on /vehicle-types with an org selected.
- * @param reg Registration number to import (must be fresh in the live DB).
+ * Drive the Autosys multi-import wizard for one reg-nr through a successful Submit (live only).
+ * Throws if Submit errors — #141 needs a genuinely NEW import; a duplicate surfaces as a submit error.
  */
 async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   await page.getByTestId('import-vehicle-multi-button').click();
   const dialog = page.locator('[role="dialog"]');
   await expect(dialog).toBeVisible();
 
-  // Step 0: skip file upload. Step 1: add the reg-nr chip. Next → Autosys fetch.
   await dialog.getByRole('button', { name: /skip/i }).click();
   const addInput = page.getByTestId('multi-import-add-input').locator('input');
   await expect(addInput).toBeVisible();
@@ -72,13 +71,11 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   await expect(page.getByTestId('multi-import-tags').getByText(reg)).toBeVisible();
   await dialog.getByRole('button', { name: /next/i }).click();
 
-  // Step 2: confirm summary, then Submit (persists to Sobek).
   const summary = dialog.locator('.MuiAlert-standardSuccess');
   await expect(summary).toBeVisible({ timeout: 15_000 });
   await expect(summary).toContainText('1 of 1');
   await dialog.getByRole('button', { name: /submit/i }).click();
 
-  // Success closes the dialog and the app redirects to /vehicle-types?filter=<ids>.
   const closed = expect(dialog)
     .not.toBeVisible({ timeout: 15_000 })
     .then(() => 'ok' as const);
@@ -93,73 +90,67 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   await expect(page).toHaveURL(onPath('/vehicle-types'));
 }
 
-test.describe('#141 import → lists stale until reload — LIVE', () => {
+/**
+ * Put the app into the post-import filtered state (/vehicle-types?filter=<typeIds>) and return that
+ * URL so it can be re-established for each sibling. Live drives the real import; mock navigates to the
+ * URL the import's redirect produces.
+ */
+async function establishFilteredState(page: Page): Promise<string> {
+  if (!IS_LIVE) {
+    await page.goto(`/vehicle-types?filter=${MOCK_FILTER_TYPE_ID}`);
+    await page.waitForLoadState('networkidle');
+    return page.url();
+  }
+  await page.goto('/vehicle-types');
+  await selectFirstOrg(page);
+  await page.waitForLoadState('networkidle');
+  await importRegViaAutosys(page, REG_NR); // redirects to /vehicle-types?filter=<ids>
+  return page.url();
+}
+
+test.describe('#141 import filter leaks into sibling lists', () => {
   test.describe.configure({ mode: 'serial' });
-  test.skip(() => !IS_LIVE, 'Requires running, authenticated Sobek (:37999) + Shepet (:37998)');
 
   test.beforeAll(() => writeConfig());
-  test.beforeEach(async ({ context }) => seedAuth(context));
+  test.beforeEach(async ({ context, page }) => {
+    await seedAuth(context);
+    if (!IS_LIVE) {
+      await interceptVehicleListQuery(page);
+      await interceptVehicleTypesQuery(page);
+      await interceptDeckPlansQuery(page);
+    }
+  });
 
-  test.fixme('imported vehicle + deck plan appear via client-nav without F5', async ({ page }) => {
-    // Org selection is the hard precondition for every list hook.
-    await page.goto('/vehicle-types');
-    await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
+  test.fixme('post-import filter must not survive client-nav (F5 count == client-nav count)', async ({
+    page,
+  }) => {
+    // Reach the post-import filtered state and confirm the filter is genuinely applied here.
+    const filterUrl = await establishFilteredState(page);
+    await expect(
+      page.getByTestId('url-filter-chip'),
+      'filter is applied on /vehicle-types'
+    ).toBeVisible();
 
-    // Baseline totals (client-nav, never goto) so we can prove the import added rows.
-    await railNavigate(page, '/vehicles');
-    await page.waitForLoadState('networkidle');
-    const vehiclesBefore = await rowCount(page);
-    await railNavigate(page, '/deck-plans');
-    await page.waitForLoadState('networkidle');
-    const deckPlansBefore = await rowCount(page);
+    // Each sibling list, re-established from the filtered state so the leak isn't "consumed" by a
+    // prior hop. The #141 signature is exactly the report's: what a full reload (F5) shows must equal
+    // what client-side navigation shows. The leak filters the sibling list (count drops to 0/1) while
+    // F5 shows the full org list — so the two counts diverge.
+    for (const href of ['/vehicles', '/deck-plans']) {
+      // Ground truth: a full reload of the list (F5 clears the leak).
+      await page.goto(href);
+      await selectFirstOrg(page);
+      await page.waitForLoadState('networkidle');
+      const fullCount = await rowCount(page);
 
-    // Import a fresh reg-nr → 1 vehicle type + 1 vehicle + 1 deck plan; redirects to
-    // /vehicle-types?filter=<newTypeIds>.
-    await railNavigate(page, '/vehicle-types');
-    await page.waitForLoadState('networkidle');
-    await importRegViaAutosys(page, REG_NR);
-
-    // Control: the vehicle-types list DID update (it watches ?filter).
-    await expect(page.locator('table tbody tr')).not.toHaveCount(0);
-
-    // ── THE BUG on /vehicles ──────────────────────────────────────────────────
-    await railNavigate(page, '/vehicles');
-    await page.waitForLoadState('networkidle');
-    const vehiclesAfterNav = await rowCount(page);
-    expect(
-      vehiclesAfterNav,
-      '#141: /vehicles via client-nav should include the imported vehicle, but the list is stale until F5'
-    ).toBeGreaterThan(vehiclesBefore);
-
-    // Prove it is a STATE bug: a full reload (the "F5") surfaces the new vehicle.
-    await page.reload();
-    await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
-    const vehiclesAfterReload = await rowCount(page);
-    expect(vehiclesAfterReload).toBeGreaterThan(vehiclesBefore);
-    expect(
-      vehiclesAfterNav,
-      '#141 signature: the client-nav total must equal the post-F5 total'
-    ).toBe(vehiclesAfterReload);
-
-    // ── Same bug on /deck-plans ───────────────────────────────────────────────
-    await railNavigate(page, '/deck-plans');
-    await page.waitForLoadState('networkidle');
-    const deckPlansAfterNav = await rowCount(page);
-    expect(
-      deckPlansAfterNav,
-      '#141: imported deck plan should appear on /deck-plans via client-nav, but is missing until F5'
-    ).toBeGreaterThan(deckPlansBefore);
-
-    await page.reload();
-    await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
-    const deckPlansAfterReload = await rowCount(page);
-    expect(deckPlansAfterReload).toBeGreaterThan(deckPlansBefore);
-    expect(
-      deckPlansAfterNav,
-      '#141 signature: the client-nav deck-plan total must equal the post-F5 total'
-    ).toBe(deckPlansAfterReload);
+      // Client-navigate to the same list FROM the filtered state — must match the F5 count.
+      await page.goto(filterUrl);
+      await selectFirstOrg(page);
+      await page.waitForLoadState('networkidle');
+      await railNavigate(page, href);
+      await expect(
+        page.getByTestId('total-entries'),
+        `#141: ${href} via client-nav must show all ${fullCount} rows (the F5 count) — the import filter leaked into it`
+      ).toHaveAttribute('data-count', String(fullCount));
+    }
   });
 });
