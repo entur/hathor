@@ -27,7 +27,7 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live
  *     (E2E_AUTOSYS_REG_NR, e.g. a row from fixtures/some-busses.csv) and the local Shepet
  *     responsibilitySet temp-fix (Shepet HEAD omits the responsibilitySets Sobek import requires).
  *   - regression guard: runs in the mock CI suite and passes with the #141 fix in place; reverting
- *     the fix in src/hooks/useUrlFilters.ts turns it red again. (Live needs both backends + a fresh plate.)
+ *     the fix in src/components/search/SearchContext.tsx turns it red again. (Live needs both backends + a fresh plate.)
  *
  * ROOT CAUSE (verified 2026-06-22 — live plate VJ12248 AND mock; FIXED in this branch): the URL
  * `?filter=` drives SearchContext.activeFilters (via useUrlFilters on /vehicle-types & /deck-plans),
@@ -42,8 +42,9 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live
 /** A vehicle-type id present in the mock fixture — used to fake the post-import redirect under mock. */
 const MOCK_FILTER_TYPE_ID = 'NMR:VehicleType:1';
 
-/** Per-href URL matcher anchored so /vehicles never matches /vehicle-types. */
-const onPath = (href: string) => new RegExp(href.replace(/[/-]/g, '\\$&') + '(\\?|$)');
+/** Matches when the page is on exactly `href` (ignoring any query string). A URL predicate avoids
+ *  building a RegExp from a string (CodeQL: incomplete regex escaping) and is exact, not substring. */
+const atPath = (href: string) => (url: URL) => url.pathname === href;
 
 /**
  * Navigate via the persistent left nav-rail's real <a href> — a CLIENT-SIDE route change. This is
@@ -52,7 +53,7 @@ const onPath = (href: string) => new RegExp(href.replace(/[/-]/g, '\\$&') + '(\\
  */
 async function railNavigate(page: Page, href: string): Promise<void> {
   await page.locator(`[data-testid="nav-rail"] a[href="${href}"]`).click();
-  await expect(page).toHaveURL(onPath(href));
+  await expect(page).toHaveURL(atPath(href));
 }
 
 /**
@@ -88,7 +89,7 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
       `Import of "${reg}" failed (likely already imported). #141 needs a FRESH reg-nr — set E2E_AUTOSYS_REG_NR to a plate this org does not own.`
     );
   }
-  await expect(page).toHaveURL(onPath('/vehicle-types'));
+  await expect(page).toHaveURL(atPath('/vehicle-types'));
 }
 
 /**
