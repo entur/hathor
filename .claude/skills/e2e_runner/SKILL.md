@@ -71,8 +71,11 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST \
 ```
 
 Interpret:
-- **Sobek down** → live mode is impossible; tell the user to start it (`sobek`: `docker compose up`
-  then `mvn -pl sobek-app spring-boot:run`).
+- **Sobek down** → live mode is impossible; bring it up (`sobek`: `docker compose up` then
+  `mvn -pl sobek-app spring-boot:run`). For the **Autosys import** flow you also need **Shepet** on
+  :37998. Both are Java-21 apps with non-obvious snags (JDK-26 default breaks the build, Sobek↔Shepet
+  `sobek-common` API drift, Shepet's half-configured OAuth2 `internal` client) — full recipe + fixes
+  in `references/bringing-up-backends.md`.
 - **401 from Sobek** → live mode needs a real token. You MUST do the login handoff (next section);
   `config-no-auth.json` sends no token and will 401 against a secured Sobek.
 - **A dev server already on :5000 from another checkout** → Playwright reuses it
@@ -133,15 +136,17 @@ session token. This is the **proven recipe** (verified end-to-end):
    ⚠️ Playwright's `storageState` persists cookies + **localStorage only, not sessionStorage** — so
    you cannot rely on `storageState`. Capture the `oidc.user:*` entry explicitly and re-seed it via
    `addInitScript` for the serial run (snippet in harness-internals).
-5. **Verify the token before running — make-or-break.** Decode the JWT payload and confirm a
-   **`roles` claim exists**. A `partner.dev` token with only `scope: openid` and **no `roles`
-   claim** makes `organisations(onlyUserAuthorized:true)` return `INTERNAL_ERROR` (confirmed live) →
-   the org dropdown throws → `currentOrganisation` null → the "Loading data…" stall. That's a
-   token/permissions problem (roles not provisioned) or a Sobek bug — **not** a hathor query bug;
-   hathor's org query shape is correct. The non-authorized `organisations` path returns all orgs
-   fine, so use it to sanity-check connectivity. Fix paths: provision the login with role
-   assignments, guard Sobek's `getRoleAssignmentsForUser`, or have hathor stop sending
-   `onlyUserAuthorized: true` (dev-only — shows all orgs).
+5. **Verify the token before running — make-or-break.** The JWT does **not** need a `roles` claim —
+   Sobek resolves role assignments **backend-side** (from the token's `organisationID` claim via the
+   permission store), so a partner.dev token with only `scope: openid` is fine. Verify the *effect*,
+   not the claim: call `organisations(onlyUserAuthorized:true)` (filter type `OrganisationsFilter`)
+   and confirm it returns the user's authorized orgs. Empirically (2026-06-22) a no-roles-claim
+   partner.dev token returned 2 orgs (AtB + Agder) here. If that query **errors or comes back empty**,
+   the account has **no role assignments provisioned backend-side** (or the permission-store lookup
+   failed) → the org dropdown can't populate → `currentOrganisation` null → the "Loading data…"
+   stall. That's a backend role-provisioning/permission issue, **not** a missing-JWT-claim or hathor
+   query-shape problem (hathor's org query is correct). The non-authorized `organisations` path (no
+   filter) returns all orgs regardless — use it only to sanity-check connectivity, not authorization.
 
 Never paste the JWT into chat or commit it. Keep it in a gitignored file for the run only; short-lived.
 
@@ -203,3 +208,6 @@ per-entity reality rather than pretending a uniform create exists.
   vehicle-list trio, `waitForVehicleInList`), fixtures, serial config. Read before editing helpers.
 - `references/surfaces-and-testids.md` — per-entity create/edit surfaces, the full `data-testid`
   inventory, and which row-count assertions are hardcoded. Read before writing or auditing a spec.
+- `references/bringing-up-backends.md` — build + run recipes for Sobek (:37999) and Shepet (:37998)
+  under JDK 21, health checks, and the three startup snags (JDK version, `sobek-common` cross-repo
+  drift, Shepet's OAuth2 `internal` client). Read before starting the live backends.
