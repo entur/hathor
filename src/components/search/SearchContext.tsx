@@ -168,10 +168,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     }
   }, [activeFilters, handleSetSearchQuery]);
 
-  useEffect(() => {
-    clearSearch();
-  }, [activeSearchContext, clearSearch]);
-
   // Clear search + filters on every route change. A URL-scoped filter (e.g. the post-import
   // /vehicle-types?filter=) must not leak into the next list view: sibling lists are different routes
   // within the same 'data' search context, which the context-change clear above does not catch (#141).

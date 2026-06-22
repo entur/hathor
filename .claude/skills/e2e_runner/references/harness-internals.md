@@ -33,7 +33,7 @@ Three skip flavours exist in the suite:
 - `test.skip(E2E_BACKEND === 'true', 'mock-bound assertions')` — mock-only specs
   (e.g. `vehicle-type-sidebar.spec.ts` save block, `vehicle-slider-form.spec.ts`).
 - `test.skip(() => E2E_BACKEND !== 'true', 'needs local Sobek')` — live-only specs
-  (`vehicle-type-save-live.spec.ts`, `import-to-detail.spec.ts`).
+  (`vehicle-type-save-live.spec.ts`).
 
 The conformance goal is to shrink categories 2 and 3 — most specs should be one body that works in
 both modes (relative assertions + read-back), reserving skips for genuinely mode-specific checks.
@@ -157,5 +157,5 @@ unfiltered list up to 5×/250ms for a freshly-created id; swallows transient err
 
 `playwright.config.ts` ~L32: `workers: process.env.CI || isNoAuth ? 1 : undefined`. Serial for
 no-auth (shared `config.json`) and in CI. Multi-step / mutating specs add
-`test.describe.configure({ mode: 'serial' })` (`no-auth.spec.ts` ~L38, `import-to-detail.spec.ts`
-~L6) so a step can read what the previous one wrote.
+`test.describe.configure({ mode: 'serial' })` (`no-auth.spec.ts` ~L38, `import-state-refresh.spec.ts`
+~L114) so a step can read what the previous one wrote.
