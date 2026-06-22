@@ -17,14 +17,14 @@ import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
  *   - Aggregated import summary parsed from a single REG_NR fixture (1/1/1/1).
  * Modes:
  *   - mock (E2E_SUITE=no-auth): intercepts the VehicleTypes + Autosys GraphQL queries with fixtures; full dialog flow runs offline.
- *   - live (E2E_BACKEND=true): would fetch the real Autosys data via shepet on :37998 (no query intercepts).
- *   - skip-live: skipped when IS_LIVE — needs the shepet Autosys backend (:37998), a separate app not part of this Sobek-focused live run.
+ *   - live (E2E_BACKEND=true): fetches real Autosys data via shepet on :37998 (no query intercepts).
+ *     Needs a real plate — set E2E_AUTOSYS_REG_NR (the fixture "A-1" is not a real Autosys plate);
+ *     the 1/1/1/1 summary is plate-dependent under live.
  */
 test.describe('Autosys multi-import dialog', () => {
-  // The live path fetches from the shepet Autosys backend on :37998, which is a
-  // separate app outside this Sobek-focused live run (not running). Mock mode
-  // serves the Autosys fixture and still exercises the dialog end-to-end.
-  test.skip(IS_LIVE, 'requires the shepet Autosys backend (:37998), not part of this live run');
+  // Runs in BOTH modes now that shepet (:37998) is available locally: mock serves the
+  // Autosys fixture; live fetches real Autosys via shepet. The shepet-not-running guard
+  // was a temporary skip and has been removed.
 
   // writeConfig() (not a raw config-no-auth copy) so a live run leaves
   // config-with-auth on disk for the next serial spec, even though this one
