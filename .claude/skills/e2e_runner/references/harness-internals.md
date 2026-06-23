@@ -33,7 +33,7 @@ Three skip flavours exist in the suite:
 - `test.skip(E2E_BACKEND === 'true', 'mock-bound assertions')` — mock-only specs
   (e.g. `vehicle-type-sidebar.spec.ts` save block, `vehicle-slider-form.spec.ts`).
 - `test.skip(() => E2E_BACKEND !== 'true', 'needs local Sobek')` — live-only specs
-  (`vehicle-type-save-live.spec.ts`, `import-to-detail.spec.ts`).
+  (`vehicle-type-save-live.spec.ts`).
 
 The conformance goal is to shrink categories 2 and 3 — most specs should be one body that works in
 both modes (relative assertions + read-back), reserving skips for genuinely mode-specific checks.
@@ -102,18 +102,25 @@ console.log('CAPTURED ' + user.k); await browser.close();
 
 ```bash
 TOK=$(jq -r '.v.access_token' playwright/.auth/oidc-user.json)
-# decode payload — MUST contain a `roles` claim
+# decode payload — just confirm it's a partner.dev token and not expired. It need NOT carry a
+# `roles` claim: Sobek resolves role assignments backend-side from the `organisationID` claim.
 echo "$TOK" | cut -d. -f2 | sed 's/-/+/g;s/_/\//g' | base64 -d 2>/dev/null | jq 'keys'
-# live: this throws INTERNAL_ERROR if the token has no roles claim
+# the REAL precondition — this returns the user's AUTHORIZED orgs (empty/error ⇒ no roles
+# provisioned backend-side, not a JWT-claim gap). filter type is OrganisationsFilter.
 curl -s -X POST http://localhost:37999/services/vehicles/graphql -H "Authorization: Bearer $TOK" \
   -H 'Content-Type: application/json' \
   -d '{"query":"query($f:OrganisationsFilter){organisations(filter:$f,size:3){totalElements}}","variables":{"f":{"onlyUserAuthorized":true}}}'
-# sanity (always works): the non-authorized path returns all orgs (~339)
+# sanity (works on any valid token): the non-authorized path returns all orgs (~339)
 curl -s -X POST http://localhost:37999/services/vehicles/graphql -H "Authorization: Bearer $TOK" \
   -H 'Content-Type: application/json' -d '{"query":"{organisations(size:3){totalElements}}"}'
 ```
-A `partner.dev` token with `scope:openid` and **no `roles`** → `organisations(onlyUserAuthorized:true)`
-`INTERNAL_ERROR` (confirmed 2026-06-05). That's the role-claim gap, not a hathor bug.
+The JWT needs **no `roles` claim** — Sobek resolves role assignments backend-side from the
+`organisationID` claim (permission store). Empirically (2026-06-22) a `scope:openid`, no-roles
+partner.dev token returned the user's 2 authorized orgs (AtB + Agder) here. If
+`onlyUserAuthorized:true` instead errors/empties, the account lacks backend-provisioned roles (or
+the permission lookup failed) — a backend issue, not a missing-claim or hathor-query bug. (An
+earlier 2026-06-05 note claimed the no-roles token `INTERNAL_ERROR`s — superseded; verify the
+effect, not the claim.)
 
 ### 3. Use it in the run
 
@@ -150,5 +157,5 @@ unfiltered list up to 5×/250ms for a freshly-created id; swallows transient err
 
 `playwright.config.ts` ~L32: `workers: process.env.CI || isNoAuth ? 1 : undefined`. Serial for
 no-auth (shared `config.json`) and in CI. Multi-step / mutating specs add
-`test.describe.configure({ mode: 'serial' })` (`no-auth.spec.ts` ~L38, `import-to-detail.spec.ts`
-~L6) so a step can read what the previous one wrote.
+`test.describe.configure({ mode: 'serial' })` (`no-auth.spec.ts` ~L38, `import-state-refresh.spec.ts`
+~L114) so a step can read what the previous one wrote.
