@@ -1,24 +1,25 @@
 # Harness internals
 
-How the e2e harness switches modes, swaps config, and what's reusable. Paths are relative to the
+How the e2e harness switches modes, routes config, and what's reusable. Paths are relative to the
 hathor repo root. Line numbers drift — grep to confirm.
 
 ## Contents
 - [Mode switches](#mode-switches)
-- [Config swapping](#config-swapping)
+- [Config routing](#config-routing)
 - [The sessionStorage / JWT capture wrinkle](#the-sessionstorage--jwt-capture-wrinkle)
 - [Reusable helpers](#reusable-helpers)
 - [Fixtures](#fixtures)
-- [Serial execution](#serial-execution)
+- [Worker model](#worker-model)
 
 ## Mode switches
 
-Two env vars, both read in specs (not in `playwright.config.ts`, which only reads `E2E_SUITE`):
+One env var drives mode (`E2E_SUITE` is gone — there is a single flat suite under `e2e-tests/`,
+`testDir: './e2e-tests'`, default multi-worker since config is no longer disk-shared):
 
-- `E2E_SUITE` — `no-auth` | `auth`. Selects `testDir` (`./e2e-tests/no-auth` vs `./e2e-tests/auth`)
-  in `playwright.config.ts` (~L14-15) and forces `workers: 1` for no-auth (~L32).
 - `E2E_BACKEND` — `'true'` makes specs **skip their GraphQL interceptors** so requests hit live
-  Sobek. Set only by `package.json` → `e2e:local-backend` (`E2E_BACKEND=true E2E_SUITE=no-auth`).
+  Sobek. Set only by `package.json` → `e2e:local-backend` (`E2E_BACKEND=true … --workers=1`).
+  Auth profile is chosen per-test via `setConfig(router, 'auth-on' | 'auth-off')` (route-intercepts
+  `**/config.json`); `seedAuth` serves `'auth-on'` itself.
 
 The branch pattern in specs (the thing to keep uniform):
 ```ts
@@ -38,25 +39,28 @@ Three skip flavours exist in the suite:
 The conformance goal is to shrink categories 2 and 3 — most specs should be one body that works in
 both modes (relative assertions + read-back), reserving skips for genuinely mode-specific checks.
 
-## Config swapping
+## Config routing
 
-`playwright.config.ts` does **not** set `public/config.json`. Each suite copies a fixture into it
-in `beforeAll` (e.g. `no-auth.spec.ts` ~L44, `auth.spec.ts` ~L19):
+Nothing touches `public/config.json` on disk. `setConfig(router, profile)` (`live-auth-helpers.ts`)
+**route-intercepts** the app's `**/config.json` startup fetch (`src/config/fetchConfig.ts`) and
+fulfills it with a fixture body — registered before the first `goto`:
 ```ts
-fs.copyFileSync(`${fixturesDir}/config-no-auth.json`, 'public/config.json');
+await setConfig(page, 'auth-off');        // or 'auth-on'
+// seedAuth(context) calls setConfig(context, 'auth-on') itself, so most specs never name a config
 ```
-Because all specs mutate that one on-disk file, the no-auth suite must stay serial.
+Because each test serves its own config on its own page/context, there is no shared state — the
+suite is parallel-safe (default workers).
 
 Fixtures (`e2e-tests/fixtures/`):
-| File | oidcConfig | backend URL | use |
-|---|---|---|---|
-| `config-no-auth.json` | absent | `http://localhost:37999/services/vehicles/graphql` | default no-auth + `e2e:local-backend` |
-| `config-with-auth.json` | present (partner.dev.entur) | same `:37999` | auth suite; **the one to use for live login** |
-| `config-no-baseurl.json` | absent | missing baseUrl | mock-only error test |
+| File | profile | oidcConfig | backend URL | use |
+|---|---|---|---|---|
+| `config-no-auth.json` | `'auth-off'` | absent | `http://localhost:37999/services/vehicles/graphql` | auth-off UI + mocked list specs |
+| `config-with-auth.json` | `'auth-on'` | present (partner.dev.entur) | same `:37999` | `seedAuth` default; **the one for live login** |
 
-Key consequence: `e2e:local-backend` ships `config-no-auth.json` → **no OIDC, no token** → 401
-against a secured Sobek. For an authenticated live run, use an OIDC-enabled config pointing at
-`:37999` (`config-with-auth.json`, or a new `config-localhost-auth.json`).
+Live runs (`e2e:local-backend`) go through `seedAuth`, which serves `'auth-on'`
+(`config-with-auth.json`, OIDC pointing at `:37999`) **and** seeds the captured JWT into
+sessionStorage — so the app authenticates against the secured Sobek. A spec that skips `seedAuth`
+on the live path would have no token → 401.
 
 ## The sessionStorage / JWT capture wrinkle
 
@@ -117,7 +121,7 @@ A `partner.dev` token with `scope:openid` and **no `roles`** → `organisations(
 
 ### 3. Use it in the run
 
-- **Re-seed sessionStorage** (faithful): for the serial run, before each page,
+- **Re-seed sessionStorage** (faithful): before each page,
   `await context.addInitScript(({k,v}) => sessionStorage.setItem(k, JSON.stringify(v)), oidc)` with
   the captured `{k,v}`. Pair with an oidc-enabled config (config-localhost).
 - **Inject the Bearer directly** (simpler, less faithful): pull `.v.access_token` and add
@@ -125,7 +129,7 @@ A `partner.dev` token with `scope:openid` and **no `roles`** → `organisations(
 
 ## Reusable helpers
 
-`e2e-tests/no-auth/autosys-helpers.ts`:
+`e2e-tests/autosys-helpers.ts`:
 - `loadFixture(name)` — sync-load a JSON fixture.
 - `interceptGraphQLQuery(page, queryName, body)` — generic: fulfill on query-substring match, else
   `continue()`. The primitive all other GQL mocks build on.
@@ -134,7 +138,7 @@ A `partner.dev` token with `scope:openid` and **no `roles`** → `organisations(
   to assert the captured mutation input (mock-only).
 - `interceptAutosysQuery(page)` — serves the Autosys XML fixture.
 
-`e2e-tests/no-auth/vehicle-list-helpers.ts` — composable trio (register in this order):
+`e2e-tests/vehicle-list-helpers.ts` — composable trio (register in this order):
 - `interceptVehicleListQuery(page)` — unfiltered `vehicles(...)` → 15-row fixture; ignores by-id.
 - `interceptVehicleByIdQuery(page, resolve)` — claims `filter.netexIds` queries.
 - `interceptVehicleSaveMutation(page, newId, onSaved?)` — captures `createOrUpdateVehicle` input.
@@ -146,9 +150,10 @@ App-side polling (works in both modes): `src/data/vehicles/api/waitForVehicleInL
 unfiltered list up to 5×/250ms for a freshly-created id; swallows transient errors. Used by
 `VehicleCreatePage.tsx` "View in list". This is the model for read-after-write under a live DB.
 
-## Serial execution
+## Worker model
 
-`playwright.config.ts` ~L32: `workers: process.env.CI || isNoAuth ? 1 : undefined`. Serial for
-no-auth (shared `config.json`) and in CI. Multi-step / mutating specs add
-`test.describe.configure({ mode: 'serial' })` (`no-auth.spec.ts` ~L38, `import-to-detail.spec.ts`
-~L6) so a step can read what the previous one wrote.
+`playwright.config.ts`: `workers: undefined` (default = cpu cores), both locally and in CI — the
+config route-interception removed the shared-disk constraint. Specs that genuinely need ordered
+steps (a later step reads what an earlier one wrote) still opt in with
+`test.describe.configure({ mode: 'serial' })`. The **live** run (`e2e:local-backend`) pins
+`--workers=1` because parallel writes against one real Sobek would race.

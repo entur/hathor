@@ -30,9 +30,8 @@ npm run check            # Prettier check
 npm run format           # Prettier auto-format
 
 # E2E tests (Playwright)
-npm run e2e:auth         # Run auth-enabled test suite
-npm run e2e:no-auth      # Run no-auth test suite (mocked GraphQL)
-npm run e2e:local-backend  # no-auth suite against a live local Sobek (E2E_BACKEND=true)
+npm run e2e              # Run the suite (mocked GraphQL), both browsers, multi-worker
+npm run e2e:local-backend  # Same specs against a live local Sobek (E2E_BACKEND=true, --workers=1)
 ```
 
 Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` on the whole project) followed by `npx lint-staged` (Prettier `--write` + ESLint `--fix` on staged files). The developer uses `prettierd` in nvim for format-on-save, which picks up the repo-root `.prettierrc` automatically.
@@ -100,31 +99,27 @@ JSON-based theme config loaded at runtime and converted to an MUI theme by `src/
 
 ### Overview
 
-End-to-end tests use Playwright (`@playwright/test`) with two test suites selected via the `E2E_SUITE` environment variable:
-
-- **`auth`** — tests behavior when OIDC is configured (redirects to login provider, login button visible)
-- **`no-auth`** — tests behavior when OIDC is absent (warning banner shown, content still accessible, "Auth off" chip in header)
+End-to-end tests use Playwright (`@playwright/test`) — one flat suite under `e2e-tests/`. The two auth profiles (OIDC configured vs absent) are no longer separate suites; `auth-modes.spec.ts` exercises both, and any spec picks its profile per-test via `setConfig`. `E2E_BACKEND=true` switches a spec from mocked GraphQL to a live local Sobek (see `e2e:local-backend`).
 
 ### Directory Structure
 
 ```
 e2e-tests/
-├── auth/
-│   └── auth.spec.ts              # Tests with OIDC enabled
-├── no-auth/
-│   └── no-auth.spec.ts           # Tests with OIDC disabled
+├── *.spec.ts                     # all specs, flat (auth-modes.spec.ts, vehicle*.spec.ts, …)
+├── live-auth-helpers.ts          # setConfig (config route), seedAuth, org selection
+├── autosys-helpers.ts            # GraphQL/Autosys intercept helpers
+├── vehicle-list-helpers.ts       # vehicles() mock builders
 └── fixtures/
-    ├── config-with-auth.json     # config.json with oidcConfig set
-    └── config-no-auth.json       # config.json without oidcConfig
+    ├── config-with-auth.json     # config.json with oidcConfig set    ('auth-on')
+    └── config-no-auth.json       # config.json without oidcConfig      ('auth-off')
 ```
 
 ### How It Works
 
-Tests switch auth mode by copying a fixture file to `public/config.json` in `beforeAll()`. The Vite dev server picks up the change at runtime. This means:
+Each test serves its own `public/config.json` to the app via **route interception** — `setConfig(router, 'auth-on' | 'auth-off')` fulfills the `**/config.json` fetch (`src/config/fetchConfig.ts`) with the chosen fixture body, registered before the first `goto`. `seedAuth(context)` serves `'auth-on'` itself, so most specs never name a config. Nothing touches `public/config.json` on disk, so:
 
-- The **no-auth suite runs serially** (`mode: 'serial'`, `workers: 1`) because tests mutate the shared config file on disk.
-- The **auth suite** can run in parallel locally.
-- In **CI**, both suites use `workers: 1`.
+- There is **no shared on-disk state** — the suite is parallel-safe and runs at the default worker count (cpu cores) locally and in CI.
+- The **live-backend run pins `--workers=1`** (`e2e:local-backend`) because parallel writes against one live Sobek would race.
 
 ### Config & Browsers
 
@@ -149,11 +144,10 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 
 ### CI Workflow
 
-`.github/workflows/playwright.yml` runs on push/PR to `main`/`master`:
-1. Install deps (`npm ci`)
-2. Install Playwright browsers (`npx playwright install --with-deps`)
-3. Run `npm run e2e:auth` then `npm run e2e:no-auth`
-4. Upload HTML report as artifact (30-day retention)
+`.github/workflows/playwright.yml` runs on push/PR to `main`/`master` as three jobs:
+1. **`schema`** — Sobek schema-drift guard (curl + diff, no `npm ci`); gates `e2e`.
+2. **`unit`** — `npm ci` + `npm run test:coverage`; sibling of `e2e` (no `needs`, so neither blocks the other).
+3. **`e2e`** — `needs: schema`; browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
 
 ## Legacy Cleanup TODO
 
@@ -174,8 +168,8 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 | `src/contexts/configContext.ts` | Runtime config types and context |
 | `public/config.json` | Runtime API/OIDC configuration |
 | `.github/environments/` | Environment-specific config files |
-| `playwright.config.ts` | Playwright config (suite selection, browsers, workers) |
-| `e2e-tests/auth/auth.spec.ts` | E2E tests with OIDC enabled |
-| `e2e-tests/no-auth/no-auth.spec.ts` | E2E tests with OIDC disabled |
-| `e2e-tests/fixtures/` | Config fixture files for auth/no-auth modes |
-| `.github/workflows/playwright.yml` | CI workflow for e2e tests |
+| `playwright.config.ts` | Playwright config (testDir, browsers, workers) |
+| `e2e-tests/auth-modes.spec.ts` | Both auth profiles (OIDC on/off) via `setConfig` |
+| `e2e-tests/live-auth-helpers.ts` | `setConfig` (config route), `seedAuth`, org selection |
+| `e2e-tests/fixtures/` | Config fixture files (`config-with-auth` / `config-no-auth`) |
+| `.github/workflows/playwright.yml` | CI workflow: schema · unit · e2e browser matrix |

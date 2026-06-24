@@ -36,8 +36,8 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 | `npm run build` | Type-check and build (`build/`) |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier auto-format |
-| `npm run e2e:auth` | Playwright tests (auth enabled) |
-| `npm run e2e:no-auth` | Playwright tests (auth disabled) |
+| `npm run e2e` | Playwright tests (mocked GraphQL) |
+| `npm run e2e:local-backend` | Playwright tests against a live local Sobek |
 
 ## Architecture diagram
 

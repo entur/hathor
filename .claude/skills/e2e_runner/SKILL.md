@@ -20,8 +20,8 @@ description: >-
 
 Hathor's e2e suite runs in two modes that are *supposed* to be interchangeable:
 
-- **mocked** — `npm run e2e:no-auth`. GraphQL is intercepted with fixtures; counts are exact.
-- **live** — `npm run e2e:local-backend` (`E2E_BACKEND=true E2E_SUITE=no-auth`). The same specs
+- **mocked** — `npm run e2e`. GraphQL is intercepted with fixtures; counts are exact.
+- **live** — `npm run e2e:local-backend` (`E2E_BACKEND=true`). The same specs
   skip their interceptors and hit a real Sobek at `:37999`; data and counts vary.
 
 The promise we want to keep: **the navigation and CRUD *flow* is identical in both modes — only
@@ -149,14 +149,14 @@ Never paste the JWT into chat or commit it. Keep it in a gitignored file for the
 
 ```bash
 # mocked (fast, deterministic) — the baseline the live run must match
-npm run e2e:no-auth
+npm run e2e
 
 # live backend — sequential, mutates the DB; do the login handoff first
 npm run e2e:local-backend
 ```
 
 Scope to one spec while iterating: append the spec name, e.g.
-`E2E_BACKEND=true E2E_SUITE=no-auth npx playwright test vehicle-create-feedback`.
+`E2E_BACKEND=true npx playwright test vehicle-create-feedback`.
 
 When a live run fails, first decide *which* layer broke before reading assertions:
 - **login page / 401** → handoff or token problem (above).
@@ -198,7 +198,7 @@ per-entity reality rather than pretending a uniform create exists.
 
 ## Reference files
 
-- `references/harness-internals.md` — `E2E_BACKEND`/`E2E_SUITE`, config swapping, the
+- `references/harness-internals.md` — `E2E_BACKEND`, per-test config routing, the
   sessionStorage/JWT capture wrinkle (+ snippet), reusable helpers (`interceptGraphQLQuery`,
   vehicle-list trio, `waitForVehicleInList`), fixtures, serial config. Read before editing helpers.
 - `references/surfaces-and-testids.md` — per-entity create/edit surfaces, the full `data-testid`
