@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { REG_NR, interceptAutosysQuery } from './autosys-helpers';
-import { writeConfig } from './live-auth-helpers';
 
 /**
  * /vehicle-types Autosys import → VehicleType detail navigation — import one reg-nr, then open its route-based detail page.
@@ -17,19 +16,13 @@ import { writeConfig } from './live-auth-helpers';
  *   - Idempotent re-runs: tolerates a duplicate-submit error by closing the dialog and continuing.
  *   - Route-based VehicleType detail surface (Edit / XML Preview tabs).
  * Modes:
- *   - mock (E2E_SUITE=no-auth): n/a — live-only; whole describe is unconditionally skipped.
+ *   - mock (E2E_BACKEND unset): n/a — live-only; whole describe is unconditionally skipped.
  *   - live (E2E_BACKEND=true): would fetch via shepet Autosys (:37998) and submit the import to real Sobek.
  *   - skip: ALWAYS skipped (test.skip(true, ...)). Two blockers — (1) needs the shepet Autosys backend on :37998 (not running);
  *     (2) asserts a route-based VehicleType detail page (Edit / XML Preview tabs) whose surface must be re-verified, since
  *     CLAUDE.md notes the route editor was retired in favour of the `?selected=` sidebar.
  */
 test.describe('Import → detail page navigation', () => {
-  test.describe.configure({ mode: 'serial' });
-
-  // writeConfig() so a live run leaves config-with-auth on disk for the next
-  // serial spec (this one is always skipped).
-  test.beforeAll(() => writeConfig());
-
   // Live-only flow that fetches from the shepet Autosys backend (:37998) and
   // submits the import to Sobek. shepet is a separate app outside this run (not
   // running), so this stays skipped until it is up. NOTE: it also asserts a

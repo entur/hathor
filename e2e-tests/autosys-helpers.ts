@@ -5,8 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const fixturesDir = path.join(__dirname, '..', 'fixtures');
-export const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
+export const fixturesDir = path.join(__dirname, 'fixtures');
 
 /**
  * Read a JSON fixture file from `e2e-tests/fixtures/` synchronously at module init.

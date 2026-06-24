@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery } from './autosys-helpers';
 import { interceptVehicleListQuery } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 /**
  * /vehicle-types + /vehicles — TransportMode icons in the column and filter dropdown (#23).
@@ -17,13 +17,12 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-help
  *   - /vehicle-types filter dropdown: icons present AND legacy stop-place labels
  *     ("Parent Vehicle Type", "Harbour") are gone (regression after filter swap)
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts `vehicleTypes` / `vehicles` fixtures;
+ *   - mock (E2E_BACKEND unset): intercepts `vehicleTypes` / `vehicles` fixtures;
  *     assertions are shape-only (icon presence, href pattern, count > 0)
  *   - live (E2E_BACKEND=true): seeds JWT, auto-selects org "AtB"; same shape-only
  *     assertions run unchanged against real org-scoped data (no fixture counts)
  */
 test.describe('#23 — TransportMode column + filter-dropdown icons', () => {
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   test('TransportMode column renders an SVG per row on /vehicle-types', async ({ page }) => {

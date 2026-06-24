@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, readNetexIds } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg, readNetexIds } from './live-auth-helpers';
 
 /**
  * /vehicle-types sidebar save — LIVE-ONLY real `createOrUpdateVehicleType` round-trip against a running, authenticated Sobek (no GraphQL mock).
@@ -16,14 +16,13 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, readNetexIds } from './
  *     unchanged after the reload. (The serialiser's full wire shape is unit-tested in serializeVehicleType.test.ts.)
  *   - DB left as found (modulo an unavoidable version bump) via the restore teardown.
  * Modes:
- *   - mock (E2E_SUITE=no-auth): n/a — live-only; the whole describe is skipped when !IS_LIVE.
- *   - live (E2E_BACKEND=true): writeConfig + seedAuth (JWT in session) + selectFirstOrg (AtB) → real Sobek save round-trip.
+ *   - mock (E2E_BACKEND unset): n/a — live-only; the whole describe is skipped when !IS_LIVE.
+ *   - live (E2E_BACKEND=true): seedAuth (config + JWT in session) + selectFirstOrg (AtB) → real Sobek save round-trip.
  *   - skip-live: skipped unless IS_LIVE — "Requires a running, authenticated Sobek backend".
  */
 test.describe('VehicleType sidebar save — LIVE Sobek', () => {
   test.skip(() => !IS_LIVE, 'Requires a running, authenticated Sobek backend');
 
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   test('edit name → real save → persists across a full reload', async ({ page }) => {

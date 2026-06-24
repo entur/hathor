@@ -6,9 +6,37 @@ import { expect, type BrowserContext, type Page } from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
-const targetConfig = path.join(__dirname, '..', '..', 'public', 'config.json');
-const authFile = path.join(__dirname, '..', '..', 'playwright', '.auth', 'oidc-user.json');
+const fixturesDir = path.join(__dirname, 'fixtures');
+const authFile = path.join(__dirname, '..', 'playwright', '.auth', 'oidc-user.json');
+
+/** Config profile → fixture file. 'auth-on' boots OIDC; 'auth-off' disables it. */
+const CONFIG_FIXTURE = {
+  'auth-on': 'config-with-auth.json',
+  'auth-off': 'config-no-auth.json',
+} as const;
+export type ConfigProfile = keyof typeof CONFIG_FIXTURE;
+
+/** Fixture bodies read once at module init — workers reuse them. */
+const CONFIG_BODY: Record<ConfigProfile, string> = {
+  'auth-on': fs.readFileSync(path.join(fixturesDir, CONFIG_FIXTURE['auth-on']), 'utf8'),
+  'auth-off': fs.readFileSync(path.join(fixturesDir, CONFIG_FIXTURE['auth-off']), 'utf8'),
+};
+
+/**
+ * Serve `public/config.json` to the app via route interception instead of
+ * mutating the file on disk — each test/context gets its own config, so the
+ * suite no longer needs `workers: 1`. The app fetches `${BASE_URL}config.json`
+ * once at startup (`src/config/fetchConfig.ts`), so the route MUST be registered
+ * before the first `goto`. Works on a `Page` or a `BrowserContext` (both expose
+ * `.route`); context-level covers every page it opens.
+ *
+ * @param router Playwright `Page` or `BrowserContext`.
+ * @param profile 'auth-on' (OIDC) or 'auth-off' (no oidcConfig).
+ */
+export const setConfig = (router: Page | BrowserContext, profile: ConfigProfile) =>
+  router.route('**/config.json', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: CONFIG_BODY[profile] })
+  );
 
 /** Timeout (ms) for the org picker to render + auto-select after login. */
 const ORG_READY_TIMEOUT = 20000;
@@ -87,16 +115,6 @@ export const loadOidcUser = (): OidcUser => {
 };
 
 /**
- * Write `public/config.json` for this run — the oidc-enabled localhost config in
- * BOTH modes so the app authenticates and renders the org picker. Live seeds a
- * real JWT + hits Sobek `:37999`; mock seeds a synthetic user + intercepts all
- * GraphQL (so the `:37999` URL is never reached). Call from `beforeAll`.
- */
-export const writeConfig = () => {
-  fs.copyFileSync(path.join(fixturesDir, 'config-with-auth.json'), targetConfig);
-};
-
-/**
  * Seed an OIDC user into `sessionStorage` before any app code runs, so
  * `react-oidc-context` boots already-authenticated (no redirect) — the real
  * captured JWT under live, a synthetic user under mock. sessionStorage (not
@@ -104,8 +122,13 @@ export const writeConfig = () => {
  * `storageState` cannot carry it. Under mock it also intercepts the
  * `organisations` query with one synthetic org so the app auto-selects it,
  * letting the SAME spec body run in both modes.
+ *
+ * Also serves the oidc-enabled `config.json` (`setConfig 'auth-on'`) in BOTH
+ * modes — the app needs it to authenticate and render the org picker — so
+ * callers no longer touch `public/config.json` on disk.
  */
 export const seedAuth = async (context: BrowserContext) => {
+  await setConfig(context, 'auth-on');
   const { k, v } = IS_LIVE ? loadOidcUser() : MOCK_OIDC;
   await context.addInitScript(([key, val]) => window.sessionStorage.setItem(key, val), [
     k,

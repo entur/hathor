@@ -21,9 +21,8 @@
     "test": "vitest run --project=unit",
     "test:coverage": "vitest run --coverage --project=unit",
     "test:stories": "vitest run --project=storybook",
-    "e2e:auth": "E2E_SUITE=auth npx playwright test",
-    "e2e:no-auth": "E2E_SUITE=no-auth npx playwright test",
-    "e2e:local-backend": "E2E_BACKEND=true E2E_SUITE=no-auth npx playwright test",
+    "e2e": "npx playwright test",
+    "e2e:local-backend": "E2E_BACKEND=true npx playwright test --workers=1",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

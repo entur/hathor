@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { REG_NR, interceptAutosysQuery, interceptVehicleTypesQuery } from './autosys-helpers';
-import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
+import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 /**
  * /vehicle-types Autosys multi-import dialog — drive the multi-vehicle import wizard to its 1/1/1/1 confirm summary.
@@ -16,7 +16,7 @@ import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
  *   - Three-step wizard navigation (Skip → add reg-nr → Next → Confirm).
  *   - Aggregated import summary parsed from a single REG_NR fixture (1/1/1/1).
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts the VehicleTypes + Autosys GraphQL queries with fixtures; full dialog flow runs offline.
+ *   - mock (E2E_BACKEND unset): intercepts the VehicleTypes + Autosys GraphQL queries with fixtures; full dialog flow runs offline.
  *   - live (E2E_BACKEND=true): would fetch the real Autosys data via shepet on :37998 (no query intercepts).
  *   - skip-live: skipped when IS_LIVE — needs the shepet Autosys backend (:37998), a separate app not part of this Sobek-focused live run.
  */
@@ -26,10 +26,6 @@ test.describe('Autosys multi-import dialog', () => {
   // serves the Autosys fixture and still exercises the dialog end-to-end.
   test.skip(IS_LIVE, 'requires the shepet Autosys backend (:37998), not part of this live run');
 
-  // writeConfig() (not a raw config-no-auth copy) so a live run leaves
-  // config-with-auth on disk for the next serial spec, even though this one
-  // skips under live — avoids clobbering the shared public/config.json.
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   test(`skip upload, add "${REG_NR}", confirm shows 1/1/1/1`, async ({ page }) => {

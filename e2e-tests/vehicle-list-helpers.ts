@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
+const fixturesDir = path.join(__dirname, 'fixtures');
 
 /**
  * Mock `vehicles(...)` query payload tailored to `/vehicles` scenarios — a

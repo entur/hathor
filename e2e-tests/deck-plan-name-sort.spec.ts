@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { interceptDeckPlansQuery } from './autosys-helpers';
-import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
+import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 /**
  * /deck-plans — Name-column sort orders blank/null names last (regression #63).
@@ -15,13 +15,12 @@ import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
  *     order before any null-name row; row 0 is "Plan Alpha"
  *   - desc toggle keeps null-name rows last; row 0 becomes "Plan Echo"
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts `deckPlans` with the 10-row fixture
+ *   - mock (E2E_BACKEND unset): intercepts `deckPlans` with the 10-row fixture
  *     (5 named + 5 null-name); asserts exact count 10 and the named ordering
  *   - skip-live: whole describe skips under live — AtB deck plans are all
  *     blank-named, so blanks-last can't be exercised (would be vacuously green)
  */
 test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   // Blanks-last ordering needs a mix of named and unnamed rows. Live AtB deck

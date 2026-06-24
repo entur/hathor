@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
@@ -33,7 +33,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
- *   - mock (E2E_SUITE=no-auth): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
+ *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
  *     describe 2 drives a stateful fixture for behavioural read-back + fault injection
  *     (the only remaining input-capture is the lang-tag wire check; full-document shape
  *     is unit-tested in serializeVehicleType.test.ts).
@@ -52,8 +52,6 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *         fixture; a real save would mutate dev data (real live round-trip → vehicle-type-save-live.spec.ts)
  */
 test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
-  test.beforeAll(() => writeConfig());
-
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) {
@@ -198,8 +196,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
  * vehicle-type-save-live.spec.ts. So these skip under `E2E_BACKEND=true`.
  */
 test.describe('/vehicle-types sidebar save (no-auth)', () => {
-  test.beforeAll(() => writeConfig());
-
   test.beforeEach(async ({ context }) => {
     // Mock-only: behavioural + fault-injection + lang-wire assertions over a
     // stateful fixture; a real save would mutate dev data. The real live vtype
