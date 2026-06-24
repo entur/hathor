@@ -22,14 +22,17 @@ carrying role assignments (live mode). No current spec does this; it's the top c
 
 ## Per-entity surfaces
 
+All three create via the same sidebar flow: a `NewEntityFab` → `/<entity>?selected=new`.
+
 | Entity | Create | Edit | Save mutation | Notes |
 |---|---|---|---|---|
-| **Vehicles** | route `/vehicles/new`, button `create-vehicle-fab` | row-click → `?selected=<netexId>` sidebar; `editor-rail-edit` → fields → `editor-rail-save` | `createOrUpdateVehicle` | the only true UI create |
-| **Vehicle-types** | **no create form** — Autosys import dialog `import-vehicle-multi-button` | `?selected=<netexId>` sidebar; tabs `vtype-tab-*`; `editor-rail-edit/save` | `createOrUpdateVehicleType` (full-document replace) | "create" == import |
-| **Deck-plans** | **none** | row "Edit" → route `/deck-plans/:id` (not a sidebar) | n/a in specs | edit-only; read-only list |
+| **Vehicles** | `create-vehicle-fab` → `/vehicles?selected=new` sidebar | row-click → `?selected=<netexId>` sidebar; `editor-rail-edit` → fields → `editor-rail-save` | `createOrUpdateVehicle` | |
+| **Vehicle-types** | `create-vehicle-type-fab` → `/vehicle-types?selected=new` sidebar; **bulk** also via Autosys import dialog `import-vehicle-multi-button` | `?selected=<netexId>` sidebar; tabs `vtype-tab-*`; `editor-rail-edit/save` | `createOrUpdateVehicleType` (full-document replace) | import is a second create path, not the only one |
+| **Deck-plans** | `create-deck-plan-fab` → `/deck-plans?selected=new` sidebar | row-click → `?selected=<id>` sidebar (replaced the deprecated `/deck-plans/:id` route, #129) | n/a in specs | |
 
-So the canonical "create → edit-verify → edit" is literal only for vehicles; for vehicle-types it's
-import → edit-verify; for deck-plans it's edit-only. Don't force a uniform create.
+`/vehicles/new` was retired in PR #121. The canonical "create → edit-verify → edit" maps cleanly to
+every entity through the `?selected=new` sidebar — but backend *persistence* can still differ
+per entity, so verify the read-back rather than assuming parity from the shared surface.
 
 ## testid inventory
 
