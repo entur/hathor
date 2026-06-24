@@ -5,34 +5,13 @@ on:
   pull_request:
     branches: [ main, master ]
 jobs:
-  test:
-    timeout-minutes: 60
+  # Schema-drift guard — cheap (curl + diff against the vendored snapshot, no
+  # npm ci). Gates the e2e matrix: a drift means the mock fixtures may be stale,
+  # so don't spend the browser matrix on a suspect contract. Adds only seconds.
+  schema:
     runs-on: ubuntu-latest
-    # Browsers + OS deps come preinstalled in the official Playwright image,
-    # pinned to the @playwright/test version the e2e runner resolves to
-    # (1.58.2). This sidesteps the `npx playwright install` browser-download
-    # that hung and cancelled every run at the 60-min timeout.
-    container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
-      # Firefox/WebKit sandbox via user namespaces (clone()), which the default
-      # container seccomp profile blocks → "CanCreateUserNamespace EPERM".
-      # Relax seccomp so Firefox can launch; Chromium is unaffected.
-      options: --security-opt seccomp=unconfined
-    # Inside a container GitHub runs `run:` steps with `sh` (dash), which lacks
-    # `set -o pipefail` used by the schema-guard. Force bash — present in the
-    # image — to match host-runner behaviour.
-    defaults:
-      run:
-        shell: bash
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Unit tests with coverage
-      run: npm run test:coverage
     - name: Check Sobek schema in sync
       run: |
         set -uo pipefail
@@ -51,21 +30,68 @@ jobs:
           exit 1
         fi
         echo "Sobek schema in sync."
-    - name: Playwright auth ON
-      run: npm run e2e:auth
+
+  # Unit tests + coverage. Sibling of e2e (no `needs`) — a unit failure and an
+  # e2e failure never block each other; both report independently.
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Unit tests with coverage
+      run: npm run test:coverage
+
+  # Browser matrix — chromium + firefox on separate runners, concurrently. Each
+  # leg runs the single merged e2e suite at the default (multi) worker count;
+  # tests serve their own config.json via route interception, so they are
+  # parallel-safe. ~29 min serial → ~one browser's wall-time.
+  e2e:
+    needs: schema
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      # Isolate per-browser failures — one browser red must not cancel the other.
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox]
+    # Browsers + OS deps come preinstalled in the official Playwright image,
+    # pinned to the @playwright/test version the e2e runner resolves to
+    # (1.58.2). This sidesteps the `npx playwright install` browser-download
+    # that hung and cancelled every run at the 60-min timeout.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      # Firefox/WebKit sandbox via user namespaces (clone()), which the default
+      # container seccomp profile blocks → "CanCreateUserNamespace EPERM".
+      # Relax seccomp so Firefox can launch; Chromium is unaffected.
+      options: --security-opt seccomp=unconfined
+    # Inside a container GitHub runs `run:` steps with `sh` (dash); force bash —
+    # present in the image — to match host-runner behaviour.
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Playwright (${{ matrix.project }})
+      run: npm run e2e -- --project=${{ matrix.project }}
       # GH runs the container as root but sets HOME=/github/home (owned by the
       # image's pwuser); Firefox refuses to run as root with a foreign HOME.
       # Point HOME at a root-owned dir so Firefox launches.
-      env:
-        HOME: /root
-    - name: Playwright auth OFF
-      run: npm run e2e:no-auth
       env:
         E2E_BACKEND: 'false'
         HOME: /root
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
-        name: playwright-report
+        # Unique per leg — upload-artifact@v4 rejects duplicate names.
+        name: playwright-report-${{ matrix.project }}
         path: playwright-report/
         retention-days: 30
