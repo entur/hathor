@@ -6,7 +6,7 @@ import {
   interceptVehicleTypesQuery,
   vehicleRow,
 } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, liveCreateOverrides } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, liveCreateOverrides } from './live-auth-helpers';
 
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const ENCODED_NEW_ID = encodeURIComponent(NEW_ID);
@@ -37,7 +37,7 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *   - An existing non-numeric TransportTypeRef stays selectable via the picker
  *     (orphan-option fallback) AND can be swapped for a known option
  * Modes:
- *   - mock (E2E_SUITE=no-auth): wireCreateFlow intercepts vehicleTypes +
+ *   - mock (E2E_BACKEND unset): wireCreateFlow intercepts vehicleTypes +
  *     createOrUpdateVehicle + stateful list + by-id; captures mutation input,
  *     asserts transportType.netexId
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select → real create with
@@ -50,7 +50,6 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  */
 
 test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-auth)', () => {
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   /** Captures the most recent `createOrUpdateVehicle` mutation input so specs

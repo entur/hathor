@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { REG_NR, interceptDeckPlansQuery } from './autosys-helpers';
 import { interceptVehicleListQuery, interceptVehicleTypesQuery } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers';
 
 /**
  * #141 — after an Autosys import, the id-filter from the post-import redirect leaks into the sibling
@@ -22,7 +22,7 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg, rowCount } from './live
  *   - The exact #141 symptom on both affected surfaces, asserted mode-agnostically as F5-count == client-nav-count.
  *   - Same red in mock and live — the bug is SearchContext state, not data, so the fixture suite shows it too.
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts the three list queries; reaches the filtered state by URL. Self-contained.
+ *   - mock (E2E_BACKEND unset): intercepts the three list queries; reaches the filtered state by URL. Self-contained.
  *   - live (E2E_BACKEND=true): real import via Shepet/Sobek — needs both backends, a FRESH plate
  *     (E2E_AUTOSYS_REG_NR, e.g. a row from fixtures/some-busses.csv) and the local Shepet
  *     responsibilitySet temp-fix (Shepet HEAD omits the responsibilitySets Sobek import requires).
@@ -113,7 +113,6 @@ async function establishFilteredState(page: Page): Promise<string> {
 test.describe('#141 import filter leaks into sibling lists', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context, page }) => {
     await seedAuth(context);
     if (!IS_LIVE) {

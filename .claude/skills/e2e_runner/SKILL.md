@@ -20,8 +20,8 @@ description: >-
 
 Hathor's e2e suite runs in two modes that are *supposed* to be interchangeable:
 
-- **mocked** — `npm run e2e:no-auth`. GraphQL is intercepted with fixtures; counts are exact.
-- **live** — `npm run e2e:local-backend` (`E2E_BACKEND=true E2E_SUITE=no-auth`). The same specs
+- **mocked** — `npm run e2e`. GraphQL is intercepted with fixtures; counts are exact.
+- **live** — `npm run e2e:local-backend` (`E2E_BACKEND=true`). The same specs
   skip their interceptors and hit a real Sobek at `:37999`; data and counts vary.
 
 The promise we want to keep: **the navigation and CRUD *flow* is identical in both modes — only
@@ -36,9 +36,11 @@ This skill has two jobs. Decide which the user wants (often both):
 
 ## The canonical sequence (why order matters)
 
-The DB is mutated, so the whole run is **sequential** — Playwright `workers: 1` +
-`test.describe.configure({ mode: 'serial' })`. A later step reads what an earlier step wrote;
-parallelism would race the database. The sequence, per entity:
+Under **live**, the DB is mutated, so the live run is **sequential** — `npm run e2e:local-backend`
+pins `--workers=1`, and order-dependent specs add `test.describe.configure({ mode: 'serial' })`
+(a later step reads what an earlier wrote; parallelism would race the database). The **mocked** run
+has no shared state (each test serves its own config via route interception) and runs in **parallel**
+at the default worker count. The sequence, per entity:
 
 1. **Auth status** — confirm logged-in vs logged-out is what this run expects.
 2. **(live only) Login handoff** — open a headed browser, let the human log in, capture the
@@ -83,8 +85,8 @@ Interpret:
   served by *this* checkout before running, or every test renders the wrong app. (This exact trap
   has produced whole-suite false failures — a login page or a stale config served to all tests.)
 
-Read `references/harness-internals.md` for the full mechanics (config swap, helpers, fixtures,
-the `E2E_BACKEND` branch points) before editing specs or helpers.
+Read `references/harness-internals.md` for the full mechanics (config routing via `setConfig`,
+helpers, fixtures, the `E2E_BACKEND` branch points) before editing specs or helpers.
 
 ### Suite-hygiene gate (part of preflight — alert, don't accept)
 
@@ -103,8 +105,8 @@ later step (run, audit, debug) slower and noisier.
 - **No unit-test-shaped e2e.** An e2e test that pins pure logic (a formatter, serializer, reducer,
   parse/`restruct` helper) with no UI-visible, browser-or-backend-dependent behaviour belongs in
   vitest, not Playwright — there it runs in milliseconds and asserts the logic directly instead of
-  through the DOM. Project rule of thumb: **UI-visible behaviour → Playwright `no-auth/`; pure
-  logic → vitest.** When a spec is really exercising logic a unit test could pin, flag it and
+  through the DOM. Project rule of thumb: **UI-visible behaviour → Playwright e2e (`e2e-tests/`);
+  pure logic → vitest.** When a spec is really exercising logic a unit test could pin, flag it and
   propose moving it down to a `*.test.ts`. Keeping these out is what keeps the e2e suite *slim and
   true* — every remaining spec is here because it genuinely needs a real browser + backend.
 
@@ -154,14 +156,14 @@ Never paste the JWT into chat or commit it. Keep it in a gitignored file for the
 
 ```bash
 # mocked (fast, deterministic) — the baseline the live run must match
-npm run e2e:no-auth
+npm run e2e
 
 # live backend — sequential, mutates the DB; do the login handoff first
 npm run e2e:local-backend
 ```
 
 Scope to one spec while iterating: append the spec name, e.g.
-`E2E_BACKEND=true E2E_SUITE=no-auth npx playwright test vehicle-create-feedback`.
+`E2E_BACKEND=true npx playwright test vehicle-create-feedback`.
 
 When a live run fails, first decide *which* layer broke before reading assertions:
 - **login page / 401** → handoff or token problem (above).
@@ -194,18 +196,20 @@ A spec is **conformant** when:
   the next human reader and the diagram generator. Keep the `Modes:` section honest about
   mock / live / skip-live — that's the same mode-agnosticism this skill is verifying, just written down.
 
-**Known structural mismatch to call out, not paper over:** the three entities don't share a create
-surface. Vehicles have a real create form (`/vehicles/new`, `create-vehicle-fab`); vehicle-types are
-created only via the Autosys import dialog (`import-vehicle-multi-button`); deck-plans have no UI
-create at all (route-based edit only). So "create → edit-verify → edit" maps cleanly to vehicles,
-maps to *import* → edit-verify for vehicle-types, and to *edit-only* for deck-plans. Encode that
-per-entity reality rather than pretending a uniform create exists.
+**Create surface (now uniform):** all three entities create via the same sidebar flow — a
+`NewEntityFab` that navigates to `/<entity>?selected=new` (testids `create-vehicle-fab`,
+`create-vehicle-type-fab`, `create-deck-plan-fab`). The standalone `/vehicles/new` route was
+retired in PR #121. So "create → edit-verify → edit" maps cleanly to every entity through the
+`?selected=new` sidebar. Vehicle-types additionally support **bulk** create via the Autosys import
+dialog (`import-vehicle-multi-button`) — a second path, not the only one. Note backend *persistence*
+of a create can still differ per entity (e.g. a live deck-plan create may not round-trip); verify
+the read-back, don't assume parity from the shared surface.
 
 ## Reference files
 
-- `references/harness-internals.md` — `E2E_BACKEND`/`E2E_SUITE`, config swapping, the
+- `references/harness-internals.md` — `E2E_BACKEND`, per-test config routing, the
   sessionStorage/JWT capture wrinkle (+ snippet), reusable helpers (`interceptGraphQLQuery`,
-  vehicle-list trio, `waitForVehicleInList`), fixtures, serial config. Read before editing helpers.
+  vehicle-list trio, `waitForVehicleInList`), fixtures, worker model. Read before editing helpers.
 - `references/surfaces-and-testids.md` — per-entity create/edit surfaces, the full `data-testid`
   inventory, and which row-count assertions are hardcoded. Read before writing or auditing a spec.
 - `references/bringing-up-backends.md` — build + run recipes for Sobek (:37999) and Shepet (:37998)

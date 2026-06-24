@@ -1,13 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery } from './autosys-helpers';
-import {
-  IS_LIVE,
-  writeConfig,
-  seedAuth,
-  selectFirstOrg,
-  rowCount,
-  readNetexIds,
-} from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg, rowCount, readNetexIds } from './live-auth-helpers';
 
 /** Load the unfiltered list (live: select org first) and return the table. */
 async function openList(page: import('@playwright/test').Page) {
@@ -34,7 +27,7 @@ async function openList(page: import('@playwright/test').Page) {
  *   - deleting the chip clears the filter + URL and restores the full list
  *   - a guaranteed-absent id yields an empty table (no-data-row), chip count 1
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts `vehicleTypes` with the 3-row fixture
+ *   - mock (E2E_BACKEND unset): intercepts `vehicleTypes` with the 3-row fixture
  *     (NMR:VehicleType:1..3); asserts exact counts (3/1/2) and which fixture ids
  *     are visible vs hidden
  *   - live (E2E_BACKEND=true): seeds JWT, auto-selects org "AtB"; derives real
@@ -42,7 +35,6 @@ async function openList(page: import('@playwright/test').Page) {
  *     asserts relative counts (>0, restored == captured rowCount)
  */
 test.describe('Vehicle type URL filtering', () => {
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) await interceptVehicleTypesQuery(page);

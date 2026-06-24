@@ -4,14 +4,7 @@ import {
   interceptVehicleByIdQuery,
   mockVehicleById,
 } from './vehicle-list-helpers';
-import {
-  IS_LIVE,
-  writeConfig,
-  seedAuth,
-  selectFirstOrg,
-  rowCount,
-  openFirstRow,
-} from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg, rowCount, openFirstRow } from './live-auth-helpers';
 
 /**
  * /vehicles — list rendering, TransportMode column, chip filter, sidebar deep-link.
@@ -29,7 +22,7 @@ import {
  *   - Close button (editor-rail-collapse) drops ?selected= and hides the sidebar
  *   - deep-link auto-paginates to the page holding the selected row
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts `vehicles` list + `vehicleById`
+ *   - mock (E2E_BACKEND unset): intercepts `vehicles` list + `vehicleById`
  *     queries with the 15-row fixture (12 rail + 2 bus + 1 unknown); asserts
  *     exact counts (15, filtered 12, page-0 2 BUS + 8 RAIL) and fixture ids
  *     (BUS-001, RAIL-001, NMR:Vehicle:bus-1/rail-9)
@@ -40,8 +33,6 @@ import {
  *     fixture-deterministic; no stable known-page-2 row in live AtB data
  */
 test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () => {
-  test.beforeAll(() => writeConfig());
-
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) {

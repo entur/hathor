@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { interceptDeckPlansQuery } from './autosys-helpers';
-import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
+import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,13 +23,12 @@ const __dirname = path.dirname(__filename);
  *     in the textarea
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts `DeckPlans` GraphQL with the 10-row
+ *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
  *     fixture, plus a fulfill-route on `/deckplans/<id>` returning the XML mock
  *   - skip-live: this spec is mock-focused; live-backend behaviour is exercised
  *     by separate live specs once a live fixture deck-plan id is wired
  */
 test.describe('/deck-plans — sidebar editor', () => {
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   test.skip(IS_LIVE, 'sidebar slider behaviour is asserted against fixtures, not live data');
@@ -38,7 +37,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     await interceptDeckPlansQuery(page);
 
     // Stub the REST XML body fetch (`useDeckPlanXml` → fetchDeckPlanDetails).
-    const xml = fs.readFileSync(path.join(__dirname, '../fixtures/deck-plan-xml-mock.xml'), 'utf8');
+    const xml = fs.readFileSync(path.join(__dirname, 'fixtures/deck-plan-xml-mock.xml'), 'utf8');
     await page.route(/\/deckplans\/[^/?#]+$/, route =>
       route.fulfill({ status: 200, contentType: 'application/xml', body: xml })
     );

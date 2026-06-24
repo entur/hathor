@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleListQuery } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 /**
  * /vehicles compact (narrow-width) overflow row — the expandable detail box must
@@ -21,14 +21,12 @@ import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-help
  *   - MobileDetailRow runs `headerLabel` through i18next (parity with
  *     DataTableHeader); no raw key text reaches the user in compact mode.
  * Modes:
- *   - mock (E2E_SUITE=no-auth): seedAuth + interceptVehicleListQuery serve the
+ *   - mock (E2E_BACKEND unset): seedAuth + interceptVehicleListQuery serve the
  *     15-row fixture; the overflow row is a pure client-render concern.
  *   - live (E2E_BACKEND=true): same flow against real rows; selectFirstOrg picks
  *     the org, the fixture intercept is not registered.
  */
 test.describe('/vehicles compact detail row shows translated labels, not raw i18n keys (no-auth)', () => {
-  test.beforeAll(() => writeConfig());
-
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) await interceptVehicleListQuery(page);

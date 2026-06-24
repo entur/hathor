@@ -11,25 +11,25 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const isNoAuth = process.env.E2E_SUITE === 'no-auth';
-const testDir = isNoAuth ? './e2e-tests/no-auth' : './e2e-tests/auth';
-
 /**
  * Registration number used by the Autosys import e2e test.
- * Override: E2E_AUTOSYS_REG_NR=XX-123 npm run e2e:no-auth
+ * Override: E2E_AUTOSYS_REG_NR=XX-123 npm run e2e
  */
 process.env.E2E_AUTOSYS_REG_NR ??= 'A-1';
 
 export default defineConfig({
-  testDir,
+  testDir: './e2e-tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Single worker when tests mutate shared config on disk (no-auth suite), or on CI. */
-  workers: process.env.CI || isNoAuth ? 1 : undefined,
+  /* Default worker count (cpu cores). Each test serves its own config.json via
+   * route interception (setConfig), so there is no shared on-disk state — the
+   * suite is parallel-safe. The live-backend run pins --workers=1 (real Sobek
+   * writes would race); see the e2e:local-backend script. */
+  workers: undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

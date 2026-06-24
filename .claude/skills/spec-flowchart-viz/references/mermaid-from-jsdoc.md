@@ -94,7 +94,7 @@ Mermaid's parser is fussy. Keep every label safe:
 
 ## Worked example
 
-Given this real JSDoc keynote (`e2e-tests/no-auth/vehicle-create-form.spec.ts`):
+Given this real JSDoc keynote (`e2e-tests/vehicle-create-form.spec.ts`):
 
 ```
 /**
@@ -121,7 +121,7 @@ Given this real JSDoc keynote (`e2e-tests/no-auth/vehicle-create-form.spec.ts`):
 Produce exactly this (Mode diamond at the top, flowing down into the workflow):
 
 ```
-%% spec: e2e-tests/no-auth/vehicle-create-form.spec.ts
+%% spec: e2e-tests/vehicle-create-form.spec.ts
 %% title: /vehicles/new — VehicleEditForm save gates + dirty-form back-nav
 flowchart TD
   M{"Mode"}

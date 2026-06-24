@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
-import { IS_LIVE, writeConfig, seedAuth } from './live-auth-helpers';
+import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 const SELECTED_ID = 'NMR:Vehicle:bus-1';
 const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
@@ -26,7 +26,7 @@ const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
  *   - useVehicle not-found branch sets error + loading=false (spinner
  *     disappears, reason surfaced, form stays hidden).
  * Modes:
- *   - mock (E2E_SUITE=no-auth): seedAuth provides a synthetic user + org so
+ *   - mock (E2E_BACKEND unset): seedAuth provides a synthetic user + org so
  *     the list resolves; intercepts the `/graphql` route for the list + by-id
  *     queries; stages list-has-row vs byid-empty.
  *   - live (E2E_BACKEND=true): no live path — the describe skips.
@@ -53,8 +53,6 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
   // contradiction only a mock can produce (a live row found in the list is
   // always fetchable by id). The not-found error branch is therefore mock-only.
   test.skip(IS_LIVE, 'requires a list-has-row + byid-empty mismatch a real backend cannot produce');
-
-  test.beforeAll(() => writeConfig());
 
   test.beforeEach(async ({ page, context }) => {
     if (process.env.E2E_BACKEND === 'true') return;

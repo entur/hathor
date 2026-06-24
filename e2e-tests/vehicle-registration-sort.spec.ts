@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { IS_LIVE, writeConfig, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 const POST_CLICK_SETTLE_MS = 500;
 
@@ -232,18 +232,17 @@ const runSortStabilityTests = (params: {
  * /vehicles sort stability — header sort toggles cleanly when closed, is locked while the sidebar editor is open.
  *
  * Workflow:
- *   1. writeConfig (auth/no-auth) → seedAuth → (mock) intercept `vehicles(` list with the 3-row distinct-leader fixture.
+ *   1. seedAuth (config + auth) → (mock) intercept `vehicles(` list with the 3-row distinct-leader fixture.
  *   2. Sidebar CLOSED, per column: goto /vehicles → click header → assert first row becomes target.expectedFirstReg → settle 500ms → still that leader (no flicker/revert).
  *   3. Sidebar OPEN, per column: goto /vehicles?selected=<row> → assert vehicle-details-title visible → hover header surfaces "Close details to change sort" tooltip → click is a no-op (first row stays defaultFirstReg) → settle 500ms → still unchanged.
  * Covers:
  *   - Closed: each sortable column (name, registrationNumber, operationalNumber, transportTypeName, transportTypeMode) toggles to its distinct asc-leader and persists.
  *   - Open: sort LOCKED on every column — click no-op + hover tooltip (UX call: sorting under an open selection caused flicker/revert via useVehicleUrlSelection's URL→editor→setPage cascade).
  * Modes:
- *   - mock (E2E_SUITE=no-auth): self-contained `vehicles(` intercept with a 3-row fixture (NMR:Vehicle:aaa-1/mid-1/zzz-1, totalElements 3) whose per-column asc-leaders are provably distinct; asserts exact expectedFirstReg per column.
+ *   - mock (E2E_BACKEND unset): self-contained `vehicles(` intercept with a 3-row fixture (NMR:Vehicle:aaa-1/mid-1/zzz-1, totalElements 3) whose per-column asc-leaders are provably distinct; asserts exact expectedFirstReg per column.
  *   - live (E2E_BACKEND=true): only the LOCKED cases run — seedAuth JWT + selectFirstOrg (AtB), open a real first row, assert lock by row-identity stability (firstRow.innerText unchanged before/after click), data-agnostic so no fixture ids needed.
  *   - skip-live: all sidebar-CLOSED (unlocked) cases — per-column asc-leader identity is bound to the synthetic distinct-leader fixture; live AtB data has no predictable per-column leader.
  */
-test.beforeAll(() => writeConfig());
 
 test.beforeEach(async ({ page, context }) => {
   await seedAuth(context);

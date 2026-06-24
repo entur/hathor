@@ -45,8 +45,8 @@ echo "$work"
 ```
 
 Keep the absolute path of each spec and the `$work` dir. Derive a filesystem
-slug per spec from its path (e.g. `no-auth/vehicle-create-form.spec.ts` →
-`no-auth__vehicle-create-form`).
+slug per spec from its path (e.g. `vehicle-create-form.spec.ts` →
+`vehicle-create-form`).
 
 ### 2. Fan out one `haiku` subagent per spec — in a single batch
 

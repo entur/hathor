@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { IS_LIVE, seedAuth, writeConfig } from './live-auth-helpers';
+import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 const ORG_ONE = {
   netexId: 'NMR:Organisation:1',
@@ -24,10 +24,6 @@ const ORG_TWO = {
  *   5) Assert localStorage key mirrors the selected org id.
  */
 test.describe('Current organisation persistence', () => {
-  test.beforeAll(() => {
-    writeConfig();
-  });
-
   test.beforeEach(async ({ context }) => {
     test.skip(IS_LIVE, 'Mock-only: pins deterministic multi-org persistence behavior');
     await seedAuth(context);

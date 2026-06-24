@@ -7,7 +7,7 @@ import {
   interceptVehicleTypesQuery,
   vehicleRow,
 } from './vehicle-list-helpers';
-import { writeConfig, seedAuth } from './live-auth-helpers';
+import { seedAuth } from './live-auth-helpers';
 
 const VEHICLE_ID = 'NMR:Vehicle:rail-1';
 const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
@@ -27,14 +27,13 @@ const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
  *   - Closing the slider after a successful save does not wrongly raise the discard dialog.
  *   - VehicleType field is an interactive Autocomplete; picking a different option round-trips as the option's full netex id in the save mutation input.
  * Modes:
- *   - mock (E2E_SUITE=no-auth): intercepts vehicleTypes, list, by-id, and save mutation; Name/date/type values are fixture-controlled.
+ *   - mock (E2E_BACKEND unset): intercepts vehicleTypes, list, by-id, and save mutation; Name/date/type values are fixture-controlled.
  *   - live (E2E_BACKEND=true): no live path — the whole describe skips.
  *   - skip-live: entire describe ("/vehicles slider form — fetch + post-save dirty baseline") — mock-only regression spec; asserted Name/date/type values are fixture-controlled, meaningless against live data.
  */
 test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-auth)', () => {
   test.skip(process.env.E2E_BACKEND === 'true', 'mock-only regression spec');
 
-  test.beforeAll(() => writeConfig());
   test.beforeEach(async ({ context }) => seedAuth(context));
 
   test('Name from the vehicles() fetch shows in the title and form field', async ({ page }) => {

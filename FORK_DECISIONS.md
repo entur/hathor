@@ -523,7 +523,7 @@ Replace the Drawer entirely with a Material 3 Navigation Rail (MUI Mini-Variant 
 - `Header.tsx` shrinks: local `drawerOpen` state gone, `useNavRail()` provides the toggle.
 - Every page reflows. `.app-content` gains a transitioning `margin-left`. Pages that previously assumed full-viewport width no longer have it; none do today, but new full-bleed views must apply `margin-left: 0` explicitly to escape.
 - Nav state persisted across reloads under `localStorage` key `hathor:navRailExpanded`. Recognize during any future localStorage-clearing migration.
-- One e2e smoke test added in `e2e-tests/no-auth/no-auth.spec.ts`: clears the localStorage key, asserts rail visible, toggles via `aria-expanded` round-trip. Width assertions skipped because Playwright timing during 200ms transitions is flaky — `aria-expanded` is the stable signal.
+- One e2e smoke test added in `e2e-tests/auth-modes.spec.ts`: clears the localStorage key, asserts rail visible, toggles via `aria-expanded` round-trip. Width assertions skipped because Playwright timing during 200ms transitions is flaky — `aria-expanded` is the stable signal.
 - Closes hathor#65; supersedes that issue's addendum (which proposed the simpler Drawer-flip approach).
 
 ---
