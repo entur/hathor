@@ -1,10 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
 import HomePage from './Home';
+import { withOrganisations } from '../contexts/mockOrganisations.tsx';
+import { withAuth } from '../auth/mockAuth.tsx';
 
 /**
  * Stories for the Home dashboard. A MemoryRouter decorator supplies the routing
- * context the page's <Link>s need; `fullscreen` layout lets the flat, full-width
+ * context the page's <Link>s need; `withOrganisations` and `withAuth` stand in
+ * for the real OrganisationsProvider and OIDC provider (config/fetch-driven, so
+ * unavailable here) that gate the org sections and the logged-out band —
+ * together they put the page in its signed-in, org-selected state.
+ * `fullscreen` layout lets the flat, full-width
  * dashboard breathe without Storybook's default padding. Domain glyphs come from
  * the nav-rail MenuIcon sprite, mounted globally in `.storybook/preview.tsx`.
  */
@@ -21,6 +27,8 @@ const meta: Meta<typeof HomePage> = {
     },
   },
   decorators: [
+    withAuth(),
+    withOrganisations(),
     Story => (
       <MemoryRouter>
         <Story />
