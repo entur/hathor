@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import Menu from './Menu';
 import { NavRailProvider, useNavRail } from '../contexts/NavRailContext';
+import { withOrganisations } from '../contexts/mockOrganisations.tsx';
 
 /**
  * Drives the desktop rail to a fixed expanded/collapsed state for a story.
@@ -41,6 +42,8 @@ const meta: Meta<typeof Menu> = {
     },
   },
   decorators: [
+    // Menu reads currentOrganisation; the real provider needs config/OIDC/fetch.
+    withOrganisations(),
     // initialEntries seeds an active route so one item renders `selected`.
     Story => (
       <MemoryRouter initialEntries={['/vehicle-types']}>
