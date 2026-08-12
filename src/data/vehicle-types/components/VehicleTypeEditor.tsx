@@ -32,7 +32,7 @@ export default function VehicleTypeEditor({ row, mode, onSaved }: VehicleTypeEdi
   // reads as create — it wants the prop absent, not blank.
   return useExperimental ? (
     <DetailsModern
-      mode={mode}
+      mode="edit"
       netexId={row?.id || undefined}
       name={row?.name?.value}
       version={row?.version}
