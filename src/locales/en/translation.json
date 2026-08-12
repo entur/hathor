@@ -43,6 +43,7 @@
   "settings": "Settings",
   "settings.language": "Language",
   "settings.enableCustomTheme": "Enable custom theme & icons",
+  "settings.enableExperimental": "Experimental",
 
   "home": "Home",
   "home.welcomeMessage": "Welcome to Vehicle registry",

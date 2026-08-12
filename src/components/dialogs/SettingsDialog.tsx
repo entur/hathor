@@ -22,7 +22,8 @@ interface SettingsDialogProps {
 }
 
 export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
-  const { useCustomFeatures, toggleCustomFeatures } = useCustomization();
+  const { useCustomFeatures, toggleCustomFeatures, useExperimental, toggleExperimental } =
+    useCustomization();
   const { i18n, t } = useTranslation();
 
   const handleLanguageChange = (event: SelectChangeEvent) => {
@@ -40,6 +41,16 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               checked={useCustomFeatures}
               onChange={toggleCustomFeatures}
               name="customFeaturesSwitch"
+            />
+          </Box>
+
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Typography>{t('settings.enableExperimental')}</Typography>
+            <Switch
+              checked={useExperimental}
+              onChange={toggleExperimental}
+              name="experimentalSwitch"
+              slotProps={{ input: { 'aria-label': t('settings.enableExperimental') } }}
             />
           </Box>
 

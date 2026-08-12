@@ -1,29 +1,52 @@
 import { createContext, useState, useContext, useEffect, type ReactNode, useCallback } from 'react';
 
 const LOCAL_STORAGE_KEY = 'useCustomFeatures';
+const EXPERIMENTAL_LOCAL_STORAGE_KEY = 'useExperimental';
+const CUSTOM_FEATURES_DEFAULT = true,
+  EXPERIMENTAL_DEFAULT = false;
 
 interface CustomizationContextType {
   useCustomFeatures: boolean;
   toggleCustomFeatures: () => void;
   setCustomFeatures: (enabled: boolean) => void;
+  useExperimental: boolean;
+  toggleExperimental: () => void;
+  setExperimental: (enabled: boolean) => void;
 }
 
 const CustomizationContext = createContext<CustomizationContextType | undefined>(undefined);
 
+/** Reads a persisted boolean flag, falling back to `def` when absent or unparseable. */
+const readFlag = (key: string, def: boolean): boolean => {
+  if (typeof window === 'undefined' || !window.localStorage) return def;
+  const stored = localStorage.getItem(key);
+  if (stored === null) return def;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return def;
+  }
+};
+
 export const CustomizationProvider = ({ children }: { children: ReactNode }) => {
-  const [useCustomFeatures, setUseCustomFeaturesState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return storedValue ? JSON.parse(storedValue) : true;
-    }
-    return true;
-  });
+  const [useCustomFeatures, setUseCustomFeaturesState] = useState<boolean>(() =>
+    readFlag(LOCAL_STORAGE_KEY, CUSTOM_FEATURES_DEFAULT)
+  );
+  const [useExperimental, setUseExperimentalState] = useState<boolean>(() =>
+    readFlag(EXPERIMENTAL_LOCAL_STORAGE_KEY, EXPERIMENTAL_DEFAULT)
+  );
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(useCustomFeatures));
     }
   }, [useCustomFeatures]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem(EXPERIMENTAL_LOCAL_STORAGE_KEY, JSON.stringify(useExperimental));
+    }
+  }, [useExperimental]);
 
   const toggleCustomFeatures = useCallback(() => {
     setUseCustomFeaturesState(prev => !prev);
@@ -33,15 +56,36 @@ export const CustomizationProvider = ({ children }: { children: ReactNode }) => 
     setUseCustomFeaturesState(enabled);
   }, []);
 
+  const toggleExperimental = useCallback(() => {
+    setUseExperimentalState(prev => !prev);
+  }, []);
+
+  const setExperimental = useCallback((enabled: boolean) => {
+    setUseExperimentalState(enabled);
+  }, []);
+
   return (
     <CustomizationContext.Provider
-      value={{ useCustomFeatures, toggleCustomFeatures, setCustomFeatures }}
+      value={{
+        useCustomFeatures,
+        toggleCustomFeatures,
+        setCustomFeatures,
+        useExperimental,
+        toggleExperimental,
+        setExperimental,
+      }}
     >
       {children}
     </CustomizationContext.Provider>
   );
 };
 
+/**
+ * Access the customization flags (custom theme/icons, experimental features).
+ *
+ * @returns Flags plus their toggle/set actions.
+ * @throws When called outside a `CustomizationProvider`.
+ */
 export const useCustomization = () => {
   const context = useContext(CustomizationContext);
   if (!context) {

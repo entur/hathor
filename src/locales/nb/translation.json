@@ -44,6 +44,7 @@
   "settings": "Innstillinger",
   "settings.language": "Språk",
   "settings.enableCustomTheme": "Aktiver egendefinert tema & ikoner",
+  "settings.enableExperimental": "Eksperimentell",
 
   "home": "Hjem",
   "home.welcomeMessage": "Velkommen til Materiellregister",
