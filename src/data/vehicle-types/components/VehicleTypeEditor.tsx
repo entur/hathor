@@ -31,7 +31,13 @@ export default function VehicleTypeEditor({ row, mode, onSaved }: VehicleTypeEdi
   // 'new' resolves to the empty-row factory (id ''), which the modern form
   // reads as create — it wants the prop absent, not blank.
   return useExperimental ? (
-    <DetailsModern mode={mode} netexId={row?.id || undefined} onSaved={onSaved} />
+    <DetailsModern
+      mode={mode}
+      netexId={row?.id || undefined}
+      name={row?.name?.value}
+      version={row?.version}
+      onSaved={onSaved}
+    />
   ) : (
     <VehicleTypeDetails vehicleType={row} onSaved={onSaved} mode={mode} />
   );
