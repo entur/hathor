@@ -20,8 +20,8 @@ interface VehicleTypeHeaderProps {
  *
  * Takes flat values rather than a `VehicleType` so each editor can feed it
  * from whatever it actually has — the legacy editor passes its live form
- * state so the title tracks typing, the modern one passes the resolved list
- * row because `VehicleTypeForm` keeps its state internal.
+ * state, the modern one the row until `VehicleTypeForm`'s first `onChange`
+ * and that form's own state thereafter. Either way the title tracks typing.
  *
  * @param name    Display name; blank/absent renders the placeholder.
  * @param id      Full NeTEx id; blank/absent hides the chip.

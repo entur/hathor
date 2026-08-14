@@ -1,7 +1,12 @@
-import { SobekProvider, VehicleTypeForm, type VehicleTypeLayout } from '@entur/mui-comps-nmr';
+import {
+  SobekProvider,
+  VehicleTypeForm,
+  type VehicleType as VTValue,
+  type VehicleTypeLayout,
+} from '@entur/mui-comps-nmr';
 import { Box } from '@mui/material';
 import type { TFunction } from 'i18next';
-import { useMemo, type ComponentProps } from 'react';
+import { useMemo, useState, type ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../../../auth';
@@ -21,20 +26,33 @@ const EDITOR_SHELL_SX = {
  *  component. Every field on it is optional, so the defaults below stay overridable. */
 type ElemProps = ComponentProps<typeof VehicleTypeForm> & {
   /**
-   * Header title. Fed from the resolved list row, not the form: `VehicleTypeForm`
-   * omits `value`/`onChange`, so its live state is not observable from here and
-   * the title cannot track typing the way the legacy editor's does.
+   * Header title *until the form first reports* — the row is all there is to
+   * show while the record loads. From the first `onChange` the title tracks the
+   * form's own state, so it follows typing the way the legacy editor's does.
    */
   name?: string;
   /** Header version badge, likewise row-derived. */
   version?: number;
 };
 
-export default function Elem({ name, version, ...props }: ElemProps) {
+export default function Elem({ name, version, onChange, ...props }: ElemProps) {
   const { applicationBaseUrl } = useConfig();
   const auth = useAuth();
   const { currentOrganisation } = useOrganisationsContext();
   const { t } = useTranslation();
+  // `null` until the form first reports; from then on the header follows the
+  // form and stops consulting the row. A boxed value rather than a bare
+  // `formName ?? name` because clearing the field emits `name: undefined`
+  // (the package's `mergeName`), and the `??` would then snap the title back
+  // to the row's stale name instead of showing the `[ unnamed ]` placeholder.
+  const [live, setLive] = useState<{ name?: string } | null>(null);
+  // Fires on the load and the post-save refetch as well as on edits, so the
+  // title also picks up whatever the server actually stored. Observation only —
+  // the form keeps owning its state; the value is never fed back as a prop.
+  const handleChange = (v?: VTValue) => {
+    setLive({ name: v?.name?.value ?? undefined });
+    onChange?.(v);
+  };
   const layout = useMemo(() => mkLayout(t), [t]);
   // The package ships English defaults and carries no i18n runtime, so every
   // footer string is the host's to supply — including the two status texts that
@@ -73,7 +91,7 @@ export default function Elem({ name, version, ...props }: ElemProps) {
       }}
     >
       <Box sx={EDITOR_SHELL_SX}>
-        <VehicleTypeHeader name={name} id={props.netexId} version={version} />
+        <VehicleTypeHeader name={live ? live.name : name} id={props.netexId} version={version} />
         <VehicleTypeForm
           mode="edit"
           layout={layout}
@@ -81,6 +99,7 @@ export default function Elem({ name, version, ...props }: ElemProps) {
           footerProps={footerProps}
           skeletonProps={skeletonProps}
           {...props}
+          onChange={handleChange}
         />
       </Box>
     </SobekProvider>
