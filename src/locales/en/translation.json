@@ -161,6 +161,7 @@
   "vehicleType.field.rollResistanceCoefficient": "Roll Resistance Coefficient",
   "vehicleType.field.maximumEngineEffectKW": "Max Engine Effect (kW)",
   "vehicleType.field.hybridCategory": "Hybrid Category",
+  "common.unnamed": "unnamed",
   "common.none": "None",
   "common.saveNoIdReturned": "Saved, but no id was returned — please refresh.",
 

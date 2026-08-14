@@ -1,8 +1,8 @@
 import { Box, Divider, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import NetexId from '../../netex/NetexId.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
 
-const BLANK_NAME = 'unnamed';
 const TITLE_TESTID = 'vehicle-type-details-title';
 
 interface VehicleTypeHeaderProps {
@@ -14,9 +14,9 @@ interface VehicleTypeHeaderProps {
 }
 
 /**
- * Title row shared by both VehicleType sidebar editors: name (or an italic
- * `[ unnamed ]` placeholder) on the left, NetexId chip below-left, then a
- * divider.
+ * Title row shared by both VehicleType sidebar editors: name (or an italic,
+ * localized `[ unnamed ]` placeholder) on the left, NetexId chip below-left,
+ * then a divider.
  *
  * Takes flat values rather than a `VehicleType` so each editor can feed it
  * from whatever it actually has — the legacy editor passes its live form
@@ -28,6 +28,7 @@ interface VehicleTypeHeaderProps {
  * @param version Version, rendered as the `vN` badge on the chip.
  */
 export default function VehicleTypeHeader({ name, id, version }: VehicleTypeHeaderProps) {
+  const { t } = useTranslation();
   const trimmed = name?.trim();
 
   return (
@@ -52,7 +53,7 @@ export default function VehicleTypeHeader({ name, id, version }: VehicleTypeHead
                   letterSpacing: '0.02em',
                 }}
               >
-                {BLANK_NAME}
+                {t('common.unnamed')}
               </Box>
               {' ]'}
             </>

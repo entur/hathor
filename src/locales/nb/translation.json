@@ -161,6 +161,7 @@
   "vehicleType.field.rollResistanceCoefficient": "Rullemotstandskoeffisient",
   "vehicleType.field.maximumEngineEffectKW": "Maks motoreffekt (kW)",
   "vehicleType.field.hybridCategory": "Hybridkategori",
+  "common.unnamed": "uten navn",
   "common.none": "Ingen",
   "common.saveNoIdReturned": "Lagret, men ingen id ble returnert — last på nytt.",
 
