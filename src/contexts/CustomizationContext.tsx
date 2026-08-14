@@ -16,13 +16,22 @@ interface CustomizationContextType {
 
 const CustomizationContext = createContext<CustomizationContextType | undefined>(undefined);
 
-/** Reads a persisted boolean flag, falling back to `def` when absent or unparseable. */
+/**
+ * Reads a persisted boolean flag, falling back to `def` when absent, unparseable,
+ * or not actually a boolean — localStorage is user-writable, so a hand-edited or
+ * legacy `"1"`/`"null"` must not reach a Switch's `checked`.
+ *
+ * @param key localStorage key.
+ * @param def Value used when nothing usable is stored.
+ * @returns The stored boolean, or `def`.
+ */
 const readFlag = (key: string, def: boolean): boolean => {
   if (typeof window === 'undefined' || !window.localStorage) return def;
   const stored = localStorage.getItem(key);
   if (stored === null) return def;
   try {
-    return JSON.parse(stored);
+    const v: unknown = JSON.parse(stored);
+    return typeof v === 'boolean' ? v : def;
   } catch {
     return def;
   }
