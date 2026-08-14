@@ -38,7 +38,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@entur/mui-comps-nmr": "https://github.com/entur/mui-comps-nmr/releases/download/v0.6.0/entur-mui-comps-nmr-0.6.0.tgz",
+    "@entur/mui-comps-nmr": "https://github.com/entur/mui-comps-nmr/releases/download/v0.7.0/entur-mui-comps-nmr-0.7.0.tgz",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@mui/x-data-grid": "^8.2.0",

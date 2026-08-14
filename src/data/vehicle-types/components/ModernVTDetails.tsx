@@ -51,6 +51,9 @@ export default function Elem({ name, version, ...props }: ElemProps) {
     }),
     [t]
   );
+  // Same deal for the load skeleton: only its aria-label is the host's — the
+  // shape is derived from the field registry so it cannot drift from the form.
+  const skeletonProps = useMemo(() => ({ ariaLabel: t('common.formSkeleton.ariaLabel') }), [t]);
 
   const getHeaders = async (): Promise<Record<string, string>> => ({
     Authorization: `Bearer ${await auth.getAccessToken()}`,
@@ -76,6 +79,7 @@ export default function Elem({ name, version, ...props }: ElemProps) {
           layout={layout}
           variant="tabs"
           footerProps={footerProps}
+          skeletonProps={skeletonProps}
           {...props}
         />
       </Box>

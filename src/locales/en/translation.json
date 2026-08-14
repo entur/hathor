@@ -238,5 +238,6 @@
   "common.retry": "Retry",
   "common.editFooter.clean": "All changes saved",
   "common.editFooter.dirty": "Unsaved changes",
-  "common.editFooter.saving": "Saving…"
+  "common.editFooter.saving": "Saving…",
+  "common.formSkeleton.ariaLabel": "Loading form"
 }

@@ -247,5 +247,6 @@
   "common.retry": "Prøv igjen",
   "common.editFooter.clean": "Alle endringer lagret",
   "common.editFooter.dirty": "Ulagrede endringer",
-  "common.editFooter.saving": "Lagrer…"
+  "common.editFooter.saving": "Lagrer…",
+  "common.formSkeleton.ariaLabel": "Laster skjema"
 }
