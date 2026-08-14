@@ -96,11 +96,15 @@ export default function Elem({ name, version, ...props }: ElemProps) {
  * the vehicle-list columns) reuse the `vehicles.*` keys, whose rendered values
  * are identical; duplicating them under `vehicleType.*` would only add drift.
  *
+ * The first tab is "General" — identity plus the three inlined vehicleModel
+ * props — mirroring the legacy editor's first tab rather than splitting the
+ * model fields off, so the two editors read the same when toggled between.
+ *
  * @param t i18next translator from `useTranslation()`.
  * @returns Layout consumed by `VehicleTypeForm`'s `layout` prop.
  */
 const mkLayout = (t: TFunction): VehicleTypeLayout => ({
-  [t('vehicleType.tab.edit')]: [
+  [t('vehicleType.tab.general')]: [
     { field: 'name', label: t('vehicleType.field.name') },
     { field: 'transportMode', label: t('vehicleType.field.transportMode') },
     {

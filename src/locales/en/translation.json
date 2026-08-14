@@ -122,7 +122,7 @@
   "vehicleType.deactivateSuccess": "Vehicle type deactivated",
   "vehicleType.deactivateConfirmTitle": "Deactivate vehicle type?",
   "vehicleType.deactivateConfirmMessage": "This vehicle type will be deactivated.",
-  "vehicleType.tab.edit": "Edit",
+  "vehicleType.tab.general": "General",
   "vehicleType.tab.propulsion": "Propulsion/perf.",
   "vehicleType.tab.capacity": "Passenger Capacity",
   "vehicleType.tab.environment": "Environment",
