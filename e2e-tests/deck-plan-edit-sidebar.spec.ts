@@ -108,10 +108,11 @@ test.describe('/deck-plans — sidebar editor', () => {
 
     await expect(page.getByTestId('deck-plan-decks-sample')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'SAMPLE' })).toBeVisible();
-    // One ghost deck, drawn but seatless.
+    // Exactly one ghost deck, and it is populated — the ghost is Wagon_2's
+    // deck (46 seats), not a bare outline.
     await expect(page.getByTestId('deck-plan-deck-0')).toBeVisible();
     await expect(page.getByTestId('deck-plan-deck-1')).toHaveCount(0);
-    await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(0);
+    await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(46);
   });
 
   test('saving a renamed deck plan POSTs a patched document without keyList', async ({ page }) => {

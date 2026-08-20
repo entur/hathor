@@ -81,7 +81,7 @@ type Story = StoryObj<typeof DeckRendering>;
 
 /**
  * The `SAMPLE` fallback — what renders when a real plan carries an empty
- * `<decks/>`. A bare 26.4m × 2.8m outline, no deck spaces.
+ * `<decks/>`. Backed by Wagon_2's deck, so it looks like a real layout.
  */
 export const Ghost: Story = {
   render: () => <Framed label="ghost" xml={GHOST_DECK_PLAN_XML} vertical />,

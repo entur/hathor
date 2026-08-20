@@ -42,6 +42,9 @@ const WAGON_SEATS = [80, 46, 72, 80, 46, 72];
 /** Six real decks in one plan; more than the rail fits, so the strip scrolls. */
 const SIX_DECKS = mkWagonsXml(WAGONS);
 
+/** Seats in the SAMPLE ghost — it is Wagon_2's deck (see `ghostDeckPlanXml`). */
+const GHOST_SEATS = 46;
+
 /** A plan whose `<decks/>` is empty — what real Sobek data usually returns. */
 const NO_DECKS = mkSampleDeckPlanXml([]);
 
@@ -149,8 +152,9 @@ export const EditTabSample: Story = {
     );
     const els = canvasElement.querySelectorAll('deck-rendering');
     expect(els).toHaveLength(1);
-    // The ghost is an outline only — no seats.
-    expect(els[0].shadowRoot!.querySelectorAll('g.seat')).toHaveLength(0);
+    // The ghost is Wagon_2's deck, so it draws a populated layout rather than
+    // an empty outline — the SAMPLE tab should look like a real deck plan.
+    expect(els[0].shadowRoot!.querySelectorAll('g.seat')).toHaveLength(GHOST_SEATS);
   },
 };
 
