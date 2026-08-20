@@ -6,13 +6,10 @@ import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import DeckRendering, { DECK_SCALE } from './DeckRendering.tsx';
 import { loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
 import { GHOST_DECK_PLAN_XML } from '../utils/ghostDeckPlanXml.ts';
+import { mkSampleDeckPlanXml } from '../utils/sampleDeckPlanXml.ts';
 
-/** Seat pitch and half-width used to lay the sample spots out, in metres. */
-const PITCH = 0.9,
-  AISLE = 0.75;
-
-/** Sample deck with two rows of four seats either side of an aisle. */
-const SAMPLE_XML = sampleDeckPlanXml();
+/** Sample deck: eight seats in four rows either side of an aisle. */
+const SAMPLE_XML = mkSampleDeckPlanXml([{ seats: 8 }]);
 
 /**
  * Resolve a `Deck` through the renderer bundle's own parser. Stories cannot
@@ -156,53 +153,4 @@ async function waitForSvg(root: HTMLElement): Promise<SVGSVGElement> {
     expect(svg).not.toBeNull();
   });
   return svg!;
-}
-
-/**
- * Build a NeTEx document with one 8-seat deck. Inline rather than a fixture
- * file: it exists to exercise the renderer, not to mirror a Sobek response.
- */
-function sampleDeckPlanXml(): string {
-  const spots = Array.from({ length: 8 }, (_, i) => {
-    const row = Math.floor(i / 2),
-      side = i % 2;
-    const x = 1.2 + row * PITCH,
-      y = 1.4 + (side ? AISLE : -AISLE);
-    return `
-                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:${i + 1}">
-                          <Label>${row + 1}${side ? 'B' : 'A'}</Label>
-                          <Orientation>backwards</Orientation>
-                          <Centroid><Location><pos>${x} ${y}</pos></Location></Centroid>
-                          <Width>0.7</Width>
-                          <Length>0.7</Length>
-                        </PassengerSpot>`;
-  }).join('');
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
-  <dataObjects>
-    <CompositeFrame version="1" id="SAMPLE:CompositeFrame:1">
-      <frames>
-        <ResourceFrame version="1" id="SAMPLE:ResourceFrame:1">
-          <deckPlans>
-            <DeckPlan version="1" id="SAMPLE:DeckPlan:1">
-              <decks>
-                <Deck version="1" id="SAMPLE:Deck:1">
-                  <deckSpaces>
-                    <PassengerSpace version="1" id="SAMPLE:PassengerSpace:1">
-                      <passengerSpots>${spots}
-                      </passengerSpots>
-                    </PassengerSpace>
-                  </deckSpaces>
-                  <Width>2.825</Width>
-                  <Length>6</Length>
-                </Deck>
-              </decks>
-            </DeckPlan>
-          </deckPlans>
-        </ResourceFrame>
-      </frames>
-    </CompositeFrame>
-  </dataObjects>
-</PublicationDelivery>`;
 }
