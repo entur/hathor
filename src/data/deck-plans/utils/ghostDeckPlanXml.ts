@@ -7,7 +7,9 @@
  * it lives on the Vue entry, so reaching it would load a second copy of the
  * models and break that identity.
  *
- * Shape mirrors `Deck.empty()` — one bare deck, no deck spaces. The nesting is
+ * Shape mirrors `Deck.empty()` — one bare deck, no deck spaces. Its 13m length
+ * matches the wagon samples, so the placeholder stands about as tall as a real
+ * deck instead of towering over the strip. The nesting is
  * fixed by the library's parser, which walks
  * `dataObjects.CompositeFrame.frames.ResourceFrame.deckPlans.DeckPlan`.
  */
@@ -22,7 +24,7 @@ export const GHOST_DECK_PLAN_XML = `<?xml version="1.0" encoding="UTF-8"?>
               <decks>
                 <Deck version="1" id="GHOST:Deck:1">
                   <Width>2.825</Width>
-                  <Length>26.4</Length>
+                  <Length>13</Length>
                 </Deck>
               </decks>
             </DeckPlan>
