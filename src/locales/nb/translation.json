@@ -63,6 +63,9 @@
   "deckPlan.deactivateSuccess": "Setekart deaktivert",
   "deckPlans.actions.new": "Nytt setekart",
   "deckPlans.field.name": "Navn",
+  "deckPlans.field.description": "Beskrivelse",
+  "deckPlans.tab.identity": "Identitet",
+  "deckPlans.tab.xml": "XML",
   "deckPlans.field.id": "ID",
   "breadcrumbs.home": "Hjem",
 

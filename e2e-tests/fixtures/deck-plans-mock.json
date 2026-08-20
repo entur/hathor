@@ -14,7 +14,11 @@
           "name": { "value": "\n                " },
           "description": null
         },
-        { "netexId": "NMR:DeckPlan:5", "name": { "value": "Plan Alpha" }, "description": null },
+        {
+          "netexId": "NMR:DeckPlan:5",
+          "name": { "value": "\n                Plan Alpha\n              " },
+          "description": { "value": "\n                Alpha lower-deck variant\n              " }
+        },
         { "netexId": "NMR:DeckPlan:6", "name": { "value": "   " }, "description": null },
         { "netexId": "NMR:DeckPlan:7", "name": { "value": "Plan Delta" }, "description": null },
         { "netexId": "NMR:DeckPlan:8", "name": null, "description": null },
