@@ -1,0 +1,1490 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PublicationDelivery version="1.2.2" schemaLocation="http://www.netex.org.uk/netex file:///home/robin/Projekte/NeTEx/xsd/NeTEx_publication.xsd">
+  <PublicationTimestamp>2020-12-17T09:30:47.0Z</PublicationTimestamp>
+  <ParticipantRef>SYS001</ParticipantRef>
+  <dataObjects>
+    <CompositeFrame version="any" id="CompositeFrame/id/1">
+      <frames>
+        <ResourceFrame version="any" id="ResourceFrame/id/1">
+          <equipments>
+            <AccessVehicleEquipment id="AccessVehicleEquipment/id/1" version="any">
+              <Name>Ramp</Name>
+              <Fixed>false</Fixed>
+              <LowFloor>false</LowFloor>
+              <HighFloor>false</HighFloor>
+              <Ramp>true</Ramp>
+            </AccessVehicleEquipment>
+            <AccessVehicleEquipment id="AccessVehicleEquipment/id/2" version="any">
+              <Name>Lift</Name>
+              <Fixed>false</Fixed>
+              <LowFloor>false</LowFloor>
+              <HighFloor>false</HighFloor>
+              <Ramp>false</Ramp>
+            </AccessVehicleEquipment>
+            <AccessVehicleEquipment id="AccessVehicleEquipment/id/3" version="any">
+              <Name>Entrance dimensions</Name>
+              <Fixed>false</Fixed>
+              <LowFloor>false</LowFloor>
+              <HighFloor>false</HighFloor>
+              <Ramp>false</Ramp>
+            </AccessVehicleEquipment>
+          </equipments>
+          <serviceFacilitySets>
+            <ServiceFacilitySet version="any" id="ServiceFacilityTrain">
+              <PassengerInformationFacilityList>nextStopIndicator
+
+                stopAnnouncements</PassengerInformationFacilityList>
+              <SanitaryFacilityList>toilet
+                wheelchairAccessToilet</SanitaryFacilityList>
+              <TicketingFacilityList />
+            </ServiceFacilitySet>
+            <ServiceFacilitySet version="any" id="ServiceFacilityQuiet">
+              <NuisanceFacilityList>mobilePhoneFreeZone</NuisanceFacilityList>
+            </ServiceFacilitySet>
+          </serviceFacilitySets>
+          <vehicleTypes>
+            <Train version="any" id="Train/id/1">
+              <privateCodes>
+                <PrivateCode type="Fahrzeug-Ident-Nr.">
+                  94808442201
+                </PrivateCode>
+              </privateCodes>
+              <Name>Talent 3</Name>
+              <Description>4 Teiler</Description>
+              <ReversingDirection>true</ReversingDirection>
+              <SelfPropelled>true</SelfPropelled>
+              <PropulsionType>electric</PropulsionType>
+              <TransportMode>rail</TransportMode>
+              <capacities>
+                <PassengerCapacity version="any" id="PassengerCapacity/id/1">
+                  <FareClass>firstClass</FareClass>
+                  <SeatingCapacity>8</SeatingCapacity>
+                </PassengerCapacity>
+                <PassengerCapacity version="any" id="PassengerCapacity/id/2">
+                  <FareClass>secondClass</FareClass>
+                  <SeatingCapacity>207</SeatingCapacity>
+                  <StandingCapacity>275</StandingCapacity>
+                  <WheelchairPlaceCapacity>2</WheelchairPlaceCapacity>
+                  <BicycleRackCapacity>33</BicycleRackCapacity>
+                </PassengerCapacity>
+              </capacities>
+              <LowFloor>false</LowFloor>
+              <HasLiftOrRamp>true</HasLiftOrRamp>
+              <BoardingHeight>0.6</BoardingHeight>
+              <Length>72.3</Length>
+              <Width>2.926</Width>
+              <Height>4.26</Height>
+              <facilities>
+                <ServiceFacilitySetRef version="any" ref="ServiceFacilityTrain" />
+              </facilities>
+              <components>
+                <TrainComponent version="any" id="TrainComponent/id/1">
+                  <Label>201-3</Label>
+                  <TractiveElementTypeRef version="any" ref="TractiveElementType/id/T3-1" />
+                  <OperationalOrientation>forwards</OperationalOrientation>
+                  <ForwardCoupling>
+                    <Splittable>true</Splittable>
+                    <ThroughAccess>noThroughAccess</ThroughAccess>
+                  </ForwardCoupling>
+                </TrainComponent>
+                <TrainComponent version="any" id="TrainComponent/id/2">
+                  <Label>201-8</Label>
+                  <TrailingElementTypeRef version="any" ref="TrailingElementType/id/M3-1" />
+                  <OperationalOrientation>forwards</OperationalOrientation>
+                  <ForwardCoupling>
+                    <Splittable>true</Splittable>
+                    <ThroughAccess>openEntrance</ThroughAccess>
+                  </ForwardCoupling>
+                </TrainComponent>
+                <TrainComponent version="any" id="TrainComponent/id/3">
+                  <Label>701-7</Label>
+                  <TrailingElementTypeRef version="any" ref="TrailingElementType/id/M2-1" />
+                  <OperationalOrientation>forwards</OperationalOrientation>
+                  <ForwardCoupling>
+                    <Splittable>true</Splittable>
+                    <ThroughAccess>openEntrance</ThroughAccess>
+                  </ForwardCoupling>
+                </TrainComponent>
+                <TrainComponent version="any" id="TrainComponent/id/4">
+                  <Label>701-9</Label>
+                  <TractiveElementTypeRef version="any" ref="TractiveElementType/id/T2-1" />
+                  <OperationalOrientation>forwards</OperationalOrientation>
+                  <ForwardCoupling>
+                    <Splittable>true</Splittable>
+                    <ThroughAccess>openEntrance</ThroughAccess>
+                  </ForwardCoupling>
+                </TrainComponent>
+              </components>
+            </Train>
+          </vehicleTypes>
+          <trainElementTypes>
+            <TractiveElementType version="any" id="TractiveElementType/id/T3-1">
+              <Name>T3-1</Name>
+              <TrainElementType>engine</TrainElementType>
+              <Length>20.05</Length>
+              <Width>2.926</Width>
+              <Height>4.26</Height>
+              <DeckPlanRef version="any" ref="DeckPlan/id/1" />
+            </TractiveElementType>
+            <TractiveElementType version="any" id="TractiveElementType/id/T2-1">
+              <Name>T2-1</Name>
+              <TrainElementType>engine</TrainElementType>
+              <Length>20.05</Length>
+              <Width>2.926</Width>
+              <Height>4.26</Height>
+            </TractiveElementType>
+            <TrailingElementType version="any" id="TrailingElementType/id/M3-1">
+              <Name>M3-1</Name>
+              <TrainElementType>carriage</TrainElementType>
+              <Length>16.1</Length>
+              <Width>2.926</Width>
+              <Height>4.26</Height>
+            </TrailingElementType>
+            <TrailingElementType version="any" id="TrailingElementType/id/M2-1">
+              <Name>M2-1</Name>
+              <TrainElementType>carriage</TrainElementType>
+              <Length>16.1</Length>
+              <Width>2.926</Width>
+              <Height>4.26</Height>
+            </TrailingElementType>
+          </trainElementTypes>
+          <deckPlans>
+            <DeckPlan id="DeckPlan/id/1" version="any">
+              <xmlTagName />
+              <decks>
+                <Deck id="Deck/id/1" version="any">
+                  <spotRows>
+                    <SpotRow id="SpotRow/id/1" />
+                    <SpotRow id="SpotRow/id/2" />
+                    <SpotRow id="SpotRow/id/3" />
+                    <SpotRow id="SpotRow/id/4" />
+                    <SpotRow id="SpotRow/id/5" />
+                    <SpotRow id="SpotRow/id/6" />
+                    <SpotRow id="SpotRow/id/7" />
+                    <SpotRow id="SpotRow/id/8" />
+                    <SpotRow id="SpotRow/id/9" />
+                    <SpotRow id="SpotRow/id/10" />
+                    <SpotRow id="SpotRow/id/11" />
+                    <SpotRow id="spot_row_1778936985294" />
+                    <SpotRow id="spot_row_1778936986382" />
+                    <SpotRow id="spot_row_1778936986822" />
+                    <SpotRow id="spot_row_1778936987173" />
+                    <SpotRow id="spot_row_1778936987614" />
+                    <SpotRow id="spot_row_1778936988038" />
+                    <SpotRow id="spot_row_1778936988454" />
+                    <SpotRow id="spot_row_1778936988839" />
+                    <SpotRow id="spot_row_1778936989382" />
+                  </spotRows>
+                  <spotColumns>
+                    <SpotColumn id="SpotColumn/id/A" />
+                    <SpotColumn id="SpotColumn/id/B" />
+                    <SpotColumn id="SpotColumn/id/C" />
+                    <SpotColumn id="SpotColumn/id/D" />
+                    <SpotColumn id="spot_column_1778936952743" />
+                  </spotColumns>
+                  <deckSpaces>
+                    <PassengerSpace id="seating-area_1779021502009" version="1.0">
+                      <Name>Area 1</Name>
+                      <PassengerSpaceType>seatingArea</PassengerSpaceType>
+                      <passengerSpots>
+                        <PassengerSpot id="seat_1778937092812" version="1.0">
+                          <Label>77</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/5" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>3.3902046783625726 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937062102" version="1.0">
+                          <Label>79</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/5" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>3.390204678362572 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937064374" version="1.0">
+                          <Label>75</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/4" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>2.705994152046783 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937065965" version="1.0">
+                          <Label>71</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/3" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>2.148099415204678 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937067645" version="1.0">
+                          <Label>67</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/2" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>1.5178571428571428 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937069070" version="1.0">
+                          <Label>63</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/1" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>0.8321428571428571 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937070502" version="1.0">
+                          <Label>64</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/1" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>0.8321428571428571 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937071949" version="1.0">
+                          <Label>68</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/2" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>1.5178571428571428 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937073261" version="1.0">
+                          <Label>72</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/3" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>2.148099415204678 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937074877" version="1.0">
+                          <Label>76</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/4" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>2.705994152046783 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937076238" version="1.0">
+                          <Label>80</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/5" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>3.3902046783625726 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937079148" version="1.0">
+                          <Label>62</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/1" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>0.8321428571428571 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937080613" version="1.0">
+                          <Label>61</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/1" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>0.8321428571428571 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937082092" version="1.0">
+                          <Label>66</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/2" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>1.5178571428571428 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937083501" version="1.0">
+                          <Label>65</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/2" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>1.5178571428571428 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937084957" version="1.0">
+                          <Label>70</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/3" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>2.148099415204678 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937086445" version="1.0">
+                          <Label>69</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/3" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>2.148099415204678 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937088101" version="1.0">
+                          <Label>74</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/4" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>2.705994152046783 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937089669" version="1.0">
+                          <Label>73</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/4" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>2.705994152046783 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937091213" version="1.0">
+                          <Label>78</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/5" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>3.3902046783625726 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                      </passengerSpots>
+                      <luggageSpots />
+                      <deckEntrances />
+                      <deckEntranceUsage />
+                      <deckEntranceCouples />
+                      <deckSpaceCapacities />
+                      <actualVehicleEquipments />
+                      <PublicUse>true</PublicUse>
+                      <TotalCapacity>0</TotalCapacity>
+                      <FareClass>Standard</FareClass>
+                      <AirConditioned>true</AirConditioned>
+                    </PassengerSpace>
+                    <PassengerSpace id="PassengerSpace/id/Main1" version="any">
+                      <Name>Area 2</Name>
+                      <PassengerSpaceType>seatingArea</PassengerSpaceType>
+                      <passengerSpots>
+                        <PassengerSpot id="seat_1778936959455" version="1.0">
+                          <Label>1</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936989382" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>11.99318181818182 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937008159" version="1.0">
+                          <Label>2</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936989382" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>11.99318181818182 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937015960" version="1.0">
+                          <Label>5</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988839" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>11.39317460317461 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937021040" version="1.0">
+                          <Label>6</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988839" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>11.39317460317461 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937022543" version="1.0">
+                          <Label>9</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988454" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>10.790467836257315 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937023767" version="1.0">
+                          <Label>10</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988454" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>10.790467836257315 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937025176" version="1.0">
+                          <Label>13</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988038" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>10.216783625730999 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937026727" version="1.0">
+                          <Label>14</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988038" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>10.216783625730999 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937028246" version="1.0">
+                          <Label>17</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987614" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>9.679678362573105 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937029719" version="1.0">
+                          <Label>18</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987614" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>9.679678362573105 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937031327" version="1.0">
+                          <Label>21</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987173" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>9.153362573099418 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937033231" version="1.0">
+                          <Label>22</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987173" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>9.153362573099418 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937042255" version="1.0">
+                          <Label>33</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936985294" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>7.5323099415204675 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937043838" version="1.0">
+                          <Label>34</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936985294" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>7.5323099415204675 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937045206" version="1.0">
+                          <Label>37</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/11" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>6.963888888888887 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937046518" version="1.0">
+                          <Label>38</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/11" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>6.963888888888887 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937047798" version="1.0">
+                          <Label>41</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/10" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>6.374415204678361 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937049046" version="1.0">
+                          <Label>42</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/10" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>6.374415204678361 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937051598" version="1.0">
+                          <Label>45</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/9" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>5.82704678362573 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937053102" version="1.0">
+                          <Label>46</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/9" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>5.82704678362573 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937054510" version="1.0">
+                          <Label>49</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/8" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>5.216520467836255 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937056022" version="1.0">
+                          <Label>50</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/8" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>5.216520467836255 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937057558" version="1.0">
+                          <Label>53</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/7" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>4.584941520467836 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937058966" version="1.0">
+                          <Label>54</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/7" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>4.584941520467836 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937060670" version="1.0">
+                          <Label>83</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/6" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>4.016520467836257 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937077717" version="1.0">
+                          <Label>84</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/6" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>4.016520467836257 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937094372" version="1.0">
+                          <Label>82</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/6" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>4.016520467836257 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937096309" version="1.0">
+                          <Label>81</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/6" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>4.016520467836257 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937097788" version="1.0">
+                          <Label>56</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/7" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>4.584941520467836 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937099188" version="1.0">
+                          <Label>55</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/7" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>4.584941520467836 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937100556" version="1.0">
+                          <Label>52</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/8" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>5.216520467836256 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937101980" version="1.0">
+                          <Label>51</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/8" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>5.216520467836256 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937103612" version="1.0">
+                          <Label>48</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/9" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>5.82704678362573 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937105060" version="1.0">
+                          <Label>47</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/9" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>5.82704678362573 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937106668" version="1.0">
+                          <Label>44</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/10" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>6.374415204678362 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937108868" version="1.0">
+                          <Label>43</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/10" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>6.374415204678362 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937110571" version="1.0">
+                          <Label>40</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/11" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>6.963888888888888 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937112164" version="1.0">
+                          <Label>39</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="SpotRow/id/11" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>6.963888888888888 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937113752" version="1.0">
+                          <Label>36</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936985294" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>7.5323099415204675 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937115005" version="1.0">
+                          <Label>35</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936985294" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>7.5323099415204675 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937123220" version="1.0">
+                          <Label>24</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987173" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>9.153362573099418 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937124755" version="1.0">
+                          <Label>23</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987173" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>9.153362573099418 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937193640" version="1.0">
+                          <Label>20</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987614" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>9.679678362573103 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937195011" version="1.0">
+                          <Label>19</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936987614" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>9.679678362573103 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937196562" version="1.0">
+                          <Label>16</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988038" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>10.216783625730997 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937197906" version="1.0">
+                          <Label>15</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988038" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>10.216783625730997 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937199434" version="1.0">
+                          <Label>12</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988454" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>10.790467836257314 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937201099" version="1.0">
+                          <Label>11</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988454" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>10.790467836257314 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937203011" version="1.0">
+                          <Label>8</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988839" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>11.393174603174609 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937204314" version="1.0">
+                          <Label>7</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936988839" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>11.393174603174609 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937205770" version="1.0">
+                          <Label>4</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936989382" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>12.015714285714289 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937207563" version="1.0">
+                          <Label>3</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936989382" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>12.015714285714289 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                      </passengerSpots>
+                      <luggageSpots />
+                      <deckEntrances>
+                        <PassengerEntrance id="entrance_1779021475977" version="1.0">
+                          <Name>Entrance</Name>
+                          <Label>E</Label>
+                          <Width>0.6</Width>
+                          <Height>2</Height>
+                          <actualVehicleEquipments />
+                          <PublicUse>true</PublicUse>
+                          <VehicleSide>leftSide</VehicleSide>
+                          <DeckEntranceType>external</DeckEntranceType>
+                          <Centroid>
+                            <Location>
+                              <pos>0.12 1.84</pos>
+                            </Location>
+                          </Centroid>
+                        </PassengerEntrance>
+                        <PassengerEntrance id="entrance_1779021477501" version="1.0">
+                          <Name>Entrance</Name>
+                          <Label>E</Label>
+                          <Width>0.6</Width>
+                          <Height>2</Height>
+                          <actualVehicleEquipments />
+                          <PublicUse>true</PublicUse>
+                          <VehicleSide>leftSide</VehicleSide>
+                          <DeckEntranceType>external</DeckEntranceType>
+                          <Centroid>
+                            <Location>
+                              <pos>12.38 -0.06</pos>
+                            </Location>
+                          </Centroid>
+                        </PassengerEntrance>
+                        <PassengerEntrance id="entrance_1779021478836" version="1.0">
+                          <Name>Entrance</Name>
+                          <Label>E</Label>
+                          <Width>0.6</Width>
+                          <Height>2</Height>
+                          <actualVehicleEquipments />
+                          <PublicUse>true</PublicUse>
+                          <VehicleSide>leftSide</VehicleSide>
+                          <DeckEntranceType>external</DeckEntranceType>
+                          <Centroid>
+                            <Location>
+                              <pos>12.36 1.88</pos>
+                            </Location>
+                          </Centroid>
+                        </PassengerEntrance>
+                        <PassengerEntrance id="entrance_1779021480092" version="1.0">
+                          <Name>Entrance</Name>
+                          <Label>E</Label>
+                          <Width>0.6</Width>
+                          <Height>2</Height>
+                          <actualVehicleEquipments />
+                          <PublicUse>true</PublicUse>
+                          <VehicleSide>leftSide</VehicleSide>
+                          <SequenceFromFront>2.14</SequenceFromFront>
+                          <DeckEntranceType>external</DeckEntranceType>
+                          <Centroid>
+                            <Location>
+                              <pos>0.1 -0.04</pos>
+                            </Location>
+                          </Centroid>
+                        </PassengerEntrance>
+                      </deckEntrances>
+                      <deckEntranceUsage />
+                      <deckEntranceCouples />
+                      <deckSpaceCapacities />
+                      <actualVehicleEquipments />
+                      <PublicUse>true</PublicUse>
+                      <FareClass>Standard</FareClass>
+                    </PassengerSpace>
+                    <PassengerSpace id="seating-area_1778937141072" version="1.0">
+                      <Name>Premium Seats</Name>
+                      <PassengerSpaceType>seatingArea</PassengerSpaceType>
+                      <passengerSpots>
+                        <PassengerSpot id="seat_1778937035630" version="1.0">
+                          <Label>25</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986822" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>8.648099415204678 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937037486" version="1.0">
+                          <Label>26</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986822" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>8.648099415204678 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937039071" version="1.0">
+                          <Label>29</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/A" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986382" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>8.111257309941521 1.766429</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937040542" version="1.0">
+                          <Label>30</Label>
+                          <Orientation>forwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/B" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986382" version="1.0" />
+                          <Centroid>
+                            <Location>
+                              <pos>8.111257309941521 1.410714</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937117116" version="1.0">
+                          <Label>32</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986382" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>8.111257309941521 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937118571" version="1.0">
+                          <Label>31</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986382" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>8.111257309941521 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937120156" version="1.0">
+                          <Label>28</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="SpotColumn/id/D" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986822" version="1.0" />
+                          <IsByAisle>true</IsByAisle>
+                          <Centroid>
+                            <Location>
+                              <pos>8.648099415204678 0.576316</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                        <PassengerSpot id="seat_1778937121628" version="1.0">
+                          <Label>27</Label>
+                          <Orientation>backwards</Orientation>
+                          <actualVehicleEquipments />
+                          <SpotColumnRef ref="spot_column_1778936952743" version="1.0" />
+                          <SpotRowRef ref="spot_row_1778936986822" version="1.0" />
+                          <IsByWindow>true</IsByWindow>
+                          <Centroid>
+                            <Location>
+                              <pos>8.648099415204678 0.206842</pos>
+                            </Location>
+                          </Centroid>
+                          <Width>0.35</Width>
+                          <Length>0.35</Length>
+                        </PassengerSpot>
+                      </passengerSpots>
+                      <luggageSpots />
+                      <deckEntrances />
+                      <deckEntranceUsage />
+                      <deckEntranceCouples />
+                      <deckSpaceCapacities />
+                      <actualVehicleEquipments />
+                      <PublicUse>true</PublicUse>
+                      <FareClass>High</FareClass>
+                    </PassengerSpace>
+                  </deckSpaces>
+                  <DeckLevelRef ref="deck_level_0" version="1.0" />
+                  <Name />
+                  <Width>2</Width>
+                  <Length>13</Length>
+                </Deck>
+              </decks>
+              <deckLevels>
+                <DeckLevel id="deck_level_0" version="1.0">
+                  <Label>Level 0</Label>
+                </DeckLevel>
+              </deckLevels>
+            </DeckPlan>
+          </deckPlans>
+          <schematicMaps>
+            <SchematicMap>
+              <Name>Talent 3 seat map</Name>
+              <ImageUri>https://www.example.com</ImageUri>
+              <DepictedObjectRef ref="Train/id/1" />
+            </SchematicMap>
+          </schematicMaps>
+        </ResourceFrame>
+      </frames>
+    </CompositeFrame>
+  </dataObjects>
+</PublicationDelivery>

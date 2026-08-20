@@ -4,8 +4,13 @@ import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import { DECK_RENDERING_TAG, loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
 import { adoptDeckSheet, mkDeckSheet } from '../utils/deckRenderingStyles.ts';
 
-/** Render scale in px per metre. A deck is ~26.4m × 2.8m at real-world size. */
-export const DECK_SCALE = 12;
+/**
+ * Render scale in px per metre. A deck is a couple of metres across at
+ * real-world size, so this sets how wide a `vertical` deck column lands in the
+ * sidebar: at 36 a 2m-wide wagon deck is ~82px, which reads legibly against
+ * the Edit tab's width while leaving room for several decks side by side.
+ */
+export const DECK_SCALE = 36;
 
 interface DeckRenderingProps {
   /** Deck to draw — must come from the renderer bundle's own `parseNeTEx`. */
