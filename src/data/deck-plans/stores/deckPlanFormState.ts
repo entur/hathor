@@ -53,6 +53,7 @@ export const isDirty = ({ form, baseline }: FormState): boolean => {
   return (
     n.name?.value !== baseline.name?.value ||
     n.name?.lang !== baseline.name?.lang ||
-    n.description?.value !== baseline.description?.value
+    n.description?.value !== baseline.description?.value ||
+    n.description?.lang !== baseline.description?.lang
   );
 };

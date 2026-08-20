@@ -16,10 +16,13 @@ const textNode = (n?: Name): TextNode | undefined => {
 };
 
 /**
- * Rewrite a deck plan's `Name`/`Description` inside its fetched NeTEx document,
- * leaving every other element untouched so the whole body can be POSTed back to
- * the import endpoint. This is the only write path that preserves content
- * `DeckPlanInput` cannot carry (deck geometry, `ValidBetween`, frame envelope).
+ * Rewrite a deck plan's `Name`/`Description` inside its fetched NeTEx document
+ * and re-serialize it for POSTing back to the import endpoint. This is the only
+ * write path that preserves content `DeckPlanInput` cannot carry (deck geometry,
+ * `ValidBetween`, frame envelope).
+ *
+ * Every other element, attribute and value survives, but the original bytes do
+ * not: the parse/build round-trip normalizes whitespace and indentation.
  *
  * `keyList` is dropped before rebuilding: Sobek merges an incoming keyList into
  * the stored one by appending, so echoing it back doubles the `imported-id`

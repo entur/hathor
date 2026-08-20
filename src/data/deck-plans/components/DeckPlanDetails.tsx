@@ -142,6 +142,10 @@ export default function DeckPlanDetails({
       }
 
       setMode('view');
+      // Re-baseline on the write, not on the refresh. The mutation has already
+      // committed, so a failing list refetch must not strand the editor dirty —
+      // collapsing would then offer to discard changes that are persisted.
+      dispatch({ type: 'hydrate', dp: { ...form, id: result.newId } });
       try {
         await onSaved?.();
         // Advance `?selected=new` → `?selected=<newId>` only after the list
@@ -169,12 +173,13 @@ export default function DeckPlanDetails({
     if (result.error) return;
 
     setMode('view');
+    // Re-baseline on the write, for the same reason as the create branch above.
+    dispatch({ type: 'hydrate', dp: { ...deckPlan, ...form } });
+    // Re-pull the persisted body so the XML tab stops showing the pre-save
+    // document. Fire-and-forget: `refetch` bumps a tick, it returns no promise.
+    refetch();
     try {
-      // Re-pull the persisted body so the XML tab stops showing the pre-save
-      // document, then refresh the list row.
-      await refetch();
       await onSaved?.();
-      dispatch({ type: 'hydrate', dp: { ...deckPlan, ...form } });
       setSavedAt(Date.now());
     } catch {
       staleList();
@@ -290,6 +295,10 @@ export default function DeckPlanDetails({
         onSave={handleSave}
         isDirty={isDirty}
         saving={saving}
+        // An edit patches the fetched document, so block save until the body is
+        // here — otherwise patchDeckPlanXml throws a misleading "not found in
+        // document" for what is really "not loaded yet". Create has no body.
+        canSubmit={isCreate || (!loading && !!xml)}
       />
     </Box>
   );

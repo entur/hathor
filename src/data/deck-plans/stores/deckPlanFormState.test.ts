@@ -41,6 +41,23 @@ describe('deckPlanFormState', () => {
     expect(isDirty(s)).toBe(true);
   });
 
+  it('is dirty when only the description lang tag changes', () => {
+    // Reachable by clearing then retyping: mergeNameText returns {value} with
+    // no lang, so a real lang drop must register — as it already does for name.
+    const base = { ...PADDED, description: { value: 'Beskrivelse', lang: 'nb' } };
+    const s = edit(hydrate(initialFormState, base), {
+      ...base,
+      description: { value: 'Beskrivelse' },
+    });
+    expect(isDirty(s)).toBe(true);
+  });
+
+  it('is dirty when only the name lang tag changes', () => {
+    const base = { ...PADDED, name: { value: 'Navn', lang: 'nb' } };
+    const s = edit(hydrate(initialFormState, base), { ...base, name: { value: 'Navn' } });
+    expect(isDirty(s)).toBe(true);
+  });
+
   it('preserves the lang tag through hydrate', () => {
     const s = hydrate(initialFormState, { ...PADDED, name: { value: ' Navn ', lang: 'nb' } });
     expect(s.form.name).toEqual({ value: 'Navn', lang: 'nb' });

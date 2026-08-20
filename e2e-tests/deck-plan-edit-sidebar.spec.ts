@@ -25,6 +25,8 @@ const __dirname = path.dirname(__filename);
  *   - name/description save routes through the NeTEx import POST with a
  *     patched document (preserves deck geometry DeckPlanInput cannot carry)
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
+ *   - save is gated until the XML body has loaded (an edit patches it)
+ *   - a failed post-save list refresh warns but still re-baselines the form
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
@@ -126,5 +128,66 @@ test.describe('/deck-plans — sidebar editor', () => {
 
     await expect.poll(() => input).not.toBeNull();
     expect(input!.name).toEqual({ value: 'Brand New Plan' });
+  });
+
+  test('save stays disabled until the XML body has loaded', async ({ page }) => {
+    await interceptDeckPlansQuery(page);
+
+    // Hold the body fetch open so the editor is dirty while `xml` is still ''.
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    await page.route(/\/deckplans\/[^/?#]+$/, async route => {
+      await gate;
+      await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
+    });
+
+    await page.goto('/deck-plans?selected=NMR:DeckPlan:5');
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-name').fill('Typed before the body arrived');
+
+    // Dirty, but patchDeckPlanXml has nothing to patch yet — saving here would
+    // throw a misleading "not found in document".
+    await expect(page.getByTestId('editor-rail-save')).toBeDisabled();
+
+    release();
+    await expect(page.getByTestId('editor-rail-save')).toBeEnabled();
+  });
+
+  test('a failed post-save list refresh warns but still re-baselines the form', async ({
+    page,
+  }) => {
+    // The import POST commits, then the list refetch 500s. The warning is
+    // correct, but the write landed — collapsing must not offer to discard
+    // changes that are already persisted.
+    let saved = false;
+    // Registered BEFORE the 500-override: Playwright runs route handlers LIFO,
+    // so the override below gets first look and falls back to this one.
+    await interceptDeckPlansQuery(page);
+    await page.route('**/graphql', async route => {
+      const body = route.request().postDataJSON() as { query?: string };
+      if (body?.query?.includes('deckPlans') && saved) {
+        return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+      }
+      return route.fallback();
+    });
+    await page.route(/\/deckplans\/[^/?#]+$/, route =>
+      route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
+    );
+    await page.route('**/services/vehicles/netex', async route => {
+      saved = true;
+      await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
+    });
+
+    await page.goto('/deck-plans?selected=NMR:DeckPlan:5');
+    await expect(page.getByTestId('deck-plan-xml-textarea')).toHaveCount(0);
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-name').fill('Renamed then refresh fails');
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+
+    await page.getByTestId('editor-rail-collapse').click();
+    await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
+    await expect(page).not.toHaveURL(/\?selected=/);
   });
 });
