@@ -93,4 +93,35 @@ test.describe('/deck-plans — sidebar editor', () => {
     expect(posted).toContain('<decks/>');
     expect(posted).not.toContain('imported-id');
   });
+
+  test('?selected=new renders Identity bare and saves via the GQL mutation', async ({ page }) => {
+    await interceptDeckPlansQuery(page);
+
+    const NEW_ID = 'NMR:DeckPlan:99';
+    let input: Record<string, unknown> | null = null;
+    await page.route('**/graphql', async route => {
+      const body = route.request().postDataJSON() as {
+        query?: string;
+        variables?: Record<string, unknown>;
+      };
+      if (!body?.query?.includes('createOrUpdateDeckPlan')) return route.fallback();
+      input = body.variables?.input as Record<string, unknown>;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { createOrUpdateDeckPlan: NEW_ID } }),
+      });
+    });
+
+    await page.goto('/deck-plans?selected=new');
+    await expect(page.getByTestId('deck-plan-identity-panel')).toBeVisible();
+    // No persisted body yet, so no tab strip at all.
+    await expect(page.getByTestId('deck-plan-tab-xml')).toHaveCount(0);
+
+    await page.locator('#deckPlan-name').fill('Brand New Plan');
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect.poll(() => input).not.toBeNull();
+    expect(input!.name).toEqual({ value: 'Brand New Plan' });
+  });
 });
