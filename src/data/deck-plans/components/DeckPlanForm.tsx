@@ -235,7 +235,7 @@ function DeckStrip({ xml }: { xml: string }) {
   if (error) {
     return (
       <Alert severity="error" data-testid="deck-plan-decks-error">
-        {t('deckPlans.render.error', 'Could not render the deck plan')}
+        {t('deckPlans.render.error', 'Could not render the deck plan')}: {error}
       </Alert>
     );
   }

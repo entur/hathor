@@ -14,14 +14,17 @@ const __dirname = path.dirname(__filename);
  * Workflow:
  *   load /deck-plans → click the first deck-plan row → assert ?selected=<id>
  *   in URL + sidebar title testid visible → Edit tab shows the trimmed name
- *   → switch to the XML tab and assert the read-only body rendered → back on
- *   Edit, edit the name and save → assert the intercepted import POST
+ *   and a deck rendering per Deck → switch to the XML tab and assert the
+ *   read-only body rendered → back on Edit, edit the name and save → assert the intercepted import POST
  *   carries the patched <Name> and no <keyList> → click EditorRail collapse →
  *   assert ?selected= drops from the URL.
  * Covers:
  *   - row click writes ?selected=<id> (replaces the deprecated /deck-plans/:id
  *     route view)
  *   - Edit/XML tab split: name+description editable, XML body read-only
+ *   - Edit tab draws one read-only <deck-rendering> per Deck, captioned by
+ *     name, with seats asserted through the element's shadow root
+ *   - a plan with an empty <decks/> falls back to the SAMPLE ghost
  *   - name/description save routes through the NeTEx import POST with a
  *     patched document (preserves deck geometry DeckPlanInput cannot carry)
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
@@ -30,7 +33,9 @@ const __dirname = path.dirname(__filename);
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
- *     fixture, plus fulfill-routes on `/deckplans/<id>` for the XML body
+ *     fixture, plus fulfill-routes on `/deckplans/<id>` for the XML body —
+ *     `deck-plan-xml-mock.xml` (empty `<decks/>`, the SAMPLE case) or
+ *     `deck-plan-xml-with-decks-mock.xml` (two decks, 4 + 2 seats)
  *   - skip-live: mutates a shared deck plan; live coverage needs its own fixture id
  */
 test.describe('/deck-plans — sidebar editor', () => {
@@ -38,13 +43,13 @@ test.describe('/deck-plans — sidebar editor', () => {
 
   test.skip(IS_LIVE, 'sidebar slider behaviour is asserted against fixtures, not live data');
 
-  const xml = () =>
-    fs.readFileSync(path.join(__dirname, 'fixtures/deck-plan-xml-mock.xml'), 'utf8');
+  const xml = (file = 'deck-plan-xml-mock.xml') =>
+    fs.readFileSync(path.join(__dirname, 'fixtures', file), 'utf8');
 
-  const openFirstRow = async (page: import('@playwright/test').Page) => {
+  const openFirstRow = async (page: import('@playwright/test').Page, body = xml()) => {
     await interceptDeckPlansQuery(page);
     await page.route(/\/deckplans\/[^/?#]+$/, route =>
-      route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
+      route.fulfill({ status: 200, contentType: 'application/xml', body })
     );
     await page.goto('/deck-plans');
     await expect(page.locator('table')).toBeVisible();
@@ -75,6 +80,38 @@ test.describe('/deck-plans — sidebar editor', () => {
     const area = page.getByTestId('deck-plan-xml-textarea');
     await expect(area).toBeVisible();
     await expect(area).toHaveAttribute('readonly', '');
+  });
+
+  test('Edit tab renders one deck per Deck, captioned by name', async ({ page }) => {
+    await openFirstRow(page, xml('deck-plan-xml-with-decks-mock.xml'));
+
+    const strip = page.getByTestId('deck-plan-decks');
+    await expect(strip).toBeVisible();
+    // Two decks in the fixture — captions come from each <Deck><Name>.
+    await expect(strip.getByText('Lower')).toBeVisible();
+    await expect(strip.getByText('Upper')).toBeVisible();
+    await expect(page.getByTestId('deck-plan-deck-0')).toBeVisible();
+    await expect(page.getByTestId('deck-plan-deck-1')).toBeVisible();
+    // No SAMPLE chrome when the plan actually carries decks.
+    await expect(page.getByTestId('deck-plan-decks-sample')).toHaveCount(0);
+
+    // Seats live inside the custom element's shadow root; Playwright's CSS
+    // engine pierces it. 4 seats on the lower deck, 2 on the upper.
+    await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(4);
+    await expect(page.locator('[data-testid="deck-plan-deck-1"] g.seat')).toHaveCount(2);
+  });
+
+  test('a plan with no decks renders the SAMPLE ghost', async ({ page }) => {
+    // The default fixture carries an empty <decks/> — the shape real Sobek
+    // data comes back with (NMR:DeckPlan:1 probed 2026-08-20).
+    await openFirstRow(page);
+
+    await expect(page.getByTestId('deck-plan-decks-sample')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SAMPLE' })).toBeVisible();
+    // One ghost deck, drawn but seatless.
+    await expect(page.getByTestId('deck-plan-deck-0')).toBeVisible();
+    await expect(page.getByTestId('deck-plan-deck-1')).toHaveCount(0);
+    await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(0);
   });
 
   test('saving a renamed deck plan POSTs a patched document without keyList', async ({ page }) => {
