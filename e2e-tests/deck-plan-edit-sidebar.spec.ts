@@ -13,15 +13,15 @@ const __dirname = path.dirname(__filename);
  *
  * Workflow:
  *   load /deck-plans → click the first deck-plan row → assert ?selected=<id>
- *   in URL + sidebar title testid visible → Identity tab shows the trimmed name
+ *   in URL + sidebar title testid visible → Edit tab shows the trimmed name
  *   → switch to the XML tab and assert the read-only body rendered → back on
- *   Identity, edit the name and save → assert the intercepted import POST
+ *   Edit, edit the name and save → assert the intercepted import POST
  *   carries the patched <Name> and no <keyList> → click EditorRail collapse →
  *   assert ?selected= drops from the URL.
  * Covers:
  *   - row click writes ?selected=<id> (replaces the deprecated /deck-plans/:id
  *     route view)
- *   - Identity/XML tab split: name+description editable, XML body read-only
+ *   - Edit/XML tab split: name+description editable, XML body read-only
  *   - name/description save routes through the NeTEx import POST with a
  *     patched document (preserves deck geometry DeckPlanInput cannot carry)
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
@@ -59,16 +59,17 @@ test.describe('/deck-plans — sidebar editor', () => {
     await expect(page).not.toHaveURL(/\?selected=/);
   });
 
-  test('Identity tab holds the fields; XML tab holds the read-only body', async ({ page }) => {
+  test('Edit tab holds the fields; XML tab holds the read-only body', async ({ page }) => {
     await openFirstRow(page);
 
-    // Identity is the default tab: name arrives trimmed, not whitespace-padded.
-    await expect(page.getByTestId('deck-plan-tab-identity')).toBeVisible();
+    // Edit is the default tab: name arrives trimmed, not whitespace-padded.
+    await expect(page.getByTestId('deck-plan-tab-edit')).toBeVisible();
     await expect(page.locator('#deckPlan-name')).toHaveValue('Plan Alpha');
     await expect(page.locator('#deckPlan-description')).toHaveValue('Alpha lower-deck variant');
 
     // XML body lives behind its own tab and is never editable.
-    await page.getByTestId('deck-plan-tab-xml').click();
+    await page.getByRole('tab', { name: 'XML' }).click();
+    await expect(page.getByTestId('deck-plan-tab-xml')).toBeVisible();
     const area = page.getByTestId('deck-plan-xml-textarea');
     await expect(area).toBeVisible();
     await expect(area).toHaveAttribute('readonly', '');
@@ -94,7 +95,9 @@ test.describe('/deck-plans — sidebar editor', () => {
     expect(posted).not.toContain('imported-id');
   });
 
-  test('?selected=new renders Identity bare and saves via the GQL mutation', async ({ page }) => {
+  test('?selected=new renders the Edit panel bare and saves via the GQL mutation', async ({
+    page,
+  }) => {
     await interceptDeckPlansQuery(page);
 
     const NEW_ID = 'NMR:DeckPlan:99';
@@ -114,9 +117,9 @@ test.describe('/deck-plans — sidebar editor', () => {
     });
 
     await page.goto('/deck-plans?selected=new');
-    await expect(page.getByTestId('deck-plan-identity-panel')).toBeVisible();
+    await expect(page.getByTestId('deck-plan-tab-edit')).toBeVisible();
     // No persisted body yet, so no tab strip at all.
-    await expect(page.getByTestId('deck-plan-tab-xml')).toHaveCount(0);
+    await expect(page.getByRole('tab')).toHaveCount(0);
 
     await page.locator('#deckPlan-name').fill('Brand New Plan');
     await page.getByTestId('editor-rail-save').click();

@@ -15,8 +15,8 @@ import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
-/** Editor tabs — Identity (the editable fields) first, then the NeTEx source. */
-type TabKey = 'identity' | 'xml';
+/** Editor tabs — Edit (the editable fields) first, then the NeTEx source. */
+type TabKey = 'edit' | 'xml';
 
 /** Pill/segmented tab styling, matching the VehicleType editor's rail-safe tabs. */
 const TAB_SX = {
@@ -49,7 +49,7 @@ const TEXTAREA_STYLE = {
 };
 
 interface DeckPlanFormProps {
-  /** Current deck plan — the editable identity fields. */
+  /** Current deck plan — the editable name/description fields. */
   value: DeckPlan;
   /** Fired with the merged next value on every field edit. */
   onChange: (next: DeckPlan) => void;
@@ -70,7 +70,7 @@ interface DeckPlanFormProps {
 /**
  * Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by
  * `value`/`onChange`/`mode`, mirroring the VehicleType editor's shape. Tabs:
- * Identity (name + description) · XML (the read-only NeTEx source, with its
+ * Edit (name + description) · XML (the read-only NeTEx source, with its
  * loading and fetch-error states). The XML body is never editable — name and
  * description are patched into the fetched document on save instead.
  *
@@ -88,12 +88,12 @@ export default function DeckPlanForm({
   onRetry,
 }: DeckPlanFormProps) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<TabKey>('identity');
+  const [tab, setTab] = useState<TabKey>('edit');
   const ro = mode === 'view';
   const setField = (patch: Partial<DeckPlan>) => onChange({ ...value, ...patch });
 
-  const identity = (
-    <FormLayout data-testid="deck-plan-identity-panel">
+  const editPanel = (
+    <FormLayout data-testid="deck-plan-tab-edit">
       <FieldRow id="deckPlan-name" label={t('deckPlans.field.name', 'Name')}>
         <TextField
           id="deckPlan-name"
@@ -120,22 +120,20 @@ export default function DeckPlanForm({
   );
 
   // Create has no persisted body to show — render the fields bare, no tab strip.
-  if (isCreate) return <Box>{identity}</Box>;
+  if (isCreate) return <Box>{editPanel}</Box>;
 
   return (
     <Box>
       <Tabs value={tab} onChange={(_e, v: TabKey) => setTab(v)} sx={TAB_SX}>
-        <Tab
-          value="identity"
-          label={t('deckPlans.tab.identity', 'Identity')}
-          data-testid="deck-plan-tab-identity"
-        />
-        <Tab value="xml" label={t('deckPlans.tab.xml', 'XML')} data-testid="deck-plan-tab-xml" />
+        <Tab value="edit" label={t('deckPlans.tab.edit', 'Edit')} />
+        <Tab value="xml" label={t('deckPlans.tab.xml', 'XML')} />
       </Tabs>
 
-      {tab === 'identity' && identity}
+      {tab === 'edit' && editPanel}
       {tab === 'xml' && (
-        <XmlBody xml={xml} loading={loading} fetchError={fetchError} onRetry={onRetry} />
+        <Box data-testid="deck-plan-tab-xml">
+          <XmlBody xml={xml} loading={loading} fetchError={fetchError} onRetry={onRetry} />
+        </Box>
       )}
     </Box>
   );

@@ -64,7 +64,7 @@
   "deckPlans.actions.new": "New Deck Plan",
   "deckPlans.field.name": "Name",
   "deckPlans.field.description": "Description",
-  "deckPlans.tab.identity": "Identity",
+  "deckPlans.tab.edit": "Edit",
   "deckPlans.tab.xml": "XML",
   "deckPlans.field.id": "ID",
   "breadcrumbs.home": "Home",
