@@ -70,6 +70,7 @@
   "deckPlans.deck.sample": "EKSEMPEL",
   "deckPlans.deck.sampleHint": "Dette setekartet har ingen dekk ennå — viser et eksempeloppsett.",
   "deckPlans.render.error": "Kunne ikke tegne setekartet",
+  "deckPlans.render.deckError": "Kunne ikke tegne dette dekket",
   "deckPlans.field.id": "ID",
   "breadcrumbs.home": "Hjem",
 

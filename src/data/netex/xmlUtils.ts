@@ -48,3 +48,16 @@ export function addDataOwnerRefToFrame(
 }
 
 export const xmlParser = new XMLParser({ ignoreAttributes: false });
+
+/**
+ * Parser for documents that are re-serialized and sent back to the backend.
+ *
+ * `parseTagValue` is off so numeric-looking text survives the round-trip
+ * byte-for-byte: seat labels are zero-padded (`007`), dimensions carry
+ * trailing zeros (`1.10`) and occasionally exponent notation, and the default
+ * coercion rewrites all three — silently renumbering seats on a pure rename.
+ */
+export const verbatimXmlParser = new XMLParser({
+  ignoreAttributes: false,
+  parseTagValue: false,
+});

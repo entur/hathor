@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, useTheme } from '@mui/material';
+import { Alert, Box, useTheme } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import { DECK_RENDERING_TAG, loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
 import { adoptDeckSheet, mkDeckSheet } from '../utils/deckRenderingStyles.ts';
@@ -35,6 +36,8 @@ interface DeckRenderingProps {
  * removes the need to augment `JSX.IntrinsicElements`.
  *
  * Renders nothing until the bundle has loaded; callers own the loading UI.
+ * A mount that throws reports itself in place — silently rendering nothing
+ * would read as "this deck is empty" while the strip around it looks healthy.
  */
 export default function DeckRendering({
   deck,
@@ -42,6 +45,7 @@ export default function DeckRendering({
   vertical = false,
   'data-testid': testId,
 }: DeckRenderingProps) {
+  const { t } = useTranslation();
   const host = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const { palette } = useTheme();
@@ -64,6 +68,9 @@ export default function DeckRendering({
   useEffect(() => {
     const node = host.current;
     let live = true;
+    // Not a latch: `loadDeckRenderer` clears its memo on failure so a later
+    // run can retry, and a palette/deck change is exactly such a run.
+    setFailed(false);
     loadDeckRenderer()
       .then(() => {
         if (!live || !node) return;
@@ -83,6 +90,20 @@ export default function DeckRendering({
     };
   }, [deck, scale, vertical, sheet]);
 
-  if (failed) return null;
-  return <Box ref={host} data-testid={testId} sx={{ lineHeight: 0 }} />;
+  // The host stays mounted either way — unmounting it would null `host.current`
+  // and leave every later effect run short-circuiting on a missing node.
+  return (
+    <>
+      {failed && (
+        <Alert
+          severity="error"
+          variant="outlined"
+          data-testid={testId ? `${testId}-error` : undefined}
+        >
+          {t('deckPlans.render.deckError', 'Could not draw this deck')}
+        </Alert>
+      )}
+      <Box ref={host} data-testid={testId} sx={{ lineHeight: 0 }} />
+    </>
+  );
 }
