@@ -30,6 +30,12 @@ const __dirname = path.dirname(__filename);
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
  *   - save is gated until the XML body has loaded (an edit patches it)
  *   - a failed post-save list refresh warns but still re-baselines the form
+ *   - cancelling a second edit restores the saved baseline, not the stale
+ *     `deckPlan` prop useUrlEditorSelection never re-commits
+ *   - the stored `lang` on <Name> survives a save round-trip
+ *   - a failed post-save body refetch blocks a second save on the stale document
+ *   - a deck rendering whose mount throws reports it instead of rendering
+ *     nothing, and a shadow root without adoptedStyleSheets costs styling only
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
@@ -227,5 +233,118 @@ test.describe('/deck-plans — sidebar editor', () => {
     await page.getByTestId('editor-rail-collapse').click();
     await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
     await expect(page).not.toHaveURL(/\?selected=/);
+  });
+
+  test('cancelling an edit after a save keeps the saved values, not the stale row', async ({
+    page,
+  }) => {
+    await openFirstRow(page);
+    await page.route('**/services/vehicles/netex', route =>
+      route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
+    );
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
+    await page.getByTestId('editor-rail-save').click();
+    await expect(page.getByTestId('deck-plan-details-title')).toHaveText('Plan Alpha renamed');
+
+    // useUrlEditorSelection does not re-commit the editor for an unchanged id,
+    // so the `deckPlan` prop still holds the pre-save row. Cancel must restore
+    // the last saved baseline, not that stale prop.
+    await page.getByTestId('editor-rail-edit').click();
+    await page.getByTestId('editor-rail-cancel').click();
+
+    await expect(page.locator('#deckPlan-name')).toHaveValue('Plan Alpha renamed');
+    await expect(page.getByTestId('deck-plan-details-title')).toHaveText('Plan Alpha renamed');
+  });
+
+  test('saving preserves the lang attribute the document was stored with', async ({ page }) => {
+    await openFirstRow(page);
+
+    let posted = '';
+    await page.route('**/services/vehicles/netex', async route => {
+      posted = route.request().postData() ?? '';
+      await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
+    });
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
+    await page.getByTestId('editor-rail-save').click();
+
+    // patchDeckPlanXml rebuilds <Name> wholesale from the domain object, so a
+    // `lang` missing from the domain value is dropped on the first save. The
+    // route mock returns the whole fixture row regardless of the GraphQL
+    // selection, so that the query actually *asks* for `lang` is guarded by
+    // the unit test on the query document, not here.
+    await expect.poll(() => posted).toContain('Plan Alpha renamed');
+    expect(posted).toMatch(/<Name lang="nb">/);
+  });
+
+  test('a failed post-save body refetch blocks a second save on the stale document', async ({
+    page,
+  }) => {
+    await interceptDeckPlansQuery(page);
+
+    // Keyed on the write, not on a call count: the body effect re-runs on its
+    // own before any save (auth/org identity churn), so a "second fetch" gate
+    // would 500 the initial load instead.
+    let saved = false;
+    await page.route(/\/deckplans\/[^/?#]+$/, route =>
+      saved
+        ? route.fulfill({ status: 500, contentType: 'text/plain', body: 'body fetch failed' })
+        : route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
+    );
+    await page.route('**/services/vehicles/netex', route => {
+      saved = true;
+      return route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
+    });
+
+    await page.goto('/deck-plans?selected=NMR:DeckPlan:5');
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-name').fill('First rename');
+    await page.getByTestId('editor-rail-save').click();
+
+    // The post-save refetch 500s, so the cached body is now the pre-save one.
+    await expect(page.getByTestId('deck-plan-decks-fetch-error')).toBeVisible();
+
+    // Patching that stale document and POSTing it would resurrect the old name.
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-name').fill('Second rename');
+    await expect(page.getByTestId('editor-rail-save')).toBeDisabled();
+  });
+
+  test('a deck rendering that fails to mount says so instead of vanishing', async ({ page }) => {
+    // The only live path into DeckRendering's failure branch: the shadow-sheet
+    // adoption inside its mount promise throws, so the `.catch()` fires while
+    // the strip around it is perfectly healthy.
+    await page.addInitScript(() => {
+      Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
+        configurable: true,
+        get: () => ({
+          includes: () => {
+            throw new Error('adoptedStyleSheets unavailable');
+          },
+        }),
+        set: () => {},
+      });
+    });
+    await openFirstRow(page);
+
+    await expect(page.getByTestId('deck-plan-decks')).toBeVisible();
+    await expect(page.getByTestId('deck-plan-deck-0-error')).toBeVisible();
+  });
+
+  test('a deck still renders where constructable stylesheets are unavailable', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
+        configurable: true,
+        get: () => undefined,
+        set: () => {},
+      });
+    });
+    await openFirstRow(page);
+
+    // Unstyled is a fair degradation; an empty slot is not.
+    await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(46);
   });
 });

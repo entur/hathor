@@ -59,3 +59,53 @@ describe('parseDecks', () => {
     expect(mod.parseNeTEx).not.toHaveBeenCalledWith(GHOST_DECK_PLAN_XML);
   });
 });
+
+/**
+ * A document can carry more than one DeckPlan. `patchDeckPlanXml` already
+ * selects by id before writing, so the render path must select by the same id
+ * — otherwise the Edit tab draws one plan while a save patches another.
+ */
+describe('parseDecks — plan selection by id', () => {
+  const mkPlanWithId = (id: string, ...decks: Deck[]) =>
+    ({ attr_id: id, decks }) as unknown as DeckPlan;
+
+  it('renders the plan matching the requested id, not merely the first', () => {
+    const wanted = mkDeck('wanted');
+    const mod = mkMod(() => [
+      mkPlanWithId('NMR:DeckPlan:1', mkDeck('other')),
+      mkPlanWithId('NMR:DeckPlan:2', wanted),
+    ]);
+
+    expect(parseDecks(mod, '<xml/>', 'NMR:DeckPlan:2')).toEqual({
+      decks: [wanted],
+      isGhost: false,
+    });
+  });
+
+  it('throws when the requested id is absent, mirroring patchDeckPlanXml', () => {
+    // Showing the ghost here would misreport a shape/fetch problem as an
+    // empty plan — the same reason a parser failure propagates.
+    const mod = mkMod(() => [mkPlanWithId('NMR:DeckPlan:1', mkDeck('other'))]);
+
+    expect(() => parseDecks(mod, '<xml/>', 'NMR:DeckPlan:2')).toThrow(/NMR:DeckPlan:2/);
+  });
+
+  it('still falls back to the ghost when the matched plan carries no decks', () => {
+    const ghost = mkDeck('ghost');
+    const mod = mkMod(xml =>
+      xml === GHOST_DECK_PLAN_XML ? [mkPlan(ghost)] : [mkPlanWithId('NMR:DeckPlan:2')]
+    );
+
+    expect(parseDecks(mod, '<xml/>', 'NMR:DeckPlan:2')).toEqual({
+      decks: [ghost],
+      isGhost: true,
+    });
+  });
+
+  it('takes the first plan when no id is given (the ghost/sample path)', () => {
+    const decks = [mkDeck('a')];
+    const mod = mkMod(() => [mkPlanWithId('NMR:DeckPlan:1', ...decks)]);
+
+    expect(parseDecks(mod, '<xml/>')).toEqual({ decks, isGhost: false });
+  });
+});

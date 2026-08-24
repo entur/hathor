@@ -123,3 +123,115 @@ describe('patchDeckPlanXml', () => {
     );
   });
 });
+
+/**
+ * A plan Sobek returned with neither `<Name>` nor `<Description>` — the shape
+ * behind the fixture rows with `name: null` (NMR:DeckPlan:8), and the shape a
+ * document is left in once the editor blanks the name and saves.
+ */
+const NO_NAME_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="2.0:NO-NeTEx:2.0">
+    <dataObjects>
+        <CompositeFrame version="1" id="NMR:CompositeFrame:1">
+            <frames>
+                <ResourceFrame version="1" id="NMR:ResourceFrame:1">
+                    <deckPlans>
+                        <DeckPlan version="2" id="NMR:DeckPlan:1">
+                            <ValidBetween><FromDate>2026-06-22T13:27:05.522</FromDate></ValidBetween>
+                            <decks/>
+                        </DeckPlan>
+                    </deckPlans>
+                </ResourceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>`;
+
+/**
+ * Deck geometry whose text nodes are numeric-looking: a zero-padded seat label
+ * and dimensions carrying trailing zeros / exponent notation. Real coach data
+ * is full of these — `01`..`09` seat labels are the norm.
+ */
+const GEOMETRY_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="2.0:NO-NeTEx:2.0">
+    <dataObjects>
+        <CompositeFrame version="1" id="NMR:CompositeFrame:1">
+            <frames>
+                <ResourceFrame version="1" id="NMR:ResourceFrame:1">
+                    <deckPlans>
+                        <DeckPlan version="2" id="NMR:DeckPlan:1">
+                            <Name><Text>Geometry</Text></Name>
+                            <decks>
+                                <Deck version="1" id="NMR:Deck:1">
+                                    <Width>1.10</Width>
+                                    <Length>2.50e1</Length>
+                                    <deckSpaces>
+                                        <PassengerSpace version="1" id="NMR:PassengerSpace:1">
+                                            <Label>007</Label>
+                                        </PassengerSpace>
+                                    </deckSpaces>
+                                </Deck>
+                            </decks>
+                        </DeckPlan>
+                    </deckPlans>
+                </ResourceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
+</PublicationDelivery>`;
+
+/**
+ * NeTEx types are `xsd:sequence`s: `<Name>` and `<Description>` must precede
+ * `<decks>`. The builder emits object keys in insertion order, so a document
+ * that arrived without them cannot have them simply assigned onto the tail.
+ */
+describe('patchDeckPlanXml — element order', () => {
+  const at = (xml: string, tag: string) => xml.indexOf(tag);
+
+  it('places a newly added Name before <decks>, not after it', () => {
+    const out = patchDeckPlanXml(NO_NAME_XML, ID, { value: 'Fresh' }, undefined);
+    expect(at(out, '<Name>')).toBeGreaterThan(-1);
+    expect(at(out, '<Name>')).toBeLessThan(at(out, '<decks'));
+  });
+
+  it('places a newly added Description before <decks> and after Name', () => {
+    const out = patchDeckPlanXml(NO_NAME_XML, ID, { value: 'Fresh' }, { value: 'Desc' });
+    expect(at(out, '<Description>')).toBeGreaterThan(at(out, '<Name>'));
+    expect(at(out, '<Description>')).toBeLessThan(at(out, '<decks'));
+  });
+
+  it('keeps ValidBetween ahead of the re-added Name', () => {
+    const out = patchDeckPlanXml(NO_NAME_XML, ID, { value: 'Fresh' }, undefined);
+    expect(at(out, '<ValidBetween>')).toBeLessThan(at(out, '<Name>'));
+  });
+
+  it('re-adding a name after it was blanked lands it in sequence', () => {
+    // The flow the editor sanctions: blank the name, save (element deleted),
+    // retype a name, save again — the second save must not append it last.
+    const blanked = patchDeckPlanXml(LIVE_XML, ID, { value: '   ' }, undefined);
+    const out = patchDeckPlanXml(blanked, ID, { value: 'Back again' }, undefined);
+    expect(at(out, '<Name>')).toBeLessThan(at(out, '<decks'));
+  });
+});
+
+/**
+ * The whole point of this function is that everything it does not touch
+ * survives the round-trip. `fast-xml-parser` coerces numeric-looking text by
+ * default, which silently renumbers seats and rewrites dimensions.
+ */
+describe('patchDeckPlanXml — verbatim text nodes', () => {
+  it('does not renumber a zero-padded seat label', () => {
+    const out = patchDeckPlanXml(GEOMETRY_XML, ID, { value: 'Renamed' }, undefined);
+    expect(out).toContain('<Label>007</Label>');
+  });
+
+  it('does not drop a trailing zero from a dimension', () => {
+    const out = patchDeckPlanXml(GEOMETRY_XML, ID, { value: 'Renamed' }, undefined);
+    expect(out).toContain('<Width>1.10</Width>');
+  });
+
+  it('does not expand exponent notation', () => {
+    const out = patchDeckPlanXml(GEOMETRY_XML, ID, { value: 'Renamed' }, undefined);
+    expect(out).toContain('<Length>2.50e1</Length>');
+  });
+});
