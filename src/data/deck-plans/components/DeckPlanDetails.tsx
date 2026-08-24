@@ -21,6 +21,7 @@ import {
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
+  restore,
   type FormState,
 } from '../stores/deckPlanFormState.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
@@ -38,10 +39,20 @@ interface DeckPlanDetailsProps {
   mode?: 'view' | 'edit';
 }
 
-type FormAction = { type: 'hydrate'; dp: DeckPlan | null } | { type: 'edit'; form: DeckPlan };
+type FormAction =
+  | { type: 'hydrate'; dp: DeckPlan | null }
+  | { type: 'edit'; form: DeckPlan }
+  | { type: 'restore' };
 
 function formReducer(state: FormState, action: FormAction): FormState {
-  return action.type === 'hydrate' ? hydrate(state, action.dp) : edit(state, action.form);
+  switch (action.type) {
+    case 'hydrate':
+      return hydrate(state, action.dp);
+    case 'edit':
+      return edit(state, action.form);
+    case 'restore':
+      return restore(state);
+  }
 }
 
 /**
@@ -289,7 +300,9 @@ export default function DeckPlanDetails({
         )}
         deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', dp: deckPlan });
+          // Baseline, not the `deckPlan` prop: a save re-baselines here but
+          // never re-commits the editor, so the prop is stale from then on.
+          dispatch({ type: 'restore' });
           setMode('view');
         }}
         onSave={handleSave}
