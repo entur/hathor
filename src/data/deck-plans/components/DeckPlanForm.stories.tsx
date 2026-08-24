@@ -39,17 +39,23 @@ const WAGONS = [wagon1, wagon2, wagon3, wagon1mod, wagon2mod, wagon3mod];
 /** Seats per wagon, in the same order — what the strip should draw. */
 const WAGON_SEATS = [80, 46, 72, 80, 46, 72];
 
+/**
+ * The row being edited. Every story body carries this same id — the strip
+ * selects its plan by it, mirroring what the save patches by.
+ */
+const PLAN_ID = 'NMR:DeckPlan:5';
+
 /** Six real decks in one plan; more than the rail fits, so the strip scrolls. */
-const SIX_DECKS = mkWagonsXml(WAGONS);
+const SIX_DECKS = mkWagonsXml(WAGONS, PLAN_ID);
 
 /** Seats in the SAMPLE ghost — it is Wagon_2's deck (see `ghostDeckPlanXml`). */
 const GHOST_SEATS = 46;
 
 /** A plan whose `<decks/>` is empty — what real Sobek data usually returns. */
-const NO_DECKS = mkSampleDeckPlanXml([]);
+const NO_DECKS = mkSampleDeckPlanXml([], PLAN_ID);
 
 const PLAN: DeckPlan = {
-  id: 'NMR:DeckPlan:5',
+  id: PLAN_ID,
   version: 2,
   name: { value: 'Plan Alpha' },
   description: { value: 'Alpha lower-deck variant' },
@@ -202,9 +208,10 @@ export const Create: Story = {
  * same React key.
  *
  * @param docs Sample NeTEx documents, in the order to draw them.
+ * @param id NeTEx id for the merged plan — must match the form's row id.
  * @returns One document whose single `DeckPlan` carries every sample's deck.
  */
-function mkWagonsXml(docs: string[]): string {
+function mkWagonsXml(docs: string[], id: string): string {
   const Deck = docs.flatMap((doc, i) =>
     toArray(findResourceFrame(xmlParser.parse(doc))?.deckPlans?.DeckPlan).flatMap(plan =>
       toArray(plan?.decks?.Deck).map(deck => ({ ...deck, '@_id': `SAMPLE:Deck:${i + 1}` }))
@@ -225,7 +232,7 @@ function mkWagonsXml(docs: string[]): string {
               deckPlans: {
                 DeckPlan: {
                   '@_version': '1',
-                  '@_id': 'SAMPLE:DeckPlan:wagons',
+                  '@_id': id,
                   decks: { Deck },
                 },
               },

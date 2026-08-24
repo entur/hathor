@@ -148,7 +148,9 @@ export default function DeckPlanForm({
             onRetry={onRetry}
             testIdPrefix="deck-plan-decks"
           >
-            <DeckStrip xml={xml} />
+            {/* `value.id` is the persisted NeTEx id — same one the save
+                patches by, so the drawn plan and the patched plan match. */}
+            <DeckStrip xml={xml} id={value.id || undefined} />
           </BodyState>
         </Box>
       )}
@@ -220,10 +222,14 @@ function BodyState({
  * Decks draw `vertical`: at ~26.4m × 2.8m, native orientation overflows the
  * sidebar for even one deck, where rotated columns sit side by side and read
  * as a vehicle seen from above. A plan with no decks shows the SAMPLE ghost.
+ *
+ * `id` picks the plan out of a multi-plan envelope — the same id the save
+ * patches by. Undefined (the form has not hydrated yet) falls back to the
+ * first plan rather than throwing on a blank id.
  */
-function DeckStrip({ xml }: { xml: string }) {
+function DeckStrip({ xml, id }: { xml: string; id?: string }) {
   const { t } = useTranslation();
-  const { decks, isGhost, loading, error } = useDeckRenderer(xml);
+  const { decks, isGhost, loading, error } = useDeckRenderer(xml, id);
 
   if (loading) {
     return (

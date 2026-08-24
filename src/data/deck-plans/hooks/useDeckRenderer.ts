@@ -22,8 +22,9 @@ interface UseDeckRendererResult {
  * empty `xml` reads as "nothing to do yet", not an error.
  *
  * @param xml NeTEx body for one deck plan; empty pauses the hook.
+ * @param id Plan to draw within that body; omitted takes the first.
  */
-export function useDeckRenderer(xml: string): UseDeckRendererResult {
+export function useDeckRenderer(xml: string, id?: string): UseDeckRendererResult {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isGhost, setIsGhost] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ export function useDeckRenderer(xml: string): UseDeckRendererResult {
     loadDeckRenderer()
       .then(mod => {
         if (cancelled) return;
-        const parsed = parseDecks(mod, xml);
+        const parsed = parseDecks(mod, xml, id);
         setDecks(parsed.decks);
         setIsGhost(parsed.isGhost);
       })
@@ -59,7 +60,7 @@ export function useDeckRenderer(xml: string): UseDeckRendererResult {
     return () => {
       cancelled = true;
     };
-  }, [xml]);
+  }, [xml, id]);
 
   return { decks, isGhost, loading, error };
 }

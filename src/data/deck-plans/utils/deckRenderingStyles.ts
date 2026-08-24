@@ -69,10 +69,15 @@ export function mkDeckSheet(p: DeckPalette): CSSStyleSheet {
 /**
  * Adopt the palette's sheet onto a shadow root, once.
  *
+ * Runs inside `DeckRendering`'s mount promise, so a throw here lands in that
+ * component's `.catch()` and costs the whole rendering. Where constructable
+ * stylesheets are unavailable it degrades to unstyled instead.
+ *
  * @param root Shadow root of a `<deck-rendering>` element.
  * @param sheet Sheet from {@link mkDeckSheet}.
  */
 export function adoptDeckSheet(root: ShadowRoot, sheet: CSSStyleSheet): void {
+  if (!root.adoptedStyleSheets) return;
   if (root.adoptedStyleSheets.includes(sheet)) return;
   root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
 }

@@ -51,7 +51,13 @@ export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlRes
         const data = await fetchDeckPlanDetails(applicationImportBaseUrl, id!, token);
         if (!cancelled) setXml(data);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+        if (!cancelled) {
+          // Drop the previous body too. A post-save refetch that fails would
+          // otherwise leave the pre-save document cached, and the next save
+          // would patch and POST *that* — resurrecting the old values.
+          setXml('');
+          setError(e instanceof Error ? e.message : String(e));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }

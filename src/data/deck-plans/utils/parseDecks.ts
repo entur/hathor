@@ -25,11 +25,19 @@ export interface ParsedDecks {
  * from that exact bundle.
  *
  * @param mod Renderer bundle, from `loadDeckRenderer()`.
- * @param xml NeTEx `PublicationDelivery` for one deck plan.
+ * @param xml NeTEx `PublicationDelivery` carrying one or more deck plans.
+ * @param id Plan to draw. Omitted takes the first — the ghost/sample path,
+ *   whose document holds exactly one. Given but absent throws, mirroring
+ *   {@link patchDeckPlanXml}: drawing one plan while a save patches another is
+ *   worse than surfacing the shape problem.
  * @returns The decks to draw and whether they are the ghost.
  */
-export function parseDecks(mod: DeckRendererModule, xml: string): ParsedDecks {
-  const decks = mod.parseNeTEx(xml)[0]?.decks ?? [];
+export function parseDecks(mod: DeckRendererModule, xml: string, id?: string): ParsedDecks {
+  const plans = mod.parseNeTEx(xml);
+  const plan = id === undefined ? plans[0] : plans.find(p => p.attr_id === id);
+  if (id !== undefined && !plan) throw new Error(`DeckPlan ${id} not found in document`);
+
+  const decks = plan?.decks ?? [];
   if (decks.length > 0) return { decks, isGhost: false };
 
   return { decks: mod.parseNeTEx(GHOST_DECK_PLAN_XML)[0]?.decks ?? [], isGhost: true };

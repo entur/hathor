@@ -26,9 +26,12 @@ export interface SampleDeck {
  *
  * @param decks Decks to synthesise; an empty array yields `<decks/>`, the
  *   shape real Sobek data comes back with and the SAMPLE ghost's trigger.
+ * @param id NeTEx id for the synthesised plan. Callers that render through
+ *   the editor must pass the id their form carries — the render path selects
+ *   the plan by id, as the save path patches by it.
  * @returns A complete NeTEx document.
  */
-export function mkSampleDeckPlanXml(decks: SampleDeck[]): string {
+export function mkSampleDeckPlanXml(decks: SampleDeck[], id = 'SAMPLE:DeckPlan:1'): string {
   const body = decks.map(mkDeck).join('');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex">
@@ -37,7 +40,7 @@ export function mkSampleDeckPlanXml(decks: SampleDeck[]): string {
       <frames>
         <ResourceFrame version="1" id="SAMPLE:ResourceFrame:1">
           <deckPlans>
-            <DeckPlan version="1" id="SAMPLE:DeckPlan:1">
+            <DeckPlan version="1" id="${id}">
               ${decks.length === 0 ? '<decks/>' : `<decks>${body}</decks>`}
             </DeckPlan>
           </deckPlans>
