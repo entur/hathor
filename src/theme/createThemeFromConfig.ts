@@ -18,9 +18,9 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
       // primary tint. The default palette action.hover is a solid color
       // that drowns out Chip/Button hover states in rows, making
       // navigation elements invisible on hover. Affected routes:
-      //   /vehicle-type  — ID chip links, vehicle list expand
-      //   /deck-plan     — edit buttons
-      //   /vehicle-type/:id — detail tabs using @entur/data-view-table
+      //   /vehicle-types  — ID chip links, vehicle list expand
+      //   /deck-plans     — edit buttons
+      //   /vehicle-types/:id — detail tabs using @entur/data-view-table
       MuiTableRow: {
         ...userTableRow,
         styleOverrides: {
@@ -28,6 +28,17 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
           root: ({ theme }: { theme: Theme }) => ({
             '&.MuiTableRow-hover:hover': {
               backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            },
+            // Selected row sits two stops above hover and carries a left
+            // accent stripe; hover-while-selected nudges one stop further so
+            // the hover affordance still reads but never collapses back to
+            // an unselected look.
+            '&.Mui-selected': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.18),
+              borderLeft: `3px solid ${theme.palette.primary.main}`,
+            },
+            '&.Mui-selected.MuiTableRow-hover:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.24),
             },
             ...userRootStyles,
           }),

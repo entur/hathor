@@ -1,12 +1,8 @@
 import { translateAutosysError } from './autosysErrorTranslator';
 import type { ParsedXml, FramesByQueryRegNumber } from './types';
 import type { MergedEntities } from './xmlUtils';
-import {
-  findResourceFrame,
-  mergeResourceFrames,
-  pubDeliverySingleRcFrame,
-  xmlParser,
-} from './xmlUtils';
+import { mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
+import { findResourceFrame, xmlParser } from '../netex/xmlUtils';
 
 /** Result of fetching a single vehicle from the Autosys registry.
  * On success `xml` contains the raw NeTEx XML and `error` is null.
@@ -43,6 +39,7 @@ export interface AutosysAssembledResult {
  * Failed fetches are collected as translated errors.
  */
 export function assembleAutosysResults(
+  dataOwnerRef: string,
   results: AutosysFetchResult[],
   mergeFn: (frames: FramesByQueryRegNumber) => MergedEntities = mergeResourceFrames
 ): AutosysAssembledResult {
@@ -97,6 +94,6 @@ export function assembleAutosysResults(
       successCount: frameCount,
       errors,
     },
-    postPayload: pubDeliverySingleRcFrame(firstXml, merged),
+    postPayload: pubDeliverySingleRcFrame(firstXml, merged, dataOwnerRef),
   };
 }

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { SearchResultItem, SearchContextViewType } from '../components/search/searchTypes';
 import type { Order } from '../components/data/dataTableTypes';
+import { compareWithEmptyLast } from '../utils/compareWithEmptyLast.ts';
 
 interface UseDataViewTableLogicParams<T, K extends string> {
   allData: T[] | null;
@@ -14,7 +15,7 @@ interface UseDataViewTableLogicParams<T, K extends string> {
   page: number;
   rowsPerPage: number;
   activeFilters: string[];
-  getFilterKey?: (item: T) => string;
+  getFilterKey?: (item: T) => string | readonly string[];
   getSortValue: (item: T, key: K) => string | number;
 }
 
@@ -50,8 +51,9 @@ export function useDataViewTableLogic<T, K extends string>({
       baseData = allData || [];
       if (isDataSearchActive && activeFilters.length > 0 && getFilterKey) {
         baseData = baseData.filter(item => {
-          const typeKey = getFilterKey(item);
-          return activeFilters.includes(typeKey);
+          const raw = getFilterKey(item);
+          const keys = typeof raw === 'string' ? [raw] : raw;
+          return keys.some(k => activeFilters.includes(k));
         });
       }
       currentTotal =
@@ -60,19 +62,7 @@ export function useDataViewTableLogic<T, K extends string>({
 
     let sortedData = baseData;
     if (isDataSearchActive && (searchQuery.trim() || selectedItem)) {
-      sortedData = [...baseData].sort((a, b) => {
-        const valA = getSortValue(a, orderBy);
-        const valB = getSortValue(b, orderBy);
-
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          const comp = valA.toLowerCase().localeCompare(valB.toLowerCase());
-          return order === 'asc' ? comp : -comp;
-        }
-
-        if (valA < valB) return order === 'asc' ? -1 : 1;
-        if (valA > valB) return order === 'asc' ? 1 : -1;
-        return 0;
-      });
+      sortedData = [...baseData].sort(compareWithEmptyLast(getSortValue)(orderBy, order));
     }
 
     const paginated = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);

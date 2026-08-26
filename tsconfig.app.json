@@ -27,12 +27,8 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "paths": {
-      "@entur/vtype-details": ["./packages/vtype-details/src/index.ts"],
-      "@entur/data-view-table": ["./packages/data-view-table/src/index.ts"]
-    }
+    "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "src/**/*.json", "packages/*/src"],
+  "include": ["src", "src/**/*.json"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }

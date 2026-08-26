@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useRef, type ReactNode, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { SearchContext } from './SearchContextInstance.ts';
 import type {
   SearchContextViewType,
   SearchResultItem,
   SearchFunction,
-  StopPlaceTypeFilter,
+  SearchFilterValue,
   FilterDefinition,
 } from './searchTypes.ts';
 
@@ -32,8 +33,9 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [suggestionResults, setSuggestionResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<SearchResultItem | null>(null);
-  const [activeFilters, setActiveFilters] = useState<StopPlaceTypeFilter[]>([]);
+  const [activeFilters, setActiveFilters] = useState<SearchFilterValue[]>([]);
   const [filterConfig, setFilterConfig] = useState<FilterDefinition[]>([]);
+  const { pathname } = useLocation();
 
   const searchFunctionsRef = useRef<
     Partial<Record<NonNullable<SearchContextViewType>, SearchFunction>>
@@ -74,7 +76,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   );
 
   const executeSearch = useCallback(
-    async (query: string, filters: StopPlaceTypeFilter[]): Promise<SearchResultItem[]> => {
+    async (query: string, filters: SearchFilterValue[]): Promise<SearchResultItem[]> => {
       if (!query.trim() || !activeSearchContext) return [];
       const searchFunc = searchFunctionsRef.current[activeSearchContext];
       if (!searchFunc) {
@@ -156,7 +158,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     [activeSearchContext, performLiveSearch, performSuggestionOnlySearch]
   );
 
-  const updateFilters = useCallback((newFilters: StopPlaceTypeFilter[]) => {
+  const updateFilters = useCallback((newFilters: SearchFilterValue[]) => {
     setActiveFilters(newFilters);
   }, []);
 
@@ -166,9 +168,13 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     }
   }, [activeFilters, handleSetSearchQuery]);
 
+  // Clear search + filters on every route change. A URL-scoped filter (e.g. the post-import
+  // /vehicle-types?filter=) must not leak into the next list view: sibling lists are different routes
+  // within the same 'data' search context, which the context-change clear above does not catch (#141).
+  // useUrlFilters re-applies from the new route's ?filter param when one is present.
   useEffect(() => {
     clearSearch();
-  }, [activeSearchContext, clearSearch]);
+  }, [pathname, clearSearch]);
 
   return (
     <SearchContext.Provider

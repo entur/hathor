@@ -1,17 +1,16 @@
-export type SearchContextViewType = 'map' | 'data' | null;
-export type StopPlaceTypeFilter = string;
+export type SearchContextViewType = 'data' | null;
+export type SearchFilterValue = string;
 
 export interface SearchResultItem {
   id: string;
   name?: string;
   type: SearchContextViewType;
-  coordinates?: [number, number];
   originalData?: unknown;
 }
 
 export type SearchFunction = (
   query: string,
-  filters: StopPlaceTypeFilter[]
+  filters: SearchFilterValue[]
 ) => Promise<SearchResultItem[]>;
 
 export interface SearchContextProps {
@@ -28,8 +27,8 @@ export interface SearchContextProps {
   selectedItem: SearchResultItem | null;
   setSelectedItem: (item: SearchResultItem | null) => void;
   registerSearchFunction: (contextType: SearchContextViewType, func: SearchFunction | null) => void;
-  activeFilters: StopPlaceTypeFilter[];
-  updateFilters: (filters: StopPlaceTypeFilter[]) => void;
+  activeFilters: SearchFilterValue[];
+  updateFilters: (filters: SearchFilterValue[]) => void;
   filterConfig: FilterDefinition[];
   registerFilterConfig: (
     contextType: SearchContextViewType,

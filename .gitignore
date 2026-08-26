@@ -36,3 +36,12 @@ public/theme-*.json
 /playwright/.auth/
 build/
 coverage
+.wolf/
+docs/superpowers
+.claude/*
+!.claude/skills/
+.vite
+
+*storybook.log
+storybook-static
+docs/specs/

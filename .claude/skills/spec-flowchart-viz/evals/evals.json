@@ -1,0 +1,50 @@
+{
+  "skill_name": "spec-flowchart-viz",
+  "evals": [
+    {
+      "id": 0,
+      "name": "visualize-suite-html",
+      "prompt": "Visualize our Playwright e2e test suite: draw a top-down flowchart of what each spec does and give me a single HTML page I can open and scroll through.",
+      "expected_output": "One index.html embedding a mermaid flowchart TD per spec (~15), derived from each spec's file-level JSDoc keynote, browsable in one page.",
+      "files": [],
+      "assertions": [
+        { "text": "Produced a single .html page in outputs", "kind": "file-exists" },
+        { "text": "Page renders mermaid client-side (references mermaid + a script/CDN)", "kind": "content" },
+        { "text": "Contains a top-down chart (flowchart TD or graph TD) for most specs (>=12 charts)", "kind": "content" },
+        { "text": "Covers ~all 15 e2e specs (>=14 distinct .spec.ts referenced)", "kind": "content" },
+        { "text": "Charts reflect the JSDoc keynote, not test bodies (mentions Workflow/Covers/Modes or mock/live branches)", "kind": "content" },
+        { "text": "Every embedded mermaid block parses/renders without error (mmdc validation)", "kind": "render" }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "jsdoc-overview-diagrams",
+      "prompt": "I need a quick visual overview of our e2e specs. Each spec file has a JSDoc summary block at the top — render those as diagrams I can open in a browser.",
+      "expected_output": "Diagrams generated from the top-of-file JSDoc of each spec, assembled into a browsable HTML page.",
+      "files": [],
+      "assertions": [
+        { "text": "Produced a single .html page in outputs", "kind": "file-exists" },
+        { "text": "Page renders mermaid client-side (references mermaid + a script/CDN)", "kind": "content" },
+        { "text": "Contains a top-down chart (flowchart TD or graph TD) for most specs (>=12 charts)", "kind": "content" },
+        { "text": "Covers ~all 15 e2e specs (>=14 distinct .spec.ts referenced)", "kind": "content" },
+        { "text": "Diagrams are sourced from the JSDoc keynote (mentions Workflow/Covers/Modes or mock/live branches)", "kind": "content" },
+        { "text": "Every embedded mermaid block parses/renders without error (mmdc validation)", "kind": "render" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "flowcharts-at-a-glance",
+      "prompt": "Make flowcharts from the e2e-tests specs so the team can see each test's workflow at a glance, then open them for me.",
+      "expected_output": "A flowchart per spec built from its JSDoc workflow, assembled into one openable HTML page.",
+      "files": [],
+      "assertions": [
+        { "text": "Produced a single .html page in outputs", "kind": "file-exists" },
+        { "text": "Page renders mermaid client-side (references mermaid + a script/CDN)", "kind": "content" },
+        { "text": "Contains a top-down chart (flowchart TD or graph TD) for most specs (>=12 charts)", "kind": "content" },
+        { "text": "Covers ~all 15 e2e specs (>=14 distinct .spec.ts referenced)", "kind": "content" },
+        { "text": "Charts reflect the JSDoc keynote workflow (mentions Workflow/Covers/Modes or mock/live branches)", "kind": "content" },
+        { "text": "Every embedded mermaid block parses/renders without error (mmdc validation)", "kind": "render" }
+      ]
+    }
+  ]
+}

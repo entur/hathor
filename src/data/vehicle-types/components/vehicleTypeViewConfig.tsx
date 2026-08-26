@@ -1,0 +1,111 @@
+import { useNavigate } from 'react-router-dom';
+import { Typography } from '@mui/material';
+import { useVehicleTypes } from '../hooks/useVehicleTypes.ts';
+import { useDataViewSearch } from '../../../hooks/useDataViewSearch.ts';
+import { useDataViewTableLogic } from '../../../hooks/useDataViewTableLogic.ts';
+import DataPageContent from '../../../components/data/DataPageContent.tsx';
+import VehicleListCell from './cells/VehicleListCell.tsx';
+import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
+import type { OrderBy } from '../hooks/useVehicleTypes.ts';
+import type { VehicleType } from '../types/vehicleTypeTypes.ts';
+import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
+import { deckPlanLabel } from '../utils/deckPlanLabel.ts';
+import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import NetexId from '../../netex/NetexId.tsx';
+import { transportModeFilters, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
+import { useVehicleTypeUrlSelection } from '../hooks/useVehicleTypeUrlSelection.tsx';
+import { vehicleTypeSelectedHref } from '../utils/vehicleTypeUrlParams.ts';
+
+const fmtDim = (v: VehicleType) => {
+  const parts = [
+    v.length != null && `L:${v.length}`,
+    v.width != null && `W:${v.width}`,
+    v.height != null && `H:${v.height}`,
+  ].filter(Boolean);
+  return parts.length ? parts.join(', ') : '';
+};
+
+const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
+  {
+    id: 'name',
+    headerLabel: 'vehicleType.field.name',
+    isSortable: true,
+    renderCell: item => item.name?.value,
+    display: 'always',
+  },
+  {
+    id: 'id',
+    headerLabel: 'vehicleType.field.id',
+    isSortable: true,
+    renderCell: item => <NetexId id={item.id} version={item.version} size="small" />,
+    display: 'always',
+  },
+  {
+    id: 'transportMode',
+    headerLabel: 'vehicleType.field.transportMode',
+    isSortable: true,
+    renderCell: item => <TransportModeIcon mode={item.transportMode ?? UNKNOWN_TRANSPORT_MODE} />,
+    align: 'center',
+    display: 'always',
+  },
+  {
+    id: 'dimensions',
+    headerLabel: 'vehicleType.field.dimensions',
+    isSortable: true,
+    renderCell: item => (
+      <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+        {fmtDim(item)}
+      </Typography>
+    ),
+    display: 'always',
+  },
+  {
+    id: 'deckPlanName',
+    headerLabel: 'vehicleType.field.deckPlan',
+    isSortable: true,
+    renderCell: item => deckPlanLabel(item.deckPlan),
+    display: 'desktop-only',
+  },
+  {
+    id: 'vehicles',
+    headerLabel: 'vehicleType.field.vehicles',
+    isSortable: false,
+    renderCell: item => <VehicleListCell vehicles={item.vehicles ?? []} />,
+    sx: { maxWidth: '25%' },
+    display: 'desktop-only',
+  },
+];
+
+/**
+ * Filter keys for a VehicleType row — both the full NeTEx id and the
+ * canonical TransportMode (normalised to `'unknown'` when missing or
+ * non-enum). The id covers URL-driven deep-link filtering
+ * (`?filter=NMR:VehicleType:2`, used by the import-result flow); the mode
+ * covers the header-dropdown chip set. The two filter dimensions coexist
+ * via `useDataViewTableLogic`'s any-match-wins predicate.
+ */
+const getVehicleTypeFilterKey = (item: VehicleType): readonly string[] => [
+  item.id,
+  item.transportMode ?? UNKNOWN_TRANSPORT_MODE,
+];
+
+/** Whole-row click opens the read-only sidebar via `/vehicle-types?selected=<id>`. */
+const useVehicleTypeRowClick = () => {
+  const navigate = useNavigate();
+  return (item: VehicleType) => navigate(vehicleTypeSelectedHref(item.id));
+};
+
+export const vehicleTypeViewConfig = {
+  useData: useVehicleTypes,
+  useSearchRegistration: useDataViewSearch,
+  useTableLogic: useDataViewTableLogic,
+  PageContentComponent: DataPageContent,
+  columns: vehicleTypeColumns,
+  getFilterKey: getVehicleTypeFilterKey,
+  getSortValue: getVehicleTypeSortValue,
+  filters: (items: VehicleType[]) =>
+    transportModeFilters(items.map(i => i.transportMode ?? UNKNOWN_TRANSPORT_MODE)),
+  titleKey: 'vehicleType.title',
+  useUrlEffect: useVehicleTypeUrlSelection,
+  useRowClick: useVehicleTypeRowClick,
+};

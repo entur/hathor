@@ -13,10 +13,11 @@ import {
 } from '@mui/material';
 import DataTableHeader from './DataTableHeader.tsx';
 import DataTableRow from './DataTableRow.tsx';
+import HeadBreadcrumbs from './HeadBreadcrumbs.tsx';
 import { useTranslation } from 'react-i18next';
 import type { Order, ColumnDefinition } from './dataTableTypes.ts';
 import MobileDetailRow from './MobileDetailRow.tsx';
-import type { UrlFilterInfo } from '../../types/viewConfigTypes.ts';
+import type { UrlFilterInfo } from '../../pages/viewConfigTypes.ts';
 
 const COMPACT_VIEW_THRESHOLD = 700;
 
@@ -34,9 +35,20 @@ interface DataPageContentProps<T, K extends string> {
   setRowsPerPage: (rowsPerPage: number) => void;
   columns: ColumnDefinition<T, K>[];
   title?: string;
+  /** i18n key for the title; resolved here and used for the breadcrumb leaf. Takes precedence over {@link title}. */
+  titleKey?: string;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
-  floatingAction?: ReactNode;
+  onRowClick?: (item: T) => void;
+  /** NeTEx id of the row currently shown in the sidebar editor; that row gets a highlight. */
+  selectedId?: string | null;
+  /** "Add new" action, right-aligned in the list-head. */
+  addAction?: ReactNode;
+  /** "Import" action, right-aligned in the list-head after {@link addAction}. */
+  importAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
+  /** Forwarded to {@link DataTableHeader}; when true, every sortable header
+   *  is dimmed, click is suppressed, and hover shows the lock tooltip. */
+  sortLocked?: boolean;
 }
 
 export default function DataPageContent<
@@ -55,11 +67,18 @@ export default function DataPageContent<
   setRowsPerPage,
   columns,
   title,
+  titleKey,
   handleColumnEvent,
-  floatingAction,
+  onRowClick,
+  selectedId,
+  addAction,
+  importAction,
   urlFilterInfo,
+  sortLocked,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
+  const resolvedTitle = titleKey ? t(titleKey) : title;
+  const hasActions = Boolean(addAction || importAction);
   const containerRef = useRef<HTMLDivElement>(null);
   const compact = useContainerResponsiveView(containerRef, COMPACT_VIEW_THRESHOLD, loading);
 
@@ -79,14 +98,17 @@ export default function DataPageContent<
       ref={containerRef}
       sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
     >
-      {title && (
-        <Box p={2}>
-          <Typography variant="h4" component="h2" align="center">
-            {title}
-          </Typography>
+      {resolvedTitle && (
+        <Box px={2} pt={2} pb={0.5}>
+          <HeadBreadcrumbs title={resolvedTitle} />
         </Box>
       )}
       <Box px={2} pb={1} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {resolvedTitle && (
+          <Typography variant="h5" component="h2">
+            {resolvedTitle}
+          </Typography>
+        )}
         <Typography data-testid="total-entries" data-count={totalCount}>
           {t('data.totalEntries', { count: totalCount })}
         </Typography>
@@ -102,6 +124,25 @@ export default function DataPageContent<
             data-filter-count={urlFilterInfo.filterCount}
           />
         )}
+        {hasActions && (
+          <>
+            <Box sx={{ flexGrow: 1 }} />
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                // Gutter past the floating EditorRail when an editor is open
+                // — `--editor-rail-clear` is published by GenericDataViewPage.
+                mr: 'var(--editor-rail-clear, 0px)',
+                transition: 'margin-right 0.2s ease',
+              }}
+            >
+              {addAction}
+              {importAction}
+            </Box>
+          </>
+        )}
       </Box>
 
       <TableContainer sx={{ flexGrow: 1, minHeight: 0, overflow: 'auto' }}>
@@ -112,6 +153,7 @@ export default function DataPageContent<
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
             columns={visibleColumns}
+            sortLocked={sortLocked}
           />
           <TableBody>
             {data.map(item => (
@@ -124,6 +166,8 @@ export default function DataPageContent<
                 detailColumns={detailColumns}
                 colSpan={colSpan}
                 handleColumnEvent={handleColumnEvent}
+                onRowClick={onRowClick}
+                selected={selectedId != null && item.id === selectedId}
               />
             ))}
             {data.length === 0 && !loading && (
@@ -139,7 +183,6 @@ export default function DataPageContent<
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {floatingAction}
           <TablePagination
             rowsPerPageOptions={[10, 25, 100]}
             component="div"
@@ -151,6 +194,22 @@ export default function DataPageContent<
               setRowsPerPage(parseInt(event.target.value, 10));
               setPage(0);
             }}
+            labelRowsPerPage={t('data.pagination.rowsPerPage', 'Rows per page:')}
+            labelDisplayedRows={({ from, to, count }) =>
+              count === -1
+                ? t('data.pagination.displayedRowsOfMore', {
+                    from,
+                    to,
+                    count: to,
+                    defaultValue: '{{from}}–{{to}} of more than {{count}}',
+                  })
+                : t('data.pagination.displayedRows', {
+                    from,
+                    to,
+                    count,
+                    defaultValue: '{{from}}–{{to}} of {{count}}',
+                  })
+            }
             data-testid="table-pagination"
             slotProps={{
               displayedRows: {

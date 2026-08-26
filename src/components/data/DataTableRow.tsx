@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TableRow, TableCell, IconButton } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import type { ColumnDefinition } from './dataTableTypes.ts';
-import type { ComponentType } from 'react';
+import type { ComponentType, MouseEvent } from 'react';
 
 interface Props<T, K extends string> {
   item: T;
@@ -17,6 +17,9 @@ interface Props<T, K extends string> {
   detailColumns: ColumnDefinition<T, K>[];
   colSpan: number;
   handleColumnEvent?: (event: string, column: ColumnDefinition<T, K>, item: T) => void;
+  onRowClick?: (item: T) => void;
+  /** Highlights the row via MUI's built-in `selected` styling (`palette.action.selected`). */
+  selected?: boolean;
 }
 
 export default function DataTableRow<T, K extends string>({
@@ -27,15 +30,30 @@ export default function DataTableRow<T, K extends string>({
   detailColumns,
   colSpan,
   handleColumnEvent,
+  onRowClick,
+  selected,
 }: Props<T, K>) {
   const [open, setOpen] = useState(false);
+  const rowOnClick = useCompactView
+    ? () => setOpen(o => !o)
+    : onRowClick
+      ? (e: MouseEvent<HTMLElement>) => {
+          // A clickable row may host its own links/buttons (e.g. the vehicle
+          // chips in the Vehicles column linking to `/vehicles?selected=…`).
+          // Bail when the click originated from an interactive child so the
+          // row's navigation doesn't hijack the element's own handler.
+          if ((e.target as HTMLElement).closest('a, button')) return;
+          onRowClick(item);
+        }
+      : undefined;
 
   return (
     <>
       <TableRow
         hover
-        onClick={useCompactView ? () => setOpen(o => !o) : undefined}
-        sx={{ cursor: useCompactView ? 'pointer' : 'inherit' }}
+        selected={selected}
+        onClick={rowOnClick}
+        sx={{ cursor: rowOnClick ? 'pointer' : 'inherit' }}
       >
         {useCompactView && (
           <TableCell padding="none">

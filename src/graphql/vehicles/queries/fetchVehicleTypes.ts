@@ -5,7 +5,7 @@ const fetchVehicleTypesGQL = gql`
   query VehicleTypes($page: Int, $size: Int, $filter: VehicleTypeFilter) {
     vehicleTypes(page: $page, size: $size, filter: $filter) {
       content {
-        id
+        netexId
         version
         name {
           value
@@ -13,24 +13,48 @@ const fetchVehicleTypesGQL = gql`
         shortName {
           value
         }
+        description {
+          value
+        }
         transportMode
         length
         width
         height
+        weight
+        lowFloor
+        propulsionTypes
+        fuelTypes
+        selfPropelled
+        euroClass
+        maximumVelocity
+        maximumRange
+        formDragCoefficient
+        rollResistanceCoefficient
+        maximumEngineEffectKW
+        hybridCategory
+        passengerCapacity {
+          totalCapacity
+          seatingCapacity
+          standingCapacity
+          pushchairCapacity
+          wheelchairPlaceCapacity
+          pramPlaceCapacity
+          bicycleRackCapacity
+        }
         created
         changed
         changedBy
-        versionComment
         deckPlan {
-          id
-          description
+          netexId
+          version
           name {
             value
           }
         }
         vehicles {
-          id
+          netexId
           registrationNumber
+          operationalNumber
           version
         }
       }
@@ -41,10 +65,10 @@ const fetchVehicleTypesGQL = gql`
   }
 `;
 
-import type { PageVars } from '../../../types/paginationTypes.ts';
+import type { PageVars } from '../../paginationTypes.ts';
 
 export type VehicleTypeVars = PageVars & {
-  filter?: { ids?: string[]; transportMode?: string };
+  filter?: { netexIds?: string[]; transportModes?: string[]; dataOwnerRef: string };
 };
 
 export const fetchVehicleTypesRequest = (

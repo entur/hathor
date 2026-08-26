@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
 import type { ImportEntry, FramesByQueryRegNumber } from '../types';
-import { findResourceFrame, mergeResourceFrames, toArray } from '../xmlUtils';
+import { findResourceFrame, toArray } from '../../netex/xmlUtils';
+import { mergeResourceFrames } from '../xmlUtils';
 import { makeXml } from './__fixtures__/makeXml';
 
 const parser = new XMLParser({ ignoreAttributes: false });

@@ -1,17 +1,15 @@
 {
   "name": "hathor",
   "private": true,
-  "version": "0.43.0",
+  "version": "0.91.0",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "predev": "run-p --race copy:theme copy:config",
     "dev": "vite",
     "prelocal": "run-p --race copy:theme copy:config-local",
     "local": "vite",
     "build": "tsc -b && vite build",
+    "gen:arch": "node scripts/gen-arch-metafile.mjs",
     "copy:theme": "ncp .github/environments/theme-localhost.json public/theme-dev.json",
     "copy:config-local": "ncp .github/environments/config-localhost.json public/config.json",
     "copy:config": "ncp .github/environments/config-dev.json public/config.json",
@@ -20,11 +18,13 @@
     "format": "prettier --write .",
     "prepare": "husky",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "e2e:auth": "E2E_SUITE=auth npx playwright test",
-    "e2e:no-auth": "E2E_SUITE=no-auth npx playwright test",
-    "e2e:local-backend": "E2E_BACKEND=true E2E_SUITE=no-auth npx playwright test"
+    "test": "vitest run --project=unit",
+    "test:coverage": "vitest run --coverage --project=unit",
+    "test:stories": "vitest run --project=storybook",
+    "e2e": "npx playwright test",
+    "e2e:local-backend": "E2E_BACKEND=true npx playwright test --workers=1",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -42,7 +42,7 @@
     "@mui/material": "^7.0.2",
     "@mui/x-data-grid": "^8.2.0",
     "@types/papaparse": "^5.5.2",
-    "fast-xml-parser": "^5.3.8",
+    "fast-xml-parser": "^5.7.3",
     "graphql": "^16.11.0",
     "graphql-request": "^7.3.1",
     "i18next": "^25.2.1",
@@ -54,16 +54,23 @@
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2",
     "react-oidc-context": "^3.3.0",
-    "react-router-dom": "^6.30.0"
+    "react-router-dom": "^7.17.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.2.1",
     "@eslint/js": "^9.25.0",
     "@playwright/test": "^1.58.0",
+    "@storybook/addon-a11y": "^10.4.1",
+    "@storybook/addon-docs": "^10.4.1",
+    "@storybook/addon-mcp": "^0.6.0",
+    "@storybook/addon-vitest": "^10.4.1",
+    "@storybook/react-vite": "^10.4.1",
     "@types/node": "^22.15.12",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "@vitejs/plugin-react": "^4.4.1",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/browser-playwright": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
@@ -71,10 +78,12 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
     "ncp": "^2.0.0",
+    "playwright": "^1.60.0",
     "prettier": "^3.5.3",
+    "storybook": "^10.4.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
-    "vite": "^6.4.1",
-    "vitest": "^4.0.18"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.10"
   }
 }

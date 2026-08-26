@@ -6,10 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
 
+Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Extending this codebase — new entity views, domain modelling, the Generic Data View pattern — follows the Inanna *extend-fork* workflow, documented in the global **`inanna-fork`** skill rather than in-repo. `FORK_DECISIONS.md` records the design choices specific to this fork.
+
 ## Key Documentation
 
-- **`README.md`** — brief project overview, tech stack, quick start, scripts.
-- **`DEV_GUIDE.md`** — the main developer guide: theming, custom icons, TypeScript theme extensions, and a step-by-step tutorial for adding new data table pages. This is where customization and extension documentation lives. Keep it up to date when the architecture or patterns change.
+- **`README.md`** — brief project overview, tech stack, quick start, scripts, and `src/` folder semantics (where new files go).
+- **`DEV_GUIDE.md`** — a stub pointer. Hathor is an Inanna fork; the developer guide for adding entity views and extending the app lives in the global **`inanna-fork`** skill (extend mode), not in-repo.
+- **`FORK_DECISIONS.md`** — the project's Architecture Decision Record (ADR) log. **Single source of truth for *why* design choices were made on this fork.** Each section captures one decision with its context, alternatives, and consequences. Add a new ADR section here for any non-obvious design call; do **not** restate the rationale in this file (CLAUDE.md describes *what* the patterns are; FORK_DECISIONS describes *why*).
+- **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
 ## Commands
 
@@ -26,8 +30,8 @@ npm run check            # Prettier check
 npm run format           # Prettier auto-format
 
 # E2E tests (Playwright)
-npm run e2e:auth         # Run auth-enabled test suite
-npm run e2e:no-auth      # Run no-auth test suite
+npm run e2e              # Run the suite (mocked GraphQL), both browsers, multi-worker
+npm run e2e:local-backend  # Same specs against a live local Sobek (E2E_BACKEND=true, --workers=1)
 ```
 
 Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` on the whole project) followed by `npx lint-staged` (Prettier `--write` + ESLint `--fix` on staged files). The developer uses `prettierd` in nvim for format-on-save, which picks up the repo-root `.prettierrc` automatically.
@@ -40,11 +44,13 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 The core architectural pattern is a reusable data table system:
 
-1. **ViewConfig** (`src/types/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
+1. **ViewConfig** (`src/pages/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
 2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
-3. **Page component** (e.g. `src/pages/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
+3. **Page component** (e.g. `src/data/vehicle-types/components/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
 
-To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. See `DEV_GUIDE.md` for the detailed tutorial.
+To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
+
+**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Note: cross-feature backend-model types (`Name`, `DeckPlan`, enums) currently sit in `data/vehicle-types/types/` + `data/netex/` and are reached into by sibling features — a known coupling being reworked onto a shared, codegen-shaped model layer (**#107**).
 
 ### State Management
 
@@ -55,13 +61,15 @@ No state library — uses React Context API exclusively:
 - **EditingContext** — sidebar editor state (which entity is being edited)
 - **CustomizationContext** — theme/icon toggle, persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
+- **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
 
 Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehicleTypes`).
 
 ### Backend Integration
 
-- **GraphQL**: `graphql-request` library, queries in `src/graphql/vehicles/queries/`
-- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.tsx`
+- **GraphQL (read)**: `graphql-request`, queries in `src/graphql/vehicles/queries/`
+- **GraphQL (write)**: `createOrUpdateVehicle` / `createOrUpdateVehicleType` mutations in `src/graphql/vehicles/mutations/`. Sobek's `createOrUpdate*` is a **full-document replace** — an absent/blank input field is nulled, so serializers must send the complete document (not omit-blank).
+- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.ts` (Autosys bulk import). The route-based VehicleType *create-via-XML* editor was removed — VehicleType save is now the GraphQL mutation above.
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
 
@@ -69,9 +77,15 @@ Localhost backend config (`.github/environments/config-localhost.json`) points t
 - **Sobek** at `http://127.0.0.1:37999/services/vehicles/` — GraphQL and NeTEx import
 - **Shepet** at `http://127.0.0.1:37998/services/autosys` — Autosys vehicle data (separate app/port)
 
+**IMPORTANT — GQL fixtures must stay in sync with the GQL fetcher code.** Every mock and fixture that simulates a Sobek GraphQL response (vitest mocks in `*.test.ts` files, Playwright fixtures under `e2e-tests/fixtures/*-mock.json`) must mirror the exact wire shape the corresponding query in `src/graphql/vehicles/queries/` requests. When a query selection changes (field rename, addition, removal, or aliasing), the matching mocks/fixtures **must** be updated in the same change — otherwise tests pass against stale shapes and silently mask runtime breakage against the real backend. Mock values must also reflect real Sobek semantics: e.g. NeTEx ids are full `Codespace:Type:Number` form, never bare DB row ids.
+
+**IMPORTANT — check the Sobek schema upfront in any hathor session.** Before touching GraphQL queries, mutations, fixtures, or data-shape code, verify hathor's queries have not drifted from Sobek's live schema. A vendored snapshot lives at `src/graphql/sobek.schema.graphqls`; the canonical source is `curl -s https://entur.github.io/sobek/schema.graphqls`. Diff the two (`curl -s https://entur.github.io/sobek/schema.graphqls | diff src/graphql/sobek.schema.graphqls -`) at the start of any schema-adjacent work — Sobek evolves independently of hathor, so the snapshot goes stale silently. If they differ, refresh the snapshot (`curl -s https://entur.github.io/sobek/schema.graphqls -o src/graphql/sobek.schema.graphqls`), confirm every field selected by `src/graphql/vehicles/**` still exists in the live schema, and flag any breaking removal/rename before proceeding.
+
+When in doubt about whether a single hathor query has drifted, grep the canonical schema for the type/field in question.
+
 ### Routing
 
-React Router v6 in `src/App.tsx`. Protected routes use `<ProtectedRoute>` which checks OIDC authentication.
+React Router v6 in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
 
 ### Internationalization
 
@@ -79,37 +93,33 @@ i18next with English (`src/locales/en/`) and Norwegian Bokmål (`src/locales/nb/
 
 ### Theming
 
-JSON-based theme config loaded at runtime. Custom icons system with `defaultIcons` vs `customIcons` directories in `public/assets/`. See README for details.
+JSON-based theme config loaded at runtime and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
 
 ## E2E Testing (Playwright)
 
 ### Overview
 
-End-to-end tests use Playwright (`@playwright/test`) with two test suites selected via the `E2E_SUITE` environment variable:
-
-- **`auth`** — tests behavior when OIDC is configured (redirects to login provider, login button visible)
-- **`no-auth`** — tests behavior when OIDC is absent (warning banner shown, content still accessible, "Auth off" chip in header)
+End-to-end tests use Playwright (`@playwright/test`) — one flat suite under `e2e-tests/`. The two auth profiles (OIDC configured vs absent) are no longer separate suites; `auth-modes.spec.ts` exercises both, and any spec picks its profile per-test via `setConfig`. `E2E_BACKEND=true` switches a spec from mocked GraphQL to a live local Sobek (see `e2e:local-backend`).
 
 ### Directory Structure
 
 ```
 e2e-tests/
-├── auth/
-│   └── auth.spec.ts              # Tests with OIDC enabled
-├── no-auth/
-│   └── no-auth.spec.ts           # Tests with OIDC disabled
+├── *.spec.ts                     # all specs, flat (auth-modes.spec.ts, vehicle*.spec.ts, …)
+├── live-auth-helpers.ts          # setConfig (config route), seedAuth, org selection
+├── autosys-helpers.ts            # GraphQL/Autosys intercept helpers
+├── vehicle-list-helpers.ts       # vehicles() mock builders
 └── fixtures/
-    ├── config-with-auth.json     # config.json with oidcConfig set
-    └── config-no-auth.json       # config.json without oidcConfig
+    ├── config-with-auth.json     # config.json with oidcConfig set    ('auth-on')
+    └── config-no-auth.json       # config.json without oidcConfig      ('auth-off')
 ```
 
 ### How It Works
 
-Tests switch auth mode by copying a fixture file to `public/config.json` in `beforeAll()`. The Vite dev server picks up the change at runtime. This means:
+Each test serves its own `public/config.json` to the app via **route interception** — `setConfig(router, 'auth-on' | 'auth-off')` fulfills the `**/config.json` fetch (`src/config/fetchConfig.ts`) with the chosen fixture body, registered before the first `goto`. `seedAuth(context)` serves `'auth-on'` itself, so most specs never name a config. Nothing touches `public/config.json` on disk, so:
 
-- The **no-auth suite runs serially** (`mode: 'serial'`, `workers: 1`) because tests mutate the shared config file on disk.
-- The **auth suite** can run in parallel locally.
-- In **CI**, both suites use `workers: 1`.
+- There is **no shared on-disk state** — the suite is parallel-safe and runs at the default worker count (cpu cores) locally and in CI.
+- The **live-backend run pins `--workers=1`** (`e2e:local-backend`) because parallel writes against one live Sobek would race.
 
 ### Config & Browsers
 
@@ -134,11 +144,10 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 
 ### CI Workflow
 
-`.github/workflows/playwright.yml` runs on push/PR to `main`/`master`:
-1. Install deps (`npm ci`)
-2. Install Playwright browsers (`npx playwright install --with-deps`)
-3. Run `npm run e2e:auth` then `npm run e2e:no-auth`
-4. Upload HTML report as artifact (30-day retention)
+`.github/workflows/playwright.yml` runs on push/PR to `main`/`master` as three jobs:
+1. **`schema`** — Sobek schema-drift guard (curl + diff, no `npm ci`); gates `e2e`.
+2. **`unit`** — `npm ci` + `npm run test:coverage`; sibling of `e2e` (no `needs`, so neither blocks the other).
+3. **`e2e`** — `needs: schema`; browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
 
 ## Concept Sandbox
 
@@ -163,17 +172,10 @@ A standalone HTML/D3 prototype at `concept-sandbox/` deployed via GitHub Pages. 
 
 ## Legacy Cleanup TODO
 
-Remaining Tiamat/stop-place traces and dead code from the fork that still need attention:
+Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a PR. *Design-level* ambiguities (couplings, naming leaks, filter shape) live in [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) instead.
 
-- **StopPlace naming in search layer** — `useDataViewSearch.ts` params (`allFetchedStopPlaces`, `stopPlacesLoading`, `searchStopPlaceData`) and `searchTypes.ts` type `StopPlaceTypeFilter` (used in `SearchContext.tsx`) still use Tiamat domain names.
 - **Commented-out code** — `useDataViewSearch.ts:14-27` (Tiamat filter logic with `ParentStopPlace`/`stopPlaceType`), `DesktopSearchBar.tsx` and `MobileSearchBar.tsx` (disabled `SearchAutocomplete` rendering), `Header.tsx` (unused `useTranslation` and mobile search callback).
 - **Unused translation keys** — ~49 dead keys across `en/translation.json` and `nb/translation.json`, including `data.table.*`, `map.*`, `types.*` (stop-place types), `session.expired.message`, `product.*`.
-- **Unused map infrastructure** — `useLayerVisibility.ts` hook never imported; `'map'` variant in `SearchContextViewType` never used.
-- **Dead auth export** — `AuthProvider` exported from `src/auth/index.ts` but never consumed.
-- **Stub component** — `WorkAreaContent.tsx` accepts `onSave`/`onCancel`/`onDetailsOpen` props but ignores them; `handleSave()` is empty.
-- **Non-functional filters** — `vehicleTypeViewConfig.tsx:84-93` defines filters with stop-place categories (Train, Bus, Tram, etc.) but filtering is never wired up.
-- **Misplaced hook** — `useDataViewSearch.ts` is in global `src/hooks/` but only used by VehicleType; belongs in `src/data/vehicle-types/`.
-- **Typo** — `vehicleImportServices.tsx:33`: `"Error impor vehicle data"` (missing "t").
 
 ## Key Files
 
@@ -181,14 +183,14 @@ Remaining Tiamat/stop-place traces and dead code from the fork that still need a
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
 | `src/main.tsx` | Entry point, wraps app in context providers |
-| `src/types/viewConfigTypes.ts` | Core ViewConfig type definitions |
+| `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
 | `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
 | `src/components/search/SearchContext.tsx` | Search state management |
-| `src/contexts/ConfigContext.tsx` | Runtime config types and context |
+| `src/contexts/configContext.ts` | Runtime config types and context |
 | `public/config.json` | Runtime API/OIDC configuration |
 | `.github/environments/` | Environment-specific config files |
-| `playwright.config.ts` | Playwright config (suite selection, browsers, workers) |
-| `e2e-tests/auth/auth.spec.ts` | E2E tests with OIDC enabled |
-| `e2e-tests/no-auth/no-auth.spec.ts` | E2E tests with OIDC disabled |
-| `e2e-tests/fixtures/` | Config fixture files for auth/no-auth modes |
-| `.github/workflows/playwright.yml` | CI workflow for e2e tests |
+| `playwright.config.ts` | Playwright config (testDir, browsers, workers) |
+| `e2e-tests/auth-modes.spec.ts` | Both auth profiles (OIDC on/off) via `setConfig` |
+| `e2e-tests/live-auth-helpers.ts` | `setConfig` (config route), `seedAuth`, org selection |
+| `e2e-tests/fixtures/` | Config fixture files (`config-with-auth` / `config-no-auth`) |
+| `.github/workflows/playwright.yml` | CI workflow: schema · unit · e2e browser matrix |
