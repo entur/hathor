@@ -1,8 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
-  <PublicationTimestamp>2026-06-11T00:00:00</PublicationTimestamp>
-  <ParticipantRef>NMR</ParticipantRef>
-  <dataObjects>
-    <ResourceFrame id="NMR:ResourceFrame:1" version="1"/>
-  </dataObjects>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:ns2="http://www.opengis.net/gml/3.2" xmlns:ns3="http://www.siri.org.uk/siri" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0:NO-NeTEx:2.0" xsi:schemaLocation="">
+    <PublicationTimestamp>2026-08-20T09:30:51.056</PublicationTimestamp>
+    <ParticipantRef>NMR</ParticipantRef>
+    <dataObjects>
+        <CompositeFrame version="1" id="NMR:CompositeFrame:1019481400">
+            <Description>Composite frame ExportParams()</Description>
+            <FrameDefaults>
+                <DefaultLocale>
+                    <TimeZone>Europe/Oslo</TimeZone>
+                    <DefaultLanguage>eng</DefaultLanguage>
+                </DefaultLocale>
+            </FrameDefaults>
+            <frames>
+                <ResourceFrame version="1" id="NMR:ResourceFrame:839120080">
+                    <Description>Resource frameExportParams()</Description>
+                    <deckPlans>
+                        <DeckPlan changed="2026-06-22T13:27:05.522" modification="new" version="2" id="NMR:DeckPlan:5">
+                            <ValidBetween>
+                                <FromDate>2026-06-22T13:27:05.522</FromDate>
+                            </ValidBetween>
+                            <keyList>
+                                <KeyValue>
+                                    <Key>imported-id</Key>
+                                    <Value>AUTOSYS:DeckPlan:e6*NKS2014*0006*02-CG</Value>
+                                </KeyValue>
+                            </keyList>
+                            <Name>
+                                <Text>
+                Plan Alpha
+              </Text>
+                            </Name>
+                            <Description>
+                                <Text>Alpha lower-deck variant</Text>
+                            </Description>
+                            <decks/>
+                        </DeckPlan>
+                    </deckPlans>
+                </ResourceFrame>
+            </frames>
+        </CompositeFrame>
+    </dataObjects>
 </PublicationDelivery>

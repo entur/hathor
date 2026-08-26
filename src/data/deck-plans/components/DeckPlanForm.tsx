@@ -1,35 +1,151 @@
-import { Alert, Box, CircularProgress, Stack, Button, TextareaAutosize } from '@mui/material';
+import { useState } from 'react';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Stack,
+  Tab,
+  Tabs,
+  TextareaAutosize,
+  TextField,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
+import { mergeNameText } from '../../netex/multilingualString.ts';
+import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+
+/** Editor tabs — Edit (the editable fields) first, then the NeTEx source. */
+type TabKey = 'edit' | 'xml';
+
+/** Pill/segmented tab styling, matching the VehicleType editor's rail-safe tabs. */
+const TAB_SX = {
+  mb: 1.5,
+  minHeight: 0,
+  '& .MuiTabs-indicator': { display: 'none' },
+  '& .MuiTabs-flexContainer': { flexWrap: 'wrap', gap: 0.75 },
+  '& .MuiTab-root': {
+    minHeight: 30,
+    px: 1.25,
+    py: 0.25,
+    borderRadius: 1,
+    textTransform: 'none',
+    bgcolor: 'action.hover',
+    color: 'text.secondary',
+  },
+  '& .MuiTab-root.Mui-selected': { bgcolor: 'primary.main', color: 'primary.contrastText' },
+};
+
+const TEXTAREA_STYLE = {
+  width: '100%',
+  padding: '8px',
+  borderRadius: '4px',
+  borderColor: 'rgba(0, 0, 0, 0.23)',
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  fontSize: '14px',
+  fontFamily: 'monospace',
+  boxSizing: 'border-box' as const,
+};
 
 interface DeckPlanFormProps {
-  /** NeTEx XML — current form value (controlled). */
-  value: string;
-  /** Called on every textarea edit. */
-  onChange: (next: string) => void;
-  /** When true, textarea is read-only. */
+  /** Current deck plan — the editable name/description fields. */
+  value: DeckPlan;
+  /** Fired with the merged next value on every field edit. */
+  onChange: (next: DeckPlan) => void;
+  /** `'view'` disables the inputs; `'edit'` enables them. */
   mode: 'view' | 'edit';
-  /** Fetch-in-flight; renders a spinner instead of the textarea. */
+  /** Create flow — hides the tab strip; there is no persisted body yet. */
+  isCreate: boolean;
+  /** NeTEx XML body, read-only. */
+  xml: string;
+  /** Body fetch in flight; renders a spinner in the XML tab. */
   loading: boolean;
-  /** Fetch error string; renders an alert + retry instead of the textarea. */
+  /** Body fetch error; renders an alert + retry in the XML tab. */
   fetchError: string | null;
   /** Refetch trigger from the parent hook. */
   onRetry: () => void;
 }
 
 /**
- * Sidebar body for the deck-plan editor — the NeTEx XML textarea (matches
- * the pre-sidebar route view's UX 1:1) plus loading and fetch-error states.
- * Hosted by `DeckPlanDetails`; chrome (title, EditorRail, snackbars,
- * dirty tracking) lives in the parent.
+ * Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by
+ * `value`/`onChange`/`mode`, mirroring the VehicleType editor's shape. Tabs:
+ * Edit (name + description) · XML (the read-only NeTEx source, with its
+ * loading and fetch-error states). The XML body is never editable — name and
+ * description are patched into the fetched document on save instead.
+ *
+ * Holds no fetch/save logic; chrome (title, EditorRail, snackbars, dirty
+ * tracking) lives in `DeckPlanDetails`.
  */
 export default function DeckPlanForm({
   value,
   onChange,
   mode,
+  isCreate,
+  xml,
   loading,
   fetchError,
   onRetry,
 }: DeckPlanFormProps) {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<TabKey>('edit');
+  const ro = mode === 'view';
+  const setField = (patch: Partial<DeckPlan>) => onChange({ ...value, ...patch });
+
+  const editPanel = (
+    <FormLayout data-testid="deck-plan-tab-edit">
+      <FieldRow id="deckPlan-name" label={t('deckPlans.field.name', 'Name')}>
+        <TextField
+          id="deckPlan-name"
+          value={value.name?.value ?? ''}
+          onChange={e => setField({ name: mergeNameText(value.name, e.target.value) })}
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+      <FieldRow id="deckPlan-description" label={t('deckPlans.field.description', 'Description')}>
+        <TextField
+          id="deckPlan-description"
+          value={value.description?.value ?? ''}
+          onChange={e =>
+            setField({ description: mergeNameText(value.description, e.target.value) })
+          }
+          disabled={ro}
+          size="small"
+          fullWidth
+        />
+      </FieldRow>
+    </FormLayout>
+  );
+
+  // Create has no persisted body to show — render the fields bare, no tab strip.
+  if (isCreate) return <Box>{editPanel}</Box>;
+
+  return (
+    <Box>
+      <Tabs value={tab} onChange={(_e, v: TabKey) => setTab(v)} sx={TAB_SX}>
+        <Tab value="edit" label={t('deckPlans.tab.edit', 'Edit')} />
+        <Tab value="xml" label={t('deckPlans.tab.xml', 'XML')} />
+      </Tabs>
+
+      {tab === 'edit' && editPanel}
+      {tab === 'xml' && (
+        <Box data-testid="deck-plan-tab-xml">
+          <XmlBody xml={xml} loading={loading} fetchError={fetchError} onRetry={onRetry} />
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+/** Read-only NeTEx source pane with its loading and fetch-error states. */
+function XmlBody({
+  xml,
+  loading,
+  fetchError,
+  onRetry,
+}: Pick<DeckPlanFormProps, 'xml' | 'loading' | 'fetchError' | 'onRetry'>) {
   const { t } = useTranslation();
   if (loading) {
     return (
@@ -56,21 +172,10 @@ export default function DeckPlanForm({
     <TextareaAutosize
       aria-label="deck plan data"
       data-testid="deck-plan-xml-textarea"
-      readOnly={mode !== 'edit'}
-      value={value}
-      onChange={e => onChange(e.target.value)}
+      readOnly
+      value={xml}
       minRows={10}
-      style={{
-        width: '100%',
-        padding: '8px',
-        borderRadius: '4px',
-        borderColor: 'rgba(0, 0, 0, 0.23)',
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        fontSize: '14px',
-        fontFamily: 'monospace',
-        boxSizing: 'border-box',
-      }}
+      style={TEXTAREA_STYLE}
     />
   );
 }
