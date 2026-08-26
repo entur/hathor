@@ -148,6 +148,19 @@
   }
   .fed-detail dd {
     margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .fed-detail .db-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--clr-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
   }
 </style>
 
@@ -183,6 +196,13 @@
 
 <script type="module">
   import { buildSchema, graphql as exec } from 'https://esm.sh/graphql@16.11.0';
+
+  /**
+   * Head kept of an over-long field value in the detail pane. Matches
+   * `fed-db.html`'s cap: a deckPlan's `decks` document is tens of thousands of
+   * characters, and this pane sits under the search box with no room for it.
+   */
+  const VAL_CAP = 96;
 
   const data = await fetch('fed-search-mock.json').then(r => r.json());
 
@@ -469,15 +489,33 @@
     renderDetail(gk, src);
   }
 
+  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+
+  /**
+   * Render one field value: escaped, and collapsed to a head plus a length note
+   * past {@link VAL_CAP}. Both matter for `decks`, which is a whole NeTEx
+   * document — unescaped it would be parsed as markup, unclipped it would bury
+   * the pane under 40 000 characters.
+   */
+  const fmtDetail = val =>
+    typeof val === 'string' && val.length > VAL_CAP
+      ? `${esc(val.slice(0, VAL_CAP))}… <span style="color:var(--clr-text-dim)">(${val.length.toLocaleString()} chars)</span>`
+      : esc(String(val));
+
   function renderDetail(group, v) {
     const pairs = Object.entries(v)
       .filter(([k]) => k !== 'id')
-      .map(([k, val]) => `<dt>${k}</dt><dd>${val}</dd>`)
+      .map(([k, val]) => `<dt>${k}</dt><dd>${fmtDetail(val)}</dd>`)
       .join('');
     detail.innerHTML = `<div class="fed-detail" style="margin-top:16px;">
-      <h2 style="margin-bottom:12px">${v.name ?? v.registrationNumber ?? v.id}</h2>
+      <h2 style="margin-bottom:12px; display:flex; align-items:baseline; gap:12px">
+        ${esc(v.name ?? v.registrationNumber ?? v.id)}
+        <button type="button" class="db-link">Show in DB</button>
+      </h2>
       <p style="margin-bottom:12px; color:var(--clr-text-dim); font-size:13px">${group} &middot; ${v.id}</p>
       <dl>${pairs}</dl></div>`;
+    // `gotoDbItem` is the shell's (index.html); this page only names a record.
+    detail.querySelector('.db-link').onclick = () => gotoDbItem(v.id);
   }
 
   function mk(tag, props) {

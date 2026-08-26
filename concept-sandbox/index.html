@@ -352,7 +352,17 @@
         <ul>
           <li>
             <button
-              class="selected"
+              id="nav-database"
+              hx-get="partials/database.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#128451;</span> Database
+            </button>
+          </li>
+          <li>
+            <button
               hx-get="partials/fed-search.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
@@ -427,12 +437,7 @@
 
       <!-- ── Main content ───────────────────────────────── -->
       <main>
-        <div
-          id="main-content"
-          hx-get="partials/fed-search.html"
-          hx-trigger="load"
-          hx-swap="innerHTML"
-        ></div>
+        <div id="main-content" hx-trigger="load" hx-swap="innerHTML"></div>
       </main>
     </div>
 
@@ -441,6 +446,36 @@
         document.querySelectorAll('aside li button').forEach(b => b.classList.remove('selected'));
         el.classList.add('selected');
       }
+
+      /**
+       * Deep-link one mock-database record from any other page.
+       *
+       * The hash is set first, then the nav button is clicked: htmx re-swaps
+       * the Database page, and the fresh `fed-db.html` reads the hash as it
+       * builds the tree. Re-swapping on every call keeps that the partial's
+       * only entry point, so it needs no listener of its own.
+       *
+       * @param {string} id NeTEx id of the record to open, e.g. `NMR:DeckPlan:13`.
+       */
+      function gotoDbItem(id) {
+        location.hash = 'db=' + encodeURIComponent(id);
+        document.getElementById('nav-database').click();
+      }
+
+      // Landing view: whatever the first nav item points at. The menu is the
+      // single source of truth, so reordering it reorders the default. A `#db=`
+      // deep link overrides, naming a record only the Database page shows.
+      //
+      // Assigned here rather than swapped after load: this script runs while
+      // parsing, before htmx processes `#main-content`'s `load` trigger, so
+      // there is no second fetch and no race over which response lands last.
+      const landing = new URLSearchParams(location.hash.slice(1)).has('db')
+        ? document.getElementById('nav-database')
+        : document.querySelector('aside li button');
+      document
+        .getElementById('main-content')
+        .setAttribute('hx-get', landing.getAttribute('hx-get'));
+      selectNav(landing);
     </script>
   </body>
 </html>

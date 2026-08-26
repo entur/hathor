@@ -78,10 +78,24 @@
   .fed-db .tf-num {
     color: #005cc5;
   }
+  .fed-db .intro {
+    margin: -6px 0 16px;
+    color: var(--clr-text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .fed-db .tree-item > summary {
+    transition: background var(--transition);
+  }
+  .fed-db .tree-item.db-focus > summary {
+    background: rgba(78, 108, 242, 0.18);
+    color: var(--clr-accent);
+  }
 </style>
 
 <div class="fed-db">
-  <h2>Database:</h2>
+  <h2>Mock Database</h2>
+  <p class="intro">Loaded source data, used by the other pages on this site.</p>
   <div id="db-accordion"></div>
 </div>
 
@@ -102,6 +116,12 @@
    * documents collapse.
    */
   const VAL_CAP = 96;
+
+  /** Hash key another page sets to deep-link one record: `#db=<netexId>`. */
+  const HASH_KEY = 'db';
+
+  /** How long (ms) a deep-linked row stays highlighted after it opens. */
+  const FLASH_MS = 2000;
 
   const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
 
@@ -134,6 +154,7 @@
       const fields = Object.entries(item)
         .map(([k, v]) => `<span class="tf-key">${k}:</span> ${fmtVal(v)}`)
         .join('<br>');
+      node.dataset.id = item.id;
       node.innerHTML = `<summary>${sec.title(item)}<span class="db-count">${item.id}</span></summary>
         <div class="tree-fields">${fields}</div>`;
       tree.append(node);
@@ -142,4 +163,32 @@
     det.append(tree);
     accordion.append(det);
   }
+
+  /**
+   * Reveal one record: open its row and the section holding it, bring it into
+   * view and flash it.
+   *
+   * `closest` starts at the node itself, which is a `.tree-item`, so the
+   * `:not()` walks it up to the owning section rather than matching in place.
+   *
+   * @param {string} id NeTEx id of the record, unique across all three sections.
+   * @returns {boolean} `false` when no record carries that id.
+   */
+  const openItem = id => {
+    const node = accordion.querySelector(`.tree-item[data-id="${CSS.escape(id)}"]`);
+    if (!node) return false;
+    node.closest('details:not(.tree-item)').open = true;
+    node.open = true;
+    node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    node.classList.add('db-focus');
+    setTimeout(() => node.classList.remove('db-focus'), FLASH_MS);
+    return true;
+  };
+
+  // Deep link. `gotoDbItem` (index.html) sets the hash and re-swaps this
+  // partial, so reading it once at build time is the only entry point needed —
+  // every request arrives as a fresh script run. Typing the hash into the
+  // address bar works too, on whichever page currently hosts this partial.
+  const wanted = new URLSearchParams(location.hash.slice(1)).get(HASH_KEY);
+  if (wanted) openItem(wanted);
 </script>

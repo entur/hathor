@@ -90,6 +90,16 @@
     gap: 16px;
     flex-wrap: wrap;
   }
+  .deck-stage .db-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: var(--clr-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
   .deck-stage .stage-note {
     color: var(--clr-text-dim);
     font-size: 14px;
@@ -282,15 +292,18 @@
       hostEl.replaceChildren(el);
 
       const s = statsOf(deck);
-      metaEl.innerHTML = [
-        plan.id,
-        `${s.spots} spots`,
-        `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
-        `${s.entrances} entrances`,
-        `${deck.Length} × ${deck.Width} m`,
-      ]
-        .map(t => `<span>${t}</span>`)
-        .join('');
+      metaEl.innerHTML =
+        `<button type="button" class="db-link" title="Show this record in the Mock Database">${plan.id}</button>` +
+        [
+          `${s.spots} spots`,
+          `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
+          `${s.entrances} entrances`,
+          `${deck.Length} × ${deck.Width} m`,
+        ]
+          .map(t => `<span>${t}</span>`)
+          .join('');
+      // `gotoDbItem` is the shell's (index.html); this page only names a record.
+      metaEl.querySelector('.db-link').onclick = () => gotoDbItem(plan.id);
     };
 
     const row = (plan, enabled) => {
