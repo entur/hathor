@@ -1,6 +1,6 @@
 <style>
   .fed-db h2 {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     font-size: 18px;
   }
   .fed-db details {
@@ -54,6 +54,7 @@
     font-weight: 500;
     font-size: 13px;
     background: var(--clr-surface);
+    transition: background var(--transition);
   }
   .fed-db .tree-item summary::before {
     content: '\25B8';
@@ -79,13 +80,10 @@
     color: #005cc5;
   }
   .fed-db .intro {
-    margin: -6px 0 16px;
+    margin: 0 0 16px;
     color: var(--clr-text-dim);
     font-size: 14px;
     line-height: 1.6;
-  }
-  .fed-db .tree-item > summary {
-    transition: background var(--transition);
   }
   .fed-db .tree-item.db-focus > summary {
     background: rgba(78, 108, 242, 0.18);
@@ -108,23 +106,12 @@
     { key: 'deckPlans', label: 'Deck-Plans', title: v => v.name },
   ];
 
-  /**
-   * Head kept of an over-long string field. The `decks` NeTEx documents run to
-   * tens of thousands of characters, which would bury every other field in the
-   * tree; the length note keeps the payload visible without printing it. Sits
-   * clear of the longest prose field (a 64-char description) so only those
-   * documents collapse.
-   */
-  const VAL_CAP = 96;
-
-  /** Hash key another page sets to deep-link one record: `#db=<netexId>`. */
-  const HASH_KEY = 'db';
-
   /** How long (ms) a deep-linked row stays highlighted after it opens. */
   const FLASH_MS = 2000;
 
-  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-
+  // `esc`, `VAL_CAP` and `DB_HASH_KEY` come from the shell (index.html) — the
+  // detail pane in `fed-search-query.html` renders the same values and must cut
+  // them in the same place.
   const fmtStr = v =>
     v.length > VAL_CAP
       ? `<span class="tf-str">"${esc(v.slice(0, VAL_CAP))}\u2026"</span>` +
@@ -171,24 +158,25 @@
    * `closest` starts at the node itself, which is a `.tree-item`, so the
    * `:not()` walks it up to the owning section rather than matching in place.
    *
+   * A record the database does not hold is ignored — there is no page state to
+   * report it in, and the tree stands as its own answer.
+   *
    * @param {string} id NeTEx id of the record, unique across all three sections.
-   * @returns {boolean} `false` when no record carries that id.
    */
   const openItem = id => {
     const node = accordion.querySelector(`.tree-item[data-id="${CSS.escape(id)}"]`);
-    if (!node) return false;
+    if (!node) return;
     node.closest('details:not(.tree-item)').open = true;
     node.open = true;
     node.scrollIntoView({ block: 'center', behavior: 'smooth' });
     node.classList.add('db-focus');
     setTimeout(() => node.classList.remove('db-focus'), FLASH_MS);
-    return true;
   };
 
   // Deep link. `gotoDbItem` (index.html) sets the hash and re-swaps this
   // partial, so reading it once at build time is the only entry point needed —
   // every request arrives as a fresh script run. Typing the hash into the
   // address bar works too, on whichever page currently hosts this partial.
-  const wanted = new URLSearchParams(location.hash.slice(1)).get(HASH_KEY);
+  const wanted = new URLSearchParams(location.hash.slice(1)).get(DB_HASH_KEY);
   if (wanted) openItem(wanted);
 </script>

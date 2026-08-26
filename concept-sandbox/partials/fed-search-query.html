@@ -150,17 +150,11 @@
     margin: 0;
     overflow-wrap: anywhere;
   }
+  /* Base `.db-link` is the shell's; the heading only needs it to stop
+     inheriting `h2`'s weight and size. */
   .fed-detail .db-link {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
     font-weight: 400;
     font-size: 13px;
-    color: var(--clr-accent);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
   }
 </style>
 
@@ -197,13 +191,8 @@
 <script type="module">
   import { buildSchema, graphql as exec } from 'https://esm.sh/graphql@16.11.0';
 
-  /**
-   * Head kept of an over-long field value in the detail pane. Matches
-   * `fed-db.html`'s cap: a deckPlan's `decks` document is tens of thousands of
-   * characters, and this pane sits under the search box with no room for it.
-   */
-  const VAL_CAP = 96;
-
+  // `esc` and `VAL_CAP` come from the shell (index.html) — the database tree in
+  // `fed-db.html` renders the same values and must cut them in the same place.
   const data = await fetch('fed-search-mock.json').then(r => r.json());
 
   /* ── Enum registry for filter suggestions ────────── */
@@ -489,18 +478,18 @@
     renderDetail(gk, src);
   }
 
-  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-
   /**
    * Render one field value: escaped, and collapsed to a head plus a length note
-   * past {@link VAL_CAP}. Both matter for `decks`, which is a whole NeTEx
-   * document — unescaped it would be parsed as markup, unclipped it would bury
-   * the pane under 40 000 characters.
+   * past `VAL_CAP`. Both matter for `decks`, which is a whole NeTEx document —
+   * unescaped it would be parsed as markup, unclipped it would bury the pane
+   * under 40 000 characters.
    */
-  const fmtDetail = val =>
-    typeof val === 'string' && val.length > VAL_CAP
-      ? `${esc(val.slice(0, VAL_CAP))}… <span style="color:var(--clr-text-dim)">(${val.length.toLocaleString()} chars)</span>`
-      : esc(String(val));
+  const fmtDetail = val => {
+    const s = String(val);
+    return s.length > VAL_CAP
+      ? `${esc(s.slice(0, VAL_CAP))}… <span style="color:var(--clr-text-dim)">(${s.length.toLocaleString()} chars)</span>`
+      : esc(s);
+  };
 
   function renderDetail(group, v) {
     const pairs = Object.entries(v)

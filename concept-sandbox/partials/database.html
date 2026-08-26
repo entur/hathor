@@ -1,11 +1,3 @@
-<style>
-  .db-page {
-    margin: 0.5rem;
-    height: calc(100vh - var(--header-h) - 1rem);
-    overflow-y: auto;
-  }
-</style>
-
 <!--
   Standalone page for the mock database tree.
 
@@ -13,4 +5,9 @@
   the height budget. This wrapper is that host — and, since fed-search dropped
   its database pane, the only one.
 -->
-<div class="card db-page" hx-get="partials/fed-db.html" hx-trigger="load" hx-swap="innerHTML"></div>
+<div
+  class="card page-card"
+  hx-get="partials/fed-db.html"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+></div>
