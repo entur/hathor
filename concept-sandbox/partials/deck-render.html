@@ -1,0 +1,335 @@
+<style>
+  .deck-grid {
+    display: flex;
+    gap: 0.5rem;
+    height: calc(100vh - var(--header-h) - 1rem);
+  }
+  .deck-grid > .card {
+    margin: 0;
+    min-width: 0;
+    overflow-y: auto;
+    height: 100%;
+  }
+  .deck-grid > .deck-list {
+    flex: 0 0 280px;
+  }
+  .deck-grid > .deck-stage {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .deck-render h2 {
+    margin-bottom: 12px;
+    font-size: 18px;
+  }
+  .deck-list ul {
+    list-style: none;
+    padding: 0;
+  }
+  .deck-list li button {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--clr-text);
+    cursor: pointer;
+    transition: background var(--transition);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .deck-list li button:hover:not(:disabled) {
+    background: var(--clr-bg);
+  }
+  .deck-list li button.selected {
+    background: rgba(78, 108, 242, 0.1);
+    color: var(--clr-accent);
+    font-weight: 600;
+  }
+  .deck-list li button:disabled {
+    color: var(--clr-text-dim);
+    cursor: not-allowed;
+  }
+  .deck-list .dp-id {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--clr-text-dim);
+    font-weight: 400;
+  }
+  .deck-list .dp-sep {
+    margin: 10px 2px 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--clr-border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--clr-text-dim);
+  }
+  .deck-stage .stage-host {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: auto;
+  }
+  .deck-stage .stage-meta {
+    flex-shrink: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--clr-border);
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--clr-text-dim);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .deck-stage .stage-note {
+    color: var(--clr-text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .deck-stage .stage-note.error {
+    color: #b42318;
+  }
+</style>
+
+<div class="deck-render deck-grid">
+  <div class="card deck-list">
+    <h2>Deck-Plans</h2>
+    <ul id="deck-plan-list">
+      <li><span class="stage-note">Loading…</span></li>
+    </ul>
+  </div>
+  <div class="card deck-stage">
+    <h2 id="deck-title">Deck rendering</h2>
+    <div class="stage-host" id="deck-host">
+      <span class="stage-note" id="deck-note">Fetching the renderer…</span>
+    </div>
+    <div class="stage-meta" id="deck-meta"></div>
+  </div>
+</div>
+
+<script type="module">
+  /**
+   * Read-only deck rendering, backed by the deck-plan editor's `<deck-rendering>`
+   * custom element and fed from the same mock DB the federated search queries.
+   *
+   * The `decks` field on a deckPlan is that plan's whole NeTEx document as a
+   * string — the shape Sobek is expected to deliver. Plans without one are
+   * listed but inert; that is the common case on real data today.
+   */
+
+  /**
+   * Pinned build of the editor's web-component entry. Self-contained (Vue is
+   * bundled in) and it registers `<deck-rendering>` as an import side effect,
+   * guarded upstream by `customElements.get` — so a repeat htmx swap is free.
+   */
+  const EDITOR_URL =
+    'https://cdn.jsdelivr.net/npm/@opentrainticketing/netex-deckplan-editor@2.0.5/dist/netex-deckplan-editor.es.js';
+
+  /** Custom-element tag the bundle registers. */
+  const TAG = 'deck-rendering';
+
+  /** Stage padding (px) held back when fitting the drawing to the pane. */
+  const FIT_PAD = 48;
+
+  /** px-per-metre clamps: under MIN the seat labels collapse, over MAX the deck overflows. */
+  const MIN_SCALE = 10,
+    MAX_SCALE = 140;
+
+  /** Debounce (ms) before a resize refits the scale. */
+  const RESIZE_MS = 150;
+
+  const grid = document.querySelector('.deck-render');
+  const listEl = document.getElementById('deck-plan-list');
+  const hostEl = document.getElementById('deck-host');
+  const titleEl = document.getElementById('deck-title');
+  const metaEl = document.getElementById('deck-meta');
+
+  /**
+   * Stylesheet for the element's shadow root.
+   *
+   * The package ships its renderer styles to a `dist/*.css` its `exports` map
+   * does not expose, so nothing reaches the shadow root and seats would render
+   * solid black on black. The sandbox therefore owns the appearance, painted
+   * from its own `--clr-*` tokens. Selectors mirror what the renderer emits.
+   *
+   * @returns {CSSStyleSheet} A constructable sheet shared by every rendering.
+   */
+  const mkSheet = () => {
+    const v = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`
+      .vehicle-frame { background-color: ${v('--clr-bg')}; border-radius: 4px; }
+      .vehicle-deck  { fill: ${v('--clr-surface')}; stroke: ${v('--clr-border')}; stroke-width: 2px; rx: 5px; }
+      .seat .seat__base     { fill: rgba(78, 108, 242, 0.12); stroke: ${v('--clr-accent')}; stroke-width: 1px; rx: 5px; }
+      .seat .seat__backrest { fill: ${v('--clr-accent')}; }
+      .seat__text           { fill: ${v('--clr-text')}; stroke: none; pointer-events: none; }
+      .door                 { fill: ${v('--clr-text-dim')}; stroke: ${v('--clr-text-dim')}; stroke-width: 1px; }
+      /* Read-only: the element still emits \`select\`, but nothing consumes it. */
+      .seat, .door { cursor: default; }
+    `);
+    return sheet;
+  };
+
+  const note = (msg, isError) =>
+    (hostEl.innerHTML = `<span class="stage-note${isError ? ' error' : ''}">${msg}</span>`);
+
+  /** Flatten a deck's spaces into the counts worth showing under the drawing. */
+  const statsOf = deck => {
+    const spaces = deck.deckspaces ?? [];
+    const count = key => spaces.reduce((n, s) => n + (s[key]?.length ?? 0), 0);
+    return {
+      spaces: spaces.length,
+      spots: count('passengerSpots'),
+      entrances: count('deckEntrances'),
+    };
+  };
+
+  /**
+   * Scale and orientation that draw `deck` largest inside the stage.
+   *
+   * A deck is a long strip — 13 × 2 m here — so laying it across a portrait
+   * stage wastes most of the box and shrinks the seat labels past reading.
+   * Both orientations are measured and the roomier one wins; on this pane that
+   * is `vertical`, which lands near the 36 px/m hathor's own sidebar uses.
+   *
+   * @param {object} deck Deck from the renderer bundle's parser.
+   * @returns {{vertical: boolean, scale: number}} Props for the element.
+   */
+  const fit = deck => {
+    const { width, height } = deck.getBoundingBox();
+    const availW = hostEl.clientWidth - FIT_PAD,
+      availH = hostEl.clientHeight - FIT_PAD;
+    if (!width || !height || availW <= 0 || availH <= 0)
+      return { vertical: false, scale: MIN_SCALE };
+
+    const contain = (w, h) => Math.min(availW / w, availH / h);
+    const horiz = contain(width, height),
+      vert = contain(height, width);
+    const vertical = vert > horiz;
+    return {
+      vertical,
+      scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, vertical ? vert : horiz)),
+    };
+  };
+
+  /**
+   * Vue's dev/prod branches survive the library build as 213 bare
+   * `process.env.NODE_ENV` reads — bundler consumers substitute them, a page
+   * loading the raw ESM must not leave them undefined or the import throws
+   * `process is not defined` before the element is ever registered.
+   */
+  globalThis.process ??= { env: { NODE_ENV: 'production' } };
+
+  const [mod, db] = await Promise.all([
+    import(EDITOR_URL)
+      .then(m => customElements.whenDefined(TAG).then(() => m.default))
+      .catch(() => null),
+    fetch('fed-search-mock.json')
+      .then(r => r.json())
+      .catch(() => null),
+  ]);
+
+  if (!mod || !db) {
+    listEl.innerHTML = '';
+    note('Could not load the renderer bundle or the mock database.', true);
+  } else {
+    const sheet = mkSheet();
+    const plans = db.deckPlans ?? [];
+    const drawable = plans.filter(p => p.decks);
+    let current = null;
+
+    /**
+     * Draw one plan's first deck.
+     *
+     * The element is built detached and populated before insertion: Vue renders
+     * in `connectedCallback` and dereferences `deck.getBoundingBox()` on that
+     * first pass, so an element inserted before `deck` is assigned throws.
+     *
+     * The deck must come from *this* bundle's `parseNeTEx` — the renderer
+     * matches deck spaces with `instanceof`, so a deck parsed by any other copy
+     * of the models draws an empty outline.
+     *
+     * @param {object} plan Mock-DB deckPlan carrying a `decks` NeTEx string.
+     */
+    const draw = plan => {
+      current = plan;
+      titleEl.textContent = plan.name;
+      let deck;
+      try {
+        deck = mod.parseNeTEx(plan.decks)[0]?.decks[0];
+      } catch (e) {
+        metaEl.textContent = '';
+        return note(`Could not parse this plan: ${e.message}`, true);
+      }
+      if (!deck) {
+        metaEl.textContent = '';
+        return note('This document carries no decks.', true);
+      }
+
+      const el = document.createElement(TAG);
+      Object.assign(el, { deck, ...fit(deck) });
+      // Adopted before insertion so the drawing never flashes unstyled.
+      if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
+      hostEl.replaceChildren(el);
+
+      const s = statsOf(deck);
+      metaEl.innerHTML = [
+        plan.id,
+        `${s.spots} spots`,
+        `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
+        `${s.entrances} entrances`,
+        `${deck.Length} × ${deck.Width} m`,
+      ]
+        .map(t => `<span>${t}</span>`)
+        .join('');
+    };
+
+    const row = (plan, enabled) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.disabled = !enabled;
+      btn.innerHTML = `<span>${enabled ? '' : '⊘ '}${plan.name}</span><span class="dp-id">${plan.id}</span>`;
+      btn.title = enabled ? plan.description : `${plan.description} — no decks in this plan`;
+      if (enabled)
+        btn.onclick = () => {
+          listEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          draw(plan);
+        };
+      li.append(btn);
+      return li;
+    };
+
+    listEl.innerHTML = '';
+    drawable.forEach(p => listEl.append(row(p, true)));
+    if (drawable.length < plans.length) {
+      const sep = document.createElement('li');
+      sep.className = 'dp-sep';
+      sep.textContent = 'No decks stored';
+      listEl.append(sep);
+      plans.filter(p => !p.decks).forEach(p => listEl.append(row(p, false)));
+    }
+
+    if (drawable.length) listEl.querySelector('button').click();
+    else note('No deck plan in the database carries a decks document.', true);
+
+    // Refit on resize. Self-removing: the partial is swapped out by htmx, which
+    // gives no unmount hook, so the handler drops itself once its DOM is gone.
+    let timer;
+    const onResize = () => {
+      if (!document.body.contains(grid)) return window.removeEventListener('resize', onResize);
+      clearTimeout(timer);
+      timer = setTimeout(() => current && draw(current), RESIZE_MS);
+    };
+    window.addEventListener('resize', onResize);
+  }
+</script>

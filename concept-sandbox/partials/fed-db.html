@@ -94,12 +94,29 @@
     { key: 'deckPlans', label: 'Deck-Plans', title: v => v.name },
   ];
 
+  /**
+   * Head kept of an over-long string field. The `decks` NeTEx documents run to
+   * tens of thousands of characters, which would bury every other field in the
+   * tree; the length note keeps the payload visible without printing it. Sits
+   * clear of the longest prose field (a 64-char description) so only those
+   * documents collapse.
+   */
+  const VAL_CAP = 96;
+
+  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+
+  const fmtStr = v =>
+    v.length > VAL_CAP
+      ? `<span class="tf-str">"${esc(v.slice(0, VAL_CAP))}\u2026"</span>` +
+        ` <span class="tf-key">(${v.length.toLocaleString()} chars)</span>`
+      : `<span class="tf-str">"${esc(v)}"</span>`;
+
   const fmtVal = v =>
     typeof v === 'string'
-      ? `<span class="tf-str">"${v}"</span>`
+      ? fmtStr(v)
       : typeof v === 'number'
         ? `<span class="tf-num">${v}</span>`
-        : String(v);
+        : `<span class="tf-key">${v}</span>`;
 
   const accordion = document.getElementById('db-accordion');
 
