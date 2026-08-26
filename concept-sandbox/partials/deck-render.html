@@ -283,7 +283,7 @@
 
       const s = statsOf(deck);
       metaEl.innerHTML =
-        `<button type="button" class="db-link" title="Show this record in the Mock Database">${plan.id}</button>` +
+        `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
         [
           `${s.spots} spots`,
           `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
@@ -300,7 +300,7 @@
       const li = document.createElement('li');
       const btn = document.createElement('button');
       btn.disabled = !enabled;
-      btn.innerHTML = `<span>${enabled ? '' : '⊘ '}${plan.name}</span><span class="dp-id">${plan.id}</span>`;
+      btn.innerHTML = `<span>${enabled ? '' : '⊘ '}${esc(plan.name)}</span><span class="dp-id">${esc(plan.id)}</span>`;
       btn.title = enabled ? plan.description : `${plan.description} — no decks in this plan`;
       if (enabled)
         btn.onclick = () => {

@@ -311,7 +311,7 @@
       vars: '$q:String!,$tm:String',
       src: `{ vehicleTypes(q:$q, transportMode:$tm) { id name shortName transportMode length width height vehicleCount } }`,
       fmt: v =>
-        `<span class="fed-item-name">${v.name}</span><span class="fed-badge">${v.transportMode}</span><span class="fed-item-meta">${v.length}x${v.width}x${v.height}m &middot; ${v.vehicleCount} vehicles</span>`,
+        `<span class="fed-item-name">${esc(v.name)}</span><span class="fed-badge">${esc(v.transportMode)}</span><span class="fed-item-meta">${esc(v.length)}x${esc(v.width)}x${esc(v.height)}m &middot; ${esc(v.vehicleCount)} vehicles</span>`,
     },
     {
       key: 'vehicles',
@@ -319,7 +319,7 @@
       vars: '$q:String!,$tm:String',
       src: `{ vehicles(q:$q, transportMode:$tm) { id registrationNumber version operationalNumber vehicleTypeName } }`,
       fmt: v =>
-        `<span class="fed-item-name">${v.registrationNumber}</span><span class="fed-item-meta">#${v.operationalNumber} &middot; ${v.vehicleTypeName}</span>`,
+        `<span class="fed-item-name">${esc(v.registrationNumber)}</span><span class="fed-item-meta">#${esc(v.operationalNumber)} &middot; ${esc(v.vehicleTypeName)}</span>`,
     },
     {
       key: 'deckPlans',
@@ -327,7 +327,7 @@
       vars: '$q:String!,$tm:String',
       src: `{ deckPlans(q:$q, transportMode:$tm) { id name description deckCount } }`,
       fmt: v =>
-        `<span class="fed-item-name">${v.name}</span><span class="fed-item-meta">${v.deckCount} deck${v.deckCount > 1 ? 's' : ''} &middot; ${v.description}</span>`,
+        `<span class="fed-item-name">${esc(v.name)}</span><span class="fed-item-meta">${esc(v.deckCount)} deck${v.deckCount > 1 ? 's' : ''} &middot; ${esc(v.description)}</span>`,
     },
   ];
 
@@ -362,7 +362,7 @@
         body.innerHTML = suggestions
           .map(
             s =>
-              `<div class="fed-filter-suggestion fed-result-item" role="option" data-filter-field="${s.field}" data-filter-value="${s.value}" data-matched="${s.matchedToken}"><span class="fed-item-name">${s.field}:${s.value}</span></div>`
+              `<div class="fed-filter-suggestion fed-result-item" role="option" data-filter-field="${esc(s.field)}" data-filter-value="${esc(s.value)}" data-matched="${esc(s.matchedToken)}"><span class="fed-item-name">${esc(s.field)}:${esc(s.value)}</span></div>`
           )
           .join('');
         listbox.append(hdr, body);
@@ -393,7 +393,7 @@
             ? items
                 .map(
                   v =>
-                    `<div class="fed-result-item" role="option" data-group="${g.key}" data-id="${v.id}">${g.fmt(v)}</div>`
+                    `<div class="fed-result-item" role="option" data-group="${esc(g.key)}" data-id="${esc(v.id)}">${g.fmt(v)}</div>`
                 )
                 .join('')
             : `<div class="fed-empty">No ${g.label.toLowerCase()} found</div>`;
@@ -494,14 +494,14 @@
   function renderDetail(group, v) {
     const pairs = Object.entries(v)
       .filter(([k]) => k !== 'id')
-      .map(([k, val]) => `<dt>${k}</dt><dd>${fmtDetail(val)}</dd>`)
+      .map(([k, val]) => `<dt>${esc(k)}</dt><dd>${fmtDetail(val)}</dd>`)
       .join('');
     detail.innerHTML = `<div class="fed-detail" style="margin-top:16px;">
       <h2 style="margin-bottom:12px; display:flex; align-items:baseline; gap:12px">
         ${esc(v.name ?? v.registrationNumber ?? v.id)}
         <button type="button" class="db-link">Show in DB</button>
       </h2>
-      <p style="margin-bottom:12px; color:var(--clr-text-dim); font-size:13px">${group} &middot; ${v.id}</p>
+      <p style="margin-bottom:12px; color:var(--clr-text-dim); font-size:13px">${esc(group)} &middot; ${esc(v.id)}</p>
       <dl>${pairs}</dl></div>`;
     // `gotoDbItem` is the shell's (index.html); this page only names a record.
     detail.querySelector('.db-link').onclick = () => gotoDbItem(v.id);

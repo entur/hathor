@@ -123,7 +123,7 @@
       ? fmtStr(v)
       : typeof v === 'number'
         ? `<span class="tf-num">${v}</span>`
-        : `<span class="tf-key">${v}</span>`;
+        : `<span class="tf-key">${esc(v)}</span>`;
 
   const accordion = document.getElementById('db-accordion');
 
@@ -139,10 +139,10 @@
       const node = document.createElement('details');
       node.className = 'tree-item';
       const fields = Object.entries(item)
-        .map(([k, v]) => `<span class="tf-key">${k}:</span> ${fmtVal(v)}`)
+        .map(([k, v]) => `<span class="tf-key">${esc(k)}:</span> ${fmtVal(v)}`)
         .join('<br>');
       node.dataset.id = item.id;
-      node.innerHTML = `<summary>${sec.title(item)}<span class="db-count">${item.id}</span></summary>
+      node.innerHTML = `<summary>${esc(sec.title(item))}<span class="db-count">${esc(item.id)}</span></summary>
         <div class="tree-fields">${fields}</div>`;
       tree.append(node);
     }
