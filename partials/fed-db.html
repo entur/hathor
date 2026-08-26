@@ -1,6 +1,6 @@
 <style>
   .fed-db h2 {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
     font-size: 18px;
   }
   .fed-db details {
@@ -54,6 +54,7 @@
     font-weight: 500;
     font-size: 13px;
     background: var(--clr-surface);
+    transition: background var(--transition);
   }
   .fed-db .tree-item summary::before {
     content: '\25B8';
@@ -78,10 +79,21 @@
   .fed-db .tf-num {
     color: #005cc5;
   }
+  .fed-db .intro {
+    margin: 0 0 16px;
+    color: var(--clr-text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .fed-db .tree-item.db-focus > summary {
+    background: rgba(78, 108, 242, 0.18);
+    color: var(--clr-accent);
+  }
 </style>
 
 <div class="fed-db">
-  <h2>Database:</h2>
+  <h2>Mock Database</h2>
+  <p class="intro">Loaded source data, used by the other pages on this site.</p>
   <div id="db-accordion"></div>
 </div>
 
@@ -94,17 +106,12 @@
     { key: 'deckPlans', label: 'Deck-Plans', title: v => v.name },
   ];
 
-  /**
-   * Head kept of an over-long string field. The `decks` NeTEx documents run to
-   * tens of thousands of characters, which would bury every other field in the
-   * tree; the length note keeps the payload visible without printing it. Sits
-   * clear of the longest prose field (a 64-char description) so only those
-   * documents collapse.
-   */
-  const VAL_CAP = 96;
+  /** How long (ms) a deep-linked row stays highlighted after it opens. */
+  const FLASH_MS = 2000;
 
-  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-
+  // `esc`, `VAL_CAP` and `DB_HASH_KEY` come from the shell (index.html) — the
+  // detail pane in `fed-search-query.html` renders the same values and must cut
+  // them in the same place.
   const fmtStr = v =>
     v.length > VAL_CAP
       ? `<span class="tf-str">"${esc(v.slice(0, VAL_CAP))}\u2026"</span>` +
@@ -116,7 +123,7 @@
       ? fmtStr(v)
       : typeof v === 'number'
         ? `<span class="tf-num">${v}</span>`
-        : `<span class="tf-key">${v}</span>`;
+        : `<span class="tf-key">${esc(v)}</span>`;
 
   const accordion = document.getElementById('db-accordion');
 
@@ -132,9 +139,10 @@
       const node = document.createElement('details');
       node.className = 'tree-item';
       const fields = Object.entries(item)
-        .map(([k, v]) => `<span class="tf-key">${k}:</span> ${fmtVal(v)}`)
+        .map(([k, v]) => `<span class="tf-key">${esc(k)}:</span> ${fmtVal(v)}`)
         .join('<br>');
-      node.innerHTML = `<summary>${sec.title(item)}<span class="db-count">${item.id}</span></summary>
+      node.dataset.id = item.id;
+      node.innerHTML = `<summary>${esc(sec.title(item))}<span class="db-count">${esc(item.id)}</span></summary>
         <div class="tree-fields">${fields}</div>`;
       tree.append(node);
     }
@@ -142,4 +150,33 @@
     det.append(tree);
     accordion.append(det);
   }
+
+  /**
+   * Reveal one record: open its row and the section holding it, bring it into
+   * view and flash it.
+   *
+   * `closest` starts at the node itself, which is a `.tree-item`, so the
+   * `:not()` walks it up to the owning section rather than matching in place.
+   *
+   * A record the database does not hold is ignored — there is no page state to
+   * report it in, and the tree stands as its own answer.
+   *
+   * @param {string} id NeTEx id of the record, unique across all three sections.
+   */
+  const openItem = id => {
+    const node = accordion.querySelector(`.tree-item[data-id="${CSS.escape(id)}"]`);
+    if (!node) return;
+    node.closest('details:not(.tree-item)').open = true;
+    node.open = true;
+    node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    node.classList.add('db-focus');
+    setTimeout(() => node.classList.remove('db-focus'), FLASH_MS);
+  };
+
+  // Deep link. `gotoDbItem` (index.html) sets the hash and re-swaps this
+  // partial, so reading it once at build time is the only entry point needed —
+  // every request arrives as a fresh script run. Typing the hash into the
+  // address bar works too, on whichever page currently hosts this partial.
+  const wanted = new URLSearchParams(location.hash.slice(1)).get(DB_HASH_KEY);
+  if (wanted) openItem(wanted);
 </script>

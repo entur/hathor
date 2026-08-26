@@ -1,0 +1,13 @@
+<!--
+  Standalone page for the mock database tree.
+
+  `fed-db.html` renders only `.fed-db` and relies on its host for the card and
+  the height budget. This wrapper is that host — and, since fed-search dropped
+  its database pane, the only one.
+-->
+<div
+  class="card page-card"
+  hx-get="partials/fed-db.html"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+></div>
