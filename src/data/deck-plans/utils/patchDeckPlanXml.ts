@@ -1,12 +1,40 @@
 import { XMLBuilder } from 'fast-xml-parser';
-import { findResourceFrame, toArray, xmlParser } from '../../netex/xmlUtils.ts';
+import { findResourceFrame, toArray, verbatimXmlParser } from '../../netex/xmlUtils.ts';
+import type { ParsedXml } from '../../netex/xmlUtils.ts';
 import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 /** Builder options mirroring the import POST's own serialization. */
 const BUILD_OPTS = { ignoreAttributes: false, format: true, suppressEmptyNode: true };
 
+/**
+ * DataManagedObject header elements of a `DeckPlan`, in the NeTEx
+ * `xsd:sequence` order Sobek emits them. Everything else a document carries
+ * (`decks`, `deckLevels`, …) follows, keeping its own relative order.
+ */
+const HEADER_KEYS = ['ValidBetween', 'keyList', 'Name', 'ShortName', 'Description'];
+
 /** Parsed `<Name>`/`<Description>` node: a `<Text>` child plus optional `lang`. */
 type TextNode = { Text: string; '@_lang'?: string };
+
+/**
+ * Re-key a DeckPlan in place so its elements sit in NeTEx sequence order.
+ *
+ * `XMLBuilder` emits keys in insertion order, so assigning `Name` onto a
+ * document that never had one appends it last — after `<decks/>`, out of the
+ * `xsd:sequence` JAXB unmarshals against. Rewriting the key order fixes that
+ * without disturbing the node's identity (callers hold the reference).
+ */
+function reorderInPlace(dp: ParsedXml): void {
+  const keys = Object.keys(dp);
+  const ordered = [
+    ...keys.filter(k => k.startsWith('@_')),
+    ...HEADER_KEYS.filter(k => k in dp),
+    ...keys.filter(k => !k.startsWith('@_') && !HEADER_KEYS.includes(k)),
+  ];
+  const snapshot = ordered.map(k => [k, dp[k]] as const);
+  for (const k of keys) delete dp[k];
+  for (const [k, v] of snapshot) dp[k] = v;
+}
 
 /** Domain Name → NeTEx text node, or `undefined` when blank after trimming. */
 const textNode = (n?: Name): TextNode | undefined => {
@@ -21,8 +49,11 @@ const textNode = (n?: Name): TextNode | undefined => {
  * write path that preserves content `DeckPlanInput` cannot carry (deck geometry,
  * `ValidBetween`, frame envelope).
  *
- * Every other element, attribute and value survives, but the original bytes do
- * not: the parse/build round-trip normalizes whitespace and indentation.
+ * Every other element, attribute and value survives verbatim — the parser is
+ * {@link verbatimXmlParser} precisely so zero-padded seat labels and
+ * trailing-zero dimensions are not coerced to numbers. The original bytes do
+ * not survive: the parse/build round-trip normalizes whitespace and
+ * indentation, and re-keys the patched `DeckPlan` into NeTEx sequence order.
  *
  * `keyList` is dropped before rebuilding: Sobek merges an incoming keyList into
  * the stored one by appending, so echoing it back doubles the `imported-id`
@@ -38,7 +69,7 @@ const textNode = (n?: Name): TextNode | undefined => {
  *   no-op POST would report success while persisting nothing.
  */
 export function patchDeckPlanXml(xml: string, id: string, name?: Name, description?: Name): string {
-  const parsed = xmlParser.parse(xml);
+  const parsed = verbatimXmlParser.parse(xml);
   const frame = findResourceFrame(parsed);
   const dp = toArray(frame?.deckPlans?.DeckPlan).find(n => n['@_id'] === id);
   if (!dp) throw new Error(`DeckPlan ${id} not found in document`);
@@ -51,6 +82,7 @@ export function patchDeckPlanXml(xml: string, id: string, name?: Name, descripti
   else delete dp.Name;
   if (descNode) dp.Description = descNode;
   else delete dp.Description;
+  reorderInPlace(dp);
 
   return new XMLBuilder(BUILD_OPTS).build(parsed);
 }

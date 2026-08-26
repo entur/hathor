@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
+  Divider,
   Stack,
   Tab,
   Tabs,
   TextareaAutosize,
   TextField,
+  Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import { useDeckRenderer } from '../hooks/useDeckRenderer.ts';
+import DeckRendering from './DeckRendering.tsx';
 
 /** Editor tabs — Edit (the editable fields) first, then the NeTEx source. */
 type TabKey = 'edit' | 'xml';
@@ -59,9 +63,9 @@ interface DeckPlanFormProps {
   isCreate: boolean;
   /** NeTEx XML body, read-only. */
   xml: string;
-  /** Body fetch in flight; renders a spinner in the XML tab. */
+  /** Body fetch in flight; renders a spinner in both tabs' body panes. */
   loading: boolean;
-  /** Body fetch error; renders an alert + retry in the XML tab. */
+  /** Body fetch error; renders an alert + retry in both tabs' body panes. */
   fetchError: string | null;
   /** Refetch trigger from the parent hook. */
   onRetry: () => void;
@@ -70,9 +74,12 @@ interface DeckPlanFormProps {
 /**
  * Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by
  * `value`/`onChange`/`mode`, mirroring the VehicleType editor's shape. Tabs:
- * Edit (name + description) · XML (the read-only NeTEx source, with its
- * loading and fetch-error states). The XML body is never editable — name and
- * description are patched into the fetched document on save instead.
+ * Edit (name + description, then a horizontal strip of read-only deck
+ * renderings) · XML (the read-only NeTEx source). Both panes render from the
+ * same fetched body and so share its loading and fetch-error states.
+ *
+ * The XML body is never editable — name and description are patched into the
+ * fetched document on save instead.
  *
  * Holds no fetch/save logic; chrome (title, EditorRail, snackbars, dirty
  * tracking) lives in `DeckPlanDetails`.
@@ -92,7 +99,7 @@ export default function DeckPlanForm({
   const ro = mode === 'view';
   const setField = (patch: Partial<DeckPlan>) => onChange({ ...value, ...patch });
 
-  const editPanel = (
+  const fields = (
     <FormLayout data-testid="deck-plan-tab-edit">
       <FieldRow id="deckPlan-name" label={t('deckPlans.field.name', 'Name')}>
         <TextField
@@ -119,8 +126,9 @@ export default function DeckPlanForm({
     </FormLayout>
   );
 
-  // Create has no persisted body to show — render the fields bare, no tab strip.
-  if (isCreate) return <Box>{editPanel}</Box>;
+  // Create has no persisted body to show — render the fields bare, no tab strip
+  // and no renderings.
+  if (isCreate) return <Box>{fields}</Box>;
 
   return (
     <Box>
@@ -129,35 +137,72 @@ export default function DeckPlanForm({
         <Tab value="xml" label={t('deckPlans.tab.xml', 'XML')} />
       </Tabs>
 
-      {tab === 'edit' && editPanel}
+      {tab === 'edit' && (
+        <Box>
+          {fields}
+          <Divider sx={{ my: 1.5 }} />
+          {/* Scoped to the strip so a slow body fetch never blocks typing. */}
+          <BodyState
+            loading={loading}
+            fetchError={fetchError}
+            onRetry={onRetry}
+            testIdPrefix="deck-plan-decks"
+          >
+            {/* `value.id` is the persisted NeTEx id — same one the save
+                patches by, so the drawn plan and the patched plan match. */}
+            <DeckStrip xml={xml} id={value.id || undefined} />
+          </BodyState>
+        </Box>
+      )}
       {tab === 'xml' && (
         <Box data-testid="deck-plan-tab-xml">
-          <XmlBody xml={xml} loading={loading} fetchError={fetchError} onRetry={onRetry} />
+          <BodyState
+            loading={loading}
+            fetchError={fetchError}
+            onRetry={onRetry}
+            testIdPrefix="deck-plan-xml"
+          >
+            <TextareaAutosize
+              aria-label="deck plan data"
+              data-testid="deck-plan-xml-textarea"
+              readOnly
+              value={xml}
+              minRows={10}
+              style={TEXTAREA_STYLE}
+            />
+          </BodyState>
         </Box>
       )}
     </Box>
   );
 }
 
-/** Read-only NeTEx source pane with its loading and fetch-error states. */
-function XmlBody({
-  xml,
+/**
+ * Loading / fetch-error chrome around whatever renders the fetched NeTEx body.
+ * Both tabs read the same fetch, so both share these states.
+ */
+function BodyState({
   loading,
   fetchError,
   onRetry,
-}: Pick<DeckPlanFormProps, 'xml' | 'loading' | 'fetchError' | 'onRetry'>) {
+  testIdPrefix,
+  children,
+}: Pick<DeckPlanFormProps, 'loading' | 'fetchError' | 'onRetry'> & {
+  testIdPrefix: string;
+  children: ReactNode;
+}) {
   const { t } = useTranslation();
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress data-testid="deck-plan-xml-loading" />
+        <CircularProgress data-testid={`${testIdPrefix}-loading`} />
       </Box>
     );
   }
   if (fetchError) {
     return (
       <Stack spacing={1}>
-        <Alert severity="error" data-testid="deck-plan-xml-fetch-error">
+        <Alert severity="error" data-testid={`${testIdPrefix}-fetch-error`}>
           {fetchError}
         </Alert>
         <Box>
@@ -168,14 +213,68 @@ function XmlBody({
       </Stack>
     );
   }
+  return children;
+}
+
+/**
+ * Horizontal strip of read-only deck renderings for the fetched body.
+ *
+ * Decks draw `vertical`: at ~26.4m × 2.8m, native orientation overflows the
+ * sidebar for even one deck, where rotated columns sit side by side and read
+ * as a vehicle seen from above. A plan with no decks shows the SAMPLE ghost.
+ *
+ * `id` picks the plan out of a multi-plan envelope — the same id the save
+ * patches by. Undefined (the form has not hydrated yet) falls back to the
+ * first plan rather than throwing on a blank id.
+ */
+function DeckStrip({ xml, id }: { xml: string; id?: string }) {
+  const { t } = useTranslation();
+  const { decks, isGhost, loading, error } = useDeckRenderer(xml, id);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress data-testid="deck-plan-decks-rendering" />
+      </Box>
+    );
+  }
+  if (error) {
+    return (
+      <Alert severity="error" data-testid="deck-plan-decks-error">
+        {t('deckPlans.render.error', 'Could not render the deck plan')}: {error}
+      </Alert>
+    );
+  }
+  if (decks.length === 0) return null;
+
   return (
-    <TextareaAutosize
-      aria-label="deck plan data"
-      data-testid="deck-plan-xml-textarea"
-      readOnly
-      value={xml}
-      minRows={10}
-      style={TEXTAREA_STYLE}
-    />
+    <Stack spacing={1} data-testid="deck-plan-decks">
+      {isGhost && (
+        <Box data-testid="deck-plan-decks-sample">
+          <Typography variant="subtitle2">{t('deckPlans.deck.sample', 'SAMPLE')}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {t(
+              'deckPlans.deck.sampleHint',
+              'This plan has no decks yet — showing a sample layout.'
+            )}
+          </Typography>
+        </Box>
+      )}
+      <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1 }}>
+        {decks.map((deck, i) => (
+          <Stack
+            key={deck.attr_id || i}
+            spacing={0.5}
+            alignItems="center"
+            sx={{ flex: '0 0 auto' }}
+          >
+            <DeckRendering deck={deck} vertical data-testid={`deck-plan-deck-${i}`} />
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {deck.Name || t('deckPlans.deck.label', 'Deck {{n}}', { n: i + 1 })}
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
+    </Stack>
   );
 }
