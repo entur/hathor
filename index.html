@@ -363,6 +363,16 @@
           </li>
           <li>
             <button
+              hx-get="partials/deck-render.html"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              onclick="selectNav(this)"
+            >
+              <span class="icon">&#9635;</span> Deck Render
+            </button>
+          </li>
+          <li>
+            <button
               hx-get="partials/layouts/index.html"
               hx-target="#main-content"
               hx-swap="innerHTML"

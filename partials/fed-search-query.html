@@ -240,7 +240,8 @@
     }
     type VehicleType { id: ID!, name: String!, shortName: String, transportMode: String, length: Float, width: Float, height: Float, vehicleCount: Int }
     type Vehicle { id: ID!, registrationNumber: String!, version: Int, operationalNumber: String, vehicleTypeName: String }
-    type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int }
+    "decks is the plan's whole NeTEx document — tens of KB, so no list view selects it."
+    type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int, decks: String }
   `);
 
   const vtByName = Object.fromEntries(data.vehicleTypes.map(v => [v.name, v]));
