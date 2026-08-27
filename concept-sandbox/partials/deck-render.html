@@ -164,9 +164,10 @@
    * Read-only deck rendering, backed by the deck-plan editor's `<deck-rendering>`
    * custom element and fed from the same mock DB the federated search queries.
    *
-   * The `decks` field on a deckPlan is that plan's whole NeTEx document as a
-   * string — the shape Sobek is expected to deliver. Plans without one are
-   * listed but inert; that is the common case on real data today.
+   * The mock DB holds no deck markup: a deckPlan's `decksRef` names a NeTEx
+   * fragment file rooted at `<decks>`, fetched here the first time that plan is
+   * drawn. Plans without a ref are listed but inert; that is the common case on
+   * real data today.
    */
 
   /**
@@ -189,6 +190,9 @@
 
   /** Debounce (ms) before a resize refits the scale. */
   const RESIZE_MS = 150;
+
+  /** XML declaration a fragment file opens with, dropped before it is wrapped. */
+  const DECL_RE = /^\s*<\?xml[^>]*\?>\s*/;
 
   const grid = document.querySelector('.deck-render');
   const listEl = document.getElementById('deck-plan-list');
@@ -224,6 +228,9 @@
 
   const note = (msg, isError) =>
     (hostEl.innerHTML = `<span class="stage-note${isError ? ' error' : ''}">${msg}</span>`);
+
+  /** Same, for a step still in flight — a fragment on its way over the wire. */
+  const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${msg}</span>`);
 
   /** Flatten a deck's spaces into the counts worth showing under the drawing. */
   const statsOf = deck => {
@@ -276,7 +283,7 @@
     import(EDITOR_URL)
       .then(m => customElements.whenDefined(TAG).then(() => m.default))
       .catch(() => null),
-    fetch('fed-search-mock.json')
+    fetch('mock-db-stem.json')
       .then(r => r.json())
       .catch(() => null),
   ]);
@@ -287,8 +294,55 @@
   } else {
     const sheet = mkSheet();
     const plans = db.deckPlans ?? [];
-    const drawable = plans.filter(p => p.decks);
+    const drawable = plans.filter(p => p[DECKS_REF_KEY]);
     let current = null;
+
+    /**
+     * Put a `<decks>` fragment back inside the document its parser expects.
+     *
+     * `parseNeTEx` reaches straight down a fixed
+     * `PublicationDelivery > … > ResourceFrame > deckPlans > DeckPlan` path, so
+     * a bare fragment yields nothing. Only the frame around the decks is
+     * rebuilt — the renderer reads no field outside `<Deck>`.
+     *
+     * @param {string} frag Contents of a fragment file, declaration included.
+     * @returns {string} A document `parseNeTEx` accepts.
+     */
+    const wrapFrag = frag =>
+      '<PublicationDelivery><dataObjects><CompositeFrame><frames><ResourceFrame><deckPlans>' +
+      `<DeckPlan>${frag.replace(DECL_RE, '')}</DeckPlan>` +
+      '</deckPlans></ResourceFrame></frames></CompositeFrame></dataObjects></PublicationDelivery>';
+
+    /**
+     * Decks already fetched and parsed, keyed by plan id.
+     *
+     * A refit on resize and a return to an earlier plan both redraw, and
+     * neither should go back over the network or re-parse tens of KB. A failed
+     * load stays out of the map, so selecting the plan again retries it.
+     */
+    const cache = new Map();
+
+    /**
+     * First deck of a plan, fetched and parsed on first use.
+     *
+     * The deck must come from *this* bundle's `parseNeTEx` — the renderer
+     * matches deck spaces with `instanceof`, so a deck parsed by any other copy
+     * of the models draws an empty outline.
+     *
+     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
+     * @returns {Promise<object|undefined>} The deck, or undefined if the
+     *   fragment holds none.
+     * @throws {Error} If the fragment cannot be fetched or parsed.
+     */
+    const deckOf = async plan => {
+      const ref = plan[DECKS_REF_KEY];
+      if (!cache.has(plan.id)) {
+        const res = await fetch(ref);
+        if (!res.ok) throw new Error(`${res.status} on ${ref}`);
+        cache.set(plan.id, mod.parseNeTEx(wrapFrag(await res.text()))[0]?.decks[0]);
+      }
+      return cache.get(plan.id);
+    };
 
     /**
      * Draw one plan's first deck.
@@ -297,25 +351,33 @@
      * in `connectedCallback` and dereferences `deck.getBoundingBox()` on that
      * first pass, so an element inserted before `deck` is assigned throws.
      *
-     * The deck must come from *this* bundle's `parseNeTEx` — the renderer
-     * matches deck spaces with `instanceof`, so a deck parsed by any other copy
-     * of the models draws an empty outline.
+     * Awaiting the fragment lets a second selection start before this one
+     * lands, so every step past the await checks that `current` is still this
+     * plan and drops out if the reader has moved on.
      *
-     * @param {object} plan Mock-DB deckPlan carrying a `decks` NeTEx string.
+     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
      */
-    const draw = plan => {
+    const draw = async plan => {
       current = plan;
       titleEl.textContent = plan.name;
+      // Only on a first draw: a cached plan resolves within the same task and
+      // would show the spinner for a single frame.
+      if (!cache.has(plan.id)) {
+        metaEl.textContent = '';
+        waiting('Fetching the decks fragment…');
+      }
       let deck;
       try {
-        deck = mod.parseNeTEx(plan.decks)[0]?.decks[0];
+        deck = await deckOf(plan);
       } catch (e) {
+        if (current !== plan) return;
         metaEl.textContent = '';
-        return note(`Could not parse this plan: ${e.message}`, true);
+        return note(`Could not load this plan: ${e.message}`, true);
       }
+      if (current !== plan) return;
       if (!deck) {
         metaEl.textContent = '';
-        return note('This document carries no decks.', true);
+        return note('This fragment carries no decks.', true);
       }
 
       const el = document.createElement(TAG);
@@ -327,6 +389,7 @@
       const s = statsOf(deck);
       metaEl.innerHTML =
         `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
+        refLink(plan[DECKS_REF_KEY]) +
         [
           `${s.spots} spots`,
           `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
@@ -336,7 +399,7 @@
           .map(t => `<span>${t}</span>`)
           .join('');
       // `gotoDbItem` is the shell's (index.html); this page only names a record.
-      metaEl.querySelector('.db-link').onclick = () => gotoDbItem(plan.id);
+      metaEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
     };
 
     const row = (plan, enabled) => {
@@ -344,7 +407,9 @@
       const btn = document.createElement('button');
       btn.disabled = !enabled;
       btn.innerHTML = `<span>${enabled ? '' : '⊘ '}${esc(plan.name)}</span><span class="dp-id">${esc(plan.id)}</span>`;
-      btn.title = enabled ? plan.description : `${plan.description} — no decks in this plan`;
+      btn.title = enabled
+        ? plan.description
+        : `${plan.description} — no decks stored for this plan`;
       if (enabled)
         btn.onclick = () => {
           listEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
@@ -362,11 +427,11 @@
       sep.className = 'dp-sep';
       sep.textContent = 'No decks stored';
       listEl.append(sep);
-      plans.filter(p => !p.decks).forEach(p => listEl.append(row(p, false)));
+      plans.filter(p => !p[DECKS_REF_KEY]).forEach(p => listEl.append(row(p, false)));
     }
 
     if (drawable.length) listEl.querySelector('button').click();
-    else note('No deck plan in the database carries a decks document.', true);
+    else note('No deck plan in the database names a decks fragment.', true);
 
     // Refit on resize. Self-removing: the partial is swapped out by htmx, which
     // gives no unmount hook, so the handler drops itself once its DOM is gone.

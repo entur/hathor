@@ -477,9 +477,9 @@
        *
        * Lives on the shell because partials cannot import each other without a
        * build step, and more than one of them renders mock-database values.
-       * Everything drawn from the mock goes through this: not only field values
-       * (`decks` is a whole NeTEx document) but record names, ids and keys,
-       * which are equally free text as far as the markup is concerned.
+       * Everything drawn from the mock goes through this: field values, record
+       * names, ids and keys are all equally free text as far as the markup is
+       * concerned.
        *
        * @param {unknown} v Value to render as text.
        * @returns {string} `v` stringified, safe to interpolate into HTML.
@@ -489,12 +489,25 @@
       }
 
       /**
-       * Head kept of an over-long field value before it collapses to a length
-       * note. Sits clear of the longest prose field in the mock database (a
-       * 64-char description) so only the NeTEx documents collapse. Shared so
-       * the views that show a record cannot disagree on where it is cut.
+       * Deck-plan field naming that plan's decks: a path to a NeTEx fragment
+       * file, relative to the sandbox root — which is also where the mock
+       * database itself sits, so the same string resolves from either. `null`
+       * on a plan that stores no decks.
        */
-      const VAL_CAP = 96;
+      const DECKS_REF_KEY = 'decksRef';
+
+      /**
+       * Render a `decksRef` as a link to the fragment it names.
+       *
+       * Shared so the two views that show a record — the database tree and the
+       * search detail pane — cannot disagree on what a ref looks like.
+       *
+       * @param {string} ref Path to a `<decks>` fragment, e.g. `mock-xml/x.xml`.
+       * @returns {string} Anchor markup opening the fragment in a new tab.
+       */
+      function refLink(ref) {
+        return `<a class="db-link" href="${esc(ref)}" target="_blank" rel="noreferrer">${esc(ref)}</a>`;
+      }
 
       /** Hash key naming one mock-database record: `#db=<netexId>`. */
       const DB_HASH_KEY = 'db';
