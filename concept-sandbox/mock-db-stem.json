@@ -337,21 +337,21 @@
       "name": "Talent 3 – Premium",
       "description": "Talent 3 wagon — premium seats plus two open areas, 4 entrances",
       "deckCount": 1,
-      "decksRef": "mock-xml/NMR-DeckPlan-13.decks.xml"
+      "decksRef": "mock-xml/Xatellite-DeckPlan-13.decks.xml"
     },
     {
       "id": "NMR:DeckPlan:14",
       "name": "Talent 3 – Lounge",
       "description": "Talent 3 wagon — main space and rear lounge, 4 entrances",
       "deckCount": 1,
-      "decksRef": "mock-xml/NMR-DeckPlan-14.decks.xml"
+      "decksRef": "mock-xml/Xatellite-DeckPlan-14.decks.xml"
     },
     {
       "id": "NMR:DeckPlan:15",
       "name": "Talent 3 – Saloon",
       "description": "Talent 3 wagon — single open saloon, 4 entrances",
       "deckCount": 1,
-      "decksRef": "mock-xml/NMR-DeckPlan-15.decks.xml"
+      "decksRef": "mock-xml/Xatellite-DeckPlan-15.decks.xml"
     }
   ]
 }
