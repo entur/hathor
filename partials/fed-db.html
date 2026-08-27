@@ -98,7 +98,7 @@
 </div>
 
 <script type="module">
-  const data = await fetch('fed-search-mock.json').then(r => r.json());
+  const data = await fetch('mock-db-stem.json').then(r => r.json());
 
   const sections = [
     { key: 'vehicleTypes', label: 'Vehicle-Types', title: v => v.name },
@@ -109,21 +109,21 @@
   /** How long (ms) a deep-linked row stays highlighted after it opens. */
   const FLASH_MS = 2000;
 
-  // `esc`, `VAL_CAP` and `DB_HASH_KEY` come from the shell (index.html) — the
-  // detail pane in `fed-search-query.html` renders the same values and must cut
-  // them in the same place.
-  const fmtStr = v =>
-    v.length > VAL_CAP
-      ? `<span class="tf-str">"${esc(v.slice(0, VAL_CAP))}\u2026"</span>` +
-        ` <span class="tf-key">(${v.length.toLocaleString()} chars)</span>`
-      : `<span class="tf-str">"${esc(v)}"</span>`;
-
-  const fmtVal = v =>
-    typeof v === 'string'
-      ? fmtStr(v)
-      : typeof v === 'number'
-        ? `<span class="tf-num">${v}</span>`
-        : `<span class="tf-key">${esc(v)}</span>`;
+  // `esc`, `refLink`, `DECKS_REF_KEY` and `DB_HASH_KEY` come from the shell
+  // (index.html) — the detail pane in `fed-search-query.html` renders the same
+  // records and must render a ref the same way.
+  //
+  // A deck-plan's decks are not stored here: the field holds a path to the
+  // `<decks>` NeTEx fragment carrying them, shown as a link to that file rather
+  // than as the tens of KB of markup it resolves to.
+  const fmtVal = (k, v) =>
+    k === DECKS_REF_KEY && v
+      ? refLink(v)
+      : typeof v === 'string'
+        ? `<span class="tf-str">"${esc(v)}"</span>`
+        : typeof v === 'number'
+          ? `<span class="tf-num">${v}</span>`
+          : `<span class="tf-key">${esc(v)}</span>`;
 
   const accordion = document.getElementById('db-accordion');
 
@@ -139,7 +139,7 @@
       const node = document.createElement('details');
       node.className = 'tree-item';
       const fields = Object.entries(item)
-        .map(([k, v]) => `<span class="tf-key">${esc(k)}:</span> ${fmtVal(v)}`)
+        .map(([k, v]) => `<span class="tf-key">${esc(k)}:</span> ${fmtVal(k, v)}`)
         .join('<br>');
       node.dataset.id = item.id;
       node.innerHTML = `<summary>${esc(sec.title(item))}<span class="db-count">${esc(item.id)}</span></summary>
