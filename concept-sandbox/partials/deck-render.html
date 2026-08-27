@@ -98,19 +98,62 @@
   .deck-stage .stage-note.error {
     color: #b42318;
   }
+  /* Bundle-load spinner. The renderer is a CDN ESM import with Vue bundled in,
+     so on a cold cache the stage sits empty long enough that a bare line of
+     text reads as a stall rather than as progress. */
+  .deck-render .spin {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--clr-text-dim);
+    font-size: 14px;
+  }
+  .deck-render .spin::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--clr-border);
+    border-top-color: var(--clr-accent);
+    border-radius: 50%;
+    animation: deck-spin 0.7s linear infinite;
+  }
+  .deck-stage .spin {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .deck-stage .spin::before {
+    width: 28px;
+    height: 28px;
+  }
+  @keyframes deck-spin {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck-render .spin::before {
+      animation: deck-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes deck-pulse {
+      50% {
+        opacity: 0.25;
+      }
+    }
+  }
 </style>
 
 <div class="deck-render deck-grid">
   <div class="card deck-list">
     <h2>Deck-Plans</h2>
     <ul id="deck-plan-list">
-      <li><span class="stage-note">Loading…</span></li>
+      <li><span class="spin" role="status">Loading…</span></li>
     </ul>
   </div>
   <div class="card deck-stage">
     <h2 id="deck-title">Deck rendering</h2>
     <div class="stage-host" id="deck-host">
-      <span class="stage-note" id="deck-note">Fetching the renderer…</span>
+      <span class="spin" role="status">Fetching the renderer…</span>
     </div>
     <div class="stage-meta" id="deck-meta"></div>
   </div>
