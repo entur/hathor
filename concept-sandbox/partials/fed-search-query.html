@@ -191,9 +191,10 @@
 <script type="module">
   import { buildSchema, graphql as exec } from 'https://esm.sh/graphql@16.11.0';
 
-  // `esc` and `VAL_CAP` come from the shell (index.html) — the database tree in
-  // `fed-db.html` renders the same values and must cut them in the same place.
-  const data = await fetch('fed-search-mock.json').then(r => r.json());
+  // `esc`, `refLink` and `DECKS_REF_KEY` come from the shell (index.html) — the
+  // database tree in `fed-db.html` renders the same records and must render a
+  // ref the same way.
+  const data = await fetch('mock-db-stem.json').then(r => r.json());
 
   /* ── Enum registry for filter suggestions ────────── */
   const enums = {
@@ -249,8 +250,8 @@
     }
     type VehicleType { id: ID!, name: String!, shortName: String, transportMode: String, length: Float, width: Float, height: Float, vehicleCount: Int }
     type Vehicle { id: ID!, registrationNumber: String!, version: Int, operationalNumber: String, vehicleTypeName: String }
-    "decks is the plan's whole NeTEx document — tens of KB, so no list view selects it."
-    type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int, decks: String }
+    "decksRef names the file holding the plan's <decks> NeTEx fragment — the decks themselves are never a query result."
+    type DeckPlan { id: ID!, name: String!, description: String, deckCount: Int, decksRef: String }
   `);
 
   const vtByName = Object.fromEntries(data.vehicleTypes.map(v => [v.name, v]));
@@ -479,22 +480,19 @@
   }
 
   /**
-   * Render one field value: escaped, and collapsed to a head plus a length note
-   * past `VAL_CAP`. Both matter for `decks`, which is a whole NeTEx document —
-   * unescaped it would be parsed as markup, unclipped it would bury the pane
-   * under 40 000 characters.
+   * Render one field value: a `decksRef` as a link to the NeTEx fragment it
+   * names, anything else as escaped text.
+   *
+   * @param {string} k Field name.
+   * @param {unknown} val Field value.
+   * @returns {string} Markup for the `<dd>`.
    */
-  const fmtDetail = val => {
-    const s = String(val);
-    return s.length > VAL_CAP
-      ? `${esc(s.slice(0, VAL_CAP))}… <span style="color:var(--clr-text-dim)">(${s.length.toLocaleString()} chars)</span>`
-      : esc(s);
-  };
+  const fmtDetail = (k, val) => (k === DECKS_REF_KEY && val ? refLink(val) : esc(val));
 
   function renderDetail(group, v) {
     const pairs = Object.entries(v)
       .filter(([k]) => k !== 'id')
-      .map(([k, val]) => `<dt>${esc(k)}</dt><dd>${fmtDetail(val)}</dd>`)
+      .map(([k, val]) => `<dt>${esc(k)}</dt><dd>${fmtDetail(k, val)}</dd>`)
       .join('');
     detail.innerHTML = `<div class="fed-detail" style="margin-top:16px;">
       <h2 style="margin-bottom:12px; display:flex; align-items:baseline; gap:12px">
@@ -504,7 +502,8 @@
       <p style="margin-bottom:12px; color:var(--clr-text-dim); font-size:13px">${esc(group)} &middot; ${esc(v.id)}</p>
       <dl>${pairs}</dl></div>`;
     // `gotoDbItem` is the shell's (index.html); this page only names a record.
-    detail.querySelector('.db-link').onclick = () => gotoDbItem(v.id);
+    // Qualified: a `decksRef` renders as a link carrying the same class.
+    detail.querySelector('button.db-link').onclick = () => gotoDbItem(v.id);
   }
 
   function mk(tag, props) {
