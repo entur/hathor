@@ -505,9 +505,9 @@
        * @param {string} ref Path to a `<decks>` fragment, e.g. `mock-xml/x.xml`.
        * @returns {string} Anchor markup opening the fragment in a new tab.
        */
-function refLink(ref) {
-  return `<a class="db-link" href="${esc(ref)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>`;
-}
+      function refLink(ref) {
+        return `<a class="db-link" href="${esc(ref)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>`;
+      }
 
       /** Hash key naming one mock-database record: `#db=<netexId>`. */
       const DB_HASH_KEY = 'db';
