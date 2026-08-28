@@ -1,6 +1,39 @@
 {
   "vehicleTypes": [
     {
+      "id": "NMR:VehicleType:10",
+      "name": "Airport Express Coach",
+      "shortName": "AXC",
+      "transportMode": "Coach",
+      "length": 15.0,
+      "width": 2.55,
+      "height": 3.5,
+      "vehicleCount": 10,
+      "deckPlans": []
+    },
+    {
+      "id": "NMR:VehicleType:2",
+      "name": "Articulated Bus 18m",
+      "shortName": "AB18",
+      "transportMode": "Bus",
+      "length": 18.0,
+      "width": 2.55,
+      "height": 3.3,
+      "vehicleCount": 8,
+      "deckPlans": []
+    },
+    {
+      "id": "NMR:VehicleType:9",
+      "name": "BRT Bus 24m",
+      "shortName": "BRT24",
+      "transportMode": "Bus",
+      "length": 24.0,
+      "width": 2.55,
+      "height": 3.4,
+      "vehicleCount": 6,
+      "deckPlans": []
+    },
+    {
       "id": "ATB:VehicleType:1",
       "name": "City Bus 12m",
       "shortName": "CB12",
@@ -12,15 +45,15 @@
       "deckPlans": ["NMR:DeckPlan:1"]
     },
     {
-      "id": "NMR:VehicleType:2",
-      "name": "Articulated Bus 18m",
-      "shortName": "AB18",
+      "id": "RUT:VehicleType:6",
+      "name": "Double-Decker Bus",
+      "shortName": "DD14",
       "transportMode": "Bus",
-      "length": 18.0,
+      "length": 14.0,
       "width": 2.55,
-      "height": 3.3,
-      "vehicleCount": 8,
-      "deckPlans": ["NMR:DeckPlan:2"]
+      "height": 4.38,
+      "vehicleCount": 4,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:3",
@@ -34,6 +67,28 @@
       "deckPlans": ["NMR:DeckPlan:3"]
     },
     {
+      "id": "RUT:VehicleType:7",
+      "name": "Hydrogen Bus 12m",
+      "shortName": "HB12",
+      "transportMode": "Bus",
+      "length": 12.0,
+      "width": 2.55,
+      "height": 3.3,
+      "vehicleCount": 5,
+      "deckPlans": []
+    },
+    {
+      "id": "NMR:VehicleType:12",
+      "name": "Intercity Train 6-car",
+      "shortName": "IC6",
+      "transportMode": "Rail",
+      "length": 158.0,
+      "width": 3.26,
+      "height": 4.28,
+      "vehicleCount": 4,
+      "deckPlans": []
+    },
+    {
       "id": "VY:VehicleType:4",
       "name": "Light Rail Tram",
       "shortName": "LRT",
@@ -45,37 +100,15 @@
       "deckPlans": ["NMR:DeckPlan:5"]
     },
     {
-      "id": "NMR:VehicleType:5",
-      "name": "Regional EMU 4-car",
-      "shortName": "EMU4",
-      "transportMode": "Rail",
-      "length": 80.0,
-      "width": 3.26,
-      "height": 4.28,
-      "vehicleCount": 6,
-      "deckPlans": ["NMR:DeckPlan:4"]
-    },
-    {
-      "id": "RUT:VehicleType:6",
-      "name": "Double-Decker Bus",
-      "shortName": "DD14",
-      "transportMode": "Bus",
-      "length": 14.0,
-      "width": 2.55,
-      "height": 4.38,
-      "vehicleCount": 4,
-      "deckPlans": ["NMR:DeckPlan:6"]
-    },
-    {
-      "id": "RUT:VehicleType:7",
-      "name": "Hydrogen Bus 12m",
-      "shortName": "HB12",
-      "transportMode": "Bus",
-      "length": 12.0,
-      "width": 2.55,
-      "height": 3.3,
-      "vehicleCount": 5,
-      "deckPlans": ["NMR:DeckPlan:7"]
+      "id": "NMR:VehicleType:11",
+      "name": "Low-Floor Tram 28m",
+      "shortName": "LFT28",
+      "transportMode": "Tram",
+      "length": 28.0,
+      "width": 2.4,
+      "height": 3.5,
+      "vehicleCount": 9,
+      "deckPlans": []
     },
     {
       "id": "NMR:VehicleType:8",
@@ -86,60 +119,48 @@
       "width": 2.3,
       "height": 2.9,
       "vehicleCount": 20,
-      "deckPlans": ["NMR:DeckPlan:8"]
+      "deckPlans": []
     },
     {
-      "id": "NMR:VehicleType:9",
-      "name": "BRT Bus 24m",
-      "shortName": "BRT24",
-      "transportMode": "Bus",
-      "length": 24.0,
-      "width": 2.55,
-      "height": 3.4,
-      "vehicleCount": 6,
-      "deckPlans": ["NMR:DeckPlan:9"]
-    },
-    {
-      "id": "NMR:VehicleType:10",
-      "name": "Airport Express Coach",
-      "shortName": "AXC",
-      "transportMode": "Coach",
-      "length": 15.0,
-      "width": 2.55,
-      "height": 3.5,
-      "vehicleCount": 10,
-      "deckPlans": ["NMR:DeckPlan:10"]
-    },
-    {
-      "id": "NMR:VehicleType:11",
-      "name": "Low-Floor Tram 28m",
-      "shortName": "LFT28",
-      "transportMode": "Tram",
-      "length": 28.0,
-      "width": 2.4,
-      "height": 3.5,
-      "vehicleCount": 9,
-      "deckPlans": ["NMR:DeckPlan:11"]
-    },
-    {
-      "id": "NMR:VehicleType:12",
-      "name": "Intercity Train 6-car",
-      "shortName": "IC6",
+      "id": "NMR:VehicleType:5",
+      "name": "Regional EMU 4-car",
+      "shortName": "EMU4",
       "transportMode": "Rail",
-      "length": 158.0,
+      "length": 80.0,
       "width": 3.26,
       "height": 4.28,
-      "vehicleCount": 4,
-      "deckPlans": ["NMR:DeckPlan:12"]
+      "vehicleCount": 6,
+      "deckPlans": ["NMR:DeckPlan:4"]
     }
   ],
   "vehicles": [
+    {
+      "id": "NMR:Vehicle:114",
+      "registrationNumber": "AA-55667",
+      "version": 1,
+      "operationalNumber": "303",
+      "vehicleTypeName": "Low-Floor Tram 28m"
+    },
     {
       "id": "NMR:Vehicle:101",
       "registrationNumber": "AB-12345",
       "version": 1,
       "operationalNumber": "601",
       "vehicleTypeName": "City Bus 12m"
+    },
+    {
+      "id": "NMR:Vehicle:115",
+      "registrationNumber": "BB-66778",
+      "version": 2,
+      "operationalNumber": "802",
+      "vehicleTypeName": "Electric Ferry 45m"
+    },
+    {
+      "id": "NMR:Vehicle:116",
+      "registrationNumber": "CC-77889",
+      "version": 1,
+      "operationalNumber": "202",
+      "vehicleTypeName": "Airport Express Coach"
     },
     {
       "id": "NMR:Vehicle:102",
@@ -224,56 +245,49 @@
       "version": 1,
       "operationalNumber": "210",
       "vehicleTypeName": "BRT Bus 24m"
-    },
-    {
-      "id": "NMR:Vehicle:114",
-      "registrationNumber": "AA-55667",
-      "version": 1,
-      "operationalNumber": "303",
-      "vehicleTypeName": "Low-Floor Tram 28m"
-    },
-    {
-      "id": "NMR:Vehicle:115",
-      "registrationNumber": "BB-66778",
-      "version": 2,
-      "operationalNumber": "802",
-      "vehicleTypeName": "Electric Ferry 45m"
-    },
-    {
-      "id": "NMR:Vehicle:116",
-      "registrationNumber": "CC-77889",
-      "version": 1,
-      "operationalNumber": "202",
-      "vehicleTypeName": "Airport Express Coach"
     }
   ],
   "deckPlans": [
     {
-      "id": "NMR:DeckPlan:1",
-      "name": "Standard Bus Layout",
-      "description": "Single deck, 2+2 seating, rear low-floor section",
+      "id": "NMR:DeckPlan:21",
+      "name": "Class 5 A5-7",
+      "description": "Type 5 coach — single seating area and one toilet, 4 entrances, 30 spots",
       "deckCount": 1,
-      "decksRef": null
+      "decksRef": "mock-xml/Entur-DeckPlan-21.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:2",
-      "name": "Articulated Bus Layout",
-      "description": "Two sections with accordion joint, standing area in rear",
+      "id": "NMR:DeckPlan:17",
+      "name": "Class 73 B73B",
+      "description": "Type 73 coach — seating area, two toilets and a service space, 74 spots",
       "deckCount": 1,
-      "decksRef": null
+      "decksRef": "mock-xml/Entur-DeckPlan-17.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:19",
+      "name": "Class 73 BFR73",
+      "description": "Type 73 restaurant coach — dining space beside a seating area, 36 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-19.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:18",
+      "name": "Class 73 BM73B",
+      "description": "Type 73 coach — seating, bistro, two toilets and a service space, 46 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-18.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:16",
+      "name": "Class 73 BMU73",
+      "description": "Type 73 driving trailer — one seating area plus two service spaces, 78 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-16.decks.xml"
     },
     {
       "id": "NMR:DeckPlan:3",
       "name": "Ferry Car Deck",
       "description": "Open vehicle deck with lane markings, passenger saloon above",
       "deckCount": 2,
-      "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:4",
-      "name": "Train Coach Standard",
-      "description": "Open saloon 2+2, vestibules at both ends, wheelchair bay",
-      "deckCount": 1,
       "decksRef": null
     },
     {
@@ -284,60 +298,25 @@
       "decksRef": null
     },
     {
-      "id": "NMR:DeckPlan:6",
-      "name": "Double Decker Layout",
-      "description": "Lower deck with priority seating, upper deck 2+2 standard",
-      "deckCount": 2,
-      "decksRef": null
+      "id": "NMR:DeckPlan:20",
+      "name": "Sleeper WLAB-2",
+      "description": "Night-train sleeping car — compartment berths and two toilets, 16 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-20.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:7",
-      "name": "Hydrogen Bus Layout",
-      "description": "Roof-mounted fuel cell, reduced rear luggage bay, 2+2 seating",
+      "id": "NMR:DeckPlan:22",
+      "name": "Sleeper WLAB-2 (regen)",
+      "description": "Same car as DeckPlan:20 from the 2026-08-28 emitter — NeTEx enum casing and id tokens, but no Deck Width/Length, so it draws at the renderer defaults",
       "deckCount": 1,
-      "decksRef": null
+      "decksRef": "mock-xml/Entur-DeckPlan-22.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:8",
-      "name": "Minibus Shuttle",
-      "description": "Compact 2+1 seating, rear wheelchair ramp, low floor",
+      "id": "NMR:DeckPlan:1",
+      "name": "Standard Bus Layout",
+      "description": "Single deck, 2+2 seating, rear low-floor section",
       "deckCount": 1,
       "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:9",
-      "name": "BRT High-Capacity",
-      "description": "Three-door layout, wide aisles, standing-priority center section",
-      "deckCount": 1,
-      "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:10",
-      "name": "Coach Premium",
-      "description": "2+1 reclining seats, overhead luggage bins, onboard lavatory",
-      "deckCount": 1,
-      "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:11",
-      "name": "Low-Floor Tram Open",
-      "description": "Step-free throughout, four double doors, flexible standing zones",
-      "deckCount": 1,
-      "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:12",
-      "name": "Intercity First Class",
-      "description": "2+1 seating with tables, quiet zone, bistro car section",
-      "deckCount": 1,
-      "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:13",
-      "name": "Talent 3 – Premium",
-      "description": "Talent 3 wagon — premium seats plus two open areas, 4 entrances",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Xatellite-DeckPlan-13.decks.xml"
     },
     {
       "id": "NMR:DeckPlan:14",
@@ -347,6 +326,13 @@
       "decksRef": "mock-xml/Xatellite-DeckPlan-14.decks.xml"
     },
     {
+      "id": "NMR:DeckPlan:13",
+      "name": "Talent 3 – Premium",
+      "description": "Talent 3 wagon — premium seats plus two open areas, 4 entrances",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Xatellite-DeckPlan-13.decks.xml"
+    },
+    {
       "id": "NMR:DeckPlan:15",
       "name": "Talent 3 – Saloon",
       "description": "Talent 3 wagon — single open saloon, 4 entrances",
@@ -354,53 +340,11 @@
       "decksRef": "mock-xml/Xatellite-DeckPlan-15.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:16",
-      "name": "Class 73 BMU73",
-      "description": "Type 73 driving trailer — one seating area plus two service spaces, 78 spots",
+      "id": "NMR:DeckPlan:4",
+      "name": "Train Coach Standard",
+      "description": "Open saloon 2+2, vestibules at both ends, wheelchair bay",
       "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-16.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:17",
-      "name": "Class 73 B73B",
-      "description": "Type 73 coach — seating area, two toilets and a service space, 74 spots",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-17.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:18",
-      "name": "Class 73 BM73B",
-      "description": "Type 73 coach — seating, bistro, two toilets and a service space, 46 spots",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-18.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:19",
-      "name": "Class 73 BFR73",
-      "description": "Type 73 restaurant coach — dining space beside a seating area, 36 spots",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-19.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:20",
-      "name": "Sleeper WLAB-2",
-      "description": "Night-train sleeping car — compartment berths and two toilets, 16 spots",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-20.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:21",
-      "name": "Class 5 A5-7",
-      "description": "Type 5 coach — single seating area and one toilet, 4 entrances, 30 spots",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-21.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:22",
-      "name": "Sleeper WLAB-2 (regen)",
-      "description": "Same car as DeckPlan:20 from the 2026-08-28 emitter — NeTEx enum casing and id tokens, but no Deck Width/Length, so it draws at the renderer defaults",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-22.decks.xml"
+      "decksRef": null
     }
   ]
 }
