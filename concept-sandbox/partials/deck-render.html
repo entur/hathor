@@ -43,7 +43,7 @@
     align-items: baseline;
     gap: 8px;
   }
-  .deck-list li button:hover:not(:disabled) {
+  .deck-list li button:hover {
     background: var(--clr-bg);
   }
   .deck-list li button.selected {
@@ -51,25 +51,12 @@
     color: var(--clr-accent);
     font-weight: 600;
   }
-  .deck-list li button:disabled {
-    color: var(--clr-text-dim);
-    cursor: not-allowed;
-  }
   .deck-list .dp-id {
     margin-left: auto;
     font-size: 11px;
     font-family: 'SF Mono', 'Fira Code', monospace;
     color: var(--clr-text-dim);
     font-weight: 400;
-  }
-  .deck-list .dp-sep {
-    margin: 10px 2px 6px;
-    padding-top: 10px;
-    border-top: 1px solid var(--clr-border);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--clr-text-dim);
   }
   .deck-stage .stage-host {
     flex: 1 1 auto;
@@ -166,8 +153,9 @@
    *
    * The mock DB holds no deck markup: a deckPlan's `decksRef` names a NeTEx
    * fragment file rooted at `<decks>`, fetched here the first time that plan is
-   * drawn. Plans without a ref are listed but inert; that is the common case on
-   * real data today.
+   * drawn. Plans holding no ref — still the common case on real data today —
+   * are left out of the list entirely; the Database page marks which records
+   * carry decks.
    */
 
   /**
@@ -402,33 +390,22 @@
       metaEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
     };
 
-    const row = (plan, enabled) => {
+    const row = plan => {
       const li = document.createElement('li');
       const btn = document.createElement('button');
-      btn.disabled = !enabled;
-      btn.innerHTML = `<span>${enabled ? '' : '⊘ '}${esc(plan.name)}</span><span class="dp-id">${esc(plan.id)}</span>`;
-      btn.title = enabled
-        ? plan.description
-        : `${plan.description} — no decks stored for this plan`;
-      if (enabled)
-        btn.onclick = () => {
-          listEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          draw(plan);
-        };
+      btn.innerHTML = `<span>${esc(plan.name)}</span><span class="dp-id">${esc(plan.id)}</span>`;
+      btn.title = plan.description;
+      btn.onclick = () => {
+        listEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        draw(plan);
+      };
       li.append(btn);
       return li;
     };
 
     listEl.innerHTML = '';
-    drawable.forEach(p => listEl.append(row(p, true)));
-    if (drawable.length < plans.length) {
-      const sep = document.createElement('li');
-      sep.className = 'dp-sep';
-      sep.textContent = 'No decks stored';
-      listEl.append(sep);
-      plans.filter(p => !p[DECKS_REF_KEY]).forEach(p => listEl.append(row(p, false)));
-    }
+    drawable.forEach(p => listEl.append(row(p)));
 
     if (drawable.length) listEl.querySelector('button').click();
     else note('No deck plan in the database names a decks fragment.', true);
