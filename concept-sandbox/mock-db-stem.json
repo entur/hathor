@@ -352,6 +352,48 @@
       "description": "Talent 3 wagon — single open saloon, 4 entrances",
       "deckCount": 1,
       "decksRef": "mock-xml/Xatellite-DeckPlan-15.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:16",
+      "name": "Class 73 BMU73",
+      "description": "Type 73 driving trailer — one seating area plus two service spaces, 78 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-16.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:17",
+      "name": "Class 73 B73B",
+      "description": "Type 73 coach — seating area, two toilets and a service space, 74 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-17.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:18",
+      "name": "Class 73 BM73B",
+      "description": "Type 73 coach — seating, bistro, two toilets and a service space, 46 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-18.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:19",
+      "name": "Class 73 BFR73",
+      "description": "Type 73 restaurant coach — dining space beside a seating area, 36 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-19.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:20",
+      "name": "Sleeper WLAB-2",
+      "description": "Night-train sleeping car — compartment berths and two toilets, 16 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-20.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:21",
+      "name": "Class 5 A5-7",
+      "description": "Type 5 coach — single seating area and one toilet, 4 entrances, 30 spots",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-21.decks.xml"
     }
   ]
 }
