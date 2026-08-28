@@ -226,11 +226,11 @@
     return sheet;
   };
 
-const note = (msg, isError) =>
-  (hostEl.innerHTML = `<span class="stage-note${isError ? ' error' : ''}">${esc(msg)}</span>`);
+  const note = (msg, isError) =>
+    (hostEl.innerHTML = `<span class="stage-note${isError ? ' error' : ''}">${esc(msg)}</span>`);
 
-/** Same, for a step still in flight — a fragment on its way over the wire. */
-const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
+  /** Same, for a step still in flight — a fragment on its way over the wire. */
+  const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
 
   /** Flatten a deck's spaces into the counts worth showing under the drawing. */
   const statsOf = deck => {
