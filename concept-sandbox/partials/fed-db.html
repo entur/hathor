@@ -85,6 +85,17 @@
     font-size: 14px;
     line-height: 1.6;
   }
+  .fed-db .db-deck-icon {
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--clr-accent);
+  }
+  /* The icon has taken over pushing to the right edge, so the id must not
+     also claim the free space — two auto margins would split it and leave a
+     gap between the pair. */
+  .fed-db .db-deck-icon + .db-count {
+    margin-left: 0;
+  }
   .fed-db .tree-item.db-focus > summary {
     background: rgba(78, 108, 242, 0.18);
     color: var(--clr-accent);
@@ -108,6 +119,22 @@
 
   /** How long (ms) a deep-linked row stays highlighted after it opens. */
   const FLASH_MS = 2000;
+
+  /**
+   * Marker for a record whose decks are stored, drawn as the deck rendering
+   * page draws them: a top-down outline with seats. Static markup rather than
+   * a builder — nothing about it varies per row.
+   */
+  const DECK_ICON = `<svg class="db-deck-icon" viewBox="0 0 16 16" width="14" height="14" role="img" aria-label="Carries a decks fragment">
+      <title>Carries a decks fragment</title>
+      <rect x="1" y="3" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.2" />
+      <rect x="3.6" y="5.2" width="2.4" height="2" rx="0.5" fill="currentColor" />
+      <rect x="7" y="5.2" width="2.4" height="2" rx="0.5" fill="currentColor" />
+      <rect x="10.4" y="5.2" width="2.4" height="2" rx="0.5" fill="currentColor" />
+      <rect x="3.6" y="8.8" width="2.4" height="2" rx="0.5" fill="currentColor" />
+      <rect x="7" y="8.8" width="2.4" height="2" rx="0.5" fill="currentColor" />
+      <rect x="10.4" y="8.8" width="2.4" height="2" rx="0.5" fill="currentColor" />
+    </svg>`;
 
   // `esc`, `refLink`, `DECKS_REF_KEY` and `DB_HASH_KEY` come from the shell
   // (index.html) — the detail pane in `fed-search-query.html` renders the same
@@ -142,7 +169,8 @@
         .map(([k, v]) => `<span class="tf-key">${esc(k)}:</span> ${fmtVal(k, v)}`)
         .join('<br>');
       node.dataset.id = item.id;
-      node.innerHTML = `<summary>${esc(sec.title(item))}<span class="db-count">${esc(item.id)}</span></summary>
+      const icon = item[DECKS_REF_KEY] ? DECK_ICON : '';
+      node.innerHTML = `<summary>${esc(sec.title(item))}${icon}<span class="db-count">${esc(item.id)}</span></summary>
         <div class="tree-fields">${fields}</div>`;
       tree.append(node);
     }
