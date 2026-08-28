@@ -394,6 +394,13 @@
       "description": "Type 5 coach — single seating area and one toilet, 4 entrances, 30 spots",
       "deckCount": 1,
       "decksRef": "mock-xml/Entur-DeckPlan-21.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:22",
+      "name": "Sleeper WLAB-2 (regen)",
+      "description": "Same car as DeckPlan:20 from the 2026-08-28 emitter — NeTEx enum casing and id tokens, but no Deck Width/Length, so it draws at the renderer defaults",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-22.decks.xml"
     }
   ]
 }
