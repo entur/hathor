@@ -1,0 +1,54 @@
+name: Deploy Storybook to GitHub Pages
+
+# Publishes the static Storybook build into the `storybook/` subdirectory of
+# the `concept-sandbox` publish branch, which GitHub Pages serves at the repo
+# root. Result: https://entur.github.io/hathor/storybook/
+#
+# The concept sandbox owns the site root (see pages.yml). Both workflows push
+# to the same publish branch, so:
+#   - both set `keep_files: true` so neither wipes the other's output
+#   - both share the `pages-publish` concurrency group so their pushes to the
+#     branch serialise instead of racing into a non-fast-forward failure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '.storybook/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/storybook-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build static Storybook
+        run: npm run build-storybook
+
+      - name: Deploy to concept-sandbox branch under /storybook
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook-static
+          publish_branch: concept-sandbox
+          destination_dir: storybook
+          keep_files: true

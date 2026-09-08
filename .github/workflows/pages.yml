@@ -11,6 +11,12 @@ on:
 permissions:
   contents: write
 
+# Shared with storybook-pages.yml — both push to the `concept-sandbox` branch,
+# so their pushes must serialise rather than race into a non-fast-forward.
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,3 +29,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./concept-sandbox
           publish_branch: concept-sandbox
+          # Preserves the `storybook/` subdirectory published by
+          # storybook-pages.yml; without it every sandbox deploy wipes it.
+          # Trade-off: files deleted from concept-sandbox/ linger on the
+          # publish branch until it is manually reset.
+          keep_files: true
