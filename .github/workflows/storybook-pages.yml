@@ -45,7 +45,9 @@ jobs:
         run: npm run build-storybook
 
       - name: Deploy to concept-sandbox branch under /storybook
-        uses: peaceiris/actions-gh-pages@v4
+        # Pinned to an immutable commit, not the mutable `v4` tag (CodeQL
+        # "Unpinned tag for a non-immutable Action"). Bump deliberately.
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./storybook-static
