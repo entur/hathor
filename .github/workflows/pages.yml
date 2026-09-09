@@ -1,8 +1,14 @@
 name: Deploy Concept Sandbox to GitHub Pages
 
+# `ui-sandboxing` is the ONLY valid source for the sandbox. main carries a
+# stale, thinner copy of concept-sandbox/ (index.html 10592 B vs 16183 B), so
+# deploying from main publishes an older site over the real one. That is
+# exactly what happened when #158 edited this file: `.github/workflows/
+# pages.yml` is in the paths filter below, so the merge to main fired a deploy
+# from main and overwrote the sandbox. Do not re-add main here.
 on:
   push:
-    branches: [main, ui-sandboxing]
+    branches: [ui-sandboxing]
     paths:
       - 'concept-sandbox/**'
       - '.github/workflows/pages.yml'
@@ -19,6 +25,10 @@ concurrency:
 
 jobs:
   deploy:
+    # Hard guard, not just a trigger filter: `workflow_dispatch` ignores the
+    # branch list above, so without this a dispatch from main would republish
+    # main's stale sandbox over the real one all over again.
+    if: github.ref == 'refs/heads/ui-sandboxing'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
