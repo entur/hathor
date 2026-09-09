@@ -11,6 +11,12 @@ on:
 permissions:
   contents: write
 
+# Shared with storybook-pages.yml — both push to the `concept-sandbox` branch,
+# so their pushes must serialise rather than race into a non-fast-forward.
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,8 +24,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy to concept-sandbox branch
-        uses: peaceiris/actions-gh-pages@v4
+        # Pinned to an immutable commit, not the mutable `v4` tag (CodeQL
+        # "Unpinned tag for a non-immutable Action"). Bump deliberately.
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./concept-sandbox
           publish_branch: concept-sandbox
+          # Preserves the `storybook/` subdirectory published by
+          # storybook-pages.yml; without it every sandbox deploy wipes it.
+          # Trade-off: files deleted from concept-sandbox/ linger on the
+          # publish branch until it is manually reset.
+          keep_files: true
