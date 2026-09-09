@@ -1,8 +1,14 @@
 name: Deploy Concept Sandbox to GitHub Pages
 
+# `ui-sandboxing` is the ONLY valid source for the sandbox. main carries a
+# stale, thinner copy of concept-sandbox/ (index.html 10592 B vs 16183 B), so
+# deploying from main publishes an older site over the real one. That is
+# exactly what happened when #158 edited this file: `.github/workflows/
+# pages.yml` is in the paths filter below, so the merge to main fired a deploy
+# from main and overwrote the sandbox. Do not re-add main here.
 on:
   push:
-    branches: [main, ui-sandboxing]
+    branches: [ui-sandboxing]
     paths:
       - 'concept-sandbox/**'
       - '.github/workflows/pages.yml'
@@ -11,15 +17,32 @@ on:
 permissions:
   contents: write
 
+# Shared with storybook-pages.yml — both push to the `concept-sandbox` branch,
+# so their pushes must serialise rather than race into a non-fast-forward.
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    # Hard guard, not just a trigger filter: `workflow_dispatch` ignores the
+    # branch list above, so without this a dispatch from main would republish
+    # main's stale sandbox over the real one all over again.
+    if: github.ref == 'refs/heads/ui-sandboxing'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Deploy to concept-sandbox branch
-        uses: peaceiris/actions-gh-pages@v4
+        # Pinned to an immutable commit, not the mutable `v4` tag (CodeQL
+        # "Unpinned tag for a non-immutable Action"). Bump deliberately.
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./concept-sandbox
           publish_branch: concept-sandbox
+          # Preserves the `storybook/` subdirectory published by
+          # storybook-pages.yml; without it every sandbox deploy wipes it.
+          # Trade-off: files deleted from concept-sandbox/ linger on the
+          # publish branch until it is manually reset.
+          keep_files: true
