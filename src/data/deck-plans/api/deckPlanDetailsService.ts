@@ -1,6 +1,6 @@
 import { XMLBuilder } from 'fast-xml-parser';
 import { authHeader, type AccessToken } from '../../../auth';
-import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../../netex/xmlUtils';
+import { addDataOwnerRefToFrame, findResourceFrame, verbatimXmlParser } from '../../netex/xmlUtils';
 
 /**
  * Fetch NeTEx XML for a single deck plan from Sobek
@@ -34,7 +34,10 @@ export const saveDeckPlanAsNetexToBackend = async (
   deckPlanData: string,
   token: AccessToken
 ): Promise<string> => {
-  const xml = xmlParser.parse(deckPlanData);
+  // Verbatim: this re-serializes the whole document to graft the owning
+  // organisation on, so coercing text here would undo patchDeckPlanXml's
+  // care with the geometry.
+  const xml = verbatimXmlParser.parse(deckPlanData);
   if (!xml) {
     throw new Error('Invalid XML data');
   }

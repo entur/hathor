@@ -66,6 +66,11 @@
   "deckPlans.field.description": "Description",
   "deckPlans.tab.edit": "Edit",
   "deckPlans.tab.xml": "XML",
+  "deckPlans.deck.label": "Deck {{n}}",
+  "deckPlans.deck.sample": "SAMPLE",
+  "deckPlans.deck.sampleHint": "This plan has no decks yet — showing a sample layout.",
+  "deckPlans.render.error": "Could not render the deck plan",
+  "deckPlans.render.deckError": "Could not draw this deck",
   "deckPlans.field.id": "ID",
   "breadcrumbs.home": "Home",
 

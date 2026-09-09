@@ -55,3 +55,33 @@ describe('serializeDeckPlan', () => {
     expect(serializeDeckPlan(dp, 'NMR:Organisation:42').dataOwnerRef).toBe('NMR:Organisation:42');
   });
 });
+
+/**
+ * The create path serializes straight from the form, while the edit path goes
+ * through `patchDeckPlanXml`, which trims. Untrimmed, a created plan persists
+ * padding the edit path would have stripped — and reads back dirty.
+ */
+describe('serializeDeckPlan — whitespace', () => {
+  it('trims name and description so a create persists what an edit would', () => {
+    const dp: DeckPlan = {
+      id: '',
+      name: { value: '  Padded name  ' },
+      description: { value: '\n  Padded description \t' },
+    };
+    const input = serializeDeckPlan(dp, OWNER);
+    expect(input.name).toEqual({ value: 'Padded name' });
+    expect(input.description).toEqual({ value: 'Padded description' });
+  });
+
+  it('nulls a whitespace-only name rather than persisting the padding', () => {
+    const dp: DeckPlan = { id: '', name: { value: '   ' }, description: { value: '\t\n ' } };
+    const input = serializeDeckPlan(dp, OWNER);
+    expect(input.name).toBeNull();
+    expect(input.description).toBeNull();
+  });
+
+  it('keeps the lang attribute while trimming the value', () => {
+    const dp: DeckPlan = { id: '', name: { value: '  Navn  ', lang: 'nb' } };
+    expect(serializeDeckPlan(dp, OWNER).name).toEqual({ value: 'Navn', lang: 'nb' });
+  });
+});

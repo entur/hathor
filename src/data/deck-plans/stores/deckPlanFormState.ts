@@ -47,6 +47,16 @@ export const hydrate = (_state: FormState, dp: DeckPlan | null | undefined): For
  */
 export const edit = (state: FormState, form: DeckPlan): FormState => ({ ...state, form });
 
+/**
+ * Drop an in-progress edit, restoring the last baselined values.
+ *
+ * Distinct from re-hydrating off the `deckPlan` prop: after an in-place save
+ * `useUrlEditorSelection` does not re-commit the editor (the id is unchanged),
+ * so that prop still holds the pre-save row. Cancelling onto it would show —
+ * and re-baseline against — values that are no longer what is stored.
+ */
+export const restore = (state: FormState): FormState => ({ ...state, form: state.baseline });
+
 /** True when the trimmed name or description differs from the baseline. */
 export const isDirty = ({ form, baseline }: FormState): boolean => {
   const n = normalise(form);

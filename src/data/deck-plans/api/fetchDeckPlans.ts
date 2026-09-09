@@ -36,6 +36,17 @@ const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
 });
 
 /**
+ * Trim a NeTEx name, nulling it when nothing survives. The edit path trims via
+ * `patchDeckPlanXml`; without this the create path would persist padding its
+ * sibling strips — and the row would read back dirty.
+ */
+const trimmed = (n?: Name | null): Name | null => {
+  const value = n?.value?.trim();
+  if (!value) return null;
+  return n?.lang ? { value, lang: n.lang } : { value };
+};
+
+/**
  * Domain → input inverse of {@link projectDeckPlan}. Emits the full document
  * with blanks as explicit `null` — Sobek's `createOrUpdateDeckPlan` is a
  * full-replace, so an omitted/blank input field nulls the persisted value.
@@ -43,8 +54,8 @@ const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
 export const serializeDeckPlan = (dp: DeckPlan, dataOwnerRef: string): DeckPlanInput => ({
   netexId: dp.id === '' ? undefined : dp.id,
   dataOwnerRef,
-  name: dp.name ?? null,
-  description: dp.description ?? null,
+  name: trimmed(dp.name),
+  description: trimmed(dp.description),
 });
 
 export const fetchDeckPlans = async (
