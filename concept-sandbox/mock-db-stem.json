@@ -5,7 +5,7 @@
       "name": "Airport Express Coach",
       "shortName": "AXC",
       "transportMode": "Coach",
-      "length": 15.0,
+      "length": 15,
       "width": 2.55,
       "height": 3.5,
       "vehicleCount": 10,
@@ -16,7 +16,7 @@
       "name": "Articulated Bus 18m",
       "shortName": "AB18",
       "transportMode": "Bus",
-      "length": 18.0,
+      "length": 18,
       "width": 2.55,
       "height": 3.3,
       "vehicleCount": 8,
@@ -27,7 +27,7 @@
       "name": "BRT Bus 24m",
       "shortName": "BRT24",
       "transportMode": "Bus",
-      "length": 24.0,
+      "length": 24,
       "width": 2.55,
       "height": 3.4,
       "vehicleCount": 6,
@@ -38,7 +38,7 @@
       "name": "City Bus 12m",
       "shortName": "CB12",
       "transportMode": "Bus",
-      "length": 12.0,
+      "length": 12,
       "width": 2.55,
       "height": 3.2,
       "vehicleCount": 15,
@@ -49,7 +49,7 @@
       "name": "Double-Decker Bus",
       "shortName": "DD14",
       "transportMode": "Bus",
-      "length": 14.0,
+      "length": 14,
       "width": 2.55,
       "height": 4.38,
       "vehicleCount": 4,
@@ -60,8 +60,8 @@
       "name": "Electric Ferry 45m",
       "shortName": "EF45",
       "transportMode": "Water",
-      "length": 45.0,
-      "width": 12.0,
+      "length": 45,
+      "width": 12,
       "height": 6.5,
       "vehicleCount": 3,
       "deckPlans": ["NMR:DeckPlan:3"]
@@ -71,7 +71,7 @@
       "name": "Hydrogen Bus 12m",
       "shortName": "HB12",
       "transportMode": "Bus",
-      "length": 12.0,
+      "length": 12,
       "width": 2.55,
       "height": 3.3,
       "vehicleCount": 5,
@@ -82,7 +82,7 @@
       "name": "Intercity Train 6-car",
       "shortName": "IC6",
       "transportMode": "Rail",
-      "length": 158.0,
+      "length": 158,
       "width": 3.26,
       "height": 4.28,
       "vehicleCount": 4,
@@ -93,7 +93,7 @@
       "name": "Light Rail Tram",
       "shortName": "LRT",
       "transportMode": "Tram",
-      "length": 32.0,
+      "length": 32,
       "width": 2.65,
       "height": 3.6,
       "vehicleCount": 12,
@@ -104,7 +104,7 @@
       "name": "Low-Floor Tram 28m",
       "shortName": "LFT28",
       "transportMode": "Tram",
-      "length": 28.0,
+      "length": 28,
       "width": 2.4,
       "height": 3.5,
       "vehicleCount": 9,
@@ -115,7 +115,7 @@
       "name": "Minibus 8m",
       "shortName": "MB8",
       "transportMode": "Bus",
-      "length": 8.0,
+      "length": 8,
       "width": 2.3,
       "height": 2.9,
       "vehicleCount": 20,
@@ -126,7 +126,7 @@
       "name": "Regional EMU 4-car",
       "shortName": "EMU4",
       "transportMode": "Rail",
-      "length": 80.0,
+      "length": 80,
       "width": 3.26,
       "height": 4.28,
       "vehicleCount": 6,
@@ -249,39 +249,543 @@
   ],
   "deckPlans": [
     {
-      "id": "NMR:DeckPlan:21",
-      "name": "Class 5 A5-7",
-      "description": "Type 5 coach — single seating area and one toilet, 4 entrances, 30 spots",
+      "id": "NMR:DeckPlan:101",
+      "name": "A5-1",
+      "description": "48 seats in 12×4 · seating area, toilet, service space · 4 entrances (fam:2)",
       "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-21.decks.xml"
+      "decksRef": "mock-xml/SJNord-DeckPlan-101.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:17",
-      "name": "Class 73 B73B",
-      "description": "Type 73 coach — seating area, two toilets and a service space, 74 spots",
+      "id": "NMR:DeckPlan:100",
+      "name": "A5-1 (v2)",
+      "description": "48 seats, 3 luggage bays in 12×4 · seating area, toilet, service space · 4 entrances (fam:1)",
       "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-17.decks.xml"
+      "decksRef": "mock-xml/Vy-DeckPlan-100.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:19",
-      "name": "Class 73 BFR73",
-      "description": "Type 73 restaurant coach — dining space beside a seating area, 36 spots",
+      "id": "NMR:DeckPlan:102",
+      "name": "A5-7",
+      "description": "30 seats in 10×4 · seating area, toilet · 4 entrances (fam:1)",
       "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-19.decks.xml"
+      "decksRef": "mock-xml/Entur-DeckPlan-102.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:18",
-      "name": "Class 73 BM73B",
-      "description": "Type 73 coach — seating, bistro, two toilets and a service space, 46 spots",
+      "id": "NMR:DeckPlan:103",
+      "name": "A5-7 (v2)",
+      "description": "30 seats in 10×3 · seating area, toilet · 4 entrances (fam:1)",
       "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-18.decks.xml"
+      "decksRef": "mock-xml/Vy-DeckPlan-103.decks.xml"
     },
     {
-      "id": "NMR:DeckPlan:16",
-      "name": "Class 73 BMU73",
-      "description": "Type 73 driving trailer — one seating area plus two service spaces, 78 spots",
+      "id": "NMR:DeckPlan:105",
+      "name": "A7-1",
+      "description": "48 seats in 13×4 · seating area, 2 toilets, service space · 4 entrances (fam:3)",
       "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-16.decks.xml"
+      "decksRef": "mock-xml/GoAhead-DeckPlan-105.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:104",
+      "name": "A7-1 (v2)",
+      "description": "48 seats, 2 luggage bays in 21×4 · seating area, 2 toilets, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-104.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:106",
+      "name": "ABS70",
+      "description": "28 seats in 8×4 · seating area, toilet, 2 service spaces · 4 entrances (fam:5)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-106.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:107",
+      "name": "B5-3",
+      "description": "68 seats, 3 luggage bays in 17×4 · seating area, toilet · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-107.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:108",
+      "name": "B5-5",
+      "description": "68 seats, 3 luggage bays in 17×4 · seating area, toilet · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-108.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:109",
+      "name": "B5-5A",
+      "description": "68 seats in 17×4 · seating area, toilet · 4 entrances (fam:14)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/GoAhead-DeckPlan-109.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:110",
+      "name": "B5-7",
+      "description": "30 seats in 10×6 · seating area, toilet · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/GoAhead-DeckPlan-110.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:111",
+      "name": "B5-7 (v2)",
+      "description": "30 seats in 10×4 · seating area, toilet · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-111.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:112",
+      "name": "B5-7 (v3)",
+      "description": "30 seats, 3 luggage bays in 10×4 · seating area, toilet · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-112.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:113",
+      "name": "B5-7-BACKWARDS",
+      "description": "30 seats in 10×4 · seating area, toilet · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-113.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:115",
+      "name": "B7-5",
+      "description": "68 seats in 18×4 · seating area, 2 toilets · 4 entrances (fam:10)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-115.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:114",
+      "name": "B7-5 (v2)",
+      "description": "68 seats, 2 luggage bays in 18×4 · seating area, 2 toilets · 4 entrances (fam:4)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-114.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:117",
+      "name": "B7-5A",
+      "description": "68 seats in 19×4 · seating area, 2 toilets · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/GoAhead-DeckPlan-117.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:116",
+      "name": "B7-5A (v2)",
+      "description": "68 seats, 2 luggage bays in 19×4 · seating area, 2 toilets · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-116.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:118",
+      "name": "B7-6A",
+      "description": "68 seats, 1 luggage bay in 18×4 · seating area, 2 toilets · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-118.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:119",
+      "name": "B7-7",
+      "description": "23 seats in 23×2 · seating area, 2 toilets · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-119.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:120",
+      "name": "B7-7-FORWARDS",
+      "description": "23 seats in 23×2 · seating area, 2 toilets · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-120.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:121",
+      "name": "B73B",
+      "description": "74 seats in 20×6 · seating area, 2 toilets, service space · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-121.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:122",
+      "name": "B73B (v2)",
+      "description": "74 seats in 20×6 · seating area, 2 toilets, service space · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-122.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:123",
+      "name": "BC5-3",
+      "description": "36 seats, 3 pushchair bays, 2 wheelchair bays in 9×4 · seating area, toilet, 2 service spaces · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-123.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:125",
+      "name": "BC7-1",
+      "description": "32 seats, 3 pushchair bays, 2 wheelchair bays in 8×4 · seating area, 2 toilets, 2 service spaces · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/GoAhead-DeckPlan-125.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:124",
+      "name": "BC7-1 (v2)",
+      "description": "32 seats, 3 luggage bays, 3 pushchair bays, 2 wheelchair bays in 8×4 · seating area, 2 toilets, 2 service spaces · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-124.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:126",
+      "name": "BC76",
+      "description": "51 seats, 2 pushchair bays, 2 wheelchair bays in 9×4 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-126.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:127",
+      "name": "BC76 (v2)",
+      "description": "51 seats, 2 pushchair bays, 2 wheelchair bays in 9×4 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-127.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:128",
+      "name": "BC76 (v3)",
+      "description": "49 seats, 2 pushchair bays, 2 wheelchair bays in 9×4 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-128.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:129",
+      "name": "BCM93",
+      "description": "30 seats, 1 pushchair bay, 1 wheelchair bay in 12×4 · seating area, toilet, service space · 2 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-129.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:130",
+      "name": "BCMU74",
+      "description": "28 seats in 7×4 · seating area, toilet, service space · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-130.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:131",
+      "name": "BCMU74 (v2)",
+      "description": "32 seats, 1 pushchair bay, 3 wheelchair bays in 7×4 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-131.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:132",
+      "name": "BCMU75",
+      "description": "37 seats, 2 pushchair bays, 2 wheelchair bays in 7×9 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-132.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:133",
+      "name": "BCMU75 (v2)",
+      "description": "37 seats, 2 pushchair bays, 2 wheelchair bays in 9×5 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-133.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:134",
+      "name": "BCMU75 (v3)",
+      "description": "37 seats, 2 pushchair bays, 2 wheelchair bays in 9×5 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-134.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:136",
+      "name": "BFM73",
+      "description": "31 seats, 2 pushchair bays, 1 wheelchair bay in 9×4 · seating area, toilet, 2 service spaces · 2 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/GoAhead-DeckPlan-136.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:135",
+      "name": "BFM73 (v2)",
+      "description": "31 seats, 1 luggage bay, 2 pushchair bays, 1 bicycle bay, 1 wheelchair bay in 9×4 · seating area, toilet, 2 service spaces · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-135.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:137",
+      "name": "BFM73 (v3)",
+      "description": "31 seats, 2 pushchair bays, 1 wheelchair bay in 9×4 · seating area, toilet, 2 service spaces · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-137.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:139",
+      "name": "BFM73B",
+      "description": "44 seats, 1 pushchair bay, 1 wheelchair bay in 12×4 · seating area, toilet, service space · 2 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-139.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:138",
+      "name": "BFM73B (v2)",
+      "description": "44 seats, 1 luggage bay, 1 pushchair bay, 1 bicycle bay, 1 wheelchair bay in 12×4 · seating area, toilet, service space · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-138.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:140",
+      "name": "BFR73",
+      "description": "36 seats in 9×4 · seating area, restaurant, 2 toilets · 2 entrances (fam:4)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-140.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:141",
+      "name": "BFS92",
+      "description": "72 seats in 18×4 · seating area, toilet · 3 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-141.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:142",
+      "name": "BFWL1",
+      "description": "36 seats, 11 bicycle bays in 12×3 · seating area, toilet · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-142.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:143",
+      "name": "BM73",
+      "description": "56 seats in 14×4 · seating area, 2 toilets · 2 entrances (fam:4)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-143.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:144",
+      "name": "BM73B",
+      "description": "46 seats in 12×4 · seating area, restaurant, 2 toilets, service space · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-144.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:145",
+      "name": "BM73B (v2)",
+      "description": "46 seats in 12×6 · seating area, restaurant, 2 toilets, service space · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-145.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:146",
+      "name": "BM73B (v3)",
+      "description": "46 seats in 12×5 · seating area, restaurant, 2 toilets, service space · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-146.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:148",
+      "name": "BM92",
+      "description": "68 seats in 17×4 · seating area · 3 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-148.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:147",
+      "name": "BM92 (v2)",
+      "description": "68 seats, 1 luggage bay, 1 bicycle bay in 17×4 · seating area · 3 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-147.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:149",
+      "name": "BM93",
+      "description": "48 seats in 12×4 · seating area · 2 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-149.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:150",
+      "name": "BMA74",
+      "description": "38 seats in 11×4 · seating area · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-150.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:152",
+      "name": "BMA75",
+      "description": "43 seats in 14×5 · seating area · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-152.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:151",
+      "name": "BMA75 (v2)",
+      "description": "43 seats, 2 pushchair bays, 1 bicycle bay in 14×7 · seating area · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-151.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:153",
+      "name": "BMA76",
+      "description": "44 seats in 10×4 · seating area · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-153.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:154",
+      "name": "BMB74",
+      "description": "44 seats in 11×4 · seating area, service space · 2 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-154.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:156",
+      "name": "BMB75",
+      "description": "37 seats in 11×6 · seating area, service space · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-156.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:155",
+      "name": "BMB75 (v2)",
+      "description": "37 seats, 2 pushchair bays in 11×9 · seating area, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-155.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:157",
+      "name": "BMB76",
+      "description": "44 seats, 1 bicycle bay in 10×4 · seating area, service space · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-157.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:158",
+      "name": "BMB76 (v2)",
+      "description": "44 seats, 1 bicycle bay in 10×4 · seating area, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-158.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:159",
+      "name": "BMU73",
+      "description": "78 seats in 21×4 · seating area, 2 service spaces · 2 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-159.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:160",
+      "name": "BMU73 (v2)",
+      "description": "78 seats in 20×6 · seating area · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/GoAhead-DeckPlan-160.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:161",
+      "name": "BMU73 (v3)",
+      "description": "79 seats in 20×6 · seating area · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-161.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:162",
+      "name": "BMU73B",
+      "description": "78 seats in 21×8 · seating area, 2 service spaces · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-162.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:163",
+      "name": "BMU73B (v2)",
+      "description": "78 seats in 21×4 · seating area, 2 service spaces · 2 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-163.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:164",
+      "name": "BPA74",
+      "description": "44 seats, 1 pushchair bay, 1 bicycle bay in 18×4 · seating area, toilet · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-164.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:165",
+      "name": "BPA74 (v2)",
+      "description": "44 seats, 1 pushchair bay, 1 bicycle bay in 18×4 · seating area, toilet · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-165.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:166",
+      "name": "BPA75",
+      "description": "59 seats, 3 pushchair bays, 1 bicycle bay in 20×5 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-166.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:167",
+      "name": "BPA75 (v2)",
+      "description": "59 seats, 1 pushchair bay, 1 bicycle bay in 20×5 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-167.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:168",
+      "name": "BPA75 (v3)",
+      "description": "59 seats, 1 pushchair bay, 1 bicycle bay in 20×5 · seating area, toilet, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-168.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:170",
+      "name": "BPA76",
+      "description": "55 seats, 1 bicycle bay in 14×4 · seating area, restaurant, toilet, service space · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-170.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:169",
+      "name": "BPA76 (v2)",
+      "description": "55 seats, 1 pushchair bay, 1 bicycle bay in 14×4 · seating area, restaurant, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-169.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:171",
+      "name": "BPB74",
+      "description": "38 seats in 14×4 · seating area, toilet · 4 entrances (fam:3)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-171.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:173",
+      "name": "BPB75",
+      "description": "55 seats in 22×6 · seating area · 4 entrances (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-173.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:172",
+      "name": "BPB75 (v2)",
+      "description": "55 seats, 2 pushchair bays, 1 bicycle bay in 22×6 · seating area · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-172.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:174",
+      "name": "BPB76",
+      "description": "49 seats, 1 pushchair bay, 1 bicycle bay in 16×4 · seating area, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-174.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:175",
+      "name": "BPB76 (v2)",
+      "description": "49 seats, 1 bicycle bay in 16×4 · seating area, service space · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Entur-DeckPlan-175.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:176",
+      "name": "BPB76 (v3)",
+      "description": "49 seats in 16×4 · seating area · 4 entrances (fam:1)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-176.decks.xml"
     },
     {
       "id": "NMR:DeckPlan:3",
@@ -291,25 +795,25 @@
       "decksRef": null
     },
     {
+      "id": "NMR:DeckPlan:177",
+      "name": "FR5-1",
+      "description": "1 luggage bay, 2 bicycle bays in 3×1 · seating area, restaurant (fam:2)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-177.decks.xml"
+    },
+    {
+      "id": "NMR:DeckPlan:178",
+      "name": "FR7-3",
+      "description": "1 luggage bay, 2 bicycle bays in 3×2 · seating area, restaurant (fam:4)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/SJNord-DeckPlan-178.decks.xml"
+    },
+    {
       "id": "NMR:DeckPlan:5",
       "name": "Light Rail 3-Section",
       "description": "Low-floor throughout, multi-purpose area in center section",
       "deckCount": 1,
       "decksRef": null
-    },
-    {
-      "id": "NMR:DeckPlan:20",
-      "name": "Sleeper WLAB-2",
-      "description": "Night-train sleeping car — compartment berths and two toilets, 16 spots",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-20.decks.xml"
-    },
-    {
-      "id": "NMR:DeckPlan:22",
-      "name": "Sleeper WLAB-2 (regen)",
-      "description": "Same car as DeckPlan:20 from the 2026-08-28 emitter — NeTEx enum casing and id tokens, but no Deck Width/Length, so it draws at the renderer defaults",
-      "deckCount": 1,
-      "decksRef": "mock-xml/Entur-DeckPlan-22.decks.xml"
     },
     {
       "id": "NMR:DeckPlan:1",
@@ -345,6 +849,13 @@
       "description": "Open saloon 2+2, vestibules at both ends, wheelchair bay",
       "deckCount": 1,
       "decksRef": null
+    },
+    {
+      "id": "NMR:DeckPlan:179",
+      "name": "WLAB-2",
+      "description": "15 berths, 1 wheelchair bay in 15×1 · seating area, 2 toilets · 2 entrances (fam:4)",
+      "deckCount": 1,
+      "decksRef": "mock-xml/Vy-DeckPlan-179.decks.xml"
     }
   ]
 }
