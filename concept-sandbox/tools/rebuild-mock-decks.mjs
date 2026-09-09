@@ -283,11 +283,16 @@ const plans = sel.map((rep, i) => {
   // Artwork is served per organisation and a corpus can be fetched without it,
   // so a missing drawing is a gap in the cache rather than a fault: the plan
   // ships with no `svgRef` and the render page shows the fragment alone.
+  //
+  // Only absence is tolerated. A permission or disk error reported as "no
+  // artwork" would leave the run exiting 0 over a set it silently failed to
+  // write, which is the one outcome nothing downstream can detect.
   let art;
   try {
     copyFileSync(rep.art, join(XML_DIR, `${stem}.svg`));
     art = `mock-xml/${stem}.svg`;
-  } catch {
+  } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
     artless.push(name.get(rep));
   }
 

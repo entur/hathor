@@ -406,6 +406,13 @@
      * the same file would flash the pane. Nothing here refits: the CSS contains
      * the drawing at whatever size the pane is.
      *
+     * Both handlers check `current` first, the same guard `draw` puts after
+     * every await. Detaching an `<img>` neither cancels its fetch nor stops it
+     * firing, so a reader who moves on mid-load would otherwise get the
+     * previous plan's extents written under the new drawing — or, on an error,
+     * that drawing replaced by a note about a file they are no longer looking
+     * at.
+     *
      * @param {object} plan Mock-DB deckPlan, artwork optional.
      */
     const drawArt = plan => {
@@ -424,10 +431,12 @@
       // The drawing's own pixel extent, not the size it is shown at: it is the
       // unit the legacy icon boxes were positioned in, so it is what the metres
       // in the pane opposite were scaled out of.
-      img.onload = () =>
-        (artMetaEl.innerHTML =
-          refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`);
-      img.onerror = () => noteIn(artEl, `Could not load ${ref}.`, true);
+      img.onload = () => {
+        if (current !== plan) return;
+        artMetaEl.innerHTML =
+          refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`;
+      };
+      img.onerror = () => current === plan && noteIn(artEl, `Could not load ${ref}.`, true);
       img.src = ref;
       artEl.replaceChildren(img);
     };
