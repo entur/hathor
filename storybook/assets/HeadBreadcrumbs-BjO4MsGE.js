@@ -1,0 +1,7 @@
+import{i as e}from"./preload-helper-xPQekRTU.js";import{dt as t,kt as n,o as r,q as i,r as a,rt as o,t as s}from"./iframe-D7q1UzBu.js";import{n as c,t as l}from"./dist-DbGmyfPO.js";function u({title:e}){let{t:n}=a();return(0,d.jsxs)(o,{"aria-label":`breadcrumb`,"data-testid":`breadcrumbs-nav`,children:[(0,d.jsx)(i,{component:c,to:f,underline:`hover`,color:`inherit`,children:n(`breadcrumbs.home`,`Home`)}),(0,d.jsx)(t,{component:`span`,color:`text.primary`,children:e})]})}var d,f,p=e((()=>{r(),l(),s(),d=n(),f=`/`,u.__docgenInfo={description:`List-head breadcrumb trail: \`Home / <title>\`.
+
+Home links back to the landing route; the leaf is plain text. Routes are
+plural by convention. The Home label is sourced from i18n (\`breadcrumbs.home\`).
+
+@param props.title - Resolved label for the current page (the trail's leaf).
+@returns A MUI Breadcrumbs trail with a Home link and the current page.`,methods:[],displayName:`HeadBreadcrumbs`,props:{title:{required:!0,tsType:{name:`string`},description:`Already-resolved label for the current (leaf) page, e.g. "Vehicle types".`}}}}));export{p as n,u as t};

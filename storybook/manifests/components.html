@@ -588,13 +588,13 @@
 <header>
   <div class="wrap">
     <h1>Manifest Debugger</h1>
-    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">10 components ok</span><a class="filter-pill info" data-k="infos" href="#filter-infos">3/10 infos</a><span class="filter-pill ok" aria-disabled="true">35 stories ok</span></div>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">12 components ok</span><a class="filter-pill info" data-k="infos" href="#filter-infos">3/12 infos</a><span class="filter-pill ok" aria-disabled="true">44 stories ok</span></div>
   </div>
 </header>
 <main>
   <div class="wrap">
     <div class="note info" style="margin-bottom: 16px;">
-            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>0.6s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>0.9s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
             <pre><code>typescript: {
   reactDocgen: 'react-docgen-typescript',
 }</code></pre>
@@ -611,14 +611,301 @@
   no-story-error
   no-doc-error"
   role="listitem"
+  aria-label="DeckPlanForm">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> DeckPlanForm</h2>
+      <div class="badges">
+        <label for="c-0-data-deck-plans-deckplanform-props" class="badge ok as-toggle">8 prop types</label>
+        
+        <label for="c-0-data-deck-plans-deckplanform-stories" class="badge ok as-toggle">6 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/data/deck-plans/components/DeckPlanForm.stories.tsx">data-deck-plans-deckplanform · ./src/data/deck-plans/components/DeckPlanForm.stories.tsx</div>
+    
+    <div class="hint">Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by `value`/`onChange`/`mode`, mirroring the VehicleType editor&#39;s shape. Tabs: Edit (name + description, then a horizontal strip of read-only deck renderings) · XML (the read-only NeTEx source). Both panes render from the same fetched body and so share its loading and fetch-error states. The XML body is never editable — name and description are patched into the fetched document on save instead. Holds no fetch/save logic; chrome (title, EditorRail, snackbars, dirty tracking) lives in `DeckPlanDetails`.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-0-data-deck-plans-deckplanform-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-0-data-deck-plans-deckplanform-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">8 prop types</span>
+            </div>
+            <pre><code>Component: src/data/deck-plans/components/DeckPlanForm.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Body fetch error; renders an alert + retry in both tabs&#39; body panes.
+ */
+fetchError: string | null
+
+/**
+ * Create flow — hides the tab strip; there is no persisted body yet.
+ */
+isCreate: boolean
+
+/**
+ * Body fetch in flight; renders a spinner in both tabs&#39; body panes.
+ */
+loading: boolean
+
+/**
+ * `&#39;view&#39;` disables the inputs; `&#39;edit&#39;` enables them.
+ */
+mode: &#39;view&#39; | &#39;edit&#39;
+
+/**
+ * Fired with the merged next value on every field edit.
+ */
+onChange: (next: DeckPlan) =&gt; void
+
+/**
+ * Refetch trigger from the parent hook.
+ */
+onRetry: () =&gt; void
+
+/**
+ * Current deck plan — the editable name/description fields.
+ */
+value: {
+  id: string;
+  version?: number;
+  name?: Name;
+  description?: Name;
+}
+
+/**
+ * NeTEx XML body, read-only.
+ */
+xml: string</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box } from "@mui/material";
+import { DeckPlanForm } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Edit Tab</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">The default: fields on top, one rendering per Deck below, captioned by name. This is the story the `&lt;deck-rendering&gt;` wiring exists for.</div>
+              <pre><code>const EditTab = () =&gt; &lt;Editor {...base} railWidth={RAIL_W} xml={SIX_DECKS} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Edit Tab Sample</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">A plan with an empty `&lt;decks/&gt;` — the common case on real data. One ghost deck is drawn under a SAMPLE heading so the tab is never blank.</div>
+              <pre><code>const EditTabSample = () =&gt; &lt;Editor {...base} railWidth={RAIL_W} xml={NO_DECKS} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">View Mode</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Read-only: inputs disabled, renderings unaffected.</div>
+              <pre><code>const ViewMode = () =&gt; &lt;Editor {...base} railWidth={RAIL_W} mode=&quot;view&quot; xml={SIX_DECKS} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Body Loading</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Body fetch in flight. The spinner replaces the strip only — Name and Description stay interactive, so a slow fetch never blocks typing.</div>
+              <pre><code>const BodyLoading = () =&gt; &lt;Editor {...base} railWidth={RAIL_W} loading xml=&quot;&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Body Fetch Error</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Body fetch failed — alert plus retry, again scoped to the strip.</div>
+              <pre><code>const BodyFetchError = () =&gt; &lt;Editor {...base} railWidth={RAIL_W} xml=&quot;&quot; fetchError=&quot;503 Service Unavailable&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Create</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Create flow — no persisted body yet, so no tab strip and no renderings.</div>
+              <pre><code>const Create = () =&gt; &lt;Editor {...base} railWidth={RAIL_W} isCreate xml=&quot;&quot; /&gt;;</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="DeckRendering">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> DeckRendering</h2>
+      <div class="badges">
+        <label for="c-1-data-deck-plans-deckrendering-props" class="badge ok as-toggle">4 prop types</label>
+        
+        <label for="c-1-data-deck-plans-deckrendering-stories" class="badge ok as-toggle">3 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/data/deck-plans/components/DeckRendering.stories.tsx">data-deck-plans-deckrendering · ./src/data/deck-plans/components/DeckRendering.stories.tsx</div>
+    
+    <div class="hint">Read-only SVG rendering of a single deck, backed by the editor package&#39;s `&lt;deck-rendering&gt;` custom element. The element is created and populated imperatively rather than written as JSX. Vue renders custom elements in `connectedCallback`, and the component&#39;s `stageSize` dereferences `deck.getBoundingBox()` on that first pass — so a React-inserted element would throw before any effect could assign `deck`. Creating it detached, assigning props, then inserting sidesteps that and removes the need to augment `JSX.IntrinsicElements`. Renders nothing until the bundle has loaded; callers own the loading UI. A mount that throws reports itself in place — silently rendering nothing would read as &quot;this deck is empty&quot; while the strip around it looks healthy.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-1-data-deck-plans-deckrendering-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-1-data-deck-plans-deckrendering-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">4 prop types</span>
+            </div>
+            <pre><code>Component: src/data/deck-plans/components/DeckRendering.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Forwarded to the host element for test targeting.
+ */
+data-testid?: string
+
+/**
+ * Deck to draw — must come from the renderer bundle&#39;s own `parseNeTEx`.
+ */
+deck: Deck
+
+/**
+ * px per metre; omitting it upstream collapses the SVG to 10×10.
+ */
+scale?: number = 36
+
+/**
+ * Rotate 90° so the deck draws as a tall column instead of a wide strip.
+ */
+vertical?: boolean = false</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box, Stack, Typography } from "@mui/material";
+import { DeckRendering } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Ghost</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">The `SAMPLE` fallback — what renders when a real plan carries an empty `&lt;decks/&gt;`. Backed by Wagon_2&#39;s deck, so it looks like a real layout.</div>
+              <pre><code>const Ghost = () =&gt; &lt;Framed label=&quot;ghost&quot; xml={GHOST_DECK_PLAN_XML} vertical /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Orientations</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">A populated deck, in both orientations. `vertical` is what the sidebar uses: eight seats fit a narrow column, where the native orientation overflows.</div>
+              <pre><code>const Orientations = () =&gt; (
+  &lt;Stack direction=&quot;row&quot; spacing={4} alignItems=&quot;flex-start&quot;&gt;
+    &lt;Framed label=&quot;vertical&quot; xml={SAMPLE_XML} vertical /&gt;
+    &lt;Framed label=&quot;horizontal&quot; xml={SAMPLE_XML} /&gt;
+  &lt;/Stack&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Scales</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Scale sweep — confirms px-per-metre is honoured and nothing clips.</div>
+              <pre><code>const Scales = () =&gt; (
+  &lt;Stack direction=&quot;row&quot; spacing={4} alignItems=&quot;flex-start&quot;&gt;
+    {[DECK_SCALE / 2, DECK_SCALE, DECK_SCALE * 2].map(s =&gt; (
+      &lt;Framed key={s} label={`scale ${s}`} xml={SAMPLE_XML} vertical scale={s} /&gt;
+    ))}
+  &lt;/Stack&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
   aria-label="FormLayout">
   <div class="head">
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> FormLayout</h2>
       <div class="badges">
-        <label for="c-0-components-formlayout-props" class="badge ok as-toggle">4 prop types</label>
+        <label for="c-2-components-formlayout-props" class="badge ok as-toggle">4 prop types</label>
         
-        <label for="c-0-components-formlayout-stories" class="badge ok as-toggle">4 stories</label>
+        <label for="c-2-components-formlayout-stories" class="badge ok as-toggle">4 stories</label>
         
         
       </div>
@@ -632,10 +919,10 @@
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-0-components-formlayout-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-2-components-formlayout-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-0-components-formlayout-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-2-components-formlayout-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -762,9 +1049,9 @@ import { FieldRow, FormLayout, MetaRow } from "hathor";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> FormLayoutSkeleton</h2>
       <div class="badges">
-        <label for="c-1-components-formlayoutskeleton-props" class="badge ok as-toggle">3 prop types</label>
+        <label for="c-3-components-formlayoutskeleton-props" class="badge ok as-toggle">3 prop types</label>
         
-        <label for="c-1-components-formlayoutskeleton-stories" class="badge ok as-toggle">4 stories</label>
+        <label for="c-3-components-formlayoutskeleton-stories" class="badge ok as-toggle">4 stories</label>
         
         
       </div>
@@ -778,10 +1065,10 @@ import { FieldRow, FormLayout, MetaRow } from "hathor";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-1-components-formlayoutskeleton-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-3-components-formlayoutskeleton-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-1-components-formlayoutskeleton-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-3-components-formlayoutskeleton-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -884,9 +1171,9 @@ import { FormLayoutSkeleton } from "hathor";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> HeadBreadcrumbs</h2>
       <div class="badges">
-        <label for="c-2-components-data-headbreadcrumbs-props" class="badge ok as-toggle">1 prop type</label>
+        <label for="c-4-components-data-headbreadcrumbs-props" class="badge ok as-toggle">1 prop type</label>
         
-        <label for="c-2-components-data-headbreadcrumbs-stories" class="badge ok as-toggle">3 stories</label>
+        <label for="c-4-components-data-headbreadcrumbs-stories" class="badge ok as-toggle">3 stories</label>
         
         
       </div>
@@ -900,10 +1187,10 @@ import { FormLayoutSkeleton } from "hathor";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-2-components-data-headbreadcrumbs-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-4-components-data-headbreadcrumbs-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-2-components-data-headbreadcrumbs-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-4-components-data-headbreadcrumbs-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -983,7 +1270,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
       <div class="badges">
         
         
-        <label for="c-3-pages-home-stories" class="badge ok as-toggle">2 stories</label>
+        <label for="c-5-pages-home-stories" class="badge ok as-toggle">2 stories</label>
         
         
       </div>
@@ -997,7 +1284,7 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-3-pages-home-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-5-pages-home-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
   
@@ -1056,8 +1343,8 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
       <h2><span class="status-dot dot-ok"></span> Menu</h2>
       <div class="badges">
         
-        <label for="c-4-components-menu-info" class="badge info as-toggle">1 info</label>
-        <label for="c-4-components-menu-stories" class="badge ok as-toggle">3 stories</label>
+        <label for="c-6-components-menu-info" class="badge info as-toggle">1 info</label>
+        <label for="c-6-components-menu-stories" class="badge ok as-toggle">3 stories</label>
         
         
       </div>
@@ -1070,8 +1357,8 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-4-components-menu-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-4-components-menu-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-6-components-menu-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-6-components-menu-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
   
@@ -1160,9 +1447,9 @@ import { Menu, NavRailProvider } from "hathor";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> MenuIcon</h2>
       <div class="badges">
-        <label for="c-5-components-icons-menuicon-props" class="badge ok as-toggle">2 prop types</label>
-        <label for="c-5-components-icons-menuicon-info" class="badge info as-toggle">1 info</label>
-        <label for="c-5-components-icons-menuicon-stories" class="badge ok as-toggle">2 stories</label>
+        <label for="c-7-components-icons-menuicon-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-7-components-icons-menuicon-info" class="badge info as-toggle">1 info</label>
+        <label for="c-7-components-icons-menuicon-stories" class="badge ok as-toggle">2 stories</label>
         
         
       </div>
@@ -1175,11 +1462,11 @@ import { Menu, NavRailProvider } from "hathor";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-5-components-icons-menuicon-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-5-components-icons-menuicon-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-7-components-icons-menuicon-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-7-components-icons-menuicon-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-5-components-icons-menuicon-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-7-components-icons-menuicon-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -1310,9 +1597,9 @@ import { MenuIcon } from "hathor";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> NetexId</h2>
       <div class="badges">
-        <label for="c-6-data-netex-netexid-props" class="badge ok as-toggle">5 prop types</label>
+        <label for="c-8-data-netex-netexid-props" class="badge ok as-toggle">5 prop types</label>
         
-        <label for="c-6-data-netex-netexid-stories" class="badge ok as-toggle">6 stories</label>
+        <label for="c-8-data-netex-netexid-stories" class="badge ok as-toggle">6 stories</label>
         
         
       </div>
@@ -1326,10 +1613,10 @@ import { MenuIcon } from "hathor";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-6-data-netex-netexid-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-8-data-netex-netexid-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-6-data-netex-netexid-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-8-data-netex-netexid-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -1462,9 +1749,9 @@ import { NetexId } from "hathor";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> PageContentDemo</h2>
       <div class="badges">
-        <label for="c-7-components-data-datapagecontent-props" class="badge ok as-toggle">21 prop types</label>
-        <label for="c-7-components-data-datapagecontent-info" class="badge info as-toggle">1 info</label>
-        <label for="c-7-components-data-datapagecontent-stories" class="badge ok as-toggle">6 stories</label>
+        <label for="c-9-components-data-datapagecontent-props" class="badge ok as-toggle">21 prop types</label>
+        <label for="c-9-components-data-datapagecontent-info" class="badge info as-toggle">1 info</label>
+        <label for="c-9-components-data-datapagecontent-stories" class="badge ok as-toggle">6 stories</label>
         
         
       </div>
@@ -1477,11 +1764,11 @@ import { NetexId } from "hathor";</code></pre>
 
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
-  <input id="c-7-components-data-datapagecontent-info" class="tg tg-info" type="checkbox" hidden />
-  <input id="c-7-components-data-datapagecontent-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-9-components-data-datapagecontent-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-9-components-data-datapagecontent-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-7-components-data-datapagecontent-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-9-components-data-datapagecontent-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -1668,9 +1955,9 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
     <div class="title">
       <h2><span class="status-dot dot-ok"></span> TransportModeIcon</h2>
       <div class="badges">
-        <label for="c-8-components-icons-transportmodeicon-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-10-components-icons-transportmodeicon-props" class="badge ok as-toggle">2 prop types</label>
         
-        <label for="c-8-components-icons-transportmodeicon-stories" class="badge ok as-toggle">4 stories</label>
+        <label for="c-10-components-icons-transportmodeicon-stories" class="badge ok as-toggle">4 stories</label>
         
         
       </div>
@@ -1684,10 +1971,10 @@ import { MemoryRouter } from "react-router-dom";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-8-components-icons-transportmodeicon-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-10-components-icons-transportmodeicon-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
-  <input id="c-8-components-icons-transportmodeicon-props" class="tg tg-props" type="checkbox" hidden />
+  <input id="c-10-components-icons-transportmodeicon-props" class="tg tg-props" type="checkbox" hidden />
 
   <div class="panels">
     
@@ -1809,7 +2096,7 @@ import { TransportModeIcon } from "hathor";</code></pre>
       <div class="badges">
         
         
-        <label for="c-9-components-icons-transportmodesprite-stories" class="badge ok as-toggle">1 story</label>
+        <label for="c-11-components-icons-transportmodesprite-stories" class="badge ok as-toggle">1 story</label>
         
         
       </div>
@@ -1823,7 +2110,7 @@ import { TransportModeIcon } from "hathor";</code></pre>
   <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
   
   
-  <input id="c-9-components-icons-transportmodesprite-stories" class="tg tg-stories" type="checkbox" hidden />
+  <input id="c-11-components-icons-transportmodesprite-stories" class="tg tg-stories" type="checkbox" hidden />
   
   
   
