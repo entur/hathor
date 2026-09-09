@@ -1,7 +1,12 @@
-# concept-sandbox/
+# Concept Sandbox
 
-Throwaway visual POCs hosted as static HTML. Iterates outside the React app so
+UI prototyping space for Hathor — plain HTML, CSS, and [htmx](https://htmx.org/). No build step.
+Throwaway visual POCs hosted as static HTML, iterating outside the React app so
 design moves can be sketched fast.
+
+**Live site:** https://entur.github.io/hathor/
+
+Changes to `concept-sandbox/` on `main` or `ui-sandboxing` are auto-deployed via GitHub Actions.
 
 ## Production mirrors
 
