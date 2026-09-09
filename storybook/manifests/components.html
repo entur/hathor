@@ -1,0 +1,1904 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Components Manifest</title>
+  <style>
+      :root {
+          --bg: #0b0c10;
+          --panel: #121318;
+          --muted: #9aa0a6;
+          --fg: #e8eaed;
+          --ok: #22c55e;
+          --info: #1e88e5;
+          --err: #c62828;
+          --ok-bg: #0c1a13;
+          --info-bg: #0c1624;
+          --err-bg: #1a0e0e;
+          --chip: #1f2330;
+          --border: #2b2f3a;
+          --link: #8ab4f8;
+          --active-ring: 1px; /* 1px active ring for pills and toggles */
+      }
+
+      * {
+          box-sizing: border-box;
+      }
+
+      html,
+      body {
+          margin: 0;
+          background: var(--bg);
+          color: var(--fg);
+          font: 14px/1.5 system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          Cantarell,
+          'Helvetica Neue',
+          Arial,
+          'Noto Sans';
+      }
+
+      .wrap {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 16px 20px;
+      }
+
+      header {
+          position: sticky;
+          top: 0;
+          backdrop-filter: blur(6px);
+          background: color-mix(in srgb, var(--bg) 84%, transparent);
+          border-bottom: 1px solid var(--border);
+          z-index: 10;
+      }
+
+      h1 {
+          font-size: 20px;
+          margin: 0 0 6px;
+      }
+
+      .summary {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          align-items: center;
+      }
+
+      /* Top filter pills */
+      .filter-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          background: var(--panel);
+          text-decoration: none;
+          cursor: pointer;
+          user-select: none;
+          color: var(--fg);
+      }
+
+      .filter-pill.ok {
+          color: #b9f6ca;
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+          background: color-mix(in srgb, var(--ok) 18%, #000);
+      }
+
+      .filter-pill.info {
+          color: #b3d9ff;
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+          background: var(--info-bg);
+      }
+
+      .filter-pill.err {
+          color: #ff9aa0;
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+          background: var(--err-bg);
+      }
+
+      .filter-pill.all {
+          color: #d7dbe0;
+          border-color: var(--border);
+          background: var(--panel);
+      }
+
+      .filter-pill[aria-disabled='true'] {
+          cursor: default;
+          text-decoration: none;
+      }
+
+      .filter-pill:focus,
+      .filter-pill:active {
+          outline: none;
+          box-shadow: none;
+      }
+
+      /* Selected top pill ring via :target */
+      #filter-all:target ~ header .filter-pill[data-k='all'],
+      #filter-errors:target ~ header .filter-pill[data-k='errors'],
+      #filter-infos:target ~ header .filter-pill[data-k='infos'],
+      #filter-story-errors:target ~ header .filter-pill[data-k='story-errors'],
+      #filter-doc-errors:target ~ header .filter-pill[data-k='docs'],
+      #filter-docs:target ~ header .filter-pill[data-k='docs'] {
+          box-shadow: 0 0 0 var(--active-ring) currentColor;
+          border-color: currentColor;
+      }
+
+      /* Hidden targets for filtering */
+      #filter-all,
+      #filter-errors,
+      #filter-infos,
+      #filter-story-errors,
+      #filter-doc-errors,
+      #filter-docs {
+          display: none;
+      }
+
+      main {
+          padding: 36px 0 40px;
+      }
+
+      .grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
+      }
+
+      /* one card per row */
+
+      .card {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          border-radius: 14px;
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+      }
+
+      .head {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+      }
+
+      .title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+      }
+
+      .title h2 {
+          font-size: 16px;
+          margin: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .meta {
+          font-size: 12px;
+          color: var(--muted);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+
+      .kv {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+      }
+
+      .chip {
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: var(--chip);
+          border: 1px solid var(--border);
+      }
+
+      .hint {
+          color: var(--muted);
+          font-size: 12px;
+      }
+
+      .badges {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+      }
+
+      /* Per-card badges: labels become toggles when clickable */
+      .badge {
+          font-size: 12px;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--chip);
+          color: #d7dbe0;
+      }
+
+      .badge.ok {
+          color: #b9f6ca;
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+      }
+
+      .badge.info {
+          color: #b3d9ff;
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+      }
+
+      .badge.err {
+          color: #ff9aa0;
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+      }
+
+      .as-toggle {
+          cursor: pointer;
+      }
+
+      /* 1px ring on active toggle */
+      .tg-err:checked + label.as-toggle,
+      .tg-info:checked + label.as-toggle,
+      .tg-stories:checked + label.as-toggle,
+      .tg-docs:checked + label.as-toggle,
+      .tg-subcomponents:checked + label.as-toggle,
+      .tg-content:checked + label.as-toggle,
+      .tg-props:checked + label.as-toggle {
+          box-shadow: 0 0 0 var(--active-ring) currentColor;
+          border-color: currentColor;
+      }
+
+      /* Panels: hidden by default, shown when respective toggle checked */
+      .panels {
+          display: grid;
+          gap: 10px;
+      }
+
+      .panel {
+          display: none;
+      }
+
+      .tg-err:checked ~ .panels .panel-err {
+          display: grid;
+      }
+
+      .tg-info:checked ~ .panels .panel-info {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-stories:checked ~ .panels .panel-stories {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-docs:checked ~ .panels .panel-docs {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-subcomponents:checked ~ .panels .panel-subcomponents {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-content:checked ~ .panels .panel-content {
+          display: grid;
+          gap: 8px;
+      }
+
+      .tg-props:checked ~ .panels .panel-props {
+          display: grid;
+      }
+
+      /* Colored notes for prop type error + info */
+      .note {
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+      }
+
+      .note.err {
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+          background: var(--err-bg);
+          color: #ffd1d4;
+      }
+
+      .note.info {
+          border-color: color-mix(in srgb, var(--info) 55%, var(--border));
+          background: var(--info-bg);
+          color: #d6e8ff;
+      }
+
+      .note.ok {
+          border-color: color-mix(in srgb, var(--ok) 55%, var(--border));
+          background: var(--ok-bg);
+          color: var(--fg);
+      }
+
+      .note-title {
+          font-weight: 600;
+          margin-bottom: 6px;
+      }
+
+      .note-body {
+          white-space: normal;
+      }
+
+      /* Story error cards */
+      .ex {
+          padding: 10px;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          background: #0f131b;
+      }
+
+      .ex.err {
+          border-color: color-mix(in srgb, var(--err) 55%, var(--border));
+      }
+
+      .row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+      }
+
+      .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+      }
+
+      .dot-ok {
+          background: var(--ok);
+      }
+
+      .dot-err {
+          background: var(--err);
+      }
+
+      .ex-name {
+          font-weight: 600;
+      }
+
+      /* Error groups (visible in errors filter) */
+      .error-groups {
+          display: none;
+          margin-bottom: 16px;
+      }
+
+      .group {
+          border: 1px solid var(--border);
+          background: var(--panel);
+          border-radius: 14px;
+          overflow: hidden;
+      }
+
+      .group + .group {
+          margin-top: 12px;
+      }
+
+      .group-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          cursor: pointer;
+          border-bottom: 1px solid var(--border);
+      }
+
+      .group-header:hover {
+          background: #141722;
+      }
+
+      .group-title {
+          font-weight: 600;
+          flex: 1;
+      }
+
+      .group-count {
+          font-size: 12px;
+          color: var(--muted);
+      }
+
+      .group-cards {
+          display: none;
+          padding: 12px;
+      }
+
+      .group .card {
+          margin: 12px 0;
+      }
+
+      .group .card:first-child {
+          margin-top: 0;
+      }
+
+      .group .card:last-child {
+          margin-bottom: 0;
+      }
+
+      /* caret rotation */
+      .group-tg:checked + label .caret {
+          transform: rotate(90deg);
+      }
+
+      .caret {
+          transition: transform 0.15s ease;
+      }
+
+      /* toggle body */
+      .group-tg:checked ~ .group-cards {
+          display: block;
+      }
+
+      /* CSS-only filtering of cards via top pills */
+      #filter-errors:target ~ main .card:not(.has-error):not(.has-story-error) {
+          display: none;
+      }
+
+      #filter-infos:target ~ main .card:not(.has-info) {
+          display: none;
+      }
+
+      #filter-story-errors:target ~ main .card:not(.has-story-error) {
+          display: none;
+      }
+
+      #filter-doc-errors:target ~ main .card:not(.has-doc-error) {
+          display: none;
+      }
+
+      #filter-docs:target ~ main .card:has(> .tg-docs),
+      #filter-docs:target ~ main .card.is-doc {
+          display: block;
+      }
+
+      #filter-docs:target ~ main .card:not(:has(> .tg-docs)):not(.is-doc) {
+          display: none;
+      }
+
+      #filter-all:target ~ main .card {
+          display: block;
+      }
+
+      /* In errors view, hide standalone component-error cards in the regular grid (they will appear in groups) */
+      #filter-errors:target ~ main .grid .card.has-error {
+          display: none;
+      }
+
+      /* Show grouped section only in errors view */
+      #filter-errors:target ~ main .error-groups {
+          display: block;
+      }
+
+      /* Section titles */
+      .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--muted);
+          margin: 24px 0 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid var(--border);
+      }
+      .section-title:first-child {
+          margin-top: 0;
+      }
+
+      /* When a toggle is checked, show the corresponding panel */
+      .card > .tg-err:checked ~ .panels .panel-err {
+          display: grid;
+      }
+      
+      .card > .tg-info:checked ~ .panels .panel-info {
+          display: grid;
+      }
+      
+      .card > .tg-stories:checked ~ .panels .panel-stories {
+          display: grid;
+      }
+
+      .card > .tg-docs:checked ~ .panels .panel-docs {
+          display: grid;
+      }
+
+      .card > .tg-subcomponents:checked ~ .panels .panel-subcomponents {
+          display: grid;
+      }
+
+      .card > .tg-content:checked ~ .panels .panel-content {
+          display: grid;
+      }
+
+      /* Add vertical spacing around panels only when any panel is visible */
+      .card > .tg-err:checked ~ .panels,
+      .card > .tg-info:checked ~ .panels,
+      .card > .tg-stories:checked ~ .panels,
+      .card > .tg-docs:checked ~ .panels,
+      .card > .tg-subcomponents:checked ~ .panels,
+      .card > .tg-content:checked ~ .panels,
+      .card > .tg-props:checked ~ .panels {
+          margin: 10px 0;
+      }
+
+      /* Optional: a subtle 1px ring on the active badge, using :has() if available */
+      @supports selector(.card:has(.tg-err:checked)) {
+          .card:has(.tg-err:checked) label[for$='-err'],
+          .card:has(.tg-info:checked) label[for$='-info'],
+          .card:has(.tg-stories:checked) label[for$='-stories'],
+          .card:has(.tg-docs:checked) label[for$='-docs'],
+          .card:has(.tg-subcomponents:checked) label[for$='-subcomponents'],
+          .card:has(.tg-content:checked) label[for$='-content'],
+          .card:has(.tg-props:checked) label[for$='-props'] {
+              box-shadow: 0 0 0 1px currentColor;
+              border-color: currentColor;
+          }
+      }
+
+      /* Wrap long lines in code blocks at ~120 characters */
+      pre, code {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      }
+      pre {
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          overflow-x: auto; /* fallback for extremely long tokens */
+          margin: 8px 0 0;
+      }
+      pre > code {
+          display: block;
+          white-space: inherit;
+          overflow-wrap: inherit;
+          word-break: inherit;
+          inline-size: min(100%, 120ch);
+      }
+
+      /* MDX content container for docs */
+      .mdx-content {
+          background: #0f131b;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 12px;
+          max-height: 400px;
+          overflow-y: auto;
+          margin-top: 8px;
+      }
+  </style>
+</head>
+<body>
+<!-- Hidden targets for the top-level filters -->
+<span id="filter-all"></span>
+<span id="filter-errors"></span>
+<span id="filter-infos"></span>
+<span id="filter-story-errors"></span>
+<span id="filter-doc-errors"></span>
+<span id="filter-docs"></span>
+<header>
+  <div class="wrap">
+    <h1>Manifest Debugger</h1>
+    <div class="summary"><a class="filter-pill all" data-k="all" href="#filter-all">All</a><span class="filter-pill ok" aria-disabled="true">10 components ok</span><a class="filter-pill info" data-k="infos" href="#filter-infos">3/10 infos</a><span class="filter-pill ok" aria-disabled="true">35 stories ok</span></div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div class="note info" style="margin-bottom: 16px;">
+            <strong>Tip:</strong> You are using <code>react-docgen</code> (the default). Generation took <strong>0.6s</strong>. For higher quality prop types, consider switching to <code>react-docgen-typescript</code> in your <code>main.ts</code>:
+            <pre><code>typescript: {
+  reactDocgen: 'react-docgen-typescript',
+}</code></pre>
+            Note: <code>react-docgen-typescript</code> can be slower. If performance is acceptable for your project, it generally produces better results.
+            <a href="https://storybook.js.org/docs/api/main-config/main-config-typescript#reactdocgen" target="_blank">Learn more</a>
+          </div>
+    <h2 class="section-title">Components</h2>
+    <div class="grid" role="list">
+      
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="FormLayout">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> FormLayout</h2>
+      <div class="badges">
+        <label for="c-0-components-formlayout-props" class="badge ok as-toggle">4 prop types</label>
+        
+        <label for="c-0-components-formlayout-stories" class="badge ok as-toggle">4 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/FormLayout.stories.tsx">components-formlayout · ./src/components/FormLayout.stories.tsx</div>
+    
+    <div class="hint">Container-query-aware two-column form grid. Stacks (single column) when the nearest inline-size container is narrower than `STACK_BELOW`; otherwise renders a content-sized label column (capped at 12rem via `fit-content`) and gives all remaining width to the value column. Short labels collapse to their natural width so the input gets the room it needs. The wrapper sets `containerType: inline-size` on itself so the inner grid queries this component&#39;s own width — drop a `&lt;FormLayout&gt;` anywhere and it will track its host&#39;s width, not the viewport&#39;s.</div>
+    <div class="kv"><span class="chip">param: rowGap Override the default vertical row spacing (`1.25`).</span><span class="chip">param: sx Forwarded to the outer Box for caller-side spacing/margin.</span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-0-components-formlayout-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-0-components-formlayout-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">4 prop types</span>
+            </div>
+            <pre><code>Component: src/components/FormLayout.tsx::FormLayout</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>children: ReactNode
+
+data-testid?: string
+
+rowGap?: number = 1.25
+
+sx?: SxProps&lt;Theme&gt;</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box, TextField } from "@mui/material";
+import { FieldRow, FormLayout, MetaRow } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Editable</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Editable = () =&gt; (
+  &lt;FormLayout&gt;
+    &lt;FieldRow id=&quot;f-name&quot; label=&quot;Name&quot;&gt;
+      &lt;TextField id=&quot;f-name&quot; size=&quot;small&quot; fullWidth defaultValue=&quot;ER34-001&quot; /&gt;
+    &lt;/FieldRow&gt;
+    &lt;FieldRow id=&quot;f-reg&quot; label=&quot;Registration number&quot;&gt;
+      &lt;TextField id=&quot;f-reg&quot; size=&quot;small&quot; fullWidth defaultValue=&quot;EW 12345&quot; /&gt;
+    &lt;/FieldRow&gt;
+    &lt;FieldRow id=&quot;f-notes&quot; label=&quot;Notes&quot; alignTop&gt;
+      &lt;TextField id=&quot;f-notes&quot; size=&quot;small&quot; fullWidth multiline rows={3} /&gt;
+    &lt;/FieldRow&gt;
+  &lt;/FormLayout&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Read Only</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const ReadOnly = () =&gt; (
+  &lt;FormLayout&gt;
+    &lt;MetaRow label=&quot;Codespace&quot;&gt;NSR&lt;/MetaRow&gt;
+    &lt;MetaRow label=&quot;Type&quot;&gt;VehicleType&lt;/MetaRow&gt;
+    &lt;MetaRow label=&quot;Created&quot;&gt;2026-05-29&lt;/MetaRow&gt;
+  &lt;/FormLayout&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Mixed</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Mixed = () =&gt; (
+  &lt;FormLayout&gt;
+    &lt;MetaRow label=&quot;Id&quot;&gt;NSR:VehicleType:1234&lt;/MetaRow&gt;
+    &lt;FieldRow id=&quot;m-name&quot; label=&quot;Name&quot;&gt;
+      &lt;TextField id=&quot;m-name&quot; size=&quot;small&quot; fullWidth defaultValue=&quot;Type 73&quot; /&gt;
+    &lt;/FieldRow&gt;
+    &lt;MetaRow label=&quot;Read-only field&quot;&gt;cannot edit&lt;/MetaRow&gt;
+  &lt;/FormLayout&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Narrow Container</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Constrains the wrapping Box to 20rem so FormLayout&#39;s container query (`@container (min-width: 22rem)`) misses and the grid collapses to a single column. Resize your browser — the canvas-level layout doesn&#39;t matter; only the wrapping Box&#39;s width does.</div>
+              <pre><code>const NarrowContainer = () =&gt; (
+  &lt;Box sx={{ width: &#39;20rem&#39;, border: &#39;1px dashed&#39;, borderColor: &#39;divider&#39;, p: 2 }}&gt;
+    &lt;FormLayout&gt;
+      &lt;FieldRow id=&quot;n-name&quot; label=&quot;Name&quot;&gt;
+        &lt;TextField id=&quot;n-name&quot; size=&quot;small&quot; fullWidth defaultValue=&quot;ER34-001&quot; /&gt;
+      &lt;/FieldRow&gt;
+      &lt;FieldRow id=&quot;n-reg&quot; label=&quot;Registration number&quot;&gt;
+        &lt;TextField id=&quot;n-reg&quot; size=&quot;small&quot; fullWidth defaultValue=&quot;EW 12345&quot; /&gt;
+      &lt;/FieldRow&gt;
+    &lt;/FormLayout&gt;
+  &lt;/Box&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="FormLayoutSkeleton">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> FormLayoutSkeleton</h2>
+      <div class="badges">
+        <label for="c-1-components-formlayoutskeleton-props" class="badge ok as-toggle">3 prop types</label>
+        
+        <label for="c-1-components-formlayoutskeleton-stories" class="badge ok as-toggle">4 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/FormLayoutSkeleton.stories.tsx">components-formlayoutskeleton · ./src/components/FormLayoutSkeleton.stories.tsx</div>
+    
+    <div class="hint">Wave-animated loading skeleton for any sidebar editor built on the {@link FormLayout} two-column grid. Internally wraps each section in `&lt;FormLayout&gt;` so the skeleton&#39;s grid shape (and container-query stacking) tracks the live form automatically — no separate grid template to keep in sync.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-1-components-formlayoutskeleton-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-1-components-formlayoutskeleton-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">3 prop types</span>
+            </div>
+            <pre><code>Component: src/components/FormLayoutSkeleton.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Loading text for screen readers — caller-localised.
+ */
+ariaLabel: string
+
+/**
+ * Each section is its own &lt;FormLayout&gt; grid; Dividers auto-rendered between.
+ */
+sections: FormLayoutSkeletonSection[]
+
+/**
+ * Render an h6 + id-pill skeleton row at the top, with a divider below.
+ */
+showTitle?: boolean</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box } from "@mui/material";
+import { FormLayoutSkeleton } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Default = () =&gt; &lt;FormLayoutSkeleton ariaLabel=&quot;Loading form&quot; sections={[{ rowCount: 4 }]} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Title</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithTitle = () =&gt; &lt;FormLayoutSkeleton ariaLabel=&quot;Loading vehicle&quot; showTitle sections={[{ rowCount: 4 }]} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Multi Section</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const MultiSection = () =&gt; &lt;FormLayoutSkeleton
+    ariaLabel=&quot;Loading vehicle type&quot;
+    showTitle
+    sections={[{ rowCount: 3 }, { rowCount: 2 }, { rowCount: 4 }]} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Tall Rows</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">`rowHeight` override on the second section bumps each value cell to 88px, mimicking a multiline text area. The first section keeps the default input-height rows for contrast.</div>
+              <pre><code>const TallRows = () =&gt; &lt;FormLayoutSkeleton
+    ariaLabel=&quot;Loading editor with notes&quot;
+    showTitle
+    sections={[{ rowCount: 2 }, { rowCount: 1, rowHeight: 88 }]} /&gt;;</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="HeadBreadcrumbs">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> HeadBreadcrumbs</h2>
+      <div class="badges">
+        <label for="c-2-components-data-headbreadcrumbs-props" class="badge ok as-toggle">1 prop type</label>
+        
+        <label for="c-2-components-data-headbreadcrumbs-stories" class="badge ok as-toggle">3 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/data/HeadBreadcrumbs.stories.tsx">components-data-headbreadcrumbs · ./src/components/data/HeadBreadcrumbs.stories.tsx</div>
+    
+    <div class="hint">List-head breadcrumb trail: `Home / &lt;title&gt;`. Home links back to the landing route; the leaf is plain text. Routes are plural by convention. The Home label is sourced from i18n (`breadcrumbs.home`).</div>
+    <div class="kv"><span class="chip">param: props.title - Resolved label for the current page (the trail&#39;s leaf).</span><span class="chip">returns: A MUI Breadcrumbs trail with a Home link and the current page.</span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-2-components-data-headbreadcrumbs-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-2-components-data-headbreadcrumbs-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">1 prop type</span>
+            </div>
+            <pre><code>Component: src/components/data/HeadBreadcrumbs.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Already-resolved label for the current (leaf) page, e.g. &quot;Vehicle types&quot;.
+ */
+title: string</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { HeadBreadcrumbs } from "hathor";
+import { MemoryRouter } from "react-router-dom";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Default trail: `Home / Vehicle types`. Edit the `title` control to retitle the leaf.</div>
+              <pre><code>const Default = () =&gt; &lt;HeadBreadcrumbs title=&quot;Vehicle types&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Vehicles</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Vehicles list head.</div>
+              <pre><code>const Vehicles = () =&gt; &lt;HeadBreadcrumbs title=&quot;Vehicles&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Deck Plans</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Deck plans list head.</div>
+              <pre><code>const DeckPlans = () =&gt; &lt;HeadBreadcrumbs title=&quot;Deck plans&quot; /&gt;;</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="HomePage">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> HomePage</h2>
+      <div class="badges">
+        
+        
+        <label for="c-3-pages-home-stories" class="badge ok as-toggle">2 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/pages/Home.stories.tsx">pages-home · ./src/pages/Home.stories.tsx</div>
+    
+    <div class="hint">Stories for the Home dashboard. A MemoryRouter decorator supplies the routing context the page&#39;s &lt;Link&gt;s need; `withOrganisations` and `withAuth` stand in for the real OrganisationsProvider and OIDC provider (config/fetch-driven, so unavailable here) that gate the org sections and the logged-out band — together they put the page in its signed-in, org-selected state. `fullscreen` layout lets the flat, full-width dashboard breathe without Storybook&#39;s default padding. Domain glyphs come from the nav-rail MenuIcon sprite, mounted globally in `.storybook/preview.tsx`.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-3-pages-home-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  
+
+  <div class="panels">
+    
+    
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { HomePage } from "hathor";
+import { MemoryRouter } from "react-router-dom";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Default dashboard at full width.</div>
+              <pre><code>const Default = () =&gt; &lt;HomePage /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Mobile</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Mobile layout: the `mobile1` viewport narrows the canvas below the `sm` breakpoint, so the metric strip and browse/create grids collapse to a single column.</div>
+              <pre><code>const Mobile = () =&gt; &lt;HomePage /&gt;;</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="Menu">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> Menu</h2>
+      <div class="badges">
+        
+        <label for="c-4-components-menu-info" class="badge info as-toggle">1 info</label>
+        <label for="c-4-components-menu-stories" class="badge ok as-toggle">3 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/Menu.stories.tsx">components-menu · ./src/components/Menu.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-4-components-menu-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-4-components-menu-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { MemoryRouter } from "react-router-dom";
+import { Menu, NavRailProvider } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Collapsed</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Collapsed desktop rail — icons only, 64px. Hover an icon for its tooltip.</div>
+              <pre><code>const Collapsed = () =&gt; (
+  &lt;&gt;
+    &lt;ForceExpanded value={false} /&gt;
+    &lt;Menu /&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Expanded</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Expanded desktop rail — icons + labels, 280px; Vehicle types highlighted.</div>
+              <pre><code>const Expanded = () =&gt; (
+  &lt;&gt;
+    &lt;ForceExpanded value={true} /&gt;
+    &lt;Menu /&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Mobile Drawer</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Mobile temporary Drawer (280px, left-anchored). Forced open on mount; the `mobile1` viewport flips Menu&#39;s `useMediaQuery` mobile branch on.</div>
+              <pre><code>const MobileDrawer = () =&gt; (
+  &lt;&gt;
+    &lt;ForceMobileOpen /&gt;
+    &lt;Menu /&gt;
+  &lt;/&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="MenuIcon">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> MenuIcon</h2>
+      <div class="badges">
+        <label for="c-5-components-icons-menuicon-props" class="badge ok as-toggle">2 prop types</label>
+        <label for="c-5-components-icons-menuicon-info" class="badge info as-toggle">1 info</label>
+        <label for="c-5-components-icons-menuicon-stories" class="badge ok as-toggle">2 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/icons/MenuIcon.stories.tsx">components-icons-menuicon · ./src/components/icons/MenuIcon.stories.tsx</div>
+    
+    
+    <div class="kv"><span class="chip">param: name Sprite symbol to render (`#menu-&lt;name&gt;`).</span><span class="chip">param: size Square px size; defaults to {@link DEFAULT_SIZE}.</span><span class="chip">returns: An `&lt;svg&gt;` referencing the menu sprite, coloured via `currentColor`.</span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-5-components-icons-menuicon-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-5-components-icons-menuicon-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-5-components-icons-menuicon-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: src/components/icons/MenuIcon.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Which `#menu-&lt;name&gt;` symbol to render.
+ */
+name: &#39;home&#39; | &#39;vehicleTypes&#39; | &#39;vehicles&#39; | &#39;deckPlans&#39; | &#39;menu&#39;
+
+/**
+ * Rendered box size in px (square). Defaults to the nav-icon size.
+ */
+size?: number = 24</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box, Typography } from "@mui/material";
+import { MenuIcon } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Controls</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithControls = () =&gt; &lt;MenuIcon name=&quot;vehicles&quot; size={64} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">All Icons</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Reference grid — every menu glyph at preview size plus the actual rail sizes (24px nav icon, 28px toggle). The last cell sits on a tinted surface to show `currentColor` recolouring (the active-item behaviour in `Menu.tsx`).</div>
+              <pre><code>const AllIcons = () =&gt; (
+  &lt;Box
+    sx={{
+      display: &#39;grid&#39;,
+      gridTemplateColumns: &#39;repeat(auto-fill, minmax(9rem, 1fr))&#39;,
+      gap: 2,
+      p: 2,
+    }}
+  &gt;
+    {ALL_NAMES.map(name =&gt; (
+      &lt;Box
+        key={name}
+        sx={{
+          display: &#39;flex&#39;,
+          flexDirection: &#39;column&#39;,
+          alignItems: &#39;center&#39;,
+          gap: 1,
+          p: 1.5,
+          border: &#39;1px solid&#39;,
+          borderColor: &#39;divider&#39;,
+          borderRadius: 1,
+        }}
+      &gt;
+        &lt;MenuIcon name={name} size={56} /&gt;
+        &lt;Typography variant=&quot;caption&quot; sx={{ fontFamily: &#39;monospace&#39; }}&gt;
+          {name}
+        &lt;/Typography&gt;
+        &lt;Box sx={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 1.5 }}&gt;
+          &lt;MenuIcon name={name} size={24} /&gt;
+          &lt;MenuIcon name={name} size={28} /&gt;
+        &lt;/Box&gt;
+      &lt;/Box&gt;
+    ))}
+    {/* currentColor demo: tinted box drives the glyph colour. */}
+    &lt;Box
+      sx={{
+        display: &#39;flex&#39;,
+        flexDirection: &#39;column&#39;,
+        alignItems: &#39;center&#39;,
+        gap: 1,
+        p: 1.5,
+        borderRadius: 1,
+        bgcolor: &#39;primary.main&#39;,
+        color: &#39;primary.contrastText&#39;,
+      }}
+    &gt;
+      &lt;MenuIcon name=&quot;vehicles&quot; size={56} /&gt;
+      &lt;Typography variant=&quot;caption&quot;&gt;currentColor&lt;/Typography&gt;
+    &lt;/Box&gt;
+  &lt;/Box&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="NetexId">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> NetexId</h2>
+      <div class="badges">
+        <label for="c-6-data-netex-netexid-props" class="badge ok as-toggle">5 prop types</label>
+        
+        <label for="c-6-data-netex-netexid-stories" class="badge ok as-toggle">6 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/data/netex/NetexId.stories.tsx">data-netex-netexid · ./src/data/netex/NetexId.stories.tsx</div>
+    
+    <div class="hint">Read-only chip rendering a NeTEx id, with the optional version surfaced as a small nested chip (`vN`) inside the outer chip. Monospace label for legibility; outlined outer + filled inner so the version reads as a badge.</div>
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-6-data-netex-netexid-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-6-data-netex-netexid-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">5 prop types</span>
+            </div>
+            <pre><code>Component: src/data/netex/NetexId.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * Copy-button visibility toggle. Defaults to `&#39;hide&#39;`.
+ */
+copy?: &#39;show&#39; | &#39;hide&#39; | &#39;onHover&#39; | &#39;only&#39; = &#39;hide&#39;
+
+/**
+ * Full NeTEx id of the form `CODESPACE:TYPE:VALUE`, e.g. `NMR:Vehicle:abc-123`.
+ */
+id: string
+
+/**
+ * Scales the chip and all sub-elements proportionally. Defaults to `&#39;medium&#39;`.
+ */
+size?: &#39;xsmall&#39; | &#39;small&#39; | &#39;medium&#39; | &#39;large&#39; = &#39;medium&#39;
+
+variant?: any = &#39;outlined&#39;
+
+/**
+ * Optional version; rendered as a nested chip labelled `vN`.
+ */
+version?: string | number</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box, Stack, Typography } from "@mui/material";
+import { NetexId } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Controls</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithControls = () =&gt; &lt;NetexId id={SAMPLE_ID} size=&quot;medium&quot; copy=&quot;show&quot; variant=&quot;outlined&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Copy On Hover</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">`copy: &#39;onHover&#39;` keeps the chip narrow at rest. The copy button slides in when the chip is hovered or any child element is focused — try tab-navigating to the chip with the keyboard.</div>
+              <pre><code>const CopyOnHover = () =&gt; &lt;NetexId id={SAMPLE_ID} copy=&quot;onHover&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Copy Only</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">`copy: &#39;only&#39;` drops the segmented label and renders just the copy button. Use in dense meta rows where the id text would clutter the layout but you still want a one-click copy. The tooltip embeds the full id.</div>
+              <pre><code>const CopyOnly = () =&gt; &lt;NetexId id={SAMPLE_ID} copy=&quot;only&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Versioned</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const Versioned = () =&gt; &lt;NetexId id={SAMPLE_ID} version={3} copy=&quot;show&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Malformed Id</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Fewer than 3 segments — leftmost missing parts render as `???`. Useful when surfacing partial / malformed ids from upstream without crashing.</div>
+              <pre><code>const MalformedId = () =&gt; &lt;NetexId id=&quot;abc-123&quot; copy=&quot;hide&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">All Sizes</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">All four sizes side-by-side. Outer chip, version pill, copy button, and font all scale proportionally.</div>
+              <pre><code>const AllSizes = () =&gt; (
+  &lt;Stack spacing={2} sx={{ alignItems: &#39;flex-start&#39; }}&gt;
+    {SIZES.map(size =&gt; (
+      &lt;Box key={size} sx={{ display: &#39;flex&#39;, alignItems: &#39;center&#39;, gap: 2 }}&gt;
+        &lt;Typography variant=&quot;caption&quot; sx={{ width: 64, fontFamily: &#39;monospace&#39; }}&gt;
+          {size}
+        &lt;/Typography&gt;
+        &lt;NetexId id={SAMPLE_ID} version={3} copy=&quot;show&quot; size={size} /&gt;
+      &lt;/Box&gt;
+    ))}
+  &lt;/Stack&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  has-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="PageContentDemo">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> PageContentDemo</h2>
+      <div class="badges">
+        <label for="c-7-components-data-datapagecontent-props" class="badge ok as-toggle">21 prop types</label>
+        <label for="c-7-components-data-datapagecontent-info" class="badge info as-toggle">1 info</label>
+        <label for="c-7-components-data-datapagecontent-stories" class="badge ok as-toggle">6 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/data/DataPageContent.stories.tsx">components-data-datapagecontent · ./src/components/data/DataPageContent.stories.tsx</div>
+    
+    
+    
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  <input id="c-7-components-data-datapagecontent-info" class="tg tg-info" type="checkbox" hidden />
+  <input id="c-7-components-data-datapagecontent-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-7-components-data-datapagecontent-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+        <div class="panel panel-info">
+          
+    <div class="note info">
+      <div class="note-title">Info</div>
+      <div class="note-body">No description found. Write a jsdoc comment such as /** Component description */.</div>
+    </div>
+        </div>
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">21 prop types</span>
+            </div>
+            <pre><code>Component: src/components/data/DataPageContent.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * &quot;Add new&quot; action, right-aligned in the list-head.
+ */
+addAction?: ReactNode
+
+columns: ColumnDefinition&lt;T, K&gt;[]
+
+data: T[]
+
+error: string | null
+
+handleColumnEvent?: (event: string, column: ColumnDefinition&lt;T, K&gt;, item: T) =&gt; void
+
+handleRequestSort: (property: K) =&gt; void
+
+/**
+ * &quot;Import&quot; action, right-aligned in the list-head after {@link addAction}.
+ */
+importAction?: ReactNode
+
+loading: boolean
+
+onRowClick?: (item: T) =&gt; void
+
+order: &#39;asc&#39; | &#39;desc&#39;
+
+orderBy: K
+
+page: number
+
+rowsPerPage: number
+
+/**
+ * NeTEx id of the row currently shown in the sidebar editor; that row gets a highlight.
+ */
+selectedId?: string | null
+
+setPage: (page: number) =&gt; void
+
+setRowsPerPage: (rowsPerPage: number) =&gt; void
+
+/**
+ * Forwarded to {@link DataTableHeader}; when true, every sortable header
+ *  is dimmed, click is suppressed, and hover shows the lock tooltip.
+ */
+sortLocked?: boolean
+
+title?: string
+
+/**
+ * i18n key for the title; resolved here and used for the breadcrumb leaf. Takes precedence over {@link title}.
+ */
+titleKey?: string
+
+totalCount: number
+
+urlFilterInfo?: UrlFilterInfo</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Add, LibraryAdd } from "@mui/icons-material";
+import { Box, Button, Chip } from "@mui/material";
+import { DataPageContent } from "hathor";
+import { MemoryRouter } from "react-router-dom";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Default</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Baseline: breadcrumbs + h5 left-aligned title + count, sortable table, pagination.</div>
+              <pre><code>const Default = () =&gt; &lt;DataPageContent
+    title=&quot;Vehicle types&quot;
+    showAdd={false}
+    showImport={false}
+    filterCount={0}
+    empty={false} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Add Action</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">`/vehicles` head: right-aligned add-new slot.</div>
+              <pre><code>const WithAddAction = () =&gt; &lt;DataPageContent title=&quot;Vehicles&quot; showAdd showImport={false} filterCount={0} empty={false} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Import Action</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">`/vehicle-types` head: right-aligned import slot.</div>
+              <pre><code>const WithImportAction = () =&gt; &lt;DataPageContent
+    title=&quot;Vehicle types&quot;
+    showAdd={false}
+    showImport
+    filterCount={0}
+    empty={false} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Both Actions</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Both action slots filled — add then import, right-aligned.</div>
+              <pre><code>const WithBothActions = () =&gt; &lt;DataPageContent title=&quot;Vehicle types&quot; showAdd showImport filterCount={0} empty={false} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Url Filter Chip</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Post-import state: the url-filter-chip sits beside the count; its delete clears it.</div>
+              <pre><code>const WithUrlFilterChip = () =&gt; &lt;DataPageContent
+    title=&quot;Vehicle types&quot;
+    showAdd={false}
+    showImport={false}
+    filterCount={2}
+    empty={false} /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Empty</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Empty dataset — head still renders; table shows the no-data row.</div>
+              <pre><code>const Empty = () =&gt; &lt;DataPageContent
+    title=&quot;Vehicle types&quot;
+    showAdd={false}
+    showImport={false}
+    filterCount={0}
+    empty /&gt;;</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="TransportModeIcon">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> TransportModeIcon</h2>
+      <div class="badges">
+        <label for="c-8-components-icons-transportmodeicon-props" class="badge ok as-toggle">2 prop types</label>
+        
+        <label for="c-8-components-icons-transportmodeicon-stories" class="badge ok as-toggle">4 stories</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/icons/TransportModeIcon.stories.tsx">components-icons-transportmodeicon · ./src/components/icons/TransportModeIcon.stories.tsx</div>
+    
+    <div class="hint">Render a NeTEx TransportMode glyph. Backed by the inline SVG sprite in {@link TransportModeSprite}. Three rendering modes: - `iconPosition` omitted → icon only with tooltip + `aria-label` - `iconPosition === &#39;left&#39;`  → `[icon] [label]` - `iconPosition === &#39;right&#39;` → `[label] [icon]` The visible / tooltip label comes from the existing `transportMode.*` i18n keys via {@link transportModeLabelKey}. No `label` prop override — the locale bundle is the single source of truth.</div>
+    <div class="kv"><span class="chip">param: mode A NeTEx TransportMode (incl. synthetic `&#39;unknown&#39;`).</span><span class="chip">param: iconPosition Optional inline-label layout; omit for icon-only.</span><span class="chip">returns: The icon (with tooltip) or icon+label inline group.</span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-8-components-icons-transportmodeicon-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  <input id="c-8-components-icons-transportmodeicon-props" class="tg tg-props" type="checkbox" hidden />
+
+  <div class="panels">
+    
+    
+    
+        <div class="panel panel-props">
+          <div class="note ok">
+            <div class="row">
+              <span class="ex-name">Prop types <small>(react-docgen)</small></span>
+              <span class="badge ok">2 prop types</span>
+            </div>
+            <pre><code>Component: src/components/icons/TransportModeIcon.tsx::default</code></pre>
+            <pre><code>Props:</code></pre>
+            <pre><code>/**
+ * When set, render the localized label inline with the icon on the given
+ * side. When omitted, render icon only — the label is exposed as
+ * `aria-label` and surfaced via a MUI tooltip on hover.
+ */
+iconPosition?: &#39;left&#39; | &#39;right&#39;
+
+mode: (typeof TRANSPORT_MODES)[number]</code></pre>
+          </div>
+        </div>
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box, Typography } from "@mui/material";
+import { TransportModeIcon } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">With Controls</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const WithControls = () =&gt; &lt;TransportModeIcon mode=&quot;RAIL&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Label Left</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const LabelLeft = () =&gt; &lt;TransportModeIcon mode=&quot;BUS&quot; iconPosition=&quot;left&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">Label Right</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              
+              <pre><code>const LabelRight = () =&gt; &lt;TransportModeIcon mode=&quot;WATER&quot; iconPosition=&quot;right&quot; /&gt;;</code></pre>
+            </div>
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">All Modes</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Reference grid — every TransportMode rendered icon-only (hover for the localized label) plus its enum id. Useful when picking glyphs or confirming sprite coverage.</div>
+              <pre><code>const AllModes = () =&gt; (
+  &lt;Box
+    sx={{
+      display: &#39;grid&#39;,
+      gridTemplateColumns: &#39;repeat(auto-fill, minmax(8rem, 1fr))&#39;,
+      gap: 2,
+      p: 2,
+    }}
+  &gt;
+    {ALL_MODES.map(mode =&gt; (
+      &lt;Box
+        key={mode}
+        sx={{
+          display: &#39;flex&#39;,
+          alignItems: &#39;center&#39;,
+          gap: 1,
+          p: 1,
+          border: &#39;1px solid&#39;,
+          borderColor: &#39;divider&#39;,
+          borderRadius: 1,
+        }}
+      &gt;
+        &lt;TransportModeIcon mode={mode} /&gt;
+        &lt;Typography variant=&quot;caption&quot; sx={{ fontFamily: &#39;monospace&#39; }}&gt;
+          {mode}
+        &lt;/Typography&gt;
+      &lt;/Box&gt;
+    ))}
+  &lt;/Box&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+<article
+  class="card 
+  no-error 
+  no-info 
+  no-story-error
+  no-doc-error"
+  role="listitem"
+  aria-label="TransportModeSprite">
+  <div class="head">
+    <div class="title">
+      <h2><span class="status-dot dot-ok"></span> TransportModeSprite</h2>
+      <div class="badges">
+        
+        
+        <label for="c-9-components-icons-transportmodesprite-stories" class="badge ok as-toggle">1 story</label>
+        
+        
+      </div>
+    </div>
+    <div class="meta" title="./src/components/icons/TransportModeSprite.stories.tsx">components-icons-transportmodesprite · ./src/components/icons/TransportModeSprite.stories.tsx</div>
+    
+    <div class="hint">Hidden SVG sprite — mount once at app root before any `TransportModeIcon`.</div>
+    <div class="kv"><span class="chip">returns: A `display:none` SVG containing all `&lt;symbol id=&quot;tm-*&quot;&gt;` defs.</span></div>
+  </div>
+
+  <!-- ⬇️ Hidden toggles must be siblings BEFORE .panels -->
+  
+  
+  <input id="c-9-components-icons-transportmodesprite-stories" class="tg tg-stories" type="checkbox" hidden />
+  
+  
+  
+
+  <div class="panels">
+    
+    
+    
+    
+        <div class="panel panel-stories">
+          
+          
+          
+          <div class="note ok">
+                <div class="row">
+                  <span class="ex-name">Imports</span>
+                </div>
+                <pre><code>import { Box, Typography } from "@mui/material";
+import { TransportModeSprite } from "hathor";</code></pre>
+              </div>
+          
+          
+            <div class="note ok">
+              <div class="row">
+                <span class="ex-name">All Symbols</span>
+                <span class="badge ok">story ok</span>
+              </div>
+              
+              <div class="hint">Reference grid — all 21 `TransportMode` symbols scaled up, each above its enum id. Use it to spot missing art (duplicate fallback glyphs), check a shape at a size the 16px component can&#39;t show, or eyeball token hues against each other.</div>
+              <pre><code>const AllSymbols = ({ size }) =&gt; (
+  &lt;Box
+    sx={{
+      display: &#39;grid&#39;,
+      gridTemplateColumns: `repeat(auto-fill, minmax(${CELL_MIN}, 1fr))`,
+      gap: 2,
+      p: 3,
+    }}
+  &gt;
+    {TRANSPORT_MODES.map(mode =&gt; (
+      &lt;Box
+        key={mode}
+        sx={{
+          display: &#39;flex&#39;,
+          flexDirection: &#39;column&#39;,
+          alignItems: &#39;center&#39;,
+          justifyContent: &#39;flex-end&#39;,
+          gap: 1,
+          p: 1.5,
+          border: &#39;1px solid&#39;,
+          borderColor: &#39;divider&#39;,
+          borderRadius: 1,
+        }}
+      &gt;
+        &lt;Glyph mode={mode} px={size} /&gt;
+        &lt;Typography
+          variant=&quot;caption&quot;
+          sx={{ fontFamily: &#39;monospace&#39;, textAlign: &#39;center&#39;, wordBreak: &#39;break-all&#39; }}
+        &gt;
+          {mode}
+        &lt;/Typography&gt;
+      &lt;/Box&gt;
+    ))}
+  &lt;/Box&gt;
+);</code></pre>
+            </div>
+        </div>
+    
+    
+  </div>
+</article>
+    </div>
+    
+    
+    
+  </div>
+</main>
+</body>
+</html>  

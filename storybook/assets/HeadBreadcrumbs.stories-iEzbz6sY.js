@@ -1,0 +1,9 @@
+import{i as e}from"./preload-helper-xPQekRTU.js";import{xt as t}from"./iframe-CWhZIATj.js";import{r as n,t as r}from"./dist-CoZo4pcf.js";import{n as i,t as a}from"./HeadBreadcrumbs-CJZurrQq.js";var o,s,c,l,u,d;e((()=>{r(),i(),o=t(),s={title:`components/data/HeadBreadcrumbs`,component:a,parameters:{docs:{description:{component:"List-head breadcrumb trail (`Home / <title>`) shared by every Generic data view page. Home links back to `/`; the leaf is the current page label. The Home label comes from i18n (`breadcrumbs.home`); the leaf is passed in already-resolved via the `title` prop."}}},decorators:[e=>(0,o.jsx)(n,{initialEntries:[`/vehicle-types`],children:(0,o.jsx)(e,{})})],args:{title:`Vehicle types`},argTypes:{title:{control:`text`,description:`Resolved label for the current (leaf) page.`}}},c={},l={args:{title:`Vehicles`}},u={args:{title:`Deck plans`}},c.parameters={...c.parameters,docs:{...c.parameters?.docs,source:{originalSource:`{}`,...c.parameters?.docs?.source},description:{story:"Default trail: `Home / Vehicle types`. Edit the `title` control to retitle the leaf.",...c.parameters?.docs?.description}}},l.parameters={...l.parameters,docs:{...l.parameters?.docs,source:{originalSource:`{
+  args: {
+    title: 'Vehicles'
+  }
+}`,...l.parameters?.docs?.source},description:{story:`Vehicles list head.`,...l.parameters?.docs?.description}}},u.parameters={...u.parameters,docs:{...u.parameters?.docs,source:{originalSource:`{
+  args: {
+    title: 'Deck plans'
+  }
+}`,...u.parameters?.docs?.source},description:{story:`Deck plans list head.`,...u.parameters?.docs?.description}}},d=[`Default`,`Vehicles`,`DeckPlans`]}))();export{u as DeckPlans,c as Default,l as Vehicles,d as __namedExportsOrder,s as default};
