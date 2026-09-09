@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<decks>
+  <Deck id="ENT:Deck:20-6-0" version="1">
+    <Name>FR5-1</Name>
+    <DeckLevelRef ref="ENT:DeckLevel:20-6-0" version="1"/>
+    <deckSpaces>
+      <PassengerSpace id="ENT:PassengerSpace:20-6-seating" version="1">
+        <PassengerSpaceType>seatingArea</PassengerSpaceType>
+        <luggageSpots>
+          <LuggageSpot id="ENT:LuggageSpot:20-6-2296" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.8953 2.4007</pos>
+              </Location>
+            </Centroid>
+            <Orientation>unknown</Orientation>
+            <Width>0.4693</Width>
+            <Length>0.4332</Length>
+            <LocatableSpotType>luggageSpace</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-6-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-6-c0" version="1"/>
+          </LuggageSpot>
+        </luggageSpots>
+        <passengerVehicleSpots>
+          <PassengerVehicleSpot id="ENT:PassengerVehicleSpot:20-6-2295" version="1">
+            <Centroid>
+              <Location>
+                <pos>3.7365 2.4007</pos>
+              </Location>
+            </Centroid>
+            <Orientation>unknown</Orientation>
+            <Width>0.4693</Width>
+            <Length>0.4693</Length>
+            <LocatableSpotType>bicycleSpace</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-6-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-6-c0" version="1"/>
+          </PassengerVehicleSpot>
+          <PassengerVehicleSpot id="ENT:PassengerVehicleSpot:20-6-2297" version="1">
+            <Centroid>
+              <Location>
+                <pos>3.0866 2.4007</pos>
+              </Location>
+            </Centroid>
+            <Orientation>unknown</Orientation>
+            <Width>0.4693</Width>
+            <Length>0.4693</Length>
+            <LocatableSpotType>bicycleSpace</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-6-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-6-c0" version="1"/>
+          </PassengerVehicleSpot>
+        </passengerVehicleSpots>
+      </PassengerSpace>
+      <PassengerSpace id="ENT:PassengerSpace:20-6-2298" version="1">
+        <Name>CAFE</Name>
+        <Centroid>
+          <Location>
+            <pos>12.8339 1.6968</pos>
+          </Location>
+        </Centroid>
+        <Width>0.5054</Width>
+        <Length>0.4693</Length>
+        <PassengerSpaceType>restaurant</PassengerSpaceType>
+      </PassengerSpace>
+    </deckSpaces>
+    <spotRows>
+      <SpotRow id="ENT:SpotRow:20-6-r0" version="1">
+        <Label>1</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-6-r1" version="1">
+        <Label>2</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-6-r2" version="1">
+        <Label>3</Label>
+      </SpotRow>
+    </spotRows>
+    <spotColumns>
+      <SpotColumn id="ENT:SpotColumn:20-6-c0" version="1">
+        <Label>1</Label>
+      </SpotColumn>
+    </spotColumns>
+  </Deck>
+</decks>
