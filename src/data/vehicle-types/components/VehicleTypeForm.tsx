@@ -33,7 +33,7 @@ import {
   type HybridCategory,
 } from '../types/vehicleTypeTypes.ts';
 
-/** Editor tabs — Edit (identity + dimensions) first, then the field-group tabs. */
+/** Editor tabs — General (identity + dimensions) first, then the field-group tabs. */
 type TabKey = 'edit' | 'propulsion' | 'capacity' | 'environment' | 'vehicles';
 
 interface VehicleTypeFormProps {
@@ -48,7 +48,7 @@ const textOr = (s: string): string | undefined => (s === '' ? undefined : s);
 
 /**
  * Reusable, presentational VehicleType editor — a tabbed FormLayout driven by
- * `value`/`onChange`/`mode`. Tabs: Edit (identity + dimensions) · Propulsion/perf.
+ * `value`/`onChange`/`mode`. Tabs: General (identity + dimensions) · Propulsion/perf.
  * · Passenger Capacity · Environment · Vehicles (read-only links to the vehicles
  * route). Holds no fetch/save logic so it can back both the sidebar editor and a
  * future `/vehicle-types/new` create flow.
@@ -129,7 +129,12 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           },
         }}
       >
-        <Tab value="edit" label={t('vehicleType.tab.edit', 'Edit')} />
+        {/* Label only — the `edit` value and `vtype-tab-edit` testid stay put,
+            since the e2e suite selects on them. "General" over "Edit": every
+            other tab names a facet of the thing, and this one is the catch-all,
+            carrying low-floor and the dimensions alongside the identity. The
+            modern editor's first tab carries the same label. */}
+        <Tab value="edit" label={t('vehicleType.tab.general', 'General')} />
         <Tab value="propulsion" label={t('vehicleType.tab.propulsion', 'Propulsion/perf.')} />
         <Tab value="capacity" label={t('vehicleType.tab.capacity', 'Passenger Capacity')} />
         <Tab value="environment" label={t('vehicleType.tab.environment', 'Environment')} />

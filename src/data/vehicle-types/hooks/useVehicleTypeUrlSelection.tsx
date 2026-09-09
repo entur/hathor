@@ -1,5 +1,5 @@
 import { useUrlEditorSelection } from '../../../hooks/useUrlEditorSelection.tsx';
-import VehicleTypeDetails from '../components/VehicleTypeDetails.tsx';
+import VehicleTypeEditor from '../components/VehicleTypeEditor.tsx';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 
@@ -9,15 +9,16 @@ interface UrlSelectionParams {
   rowsPerPage: number;
   setPage: (page: number) => void;
   loading: boolean;
-  /** List refetch, forwarded into `VehicleTypeDetails` so a save can refresh the row. */
+  /** List refetch, forwarded into the editor so a save can refresh the row. */
   refetch?: () => Promise<void>;
 }
 
 /**
  * VehicleType binding for the generic {@link useUrlEditorSelection} hook: param
  * key `selected`, row id is `vt.id` (already the full NeTEx id), editor is
- * `<VehicleTypeDetails>` with the list `refetch` wired to `onSaved` so a save
- * re-resolves the row and re-hydrates the form.
+ * {@link VehicleTypeEditor} — which picks legacy vs. modern off the
+ * `Experimental` setting — with the list `refetch` wired to `onSaved` so a
+ * save re-resolves the row and re-hydrates the form.
  *
  * @param allData      Full dataset; `null` while the initial fetch is in flight.
  * @param dataForTable Current page slice (drives the deep-link page jump).
@@ -43,8 +44,6 @@ export function useVehicleTypeUrlSelection({
     loading,
     getId: vt => vt.id,
     getEmptyRow: () => ({ id: '', version: 0 }), // "new" selection factory
-    renderEditor: (row, mode) => (
-      <VehicleTypeDetails vehicleType={row} onSaved={refetch} mode={mode} />
-    ),
+    renderEditor: (row, mode) => <VehicleTypeEditor row={row} mode={mode} onSaved={refetch} />,
   });
 }

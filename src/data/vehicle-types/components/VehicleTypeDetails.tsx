@@ -2,9 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import NetexId from '../../netex/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
-import { FormLayout } from '../../../components/FormLayout.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
@@ -14,12 +12,19 @@ import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
+import VehicleTypeHeader from './VehicleTypeHeader.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { useVehicleTypeDeactivate } from '../hooks/useVehicleTypeDeactivate.ts';
 
-const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
 const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
+/** Padded, self-scrolling shell the editor body and its rail sit in. */
+const EDITOR_SHELL_SX = {
+  p: 2,
+  height: '100%',
+  overflowY: 'auto',
+  boxSizing: 'border-box',
+} as const;
 
 /**
  * Coerce flag booleans so a Switch's `false` (off) compares equal to an absent
@@ -194,47 +199,15 @@ export default function VehicleTypeDetails({
     );
   }
 
-  const name = state.form.name?.value?.trim();
-
   return (
-    <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <FormLayout sx={{ mb: 1 }}>
-        <Typography
-          variant="h6"
-          noWrap
-          title={name || undefined}
-          data-testid="vehicle-type-details-title"
-          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-        >
-          {name || (
-            <>
-              {'[ '}
-              <Box
-                component="span"
-                sx={{
-                  color: 'text.disabled',
-                  fontStyle: 'italic',
-                  fontWeight: 400,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                {BLANK_NAME}
-              </Box>
-              {' ]'}
-            </>
-          )}
-        </Typography>
-        {state.form.id && (
-          <NetexId
-            id={state.form.id}
-            version={state.form.version}
-            copy="onHover"
-            size="small"
-            sx={{ justifySelf: 'start' }}
-          />
-        )}
-      </FormLayout>
-      <Divider sx={{ mb: 2 }} />
+    <Box sx={EDITOR_SHELL_SX}>
+      {/* Live form state, not the `vehicleType` prop: the title tracks typing,
+          and the version badge reflects the post-save re-baseline. */}
+      <VehicleTypeHeader
+        name={state.form.name?.value}
+        id={state.form.id}
+        version={state.form.version}
+      />
 
       <Stack data-testid="vehicle-type-context">
         <VehicleTypeForm

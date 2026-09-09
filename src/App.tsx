@@ -22,6 +22,7 @@ import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
 import './theme/transportModeTokens.css';
+import VTMini from './pages/VTMinimal.tsx';
 
 function AppShell({ children }: { children: ReactNode }) {
   const { expanded } = useNavRail();
@@ -61,6 +62,7 @@ export default function App() {
                   <MenuIconSprite />
                   <Routes>
                     <Route path="/" element={<Home />} />
+                    <Route path="/vt-min" element={<ProtectedRoute element={<VTMini />} />} />
                     <Route
                       path="/vehicle-types"
                       element={<ProtectedRoute element={<VehicleTypeView />} />}
