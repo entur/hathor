@@ -86,7 +86,6 @@
         gap: 8px;
       }
 
-      header nav button,
       header nav a {
         display: inline-flex;
         align-items: center;
@@ -106,8 +105,6 @@
           transform var(--transition);
       }
 
-      header nav button:hover:not(:disabled),
-      header nav button.active,
       header nav a:hover {
         background: var(--clr-accent);
         border-color: var(--clr-accent);
@@ -124,11 +121,6 @@
         background: #3d59d9;
         border-color: #3d59d9;
         transform: translateY(-1px);
-      }
-
-      header nav button:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
       }
 
       /* ── Layout beneath header ────────────────────────── */
@@ -362,8 +354,13 @@
       <div class="logo">Hathor <span>Sandbox</span></div>
       <nav>
         <a class="nav-cta" href="claude-design-v2.html">Concept</a>
-        <button disabled>Dashboard</button>
-        <button disabled>Settings</button>
+        <!-- Sibling of this file on the publish branch, not a route of this
+             page: `storybook-pages.yml` builds Storybook into `storybook/`
+             beside the sandbox root, so the relative path resolves on the
+             deployed site (entur.github.io/hathor/storybook/). It does not
+             resolve in a local `concept-sandbox/` server — there, Storybook
+             is `npm run storybook` on its own port. -->
+        <a href="storybook/">Storybook</a>
       </nav>
     </header>
 
@@ -497,13 +494,29 @@
       const DECKS_REF_KEY = 'decksRef';
 
       /**
-       * Render a `decksRef` as a link to the fragment it names.
+       * Deck-plan field naming that plan's source artwork: the legacy system's
+       * own drawing of the railcar, as an SVG beside the fragment. It is what
+       * the derived decks are read *against*, so it is a sibling file rather
+       * than anything the NeTEx carries. Absent on a plan drawn by hand.
+       */
+      const SVG_REF_KEY = 'svgRef';
+
+      /**
+       * Whether a field holds a path to a sibling file rather than a value.
+       *
+       * @param {string} k Field name.
+       * @returns {boolean} True for the two ref fields above.
+       */
+      const isRefKey = k => k === DECKS_REF_KEY || k === SVG_REF_KEY;
+
+      /**
+       * Render a ref as a link to the file it names.
        *
        * Shared so the two views that show a record — the database tree and the
        * search detail pane — cannot disagree on what a ref looks like.
        *
-       * @param {string} ref Path to a `<decks>` fragment, e.g. `mock-xml/x.xml`.
-       * @returns {string} Anchor markup opening the fragment in a new tab.
+       * @param {string} ref Path to a sibling file, e.g. `mock-xml/x.decks.xml`.
+       * @returns {string} Anchor markup opening the file in a new tab.
        */
       function refLink(ref) {
         return `<a class="db-link" href="${esc(ref)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>`;

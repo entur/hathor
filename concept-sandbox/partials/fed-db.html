@@ -133,15 +133,15 @@
   const DECK_ICON =
     '<span class="db-deck-icon" role="img" aria-label="Carries a decks fragment" title="Carries a decks fragment">&#9635;</span>';
 
-  // `esc`, `refLink`, `DECKS_REF_KEY` and `DB_HASH_KEY` come from the shell
-  // (index.html) — the detail pane in `fed-search-query.html` renders the same
-  // records and must render a ref the same way.
+  // `esc`, `refLink`, `isRefKey`, `DECKS_REF_KEY` and `DB_HASH_KEY` come from
+  // the shell (index.html) — the detail pane in `fed-search-query.html` renders
+  // the same records and must render a ref the same way.
   //
-  // A deck-plan's decks are not stored here: the field holds a path to the
-  // `<decks>` NeTEx fragment carrying them, shown as a link to that file rather
-  // than as the tens of KB of markup it resolves to.
+  // Neither a deck-plan's decks nor its artwork are stored here: those fields
+  // hold paths to the sibling files carrying them, shown as links rather than
+  // as the tens of KB of markup they resolve to.
   const fmtVal = (k, v) =>
-    k === DECKS_REF_KEY && v
+    isRefKey(k) && v
       ? refLink(v)
       : typeof v === 'string'
         ? `<span class="tf-str">"${esc(v)}"</span>`

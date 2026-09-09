@@ -13,8 +13,11 @@
   .deck-grid > .deck-list {
     flex: 0 0 280px;
   }
-  .deck-grid > .deck-stage {
-    flex: 1 1 auto;
+  /* The two comparison panes: the decks we derived, and the drawing they were
+     derived from. Equal shares — neither is the reference copy of the other. */
+  .deck-grid > .deck-stage,
+  .deck-grid > .deck-art {
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -22,6 +25,26 @@
   .deck-render h2 {
     margin-bottom: 12px;
     font-size: 18px;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    min-width: 0;
+  }
+  /* Which pane this is, and which plan it shows. Both panes draw the same
+     railcar, so an unlabelled heading would not say which drawing is which.
+     The label never wraps mid-word: at three columns the qualifier takes the
+     second line instead, which is the half that can be read at a glance. */
+  .deck-render .pane-label {
+    white-space: nowrap;
+  }
+  .deck-render .pane-sub {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--clr-text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .deck-list ul {
     list-style: none;
@@ -58,7 +81,8 @@
     color: var(--clr-text-dim);
     font-weight: 400;
   }
-  .deck-stage .stage-host {
+  .deck-stage .stage-host,
+  .deck-art .art-host {
     flex: 1 1 auto;
     display: flex;
     align-items: center;
@@ -66,7 +90,8 @@
     min-height: 0;
     overflow: auto;
   }
-  .deck-stage .stage-meta {
+  .deck-stage .stage-meta,
+  .deck-art .art-meta {
     flex-shrink: 0;
     padding-top: 12px;
     border-top: 1px solid var(--clr-border);
@@ -77,13 +102,26 @@
     gap: 16px;
     flex-wrap: wrap;
   }
-  .deck-stage .stage-note {
+  /* Scoped to the page, not to one pane: both show notes. */
+  .deck-render .stage-note {
     color: var(--clr-text-dim);
     font-size: 14px;
     line-height: 1.6;
+    padding: 0 12px;
+    text-align: center;
   }
-  .deck-stage .stage-note.error {
+  .deck-render .stage-note.error {
     color: #b42318;
+  }
+  /* Drawn at its own scale, contained rather than stretched — a source drawing
+     resampled would stop being evidence of what the legacy system shows. The
+     white plate is the artwork's own ground, extended under any letterboxing. */
+  .deck-art .art-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 4px;
   }
   /* Bundle-load spinner. The renderer is a CDN ESM import with Vue bundled in,
      so on a cold cache the stage sits empty long enough that a bare line of
@@ -138,11 +176,21 @@
     </ul>
   </div>
   <div class="card deck-stage">
-    <h2 id="deck-title">Deck rendering</h2>
+    <h2>
+      <span class="pane-label">Deck rendering</span><span class="pane-sub" id="deck-title"></span>
+    </h2>
     <div class="stage-host" id="deck-host">
       <span class="spin" role="status">Fetching the renderer…</span>
     </div>
     <div class="stage-meta" id="deck-meta"></div>
+  </div>
+  <div class="card deck-art">
+    <h2>
+      <span class="pane-label">Source artwork</span>
+      <span class="pane-sub">as the legacy system draws it</span>
+    </h2>
+    <div class="art-host" id="deck-artwork"></div>
+    <div class="art-meta" id="deck-art-meta"></div>
   </div>
 </div>
 
@@ -156,6 +204,12 @@
    * drawn. Plans holding no ref — still the common case on real data today —
    * are left out of the list entirely; the Database page marks which records
    * carry decks.
+   *
+   * Two panes, side by side, because the interesting question about a derived
+   * deck is not what it looks like but whether it matches the railcar it came
+   * from. The left pane draws the NeTEx we emit; the right shows `svgRef`, the
+   * legacy system's own drawing of that same car. Reading one without the other
+   * cannot tell a faithful lattice from a plausible-looking wrong one.
    */
 
   /**
@@ -187,6 +241,8 @@
   const hostEl = document.getElementById('deck-host');
   const titleEl = document.getElementById('deck-title');
   const metaEl = document.getElementById('deck-meta');
+  const artEl = document.getElementById('deck-artwork');
+  const artMetaEl = document.getElementById('deck-art-meta');
 
   /**
    * Stylesheet for the element's shadow root.
@@ -214,8 +270,16 @@
     return sheet;
   };
 
-  const note = (msg, isError) =>
-    (hostEl.innerHTML = `<span class="stage-note${isError ? ' error' : ''}">${esc(msg)}</span>`);
+  /**
+   * Replace a pane's contents with a line of prose.
+   * @param {HTMLElement} el Pane host.
+   * @param {string} msg Message.
+   * @param {boolean} [isError] Whether to paint it as a failure.
+   */
+  const noteIn = (el, msg, isError) =>
+    (el.innerHTML = `<span class="stage-note${isError ? ' error' : ''}">${esc(msg)}</span>`);
+
+  const note = (msg, isError) => noteIn(hostEl, msg, isError);
 
   /** Same, for a step still in flight — a fragment on its way over the wire. */
   const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
@@ -232,12 +296,15 @@
   };
 
   /**
-   * Scale and orientation that draw `deck` largest inside the stage.
+   * Scale that draws `deck` largest inside the stage, portrait.
    *
-   * A deck is a long strip — 13 × 2 m here — so laying it across a portrait
-   * stage wastes most of the box and shrinks the seat labels past reading.
-   * Both orientations are measured and the roomier one wins; on this pane that
-   * is `vertical`, which lands near the 36 px/m hathor's own sidebar uses.
+   * Orientation is fixed rather than measured. The source drawings beside it
+   * are all portrait — the car's length runs down the page — and two panes in
+   * opposite orientations cannot be read against each other, which is the only
+   * reason they are side by side. It is also the roomier of the two here: a
+   * deck is a long strip (13 × 2 m), so a pane this shape wastes most of its
+   * box laid across, and the scale lands near the 36 px/m hathor's own sidebar
+   * uses.
    *
    * @param {object} deck Deck from the renderer bundle's parser.
    * @returns {{vertical: boolean, scale: number}} Props for the element.
@@ -247,16 +314,11 @@
     const availW = hostEl.clientWidth - FIT_PAD,
       availH = hostEl.clientHeight - FIT_PAD;
     if (!width || !height || availW <= 0 || availH <= 0)
-      return { vertical: false, scale: MIN_SCALE };
+      return { vertical: true, scale: MIN_SCALE };
 
-    const contain = (w, h) => Math.min(availW / w, availH / h);
-    const horiz = contain(width, height),
-      vert = contain(height, width);
-    const vertical = vert > horiz;
-    return {
-      vertical,
-      scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, vertical ? vert : horiz)),
-    };
+    // Portrait: the deck's length spans the pane's height, its width the width.
+    const scale = Math.min(availW / height, availH / width);
+    return { vertical: true, scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale)) };
   };
 
   /**
@@ -333,6 +395,53 @@
     };
 
     /**
+     * Show one plan's source artwork.
+     *
+     * An `<img>` rather than inlined markup: the drawings carry their own
+     * `<style>` blocks with generic class names, which in SVG apply to the
+     * whole document they land in — inlined, several of them would repaint the
+     * rendering next door. An image document keeps each one to itself.
+     *
+     * Idempotent, because a resize redraws and swapping in a fresh `<img>` for
+     * the same file would flash the pane. Nothing here refits: the CSS contains
+     * the drawing at whatever size the pane is.
+     *
+     * Both handlers check `current` first, the same guard `draw` puts after
+     * every await. Detaching an `<img>` neither cancels its fetch nor stops it
+     * firing, so a reader who moves on mid-load would otherwise get the
+     * previous plan's extents written under the new drawing — or, on an error,
+     * that drawing replaced by a note about a file they are no longer looking
+     * at.
+     *
+     * @param {object} plan Mock-DB deckPlan, artwork optional.
+     */
+    const drawArt = plan => {
+      const ref = plan[SVG_REF_KEY];
+      if (artEl.querySelector('img')?.getAttribute('src') === ref) return;
+      artMetaEl.innerHTML = '';
+      if (!ref)
+        return noteIn(
+          artEl,
+          'No source artwork is stored for this plan — the fragment was drawn by hand.'
+        );
+
+      const img = document.createElement('img');
+      img.className = 'art-img';
+      img.alt = `Source drawing of ${plan.name}`;
+      // The drawing's own pixel extent, not the size it is shown at: it is the
+      // unit the legacy icon boxes were positioned in, so it is what the metres
+      // in the pane opposite were scaled out of.
+      img.onload = () => {
+        if (current !== plan) return;
+        artMetaEl.innerHTML =
+          refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`;
+      };
+      img.onerror = () => current === plan && noteIn(artEl, `Could not load ${ref}.`, true);
+      img.src = ref;
+      artEl.replaceChildren(img);
+    };
+
+    /**
      * Draw one plan's first deck.
      *
      * The element is built detached and populated before insertion: Vue renders
@@ -348,6 +457,9 @@
     const draw = async plan => {
       current = plan;
       titleEl.textContent = plan.name;
+      // Ahead of the await: the artwork is a plain file and has no reason to
+      // wait on the fragment fetch or on a parse that may yet fail.
+      drawArt(plan);
       // Only on a first draw: a cached plan resolves within the same task and
       // would show the spinner for a single frame.
       if (!cache.has(plan.id)) {
