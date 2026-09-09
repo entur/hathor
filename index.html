@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hathor – Concept Sandbox</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"
-    />
     <style>
       /* ── Reset & base ─────────────────────────────────── */
       *,
@@ -86,49 +81,23 @@
         gap: 8px;
       }
 
-      header nav button,
-      header nav a {
-        display: inline-flex;
-        align-items: center;
+      header nav button {
         background: transparent;
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: #fff;
         padding: 6px 14px;
         border-radius: var(--radius);
         font-size: 13px;
-        font-family: inherit;
-        line-height: 1;
-        text-decoration: none;
         cursor: pointer;
         transition:
           background var(--transition),
-          border-color var(--transition),
-          transform var(--transition);
+          border-color var(--transition);
       }
 
-      header nav button:hover:not(:disabled),
-      header nav button.active,
-      header nav a:hover {
+      header nav button:hover,
+      header nav button.active {
         background: var(--clr-accent);
         border-color: var(--clr-accent);
-      }
-
-      header nav .nav-cta {
-        background: var(--clr-accent);
-        border-color: var(--clr-accent);
-        font-weight: 600;
-        box-shadow: 0 0 0 2px rgba(78, 108, 242, 0.25);
-      }
-
-      header nav .nav-cta:hover {
-        background: #3d59d9;
-        border-color: #3d59d9;
-        transform: translateY(-1px);
-      }
-
-      header nav button:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
       }
 
       /* ── Layout beneath header ────────────────────────── */
@@ -206,14 +175,8 @@
       /* ── Main content ─────────────────────────────────── */
       main {
         flex: 1;
-        overflow: hidden;
-        padding: 0;
-      }
-
-      #main-content {
-        width: 100%;
-        height: 100%;
         overflow-y: auto;
+        padding: 32px 40px;
       }
 
       .card {
@@ -222,29 +185,7 @@
         border-radius: var(--radius);
         padding: 28px 32px;
         box-shadow: var(--shadow-sm);
-        margin: 32px 40px;
-      }
-
-      /* A card that *is* the page: fills the viewport below the header and
-         scrolls its own content. Partials that fill `#main-content` use it
-         instead of restating the height budget. */
-      .page-card {
-        margin: 0.5rem;
-        height: calc(100vh - var(--header-h) - 1rem);
-        overflow-y: auto;
-      }
-
-      /* Button that reads as a link — the affordance for `gotoDbItem`, so it
-         lives beside the function rather than in each calling partial. */
-      .db-link {
-        background: none;
-        border: none;
-        padding: 0;
-        font: inherit;
-        color: var(--clr-accent);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        cursor: pointer;
+        max-width: 720px;
       }
 
       .card h1 {
@@ -349,8 +290,8 @@
         aside {
           display: none;
         }
-        .card {
-          margin: 20px 16px;
+        main {
+          padding: 20px 16px;
         }
       }
     </style>
@@ -361,9 +302,9 @@
     <header>
       <div class="logo">Hathor <span>Sandbox</span></div>
       <nav>
-        <a class="nav-cta" href="claude-design-v2.html">Concept</a>
-        <button disabled>Dashboard</button>
-        <button disabled>Settings</button>
+        <button class="active">Dashboard</button>
+        <button>Concepts</button>
+        <button>Settings</button>
       </nav>
     </header>
 
@@ -374,63 +315,13 @@
         <ul>
           <li>
             <button
-              id="nav-database"
-              hx-get="partials/database.html"
+              class="selected"
+              hx-get="partials/welcome.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
               onclick="selectNav(this)"
             >
-              <span class="icon">&#128451;</span> Database
-            </button>
-          </li>
-          <li>
-            <button
-              hx-get="partials/fed-search.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#128269;</span> Search
-            </button>
-          </li>
-          <li>
-            <button
-              hx-get="partials/deck-render.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#9635;</span> Deck Render
-            </button>
-          </li>
-          <li>
-            <button
-              hx-get="partials/layouts/index.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#9636;</span> Layouts
-            </button>
-          </li>
-          <li>
-            <button
-              hx-get="partials/uml/index.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#9707;</span> UML
-            </button>
-          </li>
-          <li>
-            <button
-              hx-get="partials/definitions.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#9638;</span> Definitions
+              <span class="icon">&#9670;</span> Welcome
             </button>
           </li>
           <li>
@@ -459,7 +350,36 @@
 
       <!-- ── Main content ───────────────────────────────── -->
       <main>
-        <div id="main-content" hx-trigger="load" hx-swap="innerHTML"></div>
+        <div id="main-content">
+          <div class="card">
+            <h1>Hello, World!</h1>
+            <p>
+              Welcome to the <strong>Hathor Concept Sandbox</strong> — a lightweight prototyping
+              space powered by <code>htmx</code>. Use the sidebar to navigate between views, or
+              click the button below to fetch content dynamically.
+            </p>
+            <div class="btn-group">
+              <button
+                class="btn btn-primary"
+                hx-get="partials/greeting.html"
+                hx-target="#response-area"
+                hx-swap="innerHTML"
+              >
+                Fetch Greeting
+                <span class="htmx-indicator">⏳</span>
+              </button>
+              <button
+                class="btn btn-outline"
+                hx-get="partials/timestamp.html"
+                hx-target="#response-area"
+                hx-swap="innerHTML"
+              >
+                Get Timestamp
+              </button>
+            </div>
+            <div id="response-area"></div>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -468,79 +388,6 @@
         document.querySelectorAll('aside li button').forEach(b => b.classList.remove('selected'));
         el.classList.add('selected');
       }
-
-      /** Characters that would end a text node or an attribute value early. */
-      const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-
-      /**
-       * Escape a value for interpolation into HTML — text or quoted attribute.
-       *
-       * Lives on the shell because partials cannot import each other without a
-       * build step, and more than one of them renders mock-database values.
-       * Everything drawn from the mock goes through this: field values, record
-       * names, ids and keys are all equally free text as far as the markup is
-       * concerned.
-       *
-       * @param {unknown} v Value to render as text.
-       * @returns {string} `v` stringified, safe to interpolate into HTML.
-       */
-      function esc(v) {
-        return String(v).replace(/[&<>"']/g, c => ESCAPES[c]);
-      }
-
-      /**
-       * Deck-plan field naming that plan's decks: a path to a NeTEx fragment
-       * file, relative to the sandbox root — which is also where the mock
-       * database itself sits, so the same string resolves from either. `null`
-       * on a plan that stores no decks.
-       */
-      const DECKS_REF_KEY = 'decksRef';
-
-      /**
-       * Render a `decksRef` as a link to the fragment it names.
-       *
-       * Shared so the two views that show a record — the database tree and the
-       * search detail pane — cannot disagree on what a ref looks like.
-       *
-       * @param {string} ref Path to a `<decks>` fragment, e.g. `mock-xml/x.xml`.
-       * @returns {string} Anchor markup opening the fragment in a new tab.
-       */
-      function refLink(ref) {
-        return `<a class="db-link" href="${esc(ref)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>`;
-      }
-
-      /** Hash key naming one mock-database record: `#db=<netexId>`. */
-      const DB_HASH_KEY = 'db';
-
-      /**
-       * Deep-link one mock-database record from any other page.
-       *
-       * The hash is set first, then the nav button is clicked: htmx re-swaps
-       * the Database page, and the fresh `fed-db.html` reads the hash as it
-       * builds the tree. Re-swapping on every call keeps that the partial's
-       * only entry point, so it needs no listener of its own.
-       *
-       * @param {string} id NeTEx id of the record to open, e.g. `NMR:DeckPlan:13`.
-       */
-      function gotoDbItem(id) {
-        location.hash = new URLSearchParams({ [DB_HASH_KEY]: id });
-        document.getElementById('nav-database').click();
-      }
-
-      // Landing view: whatever the first nav item points at. The menu is the
-      // single source of truth, so reordering it reorders the default. A `#db=`
-      // deep link overrides, naming a record only the Database page shows.
-      //
-      // Assigned here rather than swapped after load: this script runs while
-      // parsing, before htmx processes `#main-content`'s `load` trigger, so
-      // there is no second fetch and no race over which response lands last.
-      const landing = new URLSearchParams(location.hash.slice(1)).has(DB_HASH_KEY)
-        ? document.getElementById('nav-database')
-        : document.querySelector('aside li button[hx-get]');
-      document
-        .getElementById('main-content')
-        .setAttribute('hx-get', landing.getAttribute('hx-get'));
-      selectNav(landing);
     </script>
   </body>
 </html>
