@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="utf-8"?>
+<decks>
+  <Deck id="ENT:Deck:41-247-0" version="1">
+    <Name>B5-7</Name>
+    <DeckLevelRef ref="ENT:DeckLevel:41-247-0" version="1"/>
+    <deckSpaces>
+      <PassengerSpace id="ENT:PassengerSpace:41-247-seating" version="1">
+        <deckEntrances>
+          <DeckEntrance id="ENT:DeckEntrance:41-247-12035" version="1">
+            <Name>EXIT_LEFT</Name>
+            <Centroid>
+              <Location>
+                <pos>22.6534 0.4332</pos>
+              </Location>
+            </Centroid>
+            <Width>0.5776</Width>
+            <Length>1.2635</Length>
+            <VehicleSide>leftSide</VehicleSide>
+          </DeckEntrance>
+          <DeckEntrance id="ENT:DeckEntrance:41-247-12036" version="1">
+            <Name>EXIT_RIGHT</Name>
+            <Centroid>
+              <Location>
+                <pos>22.6534 3.1047</pos>
+              </Location>
+            </Centroid>
+            <Width>0.5776</Width>
+            <Length>1.2635</Length>
+            <VehicleSide>rightSide</VehicleSide>
+          </DeckEntrance>
+          <DeckEntrance id="ENT:DeckEntrance:41-247-12037" version="1">
+            <Name>EXIT_RIGHT</Name>
+            <Centroid>
+              <Location>
+                <pos>0.704 3.1047</pos>
+              </Location>
+            </Centroid>
+            <Width>0.5776</Width>
+            <Length>1.2635</Length>
+            <VehicleSide>rightSide</VehicleSide>
+          </DeckEntrance>
+          <DeckEntrance id="ENT:DeckEntrance:41-247-12033" version="1">
+            <Name>EXIT_LEFT</Name>
+            <Centroid>
+              <Location>
+                <pos>0.704 0.4332</pos>
+              </Location>
+            </Centroid>
+            <Width>0.5776</Width>
+            <Length>1.2635</Length>
+            <VehicleSide>leftSide</VehicleSide>
+          </DeckEntrance>
+        </deckEntrances>
+        <PassengerSpaceType>seatingArea</PassengerSpaceType>
+        <passengerSpots>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12017" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.0903 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>1</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12018" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.0903 1.3538</pos>
+              </Location>
+            </Centroid>
+            <Label>3</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12016" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.0903 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>4</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12003" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.6787 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>5</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12012" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.6787 1.3538</pos>
+              </Location>
+            </Centroid>
+            <Label>7</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12005" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.6787 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>8</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12004" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.1949 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>9</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12006" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.1949 1.3538</pos>
+              </Location>
+            </Centroid>
+            <Label>11</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12020" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.1949 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>12</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12007" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.7112 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>13</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12008" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.7112 1.3538</pos>
+              </Location>
+            </Centroid>
+            <Label>15</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12010" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.7112 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>16</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12019" version="1">
+            <Centroid>
+              <Location>
+                <pos>13.0325 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>17</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12009" version="1">
+            <Centroid>
+              <Location>
+                <pos>13.0325 2.0397</pos>
+              </Location>
+            </Centroid>
+            <Label>18</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12011" version="1">
+            <Centroid>
+              <Location>
+                <pos>13.0325 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>20</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12023" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.5487 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>21</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12022" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.5487 2.0397</pos>
+              </Location>
+            </Centroid>
+            <Label>22</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12013" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.5487 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>24</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12015" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.065 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>25</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12021" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.065 2.0397</pos>
+              </Location>
+            </Centroid>
+            <Label>26</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12014" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.065 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>28</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12025" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.5812 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>29</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12026" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.5812 2.0397</pos>
+              </Location>
+            </Centroid>
+            <Label>30</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12024" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.5812 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>32</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12027" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0975 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>33</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12028" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0975 2.0397</pos>
+              </Location>
+            </Centroid>
+            <Label>34</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12029" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0975 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>36</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12030" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.5415 2.8339</pos>
+              </Location>
+            </Centroid>
+            <Label>37</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12031" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.5415 2.0397</pos>
+              </Location>
+            </Centroid>
+            <Label>38</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:41-247-12032" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.5415 0.5596</pos>
+              </Location>
+            </Centroid>
+            <Label>40</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.7581</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:41-247-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:41-247-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+        </passengerSpots>
+      </PassengerSpace>
+      <PassengerSpace id="ENT:PassengerSpace:41-247-12034" version="1">
+        <Name>WC</Name>
+        <Centroid>
+          <Location>
+            <pos>2.7437 0.9386</pos>
+          </Location>
+        </Centroid>
+        <Width>0.8664</Width>
+        <Length>0.8664</Length>
+        <PassengerSpaceType>toilet</PassengerSpaceType>
+      </PassengerSpace>
+    </deckSpaces>
+    <spotRows>
+      <SpotRow id="ENT:SpotRow:41-247-r0" version="1">
+        <Label>1</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r1" version="1">
+        <Label>2</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r2" version="1">
+        <Label>3</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r3" version="1">
+        <Label>4</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r4" version="1">
+        <Label>5</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r5" version="1">
+        <Label>6</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r6" version="1">
+        <Label>7</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r7" version="1">
+        <Label>8</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r8" version="1">
+        <Label>9</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:41-247-r9" version="1">
+        <Label>10</Label>
+      </SpotRow>
+    </spotRows>
+    <spotColumns>
+      <SpotColumn id="ENT:SpotColumn:41-247-c0" version="1">
+        <Label>1</Label>
+      </SpotColumn>
+      <SpotColumn id="ENT:SpotColumn:41-247-c1" version="1">
+        <Label>2</Label>
+      </SpotColumn>
+      <SpotColumn id="ENT:SpotColumn:41-247-c2" version="1">
+        <Label>3</Label>
+      </SpotColumn>
+      <SpotColumn id="ENT:SpotColumn:41-247-c3" version="1">
+        <Label>4</Label>
+      </SpotColumn>
+    </spotColumns>
+  </Deck>
+</decks>

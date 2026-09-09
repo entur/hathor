@@ -1,0 +1,1403 @@
+<?xml version="1.0" encoding="utf-8"?>
+<decks>
+  <Deck id="ENT:Deck:20-2-0" version="1">
+    <Name>B5-3</Name>
+    <DeckLevelRef ref="ENT:DeckLevel:20-2-0" version="1"/>
+    <deckSpaces>
+      <PassengerSpace id="ENT:PassengerSpace:20-2-seating" version="1">
+        <deckEntrances>
+          <DeckEntrance id="ENT:DeckEntrance:20-2-2154" version="1">
+            <Name>EXIT_RIGHT</Name>
+            <Centroid>
+              <Location>
+                <pos>1.3899 2.9783</pos>
+              </Location>
+            </Centroid>
+            <Width>0.4693</Width>
+            <Length>0.9747</Length>
+            <VehicleSide>rightSide</VehicleSide>
+          </DeckEntrance>
+          <DeckEntrance id="ENT:DeckEntrance:20-2-2151" version="1">
+            <Name>EXIT_RIGHT</Name>
+            <Centroid>
+              <Location>
+                <pos>24.7834 2.9783</pos>
+              </Location>
+            </Centroid>
+            <Width>0.4693</Width>
+            <Length>0.9747</Length>
+            <VehicleSide>rightSide</VehicleSide>
+          </DeckEntrance>
+          <DeckEntrance id="ENT:DeckEntrance:20-2-2152" version="1">
+            <Name>EXIT_LEFT</Name>
+            <Centroid>
+              <Location>
+                <pos>24.7834 0.343</pos>
+              </Location>
+            </Centroid>
+            <Width>0.4693</Width>
+            <Length>0.9747</Length>
+            <VehicleSide>leftSide</VehicleSide>
+          </DeckEntrance>
+          <DeckEntrance id="ENT:DeckEntrance:20-2-2153" version="1">
+            <Name>EXIT_LEFT</Name>
+            <Centroid>
+              <Location>
+                <pos>1.3899 0.343</pos>
+              </Location>
+            </Centroid>
+            <Width>0.4693</Width>
+            <Length>0.9747</Length>
+            <VehicleSide>leftSide</VehicleSide>
+          </DeckEntrance>
+        </deckEntrances>
+        <PassengerSpaceType>seatingArea</PassengerSpaceType>
+        <passengerSpots>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1501" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.2527 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>1</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r16" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1502" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.2527 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>2</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r16" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1503" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.2527 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>3</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r16" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1504" version="1">
+            <Centroid>
+              <Location>
+                <pos>20.2527 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>4</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r16" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>true</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1505" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0253 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>5</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1536" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0253 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>6</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1534" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0253 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>7</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1535" version="1">
+            <Centroid>
+              <Location>
+                <pos>19.0253 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>8</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1539" version="1">
+            <Centroid>
+              <Location>
+                <pos>18.0866 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>9</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1540" version="1">
+            <Centroid>
+              <Location>
+                <pos>18.0866 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>10</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1537" version="1">
+            <Centroid>
+              <Location>
+                <pos>18.0866 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>11</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1538" version="1">
+            <Centroid>
+              <Location>
+                <pos>18.0866 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>12</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1543" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.148 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>13</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1544" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.148 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>14</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1541" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.148 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>15</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1542" version="1">
+            <Centroid>
+              <Location>
+                <pos>17.148 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>16</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1528" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.2094 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>17</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1529" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.2094 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>18</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1526" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.2094 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>19</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1527" version="1">
+            <Centroid>
+              <Location>
+                <pos>16.2094 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>20</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1532" version="1">
+            <Centroid>
+              <Location>
+                <pos>15.1264 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>21</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1533" version="1">
+            <Centroid>
+              <Location>
+                <pos>15.1264 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>22</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1530" version="1">
+            <Centroid>
+              <Location>
+                <pos>15.1264 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>23</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1531" version="1">
+            <Centroid>
+              <Location>
+                <pos>15.1264 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>24</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1521" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.0433 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>25</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r10" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1519" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.0433 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>26</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r10" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1525" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.0433 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>27</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r10" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1523" version="1">
+            <Centroid>
+              <Location>
+                <pos>14.0433 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>28</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r10" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1563" version="1">
+            <Centroid>
+              <Location>
+                <pos>11.9856 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>29</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1550" version="1">
+            <Centroid>
+              <Location>
+                <pos>11.9856 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>30</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1549" version="1">
+            <Centroid>
+              <Location>
+                <pos>11.9856 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>31</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1551" version="1">
+            <Centroid>
+              <Location>
+                <pos>11.9856 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>32</Label>
+            <Orientation>forwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r9" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1508" version="1">
+            <Centroid>
+              <Location>
+                <pos>10.6498 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>33</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1509" version="1">
+            <Centroid>
+              <Location>
+                <pos>10.6498 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>34</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1506" version="1">
+            <Centroid>
+              <Location>
+                <pos>10.6498 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>35</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1507" version="1">
+            <Centroid>
+              <Location>
+                <pos>10.6498 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>36</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1512" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.639 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>37</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1513" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.639 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>38</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1510" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.639 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>39</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1511" version="1">
+            <Centroid>
+              <Location>
+                <pos>9.639 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>40</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1516" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.7004 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>41</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1517" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.7004 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>42</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1514" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.7004 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>43</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1515" version="1">
+            <Centroid>
+              <Location>
+                <pos>8.7004 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>44</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1522" version="1">
+            <Centroid>
+              <Location>
+                <pos>7.7617 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>45</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1524" version="1">
+            <Centroid>
+              <Location>
+                <pos>7.7617 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>46</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1518" version="1">
+            <Centroid>
+              <Location>
+                <pos>7.7617 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>47</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1520" version="1">
+            <Centroid>
+              <Location>
+                <pos>7.7617 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>48</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1554" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.8231 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>49</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1555" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.8231 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>50</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1552" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.8231 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>51</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1553" version="1">
+            <Centroid>
+              <Location>
+                <pos>6.8231 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>52</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1558" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.8845 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>53</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1559" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.8845 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>54</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1556" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.8845 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>55</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1557" version="1">
+            <Centroid>
+              <Location>
+                <pos>5.8845 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>56</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1562" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.9458 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>57</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1564" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.9458 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>58</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1560" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.9458 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>59</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1561" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.9458 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>60</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1567" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.0072 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>61</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1568" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.0072 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>62</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1565" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.0072 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>63</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1566" version="1">
+            <Centroid>
+              <Location>
+                <pos>4.0072 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>64</Label>
+            <Orientation>unknown</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>false</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1547" version="1">
+            <Centroid>
+              <Location>
+                <pos>3.0686 0.5054</pos>
+              </Location>
+            </Centroid>
+            <Label>65</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1548" version="1">
+            <Centroid>
+              <Location>
+                <pos>3.0686 1.083</pos>
+              </Location>
+            </Centroid>
+            <Label>66</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c1" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1545" version="1">
+            <Centroid>
+              <Location>
+                <pos>3.0686 2.2744</pos>
+              </Location>
+            </Centroid>
+            <Label>67</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c2" version="1"/>
+            <IsByWindow>false</IsByWindow>
+            <IsByAisle>true</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+          <PassengerSpot id="ENT:PassengerSpot:20-2-1546" version="1">
+            <Centroid>
+              <Location>
+                <pos>3.0686 2.852</pos>
+              </Location>
+            </Centroid>
+            <Label>68</Label>
+            <Orientation>backwards</Orientation>
+            <Width>0.5776</Width>
+            <Length>0.7942</Length>
+            <LocatableSpotType>seat</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+            <IsByWindow>true</IsByWindow>
+            <IsByAisle>false</IsByAisle>
+            <IsInFrontRow>true</IsInFrontRow>
+            <IsInEndRow>false</IsInEndRow>
+          </PassengerSpot>
+        </passengerSpots>
+        <luggageSpots>
+          <LuggageSpot id="ENT:LuggageSpot:20-2-13953" version="1">
+            <Centroid>
+              <Location>
+                <pos>2.2744 0.5235</pos>
+              </Location>
+            </Centroid>
+            <Orientation>unknown</Orientation>
+            <Width>0.4693</Width>
+            <Length>0.4332</Length>
+            <LocatableSpotType>luggageSpace</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r0" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+          </LuggageSpot>
+          <LuggageSpot id="ENT:LuggageSpot:20-2-13954" version="1">
+            <Centroid>
+              <Location>
+                <pos>21.083 2.7617</pos>
+              </Location>
+            </Centroid>
+            <Orientation>unknown</Orientation>
+            <Width>0.4693</Width>
+            <Length>0.4332</Length>
+            <LocatableSpotType>luggageSpace</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r16" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c3" version="1"/>
+          </LuggageSpot>
+          <LuggageSpot id="ENT:LuggageSpot:20-2-13955" version="1">
+            <Centroid>
+              <Location>
+                <pos>21.083 0.5235</pos>
+              </Location>
+            </Centroid>
+            <Orientation>unknown</Orientation>
+            <Width>0.4693</Width>
+            <Length>0.4332</Length>
+            <LocatableSpotType>luggageSpace</LocatableSpotType>
+            <SpotRowRef ref="ENT:SpotRow:20-2-r16" version="1"/>
+            <SpotColumnRef ref="ENT:SpotColumn:20-2-c0" version="1"/>
+          </LuggageSpot>
+        </luggageSpots>
+      </PassengerSpace>
+      <PassengerSpace id="ENT:PassengerSpace:20-2-1949" version="1">
+        <Name>WC</Name>
+        <Centroid>
+          <Location>
+            <pos>22.5451 2.3285</pos>
+          </Location>
+        </Centroid>
+        <Width>0.6137</Width>
+        <Length>0.4693</Length>
+        <PassengerSpaceType>toilet</PassengerSpaceType>
+      </PassengerSpace>
+    </deckSpaces>
+    <spotRows>
+      <SpotRow id="ENT:SpotRow:20-2-r0" version="1">
+        <Label>1</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r1" version="1">
+        <Label>2</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r2" version="1">
+        <Label>3</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r3" version="1">
+        <Label>4</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r4" version="1">
+        <Label>5</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r5" version="1">
+        <Label>6</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r6" version="1">
+        <Label>7</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r7" version="1">
+        <Label>8</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r8" version="1">
+        <Label>9</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r9" version="1">
+        <Label>10</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r10" version="1">
+        <Label>11</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r11" version="1">
+        <Label>12</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r12" version="1">
+        <Label>13</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r13" version="1">
+        <Label>14</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r14" version="1">
+        <Label>15</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r15" version="1">
+        <Label>16</Label>
+      </SpotRow>
+      <SpotRow id="ENT:SpotRow:20-2-r16" version="1">
+        <Label>17</Label>
+      </SpotRow>
+    </spotRows>
+    <spotColumns>
+      <SpotColumn id="ENT:SpotColumn:20-2-c0" version="1">
+        <Label>1</Label>
+      </SpotColumn>
+      <SpotColumn id="ENT:SpotColumn:20-2-c1" version="1">
+        <Label>2</Label>
+      </SpotColumn>
+      <SpotColumn id="ENT:SpotColumn:20-2-c2" version="1">
+        <Label>3</Label>
+      </SpotColumn>
+      <SpotColumn id="ENT:SpotColumn:20-2-c3" version="1">
+        <Label>4</Label>
+      </SpotColumn>
+    </spotColumns>
+  </Deck>
+</decks>
