@@ -38,6 +38,20 @@
   .deck-render .pane-label {
     white-space: nowrap;
   }
+  /* Which record this is and which file it came from. Identity, so it rides
+     with the heading: in the footer the pair cost 389px of a 406px pane and
+     wrapped the figures onto a second row, while the heading had the room to
+     spare. `display: contents` hands both to the heading's own flex row, so
+     they take its gaps and sit on its baseline. */
+  .deck-render .pane-src {
+    display: contents;
+  }
+  .deck-render h2 .db-link {
+    font-size: 12px;
+    font-weight: 400;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+  }
   .deck-render .pane-sub {
     font-size: 12px;
     font-weight: 400;
@@ -90,6 +104,8 @@
     min-height: 0;
     overflow: auto;
   }
+  /* Figures only, now that identity sits in the heading — so the row is short
+     enough to stay a single line, and the drawings keep the height. */
   .deck-stage .stage-meta,
   .deck-art .art-meta {
     flex-shrink: 0;
@@ -99,8 +115,13 @@
     font-family: 'SF Mono', 'Fira Code', monospace;
     color: var(--clr-text-dim);
     display: flex;
-    gap: 16px;
+    gap: 10px;
     flex-wrap: wrap;
+  }
+  /* A figure shrunk to `26.0…` is worse than one that wrapped. */
+  .deck-stage .stage-meta > span,
+  .deck-art .art-meta > span {
+    flex: 0 0 auto;
   }
   /* Scoped to the page, not to one pane: both show notes. */
   .deck-render .stage-note {
@@ -113,6 +134,10 @@
   .deck-render .stage-note.error {
     color: #b42318;
   }
+  /* Refit animation length; see `fitArt`. */
+  .deck-render {
+    --art-fit-ms: 240ms;
+  }
   /* Drawn at its own scale, contained rather than stretched — a source drawing
      resampled would stop being evidence of what the legacy system shows. The
      white plate is the artwork's own ground, extended under any letterboxing. */
@@ -122,6 +147,25 @@
     object-fit: contain;
     background: #fff;
     border-radius: 4px;
+  }
+  /* Width matched to the rendering opposite, once that width is known. The
+     height then follows the drawing's own aspect ratio and the pane's height
+     stops having a say: a car taller than the pane scrolls rather than
+     shrinking off the scale it is being compared at. */
+  .deck-art .art-img.fitted {
+    max-height: none;
+    height: auto;
+  }
+  .deck-art .art-img.animate {
+    transition: width var(--art-fit-ms) ease;
+  }
+  /* Centred, but reachable when a width-matched drawing outgrows the pane: an
+     item centred by `align-items` overflows equally at both ends and its top
+     is unscrollable. `safe` drops back to start-alignment at that point. */
+  @supports (align-items: safe center) {
+    .deck-art .art-host {
+      align-items: safe center;
+    }
   }
   /* Bundle-load spinner. The renderer is a CDN ESM import with Vue bundled in,
      so on a cold cache the stage sits empty long enough that a bare line of
@@ -160,6 +204,9 @@
     .deck-render .spin::before {
       animation: deck-pulse 1.2s ease-in-out infinite;
     }
+    .deck-art .art-img.animate {
+      transition: none;
+    }
     @keyframes deck-pulse {
       50% {
         opacity: 0.25;
@@ -178,6 +225,7 @@
   <div class="card deck-stage">
     <h2>
       <span class="pane-label">Deck rendering</span><span class="pane-sub" id="deck-title"></span>
+      <span class="pane-src" id="deck-src"></span>
     </h2>
     <div class="stage-host" id="deck-host">
       <span class="spin" role="status">Fetching the renderer…</span>
@@ -188,6 +236,7 @@
     <h2>
       <span class="pane-label">Source artwork</span>
       <span class="pane-sub">as the legacy system draws it</span>
+      <span class="pane-src" id="deck-art-src"></span>
     </h2>
     <div class="art-host" id="deck-artwork"></div>
     <div class="art-meta" id="deck-art-meta"></div>
@@ -239,6 +288,9 @@
   /** Decimals kept on a derived extent — what the source coordinates carry. */
   const EXTENT_DP = 4;
 
+  /** Decimals shown for that extent: four are the parser's, not a reader's. */
+  const DIM_DP = 2;
+
   const grid = document.querySelector('.deck-render');
   const listEl = document.getElementById('deck-plan-list');
   const hostEl = document.getElementById('deck-host');
@@ -246,6 +298,17 @@
   const metaEl = document.getElementById('deck-meta');
   const artEl = document.getElementById('deck-artwork');
   const artMetaEl = document.getElementById('deck-art-meta');
+  const srcEl = document.getElementById('deck-src');
+  const artSrcEl = document.getElementById('deck-art-src');
+
+  /**
+   * The rows the two comparison panes share, each as a `[stage, artwork]` pair.
+   * Everything between them is the drawing itself, which takes what is left.
+   */
+  const ROWS = [
+    [document.querySelector('.deck-stage h2'), document.querySelector('.deck-art h2')],
+    [metaEl, artMetaEl],
+  ];
 
   /**
    * Stylesheet for the element's shadow root.
@@ -286,6 +349,47 @@
 
   /** Same, for a step still in flight — a fragment on its way over the wire. */
   const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
+
+  /**
+   * Give the panes' headers one height and their footers another.
+   *
+   * The two rows wrap on their own contents: the stage's footer carries four
+   * figures and two links to the artwork's two, and at three columns the
+   * artwork's header takes a second line the stage's does not. Left alone,
+   * whichever row is shorter hands its pane the difference — so the drawing
+   * meant to be read against the one beside it gets a taller box, starts at a
+   * different height on the page, and scrolls where the other does not, which
+   * is the difference the width match was made to remove.
+   *
+   * Cleared before measuring so a row that has stopped wrapping — a wider
+   * window, a shorter plan id — gives the height back.
+   */
+  const levelRows = () => {
+    for (const pair of ROWS) for (const el of pair) el.style.minHeight = '';
+    for (const pair of ROWS) {
+      const h = Math.max(...pair.map(el => el.offsetHeight));
+      for (const el of pair) el.style.minHeight = `${h}px`;
+    }
+  };
+
+  /**
+   * A ref's file kind — what is left of its name after the record's own stem.
+   *
+   * The link sits beside the record id it is named after, so the path spends
+   * four times the width of what it adds. Nothing is lost: `refLink` keeps the
+   * whole path as the link's `title` and its href.
+   *
+   * @param {string} ref Path to a sibling file.
+   * @returns {string} e.g. `decks.xml`, `svg`.
+   */
+  const kindOf = ref => {
+    const base = ref.split('/').pop();
+    const dot = base.indexOf('.');
+    return dot < 0 ? base : base.slice(dot + 1);
+  };
+
+  /** A deck extent at reading precision. @param {number} m Metres. */
+  const fmtM = m => Number(m).toFixed(DIM_DP);
 
   /** Flatten a deck's spaces into the counts worth showing under the drawing. */
   const statsOf = deck => {
@@ -349,6 +453,49 @@
     const plans = db.deckPlans ?? [];
     const drawable = plans.filter(p => p[DECKS_REF_KEY]);
     let current = null;
+
+    /**
+     * Width (px) the source drawing is laid out at, or 0 before the first fit.
+     * Kept across plans so the next drawing can be seeded with the width the
+     * pane already shows instead of appearing at its intrinsic size first.
+     */
+    let artW = 0;
+
+    /**
+     * Lay a drawing out at `px` wide.
+     *
+     * @param {HTMLImageElement} img Drawing.
+     * @param {number} px Target width.
+     * @param {boolean} animate Whether to travel there from its current width.
+     */
+    const widthTo = (img, px, animate) => {
+      img.classList.add('fitted');
+      img.classList.toggle('animate', animate);
+      // Flush the outgoing width through style resolution first: a width set
+      // in the same frame the class arrived has nothing to transition from,
+      // and a cached plan gets both within one task.
+      if (animate) void img.offsetWidth;
+      img.style.width = `${px}px`;
+      artW = px;
+    };
+
+    /**
+     * Match the source drawing to the rendering's width on screen.
+     *
+     * Instant the first time a drawing is sized — animating out of its
+     * intrinsic width would play a size nobody asked to see. Every later
+     * change is animated, so a refit (a resize, or a plan whose deck lands at
+     * a different scale) reads as the same drawing resized rather than as a
+     * cut.
+     *
+     * @param {number} px Rendering width; ignored unless positive.
+     */
+    const fitArt = px => {
+      const img = artEl.querySelector('img');
+      const w = Math.round(px);
+      if (!img || !(w > 0) || img.style.width === `${w}px`) return;
+      widthTo(img, w, img.style.width !== '');
+    };
 
     /**
      * Direct children of an element by local name, namespace ignored.
@@ -495,8 +642,8 @@
      * rendering next door. An image document keeps each one to itself.
      *
      * Idempotent, because a resize redraws and swapping in a fresh `<img>` for
-     * the same file would flash the pane. Nothing here refits: the CSS contains
-     * the drawing at whatever size the pane is.
+     * the same file would flash the pane — and the width `fitArt` gave it
+     * survives with it.
      *
      * Both handlers check `current` first, the same guard `draw` puts after
      * every await. Detaching an `<img>` neither cancels its fetch nor stops it
@@ -511,6 +658,7 @@
       const ref = plan[SVG_REF_KEY];
       if (artEl.querySelector('img')?.getAttribute('src') === ref) return;
       artMetaEl.innerHTML = '';
+      artSrcEl.innerHTML = ref ? refLink(ref, kindOf(ref)) : '';
       if (!ref)
         return noteIn(
           artEl,
@@ -525,10 +673,14 @@
       // in the pane opposite were scaled out of.
       img.onload = () => {
         if (current !== plan) return;
-        artMetaEl.innerHTML =
-          refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`;
+        artMetaEl.innerHTML = `<span>${img.naturalWidth}×${img.naturalHeight} px</span>`;
+        levelRows();
       };
       img.onerror = () => current === plan && noteIn(artEl, `Could not load ${ref}.`, true);
+      // Seeded at the width already on screen, unanimated: the rendering it
+      // must match is a fetch and a parse away, and a drawing that appeared at
+      // its intrinsic width first would resize twice for one selection.
+      if (artW) widthTo(img, artW, false);
       img.src = ref;
       artEl.replaceChildren(img);
     };
@@ -549,6 +701,14 @@
     const draw = async plan => {
       current = plan;
       titleEl.textContent = plan.name;
+      // Neither waits on the decks: both are read off the record itself, and
+      // the heading is one of the rows `levelRows` measures, so it has to be
+      // whole before anything is fitted to what it leaves.
+      srcEl.innerHTML =
+        `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
+        refLink(plan[DECKS_REF_KEY], kindOf(plan[DECKS_REF_KEY]));
+      // `gotoDbItem` is the shell's (index.html); this page only names a record.
+      srcEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
       // Ahead of the await: the artwork is a plain file and has no reason to
       // wait on the fragment fetch or on a parse that may yet fail.
       drawArt(plan);
@@ -564,13 +724,32 @@
       } catch (e) {
         if (current !== plan) return;
         metaEl.textContent = '';
-        return note(`Could not load this plan: ${e.message}`, true);
+        note(`Could not load this plan: ${e.message}`, true);
+        return levelRows();
       }
       if (current !== plan) return;
       if (!deck) {
         metaEl.textContent = '';
-        return note('This fragment carries no decks.', true);
+        note('This fragment carries no decks.', true);
+        return levelRows();
       }
+
+      const s = statsOf(deck);
+      metaEl.innerHTML = [
+        `${s.spots} spots`,
+        `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
+        `${s.entrances} entrances`,
+        `${fmtM(deck.Length)}×${fmtM(deck.Width)} m`,
+      ]
+        .map(t => `<span>${t}</span>`)
+        .join('');
+      // Ahead of the drawing, not after it: levelling settles how much height
+      // is left for the stage, and `fit` reads that height. Drawn first, the
+      // deck would be sized against a pane a levelled footer then shrinks
+      // under it, and overflow the box it was just fitted to. Both footers are
+      // written on their own schedule — the artwork's on an image load that
+      // may already have fired — so each levels the rows.
+      levelRows();
 
       const el = document.createElement(TAG);
       Object.assign(el, { deck, ...fit(deck) });
@@ -578,20 +757,13 @@
       if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
       hostEl.replaceChildren(el);
 
-      const s = statsOf(deck);
-      metaEl.innerHTML =
-        `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
-        refLink(plan[DECKS_REF_KEY]) +
-        [
-          `${s.spots} spots`,
-          `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
-          `${s.entrances} entrances`,
-          `${deck.Length} × ${deck.Width} m`,
-        ]
-          .map(t => `<span>${t}</span>`)
-          .join('');
-      // `gotoDbItem` is the shell's (index.html); this page only names a record.
-      metaEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
+      // One scale across both panes — a drawing beside a rendering it is not
+      // measurable against is decoration. The width is taken from the `<svg>`
+      // rather than computed: `fit` clamps the scale, the element rotates, and
+      // the renderer pads its frame, so nothing short of the laid-out element
+      // states what the rendering actually occupies. Vue renders it in
+      // `connectedCallback`, so it is there to measure the moment it is in.
+      fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
     };
 
     const row = plan => {

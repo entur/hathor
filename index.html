@@ -516,10 +516,13 @@
        * search detail pane — cannot disagree on what a ref looks like.
        *
        * @param {string} ref Path to a sibling file, e.g. `mock-xml/x.decks.xml`.
+       * @param {string} [label] Text to show in place of the path, for a row
+       *   too narrow to carry one. The path itself stays reachable — it is the
+       *   link's `title` and its href either way.
        * @returns {string} Anchor markup opening the file in a new tab.
        */
-      function refLink(ref) {
-        return `<a class="db-link" href="${esc(ref)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>`;
+      function refLink(ref, label = ref) {
+        return `<a class="db-link" href="${esc(ref)}" title="${esc(ref)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
       }
 
       /** Hash key naming one mock-database record: `#db=<netexId>`. */
