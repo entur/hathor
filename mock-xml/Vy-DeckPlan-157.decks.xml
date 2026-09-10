@@ -1,62 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<decks>
+<decks xmlns:gml="http://www.opengis.net/gml/3.2">
   <Deck id="ENT:Deck:20-264-0" version="1">
     <Name>BMB76</Name>
+    <Centroid>
+      <Location>
+        <gml:pos>10.7401 1.6606</gml:pos>
+      </Location>
+    </Centroid>
+    <gml:Polygon gml:id="ENT-Deck-20-264-0-outline">
+      <gml:exterior>
+        <gml:LinearRing>
+          <gml:posList>0 0 21.4801 0 21.4801 3.3213 0 3.3213 0 0</gml:posList>
+        </gml:LinearRing>
+      </gml:exterior>
+    </gml:Polygon>
     <DeckLevelRef ref="ENT:DeckLevel:20-264-0" version="1"/>
     <deckSpaces>
       <PassengerSpace id="ENT:PassengerSpace:20-264-seating" version="1">
         <deckEntrances>
-          <DeckEntrance id="ENT:DeckEntrance:20-264-12935" version="1">
+          <PassengerEntrance id="ENT:DeckEntrance:20-264-12935" version="1">
             <Name>EXIT_LEFT</Name>
             <Centroid>
               <Location>
-                <pos>3.5921 0.343</pos>
+                <gml:pos>3.5921 0.343</gml:pos>
               </Location>
             </Centroid>
             <Width>0.4693</Width>
             <Length>0.9747</Length>
             <VehicleSide>leftSide</VehicleSide>
-          </DeckEntrance>
-          <DeckEntrance id="ENT:DeckEntrance:20-264-12936" version="1">
+          </PassengerEntrance>
+          <PassengerEntrance id="ENT:DeckEntrance:20-264-12936" version="1">
             <Name>EXIT_RIGHT</Name>
             <Centroid>
               <Location>
-                <pos>3.5921 2.9783</pos>
+                <gml:pos>3.5921 2.9783</gml:pos>
               </Location>
             </Centroid>
             <Width>0.4693</Width>
             <Length>0.9747</Length>
             <VehicleSide>rightSide</VehicleSide>
-          </DeckEntrance>
-          <DeckEntrance id="ENT:DeckEntrance:20-264-12933" version="1">
+          </PassengerEntrance>
+          <PassengerEntrance id="ENT:DeckEntrance:20-264-12933" version="1">
             <Name>EXIT_RIGHT</Name>
             <Centroid>
               <Location>
-                <pos>11.9675 2.9783</pos>
+                <gml:pos>11.9675 2.9783</gml:pos>
               </Location>
             </Centroid>
             <Width>0.4693</Width>
             <Length>0.9747</Length>
             <VehicleSide>rightSide</VehicleSide>
-          </DeckEntrance>
-          <DeckEntrance id="ENT:DeckEntrance:20-264-12934" version="1">
+          </PassengerEntrance>
+          <PassengerEntrance id="ENT:DeckEntrance:20-264-12934" version="1">
             <Name>EXIT_LEFT</Name>
             <Centroid>
               <Location>
-                <pos>11.9675 0.343</pos>
+                <gml:pos>11.9675 0.343</gml:pos>
               </Location>
             </Centroid>
             <Width>0.4693</Width>
             <Length>0.9747</Length>
             <VehicleSide>leftSide</VehicleSide>
-          </DeckEntrance>
+          </PassengerEntrance>
         </deckEntrances>
         <PassengerSpaceType>seatingArea</PassengerSpaceType>
         <passengerSpots>
           <PassengerSpot id="ENT:PassengerSpot:20-264-12890" version="1">
             <Centroid>
               <Location>
-                <pos>0.6859 2.852</pos>
+                <gml:pos>0.6859 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>169</Label>
@@ -74,7 +86,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12887" version="1">
             <Centroid>
               <Location>
-                <pos>0.6859 2.2744</pos>
+                <gml:pos>0.6859 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>170</Label>
@@ -92,7 +104,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12888" version="1">
             <Centroid>
               <Location>
-                <pos>0.6859 1.083</pos>
+                <gml:pos>0.6859 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>171</Label>
@@ -110,7 +122,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12894" version="1">
             <Centroid>
               <Location>
-                <pos>0.6859 0.5054</pos>
+                <gml:pos>0.6859 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>172</Label>
@@ -128,7 +140,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12891" version="1">
             <Centroid>
               <Location>
-                <pos>2.0578 2.852</pos>
+                <gml:pos>2.0578 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>173</Label>
@@ -146,7 +158,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12889" version="1">
             <Centroid>
               <Location>
-                <pos>2.0578 2.2744</pos>
+                <gml:pos>2.0578 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>174</Label>
@@ -164,7 +176,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12893" version="1">
             <Centroid>
               <Location>
-                <pos>2.0578 1.083</pos>
+                <gml:pos>2.0578 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>175</Label>
@@ -182,7 +194,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12892" version="1">
             <Centroid>
               <Location>
-                <pos>2.0578 0.5054</pos>
+                <gml:pos>2.0578 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>176</Label>
@@ -200,7 +212,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12895" version="1">
             <Centroid>
               <Location>
-                <pos>5.1264 2.852</pos>
+                <gml:pos>5.1264 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>177</Label>
@@ -218,7 +230,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12896" version="1">
             <Centroid>
               <Location>
-                <pos>5.1264 2.2744</pos>
+                <gml:pos>5.1264 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>178</Label>
@@ -236,7 +248,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12901" version="1">
             <Centroid>
               <Location>
-                <pos>6.1011 2.852</pos>
+                <gml:pos>6.1011 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>179</Label>
@@ -254,7 +266,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12902" version="1">
             <Centroid>
               <Location>
-                <pos>6.1011 2.2744</pos>
+                <gml:pos>6.1011 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>180</Label>
@@ -272,7 +284,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12903" version="1">
             <Centroid>
               <Location>
-                <pos>6.1011 1.083</pos>
+                <gml:pos>6.1011 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>181</Label>
@@ -290,7 +302,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12900" version="1">
             <Centroid>
               <Location>
-                <pos>6.1011 0.5054</pos>
+                <gml:pos>6.1011 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>182</Label>
@@ -308,7 +320,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12897" version="1">
             <Centroid>
               <Location>
-                <pos>7.0758 2.852</pos>
+                <gml:pos>7.0758 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>183</Label>
@@ -326,7 +338,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12898" version="1">
             <Centroid>
               <Location>
-                <pos>7.0758 2.2744</pos>
+                <gml:pos>7.0758 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>184</Label>
@@ -344,7 +356,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12899" version="1">
             <Centroid>
               <Location>
-                <pos>7.0758 1.083</pos>
+                <gml:pos>7.0758 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>185</Label>
@@ -362,7 +374,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12904" version="1">
             <Centroid>
               <Location>
-                <pos>7.0758 0.5054</pos>
+                <gml:pos>7.0758 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>186</Label>
@@ -380,7 +392,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12907" version="1">
             <Centroid>
               <Location>
-                <pos>8.4116 2.852</pos>
+                <gml:pos>8.4116 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>187</Label>
@@ -398,7 +410,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12910" version="1">
             <Centroid>
               <Location>
-                <pos>8.4116 2.2744</pos>
+                <gml:pos>8.4116 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>188</Label>
@@ -416,7 +428,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12906" version="1">
             <Centroid>
               <Location>
-                <pos>8.4116 1.083</pos>
+                <gml:pos>8.4116 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>189</Label>
@@ -434,7 +446,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12905" version="1">
             <Centroid>
               <Location>
-                <pos>8.4116 0.5054</pos>
+                <gml:pos>8.4116 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>190</Label>
@@ -452,7 +464,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12911" version="1">
             <Centroid>
               <Location>
-                <pos>9.3863 2.852</pos>
+                <gml:pos>9.3863 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>191</Label>
@@ -470,7 +482,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12915" version="1">
             <Centroid>
               <Location>
-                <pos>9.3863 2.2744</pos>
+                <gml:pos>9.3863 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>192</Label>
@@ -488,7 +500,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12916" version="1">
             <Centroid>
               <Location>
-                <pos>9.3863 1.083</pos>
+                <gml:pos>9.3863 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>193</Label>
@@ -506,7 +518,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12908" version="1">
             <Centroid>
               <Location>
-                <pos>9.3863 0.5054</pos>
+                <gml:pos>9.3863 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>194</Label>
@@ -524,7 +536,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12914" version="1">
             <Centroid>
               <Location>
-                <pos>10.361 2.852</pos>
+                <gml:pos>10.361 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>195</Label>
@@ -542,7 +554,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12912" version="1">
             <Centroid>
               <Location>
-                <pos>10.361 2.2744</pos>
+                <gml:pos>10.361 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>196</Label>
@@ -560,7 +572,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12917" version="1">
             <Centroid>
               <Location>
-                <pos>10.361 1.083</pos>
+                <gml:pos>10.361 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>197</Label>
@@ -578,7 +590,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12913" version="1">
             <Centroid>
               <Location>
-                <pos>10.361 0.5054</pos>
+                <gml:pos>10.361 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>198</Label>
@@ -596,7 +608,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12909" version="1">
             <Centroid>
               <Location>
-                <pos>13.3935 2.852</pos>
+                <gml:pos>13.3935 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>199</Label>
@@ -614,7 +626,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12918" version="1">
             <Centroid>
               <Location>
-                <pos>13.3935 2.2744</pos>
+                <gml:pos>13.3935 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>200</Label>
@@ -632,7 +644,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12920" version="1">
             <Centroid>
               <Location>
-                <pos>13.3935 1.083</pos>
+                <gml:pos>13.3935 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>201</Label>
@@ -650,7 +662,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12919" version="1">
             <Centroid>
               <Location>
-                <pos>13.3935 0.5054</pos>
+                <gml:pos>13.3935 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>202</Label>
@@ -668,7 +680,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12923" version="1">
             <Centroid>
               <Location>
-                <pos>14.6931 2.852</pos>
+                <gml:pos>14.6931 2.852</gml:pos>
               </Location>
             </Centroid>
             <Label>203</Label>
@@ -686,7 +698,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12921" version="1">
             <Centroid>
               <Location>
-                <pos>14.6931 2.2744</pos>
+                <gml:pos>14.6931 2.2744</gml:pos>
               </Location>
             </Centroid>
             <Label>204</Label>
@@ -704,7 +716,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12922" version="1">
             <Centroid>
               <Location>
-                <pos>14.6931 1.083</pos>
+                <gml:pos>14.6931 1.083</gml:pos>
               </Location>
             </Centroid>
             <Label>205</Label>
@@ -722,7 +734,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12924" version="1">
             <Centroid>
               <Location>
-                <pos>14.6931 0.5054</pos>
+                <gml:pos>14.6931 0.5054</gml:pos>
               </Location>
             </Centroid>
             <Label>206</Label>
@@ -740,7 +752,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12930" version="1">
             <Centroid>
               <Location>
-                <pos>12.6173 2.5812</pos>
+                <gml:pos>12.6173 2.5812</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -757,7 +769,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12926" version="1">
             <Centroid>
               <Location>
-                <pos>2.7978 2.5812</pos>
+                <gml:pos>2.7978 2.5812</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -774,7 +786,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12929" version="1">
             <Centroid>
               <Location>
-                <pos>2.7978 0.8484</pos>
+                <gml:pos>2.7978 0.8484</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -791,7 +803,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12928" version="1">
             <Centroid>
               <Location>
-                <pos>4.3502 2.5812</pos>
+                <gml:pos>4.3502 2.5812</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -808,7 +820,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12925" version="1">
             <Centroid>
               <Location>
-                <pos>11.1011 2.5812</pos>
+                <gml:pos>11.1011 2.5812</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -825,7 +837,7 @@
           <PassengerSpot id="ENT:PassengerSpot:20-264-12927" version="1">
             <Centroid>
               <Location>
-                <pos>12.6173 0.8484</pos>
+                <gml:pos>12.6173 0.8484</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -844,7 +856,7 @@
           <PassengerVehicleSpot id="ENT:PassengerVehicleSpot:20-264-12931" version="1">
             <Centroid>
               <Location>
-                <pos>4.8556 0.5596</pos>
+                <gml:pos>4.8556 0.5596</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -860,7 +872,7 @@
         <Name>HOT_DRINKS</Name>
         <Centroid>
           <Location>
-            <pos>11.1733 0.6679</pos>
+            <gml:pos>11.1733 0.6679</gml:pos>
           </Location>
         </Centroid>
         <Width>0.4693</Width>
