@@ -236,6 +236,9 @@
   /** XML declaration a fragment file opens with, dropped before it is wrapped. */
   const DECL_RE = /^\s*<\?xml[^>]*\?>\s*/;
 
+  /** Decimals kept on a derived extent — what the source coordinates carry. */
+  const EXTENT_DP = 4;
+
   const grid = document.querySelector('.deck-render');
   const listEl = document.getElementById('deck-plan-list');
   const hostEl = document.getElementById('deck-host');
@@ -348,6 +351,94 @@
     let current = null;
 
     /**
+     * Direct children of an element by local name, namespace ignored.
+     *
+     * `getElementsByTagName*` walks the whole subtree, and a deck's spots and
+     * entrances carry `Width`, `Length` and geometry of their own — asking the
+     * deck for its width that way answers with a seat's.
+     *
+     * @param {Element} el Parent to look under.
+     * @param {string} name Local name to match.
+     * @returns {Element[]} Matching children, in document order.
+     */
+    const kids = (el, name) => [...el.children].filter(c => c.localName === name);
+
+    /**
+     * Restate every deck's extent in the two elements the renderer reads.
+     *
+     * A deck's size is the one thing a NeTEx document cannot say and the
+     * renderer cannot do without. `Deck` extends `Zone` directly, so it never
+     * reaches `OnboardSpace` and has no `Width` / `Length` in its content
+     * model; what `Zone` gives it instead — `Centroid` and a `gml:Polygon` —
+     * the 2.0.5 bundle drops on parse, its lowercase `polygon` key never
+     * matching the `Polygon` that namespace-stripping hands it. With nothing to
+     * read the constructor falls back to a literal 2.825 x 26.4 m car, which on
+     * most of the corpus is narrower than its own seats: the stage sizes the
+     * `<svg>` from that same figure and emits no `viewBox`, so the overflow is
+     * clipped rather than merely drawn outside the outline.
+     *
+     * So the extent is copied from the outline into the elements the renderer
+     * does read, and the document stops validating — which is the whole of what
+     * this function does, and why it is named for it. Hand the result to
+     * `parseNeTEx`, never to sobek, and never write it back to disk.
+     *
+     * The outline stays where it is. The renderer ignores it, and it is the
+     * only statement of the extent a schema will take, so dropping it would
+     * leave the fragment saying nothing true about its own size.
+     *
+     * `Width` and `Length` are appended last, out of the `xs:sequence` they
+     * would need to sit in — the parser matches children by name, not by
+     * position (verified against 2.0.5 with both placements), and an invalid
+     * document is better off wearing its invalidity where a reader will see it.
+     *
+     * A deck already carrying `Width` — the editor's own samples do, which is
+     * why they are the only fragments in the set that draw correctly — is left
+     * exactly as it is.
+     *
+     * @param {string} validXML A `<decks>`-rooted fragment whose decks state
+     *   their extent as a `gml:Polygon`, declaration included.
+     * @returns {string} The same document with each deck's extent restated as
+     *   `Width` / `Length`: renderable, and no longer schema-valid.
+     * @throws {Error} If the document does not parse.
+     */
+    const invalidateXMLForDeckExtent = validXML => {
+      const doc = new DOMParser().parseFromString(validXML, 'application/xml');
+      const err = doc.querySelector('parsererror');
+      if (err) throw new Error(`deck fragment does not parse: ${err.textContent.trim()}`);
+
+      for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
+        if (kids(deck, 'Width').length) continue;
+
+        // Zone > gml:Polygon > gml:exterior > gml:LinearRing > gml:posList.
+        const ring = kids(deck, 'Polygon')
+          .flatMap(poly => kids(poly, 'exterior'))
+          .flatMap(ext => kids(ext, 'LinearRing'))
+          .flatMap(lr => kids(lr, 'posList'))[0];
+        if (!ring) continue;
+
+        // `pos` is along-then-across, and the ring is written through the same
+        // transpose — so the odd coordinates span the car's width.
+        const co = ring.textContent.trim().split(/\s+/).map(Number);
+        if (co.length < 4 || co.some(Number.isNaN)) continue;
+        const span = off => {
+          const vs = co.filter((_, i) => i % 2 === off);
+          return Number((Math.max(...vs) - Math.min(...vs)).toFixed(EXTENT_DP));
+        };
+
+        for (const [name, m] of [
+          ['Width', span(1)],
+          ['Length', span(0)],
+        ]) {
+          const el = doc.createElementNS(deck.namespaceURI, name);
+          el.textContent = String(m);
+          deck.append(el);
+        }
+      }
+
+      return (validXML.match(DECL_RE)?.[0] ?? '') + new XMLSerializer().serializeToString(doc);
+    };
+
+    /**
      * Put a `<decks>` fragment back inside the document its parser expects.
      *
      * `parseNeTEx` reaches straight down a fixed
@@ -389,7 +480,8 @@
       if (!cache.has(plan.id)) {
         const res = await fetch(ref);
         if (!res.ok) throw new Error(`${res.status} on ${ref}`);
-        cache.set(plan.id, mod.parseNeTEx(wrapFrag(await res.text()))[0]?.decks[0]);
+        const frag = invalidateXMLForDeckExtent(await res.text());
+        cache.set(plan.id, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
       }
       return cache.get(plan.id);
     };
