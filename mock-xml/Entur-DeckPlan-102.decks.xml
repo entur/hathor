@@ -599,11 +599,11 @@
         <Name>WC</Name>
         <Centroid>
           <Location>
-            <pos>2.6354 0.8303</pos>
+            <pos>2.5632 0.7581</pos>
           </Location>
         </Centroid>
-        <Width>0.5776</Width>
-        <Length>0.5776</Length>
+        <Width>0.4332</Width>
+        <Length>0.4332</Length>
         <PassengerSpaceType>toilet</PassengerSpaceType>
       </PassengerSpace>
     </deckSpaces>

@@ -128,12 +128,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1505" version="1">
             <Centroid>
               <Location>
-                <pos>19.0253 0.5054</pos>
+                <pos>19.0253 0.5235</pos>
               </Location>
             </Centroid>
             <Label>5</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
@@ -146,12 +146,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1536" version="1">
             <Centroid>
               <Location>
-                <pos>19.0253 1.083</pos>
+                <pos>19.0253 1.1011</pos>
               </Location>
             </Centroid>
             <Label>6</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
@@ -164,12 +164,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1534" version="1">
             <Centroid>
               <Location>
-                <pos>19.0253 2.2744</pos>
+                <pos>19.0253 2.2924</pos>
               </Location>
             </Centroid>
             <Label>7</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
@@ -182,12 +182,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1535" version="1">
             <Centroid>
               <Location>
-                <pos>19.0253 2.852</pos>
+                <pos>19.0253 2.87</pos>
               </Location>
             </Centroid>
             <Label>8</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r15" version="1"/>
@@ -200,12 +200,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1539" version="1">
             <Centroid>
               <Location>
-                <pos>18.0866 0.5054</pos>
+                <pos>18.0866 0.5235</pos>
               </Location>
             </Centroid>
             <Label>9</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
@@ -218,12 +218,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1540" version="1">
             <Centroid>
               <Location>
-                <pos>18.0866 1.083</pos>
+                <pos>18.0866 1.1011</pos>
               </Location>
             </Centroid>
             <Label>10</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
@@ -236,12 +236,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1537" version="1">
             <Centroid>
               <Location>
-                <pos>18.0866 2.2744</pos>
+                <pos>18.0866 2.2924</pos>
               </Location>
             </Centroid>
             <Label>11</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
@@ -254,12 +254,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1538" version="1">
             <Centroid>
               <Location>
-                <pos>18.0866 2.852</pos>
+                <pos>18.0866 2.87</pos>
               </Location>
             </Centroid>
             <Label>12</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r14" version="1"/>
@@ -272,12 +272,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1543" version="1">
             <Centroid>
               <Location>
-                <pos>17.148 0.5054</pos>
+                <pos>17.148 0.5235</pos>
               </Location>
             </Centroid>
             <Label>13</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
@@ -290,12 +290,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1544" version="1">
             <Centroid>
               <Location>
-                <pos>17.148 1.083</pos>
+                <pos>17.148 1.1011</pos>
               </Location>
             </Centroid>
             <Label>14</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
@@ -308,12 +308,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1541" version="1">
             <Centroid>
               <Location>
-                <pos>17.148 2.2744</pos>
+                <pos>17.148 2.2924</pos>
               </Location>
             </Centroid>
             <Label>15</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
@@ -326,12 +326,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1542" version="1">
             <Centroid>
               <Location>
-                <pos>17.148 2.852</pos>
+                <pos>17.148 2.87</pos>
               </Location>
             </Centroid>
             <Label>16</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r13" version="1"/>
@@ -344,12 +344,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1528" version="1">
             <Centroid>
               <Location>
-                <pos>16.2094 0.5054</pos>
+                <pos>16.2094 0.5235</pos>
               </Location>
             </Centroid>
             <Label>17</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
@@ -362,12 +362,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1529" version="1">
             <Centroid>
               <Location>
-                <pos>16.2094 1.083</pos>
+                <pos>16.2094 1.1011</pos>
               </Location>
             </Centroid>
             <Label>18</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
@@ -380,12 +380,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1526" version="1">
             <Centroid>
               <Location>
-                <pos>16.2094 2.2744</pos>
+                <pos>16.2094 2.2924</pos>
               </Location>
             </Centroid>
             <Label>19</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
@@ -398,12 +398,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1527" version="1">
             <Centroid>
               <Location>
-                <pos>16.2094 2.852</pos>
+                <pos>16.2094 2.87</pos>
               </Location>
             </Centroid>
             <Label>20</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r12" version="1"/>
@@ -416,12 +416,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1532" version="1">
             <Centroid>
               <Location>
-                <pos>15.1264 0.5054</pos>
+                <pos>15.1264 0.5235</pos>
               </Location>
             </Centroid>
             <Label>21</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
@@ -434,12 +434,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1533" version="1">
             <Centroid>
               <Location>
-                <pos>15.1264 1.083</pos>
+                <pos>15.1264 1.1011</pos>
               </Location>
             </Centroid>
             <Label>22</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
@@ -452,12 +452,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1530" version="1">
             <Centroid>
               <Location>
-                <pos>15.1264 2.2744</pos>
+                <pos>15.1264 2.2924</pos>
               </Location>
             </Centroid>
             <Label>23</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
@@ -470,12 +470,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1531" version="1">
             <Centroid>
               <Location>
-                <pos>15.1264 2.852</pos>
+                <pos>15.1264 2.87</pos>
               </Location>
             </Centroid>
             <Label>24</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r11" version="1"/>
@@ -632,12 +632,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1508" version="1">
             <Centroid>
               <Location>
-                <pos>10.6498 0.5054</pos>
+                <pos>10.6498 0.5235</pos>
               </Location>
             </Centroid>
             <Label>33</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
@@ -650,12 +650,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1509" version="1">
             <Centroid>
               <Location>
-                <pos>10.6498 1.083</pos>
+                <pos>10.6498 1.1011</pos>
               </Location>
             </Centroid>
             <Label>34</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
@@ -668,12 +668,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1506" version="1">
             <Centroid>
               <Location>
-                <pos>10.6498 2.2744</pos>
+                <pos>10.6498 2.2924</pos>
               </Location>
             </Centroid>
             <Label>35</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
@@ -686,12 +686,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1507" version="1">
             <Centroid>
               <Location>
-                <pos>10.6498 2.852</pos>
+                <pos>10.6498 2.87</pos>
               </Location>
             </Centroid>
             <Label>36</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r8" version="1"/>
@@ -704,12 +704,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1512" version="1">
             <Centroid>
               <Location>
-                <pos>9.639 0.5054</pos>
+                <pos>9.639 0.5235</pos>
               </Location>
             </Centroid>
             <Label>37</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
@@ -722,12 +722,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1513" version="1">
             <Centroid>
               <Location>
-                <pos>9.639 1.083</pos>
+                <pos>9.639 1.1011</pos>
               </Location>
             </Centroid>
             <Label>38</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
@@ -740,12 +740,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1510" version="1">
             <Centroid>
               <Location>
-                <pos>9.639 2.2744</pos>
+                <pos>9.639 2.2924</pos>
               </Location>
             </Centroid>
             <Label>39</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
@@ -758,12 +758,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1511" version="1">
             <Centroid>
               <Location>
-                <pos>9.639 2.852</pos>
+                <pos>9.639 2.87</pos>
               </Location>
             </Centroid>
             <Label>40</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r7" version="1"/>
@@ -776,12 +776,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1516" version="1">
             <Centroid>
               <Location>
-                <pos>8.7004 0.5054</pos>
+                <pos>8.7004 0.5235</pos>
               </Location>
             </Centroid>
             <Label>41</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
@@ -794,12 +794,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1517" version="1">
             <Centroid>
               <Location>
-                <pos>8.7004 1.083</pos>
+                <pos>8.7004 1.1011</pos>
               </Location>
             </Centroid>
             <Label>42</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
@@ -812,12 +812,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1514" version="1">
             <Centroid>
               <Location>
-                <pos>8.7004 2.2744</pos>
+                <pos>8.7004 2.2924</pos>
               </Location>
             </Centroid>
             <Label>43</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
@@ -830,12 +830,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1515" version="1">
             <Centroid>
               <Location>
-                <pos>8.7004 2.852</pos>
+                <pos>8.7004 2.87</pos>
               </Location>
             </Centroid>
             <Label>44</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r6" version="1"/>
@@ -848,12 +848,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1522" version="1">
             <Centroid>
               <Location>
-                <pos>7.7617 0.5054</pos>
+                <pos>7.7617 0.5235</pos>
               </Location>
             </Centroid>
             <Label>45</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
@@ -866,12 +866,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1524" version="1">
             <Centroid>
               <Location>
-                <pos>7.7617 1.083</pos>
+                <pos>7.7617 1.1011</pos>
               </Location>
             </Centroid>
             <Label>46</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
@@ -884,12 +884,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1518" version="1">
             <Centroid>
               <Location>
-                <pos>7.7617 2.2744</pos>
+                <pos>7.7617 2.2924</pos>
               </Location>
             </Centroid>
             <Label>47</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
@@ -902,12 +902,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1520" version="1">
             <Centroid>
               <Location>
-                <pos>7.7617 2.852</pos>
+                <pos>7.7617 2.87</pos>
               </Location>
             </Centroid>
             <Label>48</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r5" version="1"/>
@@ -920,12 +920,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1554" version="1">
             <Centroid>
               <Location>
-                <pos>6.8231 0.5054</pos>
+                <pos>6.8231 0.5235</pos>
               </Location>
             </Centroid>
             <Label>49</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
@@ -938,12 +938,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1555" version="1">
             <Centroid>
               <Location>
-                <pos>6.8231 1.083</pos>
+                <pos>6.8231 1.1011</pos>
               </Location>
             </Centroid>
             <Label>50</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
@@ -956,12 +956,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1552" version="1">
             <Centroid>
               <Location>
-                <pos>6.8231 2.2744</pos>
+                <pos>6.8231 2.2924</pos>
               </Location>
             </Centroid>
             <Label>51</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
@@ -974,12 +974,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1553" version="1">
             <Centroid>
               <Location>
-                <pos>6.8231 2.852</pos>
+                <pos>6.8231 2.87</pos>
               </Location>
             </Centroid>
             <Label>52</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r4" version="1"/>
@@ -992,12 +992,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1558" version="1">
             <Centroid>
               <Location>
-                <pos>5.8845 0.5054</pos>
+                <pos>5.8845 0.5235</pos>
               </Location>
             </Centroid>
             <Label>53</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
@@ -1010,12 +1010,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1559" version="1">
             <Centroid>
               <Location>
-                <pos>5.8845 1.083</pos>
+                <pos>5.8845 1.1011</pos>
               </Location>
             </Centroid>
             <Label>54</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
@@ -1028,12 +1028,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1556" version="1">
             <Centroid>
               <Location>
-                <pos>5.8845 2.2744</pos>
+                <pos>5.8845 2.2924</pos>
               </Location>
             </Centroid>
             <Label>55</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
@@ -1046,12 +1046,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1557" version="1">
             <Centroid>
               <Location>
-                <pos>5.8845 2.852</pos>
+                <pos>5.8845 2.87</pos>
               </Location>
             </Centroid>
             <Label>56</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r3" version="1"/>
@@ -1064,12 +1064,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1562" version="1">
             <Centroid>
               <Location>
-                <pos>4.9458 0.5054</pos>
+                <pos>4.9458 0.5235</pos>
               </Location>
             </Centroid>
             <Label>57</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
@@ -1082,12 +1082,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1564" version="1">
             <Centroid>
               <Location>
-                <pos>4.9458 1.083</pos>
+                <pos>4.9458 1.1011</pos>
               </Location>
             </Centroid>
             <Label>58</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
@@ -1100,12 +1100,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1560" version="1">
             <Centroid>
               <Location>
-                <pos>4.9458 2.2744</pos>
+                <pos>4.9458 2.2924</pos>
               </Location>
             </Centroid>
             <Label>59</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
@@ -1118,12 +1118,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1561" version="1">
             <Centroid>
               <Location>
-                <pos>4.9458 2.852</pos>
+                <pos>4.9458 2.87</pos>
               </Location>
             </Centroid>
             <Label>60</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r2" version="1"/>
@@ -1136,12 +1136,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1567" version="1">
             <Centroid>
               <Location>
-                <pos>4.0072 0.5054</pos>
+                <pos>4.0072 0.5235</pos>
               </Location>
             </Centroid>
             <Label>61</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
@@ -1154,12 +1154,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1568" version="1">
             <Centroid>
               <Location>
-                <pos>4.0072 1.083</pos>
+                <pos>4.0072 1.1011</pos>
               </Location>
             </Centroid>
             <Label>62</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
@@ -1172,12 +1172,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1565" version="1">
             <Centroid>
               <Location>
-                <pos>4.0072 2.2744</pos>
+                <pos>4.0072 2.2924</pos>
               </Location>
             </Centroid>
             <Label>63</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
@@ -1190,12 +1190,12 @@
           <PassengerSpot id="ENT:PassengerSpot:20-2-1566" version="1">
             <Centroid>
               <Location>
-                <pos>4.0072 2.852</pos>
+                <pos>4.0072 2.87</pos>
               </Location>
             </Centroid>
             <Label>64</Label>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
+            <Width>0.6137</Width>
             <Length>0.7942</Length>
             <LocatableSpotType>seat</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:20-2-r1" version="1"/>
