@@ -632,12 +632,12 @@
           <PassengerSpot id="ENT:PassengerSpot:1-210-13945" version="1">
             <Centroid>
               <Location>
-                <pos>11.3718 3.1408</pos>
+                <pos>11.2274 2.9964</pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
-            <Length>0.5776</Length>
+            <Width>0.2888</Width>
+            <Length>0.2888</Length>
             <LocatableSpotType>wheelchairSpace</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:1-210-r2" version="1"/>
             <SpotColumnRef ref="ENT:SpotColumn:1-210-c3" version="1"/>
@@ -649,12 +649,12 @@
           <PassengerSpot id="ENT:PassengerSpot:1-210-13944" version="1">
             <Centroid>
               <Location>
-                <pos>12.7076 1.7329</pos>
+                <pos>12.5632 1.5884</pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
-            <Length>0.5776</Length>
+            <Width>0.2888</Width>
+            <Length>0.2888</Length>
             <LocatableSpotType>wheelchairSpace</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:1-210-r2" version="1"/>
             <SpotColumnRef ref="ENT:SpotColumn:1-210-c1" version="1"/>
@@ -666,12 +666,12 @@
           <PassengerSpot id="ENT:PassengerSpot:1-210-13943" version="1">
             <Centroid>
               <Location>
-                <pos>12.7076 2.0939</pos>
+                <pos>12.5632 1.9495</pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
-            <Length>0.5776</Length>
+            <Width>0.2888</Width>
+            <Length>0.2888</Length>
             <LocatableSpotType>pushchairSpace</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:1-210-r2" version="1"/>
             <SpotColumnRef ref="ENT:SpotColumn:1-210-c2" version="1"/>
@@ -683,12 +683,12 @@
           <PassengerSpot id="ENT:PassengerSpot:1-210-13946" version="1">
             <Centroid>
               <Location>
-                <pos>11.3718 0.5415</pos>
+                <pos>11.2274 0.3971</pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
-            <Width>0.5776</Width>
-            <Length>0.5776</Length>
+            <Width>0.2888</Width>
+            <Length>0.2888</Length>
             <LocatableSpotType>wheelchairSpace</LocatableSpotType>
             <SpotRowRef ref="ENT:SpotRow:1-210-r2" version="1"/>
             <SpotColumnRef ref="ENT:SpotColumn:1-210-c0" version="1"/>
@@ -703,22 +703,22 @@
         <Name>WC</Name>
         <Centroid>
           <Location>
-            <pos>9.4585 1.083</pos>
+            <pos>9.3863 1.0108</pos>
           </Location>
         </Centroid>
-        <Width>0.5776</Width>
-        <Length>0.5776</Length>
+        <Width>0.4332</Width>
+        <Length>0.4332</Length>
         <PassengerSpaceType>toilet</PassengerSpaceType>
       </PassengerSpace>
       <PassengerSpace id="ENT:PassengerSpace:1-210-9828" version="1">
         <Name>NURSING_TABLE</Name>
         <Centroid>
           <Location>
-            <pos>9.0253 1.1552</pos>
+            <pos>8.9531 1.083</pos>
           </Location>
         </Centroid>
-        <Width>0.5776</Width>
-        <Length>0.5776</Length>
+        <Width>0.4332</Width>
+        <Length>0.4332</Length>
         <PassengerSpaceType>other</PassengerSpaceType>
       </PassengerSpace>
     </deckSpaces>
