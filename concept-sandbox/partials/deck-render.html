@@ -481,7 +481,7 @@
         const res = await fetch(ref);
         if (!res.ok) throw new Error(`${res.status} on ${ref}`);
         const frag = invalidateXMLForDeckExtent(await res.text());
-        cache.set(plan.id, mod.parseNeTEx(wrapFrag(frag))[0]?.decks[0]);
+        cache.set(plan.id, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
       }
       return cache.get(plan.id);
     };
