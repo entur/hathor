@@ -38,6 +38,20 @@
   .deck-render .pane-label {
     white-space: nowrap;
   }
+  /* Which record this is and which file it came from. Identity, so it rides
+     with the heading: in the footer the pair cost 389px of a 406px pane and
+     wrapped the figures onto a second row, while the heading had the room to
+     spare. `display: contents` hands both to the heading's own flex row, so
+     they take its gaps and sit on its baseline. */
+  .deck-render .pane-src {
+    display: contents;
+  }
+  .deck-render h2 .db-link {
+    font-size: 12px;
+    font-weight: 400;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+  }
   .deck-render .pane-sub {
     font-size: 12px;
     font-weight: 400;
@@ -90,6 +104,8 @@
     min-height: 0;
     overflow: auto;
   }
+  /* Figures only, now that identity sits in the heading — so the row is short
+     enough to stay a single line, and the drawings keep the height. */
   .deck-stage .stage-meta,
   .deck-art .art-meta {
     flex-shrink: 0;
@@ -99,8 +115,13 @@
     font-family: 'SF Mono', 'Fira Code', monospace;
     color: var(--clr-text-dim);
     display: flex;
-    gap: 16px;
+    gap: 10px;
     flex-wrap: wrap;
+  }
+  /* A figure shrunk to `26.0…` is worse than one that wrapped. */
+  .deck-stage .stage-meta > span,
+  .deck-art .art-meta > span {
+    flex: 0 0 auto;
   }
   /* Scoped to the page, not to one pane: both show notes. */
   .deck-render .stage-note {
@@ -204,6 +225,7 @@
   <div class="card deck-stage">
     <h2>
       <span class="pane-label">Deck rendering</span><span class="pane-sub" id="deck-title"></span>
+      <span class="pane-src" id="deck-src"></span>
     </h2>
     <div class="stage-host" id="deck-host">
       <span class="spin" role="status">Fetching the renderer…</span>
@@ -214,6 +236,7 @@
     <h2>
       <span class="pane-label">Source artwork</span>
       <span class="pane-sub">as the legacy system draws it</span>
+      <span class="pane-src" id="deck-art-src"></span>
     </h2>
     <div class="art-host" id="deck-artwork"></div>
     <div class="art-meta" id="deck-art-meta"></div>
@@ -265,6 +288,9 @@
   /** Decimals kept on a derived extent — what the source coordinates carry. */
   const EXTENT_DP = 4;
 
+  /** Decimals shown for that extent: four are the parser's, not a reader's. */
+  const DIM_DP = 2;
+
   const grid = document.querySelector('.deck-render');
   const listEl = document.getElementById('deck-plan-list');
   const hostEl = document.getElementById('deck-host');
@@ -272,6 +298,8 @@
   const metaEl = document.getElementById('deck-meta');
   const artEl = document.getElementById('deck-artwork');
   const artMetaEl = document.getElementById('deck-art-meta');
+  const srcEl = document.getElementById('deck-src');
+  const artSrcEl = document.getElementById('deck-art-src');
 
   /**
    * The rows the two comparison panes share, each as a `[stage, artwork]` pair.
@@ -343,6 +371,25 @@
       for (const el of pair) el.style.minHeight = `${h}px`;
     }
   };
+
+  /**
+   * A ref's file kind — what is left of its name after the record's own stem.
+   *
+   * The link sits beside the record id it is named after, so the path spends
+   * four times the width of what it adds. Nothing is lost: `refLink` keeps the
+   * whole path as the link's `title` and its href.
+   *
+   * @param {string} ref Path to a sibling file.
+   * @returns {string} e.g. `decks.xml`, `svg`.
+   */
+  const kindOf = ref => {
+    const base = ref.split('/').pop();
+    const dot = base.indexOf('.');
+    return dot < 0 ? base : base.slice(dot + 1);
+  };
+
+  /** A deck extent at reading precision. @param {number} m Metres. */
+  const fmtM = m => Number(m).toFixed(DIM_DP);
 
   /** Flatten a deck's spaces into the counts worth showing under the drawing. */
   const statsOf = deck => {
@@ -611,6 +658,7 @@
       const ref = plan[SVG_REF_KEY];
       if (artEl.querySelector('img')?.getAttribute('src') === ref) return;
       artMetaEl.innerHTML = '';
+      artSrcEl.innerHTML = ref ? refLink(ref, kindOf(ref)) : '';
       if (!ref)
         return noteIn(
           artEl,
@@ -625,8 +673,7 @@
       // in the pane opposite were scaled out of.
       img.onload = () => {
         if (current !== plan) return;
-        artMetaEl.innerHTML =
-          refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`;
+        artMetaEl.innerHTML = `<span>${img.naturalWidth}×${img.naturalHeight} px</span>`;
         levelRows();
       };
       img.onerror = () => current === plan && noteIn(artEl, `Could not load ${ref}.`, true);
@@ -654,6 +701,14 @@
     const draw = async plan => {
       current = plan;
       titleEl.textContent = plan.name;
+      // Neither waits on the decks: both are read off the record itself, and
+      // the heading is one of the rows `levelRows` measures, so it has to be
+      // whole before anything is fitted to what it leaves.
+      srcEl.innerHTML =
+        `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
+        refLink(plan[DECKS_REF_KEY], kindOf(plan[DECKS_REF_KEY]));
+      // `gotoDbItem` is the shell's (index.html); this page only names a record.
+      srcEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
       // Ahead of the await: the artwork is a plain file and has no reason to
       // wait on the fragment fetch or on a parse that may yet fail.
       drawArt(plan);
@@ -669,28 +724,25 @@
       } catch (e) {
         if (current !== plan) return;
         metaEl.textContent = '';
-        return note(`Could not load this plan: ${e.message}`, true);
+        note(`Could not load this plan: ${e.message}`, true);
+        return levelRows();
       }
       if (current !== plan) return;
       if (!deck) {
         metaEl.textContent = '';
-        return note('This fragment carries no decks.', true);
+        note('This fragment carries no decks.', true);
+        return levelRows();
       }
 
       const s = statsOf(deck);
-      metaEl.innerHTML =
-        `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
-        refLink(plan[DECKS_REF_KEY]) +
-        [
-          `${s.spots} spots`,
-          `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
-          `${s.entrances} entrances`,
-          `${deck.Length} × ${deck.Width} m`,
-        ]
-          .map(t => `<span>${t}</span>`)
-          .join('');
-      // `gotoDbItem` is the shell's (index.html); this page only names a record.
-      metaEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
+      metaEl.innerHTML = [
+        `${s.spots} spots`,
+        `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
+        `${s.entrances} entrances`,
+        `${fmtM(deck.Length)}×${fmtM(deck.Width)} m`,
+      ]
+        .map(t => `<span>${t}</span>`)
+        .join('');
       // Ahead of the drawing, not after it: levelling settles how much height
       // is left for the stage, and `fit` reads that height. Drawn first, the
       // deck would be sized against a pane a levelled footer then shrinks
