@@ -61,6 +61,16 @@ const OWNED = /-DeckPlan-\d+\.(decks\.xml|svg)$/;
 /** Editor-native samples kept as the set's only non-emitter contrast case. */
 const KEEP = /^Xatellite-/;
 
+/** GML binding for the `gml:pos` / `gml:Polygon` the deck geometry is written in. */
+const GML_NS = 'xmlns:gml="http://www.opengis.net/gml/3.2"';
+
+/**
+ * A door, in either of the two spellings the corpus holds — the concrete
+ * `PassengerEntrance` the schema and the renderer both want, and the abstract
+ * `DeckEntrance` older fragments still carry.
+ */
+const ENTRANCE_RE = /<(PassengerEntrance|DeckEntrance)\b/g;
+
 /** `LocatableSpotType` wire value → singular, plural. */
 const SPOT_WORDS = {
   seat: ['seat', 'seats'],
@@ -212,7 +222,7 @@ const phrases = (counts, words, countOne = true) => {
  * @returns {string} e.g. `68 seats in 17×4 · seating area, 2 toilets · 4 entrances (fam:14)`
  */
 const describe = (xml, rep) => {
-  const entrances = (xml.match(/<(Passenger)?DeckEntrance\b/g) ?? []).length;
+  const entrances = (xml.match(ENTRANCE_RE) ?? []).length;
   const segs = [
     `${phrases(tally(xml, 'LocatableSpotType'), SPOT_WORDS).join(', ')} in ${rep.rows}×${rep.columns}`,
     phrases(tally(xml, 'PassengerSpaceType'), SPACE_WORDS, false).join(', '),
@@ -228,6 +238,12 @@ const describe = (xml, rep) => {
  * before parsing, so the file must hold that element's children. Dropping the
  * wrapper also drops the provenance `keyList`, which has no consumer here.
  *
+ * The namespace declaration moves down with the subtree. Positions are
+ * `gml:pos` and the deck outline a `gml:Polygon`, both bound on the `DeckPlan`
+ * root being dropped — leave the prefix unbound and every consumer that parses
+ * XML properly, `DOMParser` included, rejects the file before reading a
+ * coordinate.
+ *
  * @param {string} xml A cache fragment, rooted at `<DeckPlan>`.
  * @returns {string} A `<decks>`-rooted document.
  * @throws {Error} If the fragment carries no decks.
@@ -236,7 +252,8 @@ const toFragment = xml => {
   const m = xml.match(/^([ \t]*)<decks>[\s\S]*?^\1<\/decks>/m);
   if (!m) throw new Error('fragment holds no <decks>');
   const dedent = new RegExp(`^${m[1]}`, 'gm');
-  return `<?xml version="1.0" encoding="utf-8"?>\n${m[0].replace(dedent, '')}\n`;
+  const body = m[0].replace(dedent, '').replace('<decks>', `<decks ${GML_NS}>`);
+  return `<?xml version="1.0" encoding="utf-8"?>\n${body}\n`;
 };
 
 /**

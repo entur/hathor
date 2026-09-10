@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<decks>
+<decks xmlns:gml="http://www.opengis.net/gml/3.2">
   <Deck id="ENT:Deck:20-6-0" version="1">
     <Name>FR5-1</Name>
+    <Centroid>
+      <Location>
+        <gml:pos>13.0505 1.6245</gml:pos>
+      </Location>
+    </Centroid>
+    <gml:Polygon gml:id="ENT-Deck-20-6-0-outline">
+      <gml:exterior>
+        <gml:LinearRing>
+          <gml:posList>0 0 26.1011 0 26.1011 3.2491 0 3.2491 0 0</gml:posList>
+        </gml:LinearRing>
+      </gml:exterior>
+    </gml:Polygon>
     <DeckLevelRef ref="ENT:DeckLevel:20-6-0" version="1"/>
     <deckSpaces>
       <PassengerSpace id="ENT:PassengerSpace:20-6-seating" version="1">
@@ -10,7 +22,7 @@
           <LuggageSpot id="ENT:LuggageSpot:20-6-2296" version="1">
             <Centroid>
               <Location>
-                <pos>6.8953 2.4007</pos>
+                <gml:pos>6.8953 2.4007</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -25,7 +37,7 @@
           <PassengerVehicleSpot id="ENT:PassengerVehicleSpot:20-6-2295" version="1">
             <Centroid>
               <Location>
-                <pos>3.7365 2.4007</pos>
+                <gml:pos>3.7365 2.4007</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -38,7 +50,7 @@
           <PassengerVehicleSpot id="ENT:PassengerVehicleSpot:20-6-2297" version="1">
             <Centroid>
               <Location>
-                <pos>3.0866 2.4007</pos>
+                <gml:pos>3.0866 2.4007</gml:pos>
               </Location>
             </Centroid>
             <Orientation>unknown</Orientation>
@@ -54,7 +66,7 @@
         <Name>CAFE</Name>
         <Centroid>
           <Location>
-            <pos>12.8339 1.6968</pos>
+            <gml:pos>12.8339 1.6968</gml:pos>
           </Location>
         </Centroid>
         <Width>0.5054</Width>
