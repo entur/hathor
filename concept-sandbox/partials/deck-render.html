@@ -274,6 +274,15 @@
   const artMetaEl = document.getElementById('deck-art-meta');
 
   /**
+   * The rows the two comparison panes share, each as a `[stage, artwork]` pair.
+   * Everything between them is the drawing itself, which takes what is left.
+   */
+  const ROWS = [
+    [document.querySelector('.deck-stage h2'), document.querySelector('.deck-art h2')],
+    [metaEl, artMetaEl],
+  ];
+
+  /**
    * Stylesheet for the element's shadow root.
    *
    * The package ships its renderer styles to a `dist/*.css` its `exports` map
@@ -312,6 +321,28 @@
 
   /** Same, for a step still in flight — a fragment on its way over the wire. */
   const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
+
+  /**
+   * Give the panes' headers one height and their footers another.
+   *
+   * The two rows wrap on their own contents: the stage's footer carries four
+   * figures and two links to the artwork's two, and at three columns the
+   * artwork's header takes a second line the stage's does not. Left alone,
+   * whichever row is shorter hands its pane the difference — so the drawing
+   * meant to be read against the one beside it gets a taller box, starts at a
+   * different height on the page, and scrolls where the other does not, which
+   * is the difference the width match was made to remove.
+   *
+   * Cleared before measuring so a row that has stopped wrapping — a wider
+   * window, a shorter plan id — gives the height back.
+   */
+  const levelRows = () => {
+    for (const pair of ROWS) for (const el of pair) el.style.minHeight = '';
+    for (const pair of ROWS) {
+      const h = Math.max(...pair.map(el => el.offsetHeight));
+      for (const el of pair) el.style.minHeight = `${h}px`;
+    }
+  };
 
   /** Flatten a deck's spaces into the counts worth showing under the drawing. */
   const statsOf = deck => {
@@ -596,6 +627,7 @@
         if (current !== plan) return;
         artMetaEl.innerHTML =
           refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`;
+        levelRows();
       };
       img.onerror = () => current === plan && noteIn(artEl, `Could not load ${ref}.`, true);
       // Seeded at the width already on screen, unanimated: the rendering it
@@ -645,20 +677,6 @@
         return note('This fragment carries no decks.', true);
       }
 
-      const el = document.createElement(TAG);
-      Object.assign(el, { deck, ...fit(deck) });
-      // Adopted before insertion so the drawing never flashes unstyled.
-      if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
-      hostEl.replaceChildren(el);
-
-      // One scale across both panes — a drawing beside a rendering it is not
-      // measurable against is decoration. The width is taken from the `<svg>`
-      // rather than computed: `fit` clamps the scale, the element rotates, and
-      // the renderer pads its frame, so nothing short of the laid-out element
-      // states what the rendering actually occupies. Vue renders it in
-      // `connectedCallback`, so it is there to measure the moment it is in.
-      fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
-
       const s = statsOf(deck);
       metaEl.innerHTML =
         `<button type="button" class="db-link" title="Show this record in the Mock Database">${esc(plan.id)}</button>` +
@@ -673,6 +691,27 @@
           .join('');
       // `gotoDbItem` is the shell's (index.html); this page only names a record.
       metaEl.querySelector('button.db-link').onclick = () => gotoDbItem(plan.id);
+      // Ahead of the drawing, not after it: levelling settles how much height
+      // is left for the stage, and `fit` reads that height. Drawn first, the
+      // deck would be sized against a pane a levelled footer then shrinks
+      // under it, and overflow the box it was just fitted to. Both footers are
+      // written on their own schedule — the artwork's on an image load that
+      // may already have fired — so each levels the rows.
+      levelRows();
+
+      const el = document.createElement(TAG);
+      Object.assign(el, { deck, ...fit(deck) });
+      // Adopted before insertion so the drawing never flashes unstyled.
+      if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
+      hostEl.replaceChildren(el);
+
+      // One scale across both panes — a drawing beside a rendering it is not
+      // measurable against is decoration. The width is taken from the `<svg>`
+      // rather than computed: `fit` clamps the scale, the element rotates, and
+      // the renderer pads its frame, so nothing short of the laid-out element
+      // states what the rendering actually occupies. Vue renders it in
+      // `connectedCallback`, so it is there to measure the moment it is in.
+      fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
     };
 
     const row = plan => {
