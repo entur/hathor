@@ -113,6 +113,10 @@
   .deck-render .stage-note.error {
     color: #b42318;
   }
+  /* Refit animation length; see `fitArt`. */
+  .deck-render {
+    --art-fit-ms: 240ms;
+  }
   /* Drawn at its own scale, contained rather than stretched — a source drawing
      resampled would stop being evidence of what the legacy system shows. The
      white plate is the artwork's own ground, extended under any letterboxing. */
@@ -122,6 +126,25 @@
     object-fit: contain;
     background: #fff;
     border-radius: 4px;
+  }
+  /* Width matched to the rendering opposite, once that width is known. The
+     height then follows the drawing's own aspect ratio and the pane's height
+     stops having a say: a car taller than the pane scrolls rather than
+     shrinking off the scale it is being compared at. */
+  .deck-art .art-img.fitted {
+    max-height: none;
+    height: auto;
+  }
+  .deck-art .art-img.animate {
+    transition: width var(--art-fit-ms) ease;
+  }
+  /* Centred, but reachable when a width-matched drawing outgrows the pane: an
+     item centred by `align-items` overflows equally at both ends and its top
+     is unscrollable. `safe` drops back to start-alignment at that point. */
+  @supports (align-items: safe center) {
+    .deck-art .art-host {
+      align-items: safe center;
+    }
   }
   /* Bundle-load spinner. The renderer is a CDN ESM import with Vue bundled in,
      so on a cold cache the stage sits empty long enough that a bare line of
@@ -159,6 +182,9 @@
   @media (prefers-reduced-motion: reduce) {
     .deck-render .spin::before {
       animation: deck-pulse 1.2s ease-in-out infinite;
+    }
+    .deck-art .art-img.animate {
+      transition: none;
     }
     @keyframes deck-pulse {
       50% {
@@ -351,6 +377,49 @@
     let current = null;
 
     /**
+     * Width (px) the source drawing is laid out at, or 0 before the first fit.
+     * Kept across plans so the next drawing can be seeded with the width the
+     * pane already shows instead of appearing at its intrinsic size first.
+     */
+    let artW = 0;
+
+    /**
+     * Lay a drawing out at `px` wide.
+     *
+     * @param {HTMLImageElement} img Drawing.
+     * @param {number} px Target width.
+     * @param {boolean} animate Whether to travel there from its current width.
+     */
+    const widthTo = (img, px, animate) => {
+      img.classList.add('fitted');
+      img.classList.toggle('animate', animate);
+      // Flush the outgoing width through style resolution first: a width set
+      // in the same frame the class arrived has nothing to transition from,
+      // and a cached plan gets both within one task.
+      if (animate) void img.offsetWidth;
+      img.style.width = `${px}px`;
+      artW = px;
+    };
+
+    /**
+     * Match the source drawing to the rendering's width on screen.
+     *
+     * Instant the first time a drawing is sized — animating out of its
+     * intrinsic width would play a size nobody asked to see. Every later
+     * change is animated, so a refit (a resize, or a plan whose deck lands at
+     * a different scale) reads as the same drawing resized rather than as a
+     * cut.
+     *
+     * @param {number} px Rendering width; ignored unless positive.
+     */
+    const fitArt = px => {
+      const img = artEl.querySelector('img');
+      const w = Math.round(px);
+      if (!img || !(w > 0) || img.style.width === `${w}px`) return;
+      widthTo(img, w, img.style.width !== '');
+    };
+
+    /**
      * Direct children of an element by local name, namespace ignored.
      *
      * `getElementsByTagName*` walks the whole subtree, and a deck's spots and
@@ -495,8 +564,8 @@
      * rendering next door. An image document keeps each one to itself.
      *
      * Idempotent, because a resize redraws and swapping in a fresh `<img>` for
-     * the same file would flash the pane. Nothing here refits: the CSS contains
-     * the drawing at whatever size the pane is.
+     * the same file would flash the pane — and the width `fitArt` gave it
+     * survives with it.
      *
      * Both handlers check `current` first, the same guard `draw` puts after
      * every await. Detaching an `<img>` neither cancels its fetch nor stops it
@@ -529,6 +598,10 @@
           refLink(ref) + `<span>${img.naturalWidth} × ${img.naturalHeight} px</span>`;
       };
       img.onerror = () => current === plan && noteIn(artEl, `Could not load ${ref}.`, true);
+      // Seeded at the width already on screen, unanimated: the rendering it
+      // must match is a fetch and a parse away, and a drawing that appeared at
+      // its intrinsic width first would resize twice for one selection.
+      if (artW) widthTo(img, artW, false);
       img.src = ref;
       artEl.replaceChildren(img);
     };
@@ -577,6 +650,14 @@
       // Adopted before insertion so the drawing never flashes unstyled.
       if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
       hostEl.replaceChildren(el);
+
+      // One scale across both panes — a drawing beside a rendering it is not
+      // measurable against is decoration. The width is taken from the `<svg>`
+      // rather than computed: `fit` clamps the scale, the element rotates, and
+      // the renderer pads its frame, so nothing short of the laid-out element
+      // states what the rendering actually occupies. Vue renders it in
+      // `connectedCallback`, so it is there to measure the moment it is in.
+      fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
 
       const s = statsOf(deck);
       metaEl.innerHTML =
