@@ -60,6 +60,263 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* A third levelled row, between the heading and the drawing. Only the stage
+     pane has a control to put in it; the artwork's copy stays empty and is
+     there to take the same height, so the two drawings still start at the same
+     line on the page. */
+  .deck-render .pane-tools {
+    flex-shrink: 0;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .deck-render .pane-tools label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--clr-text-dim);
+    cursor: pointer;
+    user-select: none;
+  }
+  .deck-render .pane-tools input {
+    accent-color: var(--clr-accent);
+    cursor: pointer;
+    margin: 0;
+  }
+  .deck-render .pane-tools :checked + span {
+    color: var(--clr-accent);
+    font-weight: 600;
+  }
+  /* Amber, because the toggle beside it is the one control on the page that
+     makes the rendering disagree with the document it came from — the reader
+     wants the explanation before drawing a conclusion, not after. Sized in `em`
+     so it tracks the label it annotates rather than the root. Dark ink on the
+     amber rather than white: 9.1:1 against the fill, where white manages 1.5. */
+  .deck-render .info-btn {
+    flex: 0 0 auto;
+    width: 1.65em;
+    height: 1.65em;
+    padding: 0;
+    border: 1px solid var(--info-amber-edge);
+    border-radius: 50%;
+    background: var(--info-amber);
+    color: var(--info-amber-ink);
+    font:
+      700 14px/1 Georgia,
+      'Times New Roman',
+      serif;
+    font-style: italic;
+    cursor: pointer;
+    transition:
+      background var(--transition),
+      border-color var(--transition);
+  }
+  .deck-render .info-btn:hover,
+  .deck-render .info-btn:focus-visible {
+    background: var(--info-amber-hi);
+    border-color: var(--info-amber-ink);
+  }
+  /* Reachable by a screen reader, out of the flex row's way. */
+  .deck-render .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* ── The explainer dialog ── */
+  .deck-info {
+    width: min(680px, calc(100vw - 2rem));
+    max-height: calc(100vh - 4rem);
+    /* Explicit: the shell's reset zeroes margins on every element, which takes
+       the `auto` a dialog otherwise centres itself with. */
+    margin: auto;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius);
+    background: var(--clr-surface);
+    color: var(--clr-text);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  }
+  /* A column, so the header keeps its place and only the prose scrolls. Left
+     as a plain block the dialog itself is the scroller, which scrolls the
+     heading and the close button off the top with everything else.
+     Scoped to `[open]`: an author `display` beats the UA's
+     `dialog:not([open]) { display: none }` whatever its specificity, so
+     setting it unconditionally leaves the closed dialog laid out in the flow. */
+  .deck-info[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .deck-info::backdrop {
+    background: rgba(24, 28, 59, 0.45);
+  }
+  /* The heading rides in the close button's form so `method="dialog"` closes
+     without script; it is the dialog's header either way. */
+  .deck-info .info-close-form {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 20px 20px 12px;
+    background: var(--clr-surface);
+    border-bottom: 1px solid var(--clr-border);
+  }
+  .deck-info h3 {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 16px;
+  }
+  .deck-info .info-close {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius);
+    background: none;
+    color: var(--clr-text-dim);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+  .deck-info .info-close:hover {
+    background: var(--clr-bg);
+    color: var(--clr-text);
+  }
+  .deck-info .info-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 16px 20px 20px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .deck-info .info-body p {
+    margin: 0 0 12px;
+    color: var(--clr-text-dim);
+  }
+  .deck-info .info-body h4 {
+    margin: 20px 0 8px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--clr-text-dim);
+  }
+  .deck-info .info-body h4:first-child {
+    margin-top: 0;
+  }
+  .deck-info .info-lede {
+    color: var(--clr-text);
+  }
+  /* The mirror stated as the arithmetic it is — the one place a figure says it
+     better than a sentence, so it is set apart from the prose rather than in it. */
+  .deck-info .info-rule {
+    margin: 0 0 4px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--clr-accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background: rgba(78, 108, 242, 0.07);
+    color: var(--clr-text);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12.5px;
+  }
+  .deck-info table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .deck-info th,
+  .deck-info td {
+    text-align: left;
+    padding: 6px 10px 6px 0;
+    border-bottom: 1px solid var(--clr-border);
+    vertical-align: top;
+  }
+  .deck-info th {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-text-dim);
+    font-weight: 600;
+  }
+  .deck-info .tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .deck-info .tag-on {
+    background: rgba(78, 108, 242, 0.12);
+    color: var(--clr-accent);
+  }
+  .deck-info .tag-off {
+    background: var(--clr-bg);
+    color: var(--clr-text-dim);
+  }
+  /* Before and after side by side where there is room, stacked where there is
+     not — the pair is the point, so they must not be read a scroll apart. */
+  .deck-info .info-diff {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .deck-info .info-diff figure {
+    margin: 0;
+    min-width: 0;
+  }
+  .deck-info .info-diff figcaption {
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-text-dim);
+  }
+  .deck-info pre {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius);
+    background: var(--clr-bg);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    tab-size: 2;
+    /* Wrapped, not scrolled. Two blocks are being read against each other, and
+       a scrollbar each means the halves of the comparison can slide out of
+       step — the long line is the id, which is also the line least worth
+       chasing sideways for. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  /* The one number on the line that moved. Marking it is what makes a pair of
+     near-identical blocks readable at a glance. */
+  .deck-info pre mark {
+    background: rgba(78, 108, 242, 0.16);
+    color: var(--clr-accent);
+    border-radius: 3px;
+    padding: 0 2px;
+    font-weight: 600;
+  }
+  .deck-info .info-note {
+    margin: 16px 0 0;
+    padding: 10px 12px;
+    border-left: 3px solid #b42318;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    background: rgba(180, 35, 24, 0.06);
+    color: var(--clr-text);
+    font-size: 13px;
+  }
   .deck-list ul {
     list-style: none;
     padding: 0;
@@ -134,9 +391,15 @@
   .deck-render .stage-note.error {
     color: #b42318;
   }
-  /* Refit animation length; see `fitArt`. */
+  /* Refit animation length; see `fitArt`. The amber is the info button's, kept
+     local: the shell's palette has no warning colour, and one page's affordance
+     is not grounds for adding a token every other page inherits. */
   .deck-render {
     --art-fit-ms: 240ms;
+    --info-amber: #fbd34d;
+    --info-amber-hi: #f7c01c;
+    --info-amber-edge: #d9a406;
+    --info-amber-ink: #3d2e00;
   }
   /* Drawn at its own scale, contained rather than stretched — a source drawing
      resampled would stop being evidence of what the legacy system shows. The
@@ -227,6 +490,19 @@
       <span class="pane-label">Deck rendering</span><span class="pane-sub" id="deck-title"></span>
       <span class="pane-src" id="deck-src"></span>
     </h2>
+    <div class="pane-tools">
+      <label>
+        <input type="checkbox" id="deck-hack" />
+        <span>Hack anchoring and rotation</span>
+      </label>
+      <!-- Outside the label: a button inside one is a second thing the label
+           text activates, so clicking "rotation" would toggle the checkbox and
+           open the dialog at once. -->
+      <button type="button" class="info-btn" id="deck-hack-info" title="What this patches">
+        <span aria-hidden="true">i</span>
+        <span class="sr-only">What this patch changes</span>
+      </button>
+    </div>
     <div class="stage-host" id="deck-host">
       <span class="spin" role="status">Fetching the renderer…</span>
     </div>
@@ -238,10 +514,25 @@
       <span class="pane-sub">as the legacy system draws it</span>
       <span class="pane-src" id="deck-art-src"></span>
     </h2>
+    <!-- Nothing to put here: the artwork is a file, not something the page can
+         re-anchor. It exists so `levelRows` can give this pane the height the
+         stage's toggle takes, and the drawings stay side by side. -->
+    <div class="pane-tools" id="deck-art-tools" aria-hidden="true"></div>
     <div class="art-host" id="deck-artwork"></div>
     <div class="art-meta" id="deck-art-meta"></div>
   </div>
 </div>
+
+<!-- Native <dialog>: Esc, the focus trap, focus restored to the button that
+     opened it and an inert backdrop all come with it, and none of them are
+     worth reimplementing for one explainer. -->
+<dialog class="deck-info" id="deck-hack-dialog" aria-labelledby="deck-hack-dialog-title">
+  <form method="dialog" class="info-close-form">
+    <h3 id="deck-hack-dialog-title">What “hack anchoring and rotation” changes</h3>
+    <button type="submit" class="info-close" aria-label="Close">&times;</button>
+  </form>
+  <div class="info-body" id="deck-hack-dialog-body"></div>
+</dialog>
 
 <script type="module">
   /**
@@ -260,6 +551,23 @@
    * legacy system's own drawing of that same car. Reading one without the other
    * cannot tell a faithful lattice from a plausible-looking wrong one.
    */
+
+  /**
+   * The two XML patches, and the constants describing what they rewrite.
+   *
+   * Kept in their own module because they are the one part of this page that is
+   * not about this page: they document and work around four disagreements
+   * between NeTEx and the renderer, and an upstream maintainer should be able
+   * to read them without the sandbox around them.
+   */
+  import {
+    DECL_RE,
+    INVERTED_ORIENTATION,
+    MIRRORED_ORIENTATION,
+    hackXMLForDeckEdPlacement,
+    invalidateXMLForDeckExtent,
+    kids,
+  } from './deck-ed-alignment-functions.js';
 
   /**
    * Pinned build of the editor's web-component entry. Self-contained (Vue is
@@ -282,12 +590,6 @@
   /** Debounce (ms) before a resize refits the scale. */
   const RESIZE_MS = 150;
 
-  /** XML declaration a fragment file opens with, dropped before it is wrapped. */
-  const DECL_RE = /^\s*<\?xml[^>]*\?>\s*/;
-
-  /** Decimals kept on a derived extent — what the source coordinates carry. */
-  const EXTENT_DP = 4;
-
   /** Decimals shown for that extent: four are the parser's, not a reader's. */
   const DIM_DP = 2;
 
@@ -300,6 +602,12 @@
   const artMetaEl = document.getElementById('deck-art-meta');
   const srcEl = document.getElementById('deck-src');
   const artSrcEl = document.getElementById('deck-art-src');
+  const hackEl = document.getElementById('deck-hack');
+  const infoBtn = document.getElementById('deck-hack-info');
+  const dialogEl = document.getElementById('deck-hack-dialog');
+  const infoBodyEl = document.getElementById('deck-hack-dialog-body');
+  const toolsEl = document.querySelector('.deck-stage .pane-tools');
+  const artToolsEl = document.getElementById('deck-art-tools');
 
   /**
    * The rows the two comparison panes share, each as a `[stage, artwork]` pair.
@@ -307,6 +615,7 @@
    */
   const ROWS = [
     [document.querySelector('.deck-stage h2'), document.querySelector('.deck-art h2')],
+    [toolsEl, artToolsEl],
     [metaEl, artMetaEl],
   ];
 
@@ -498,94 +807,6 @@
     };
 
     /**
-     * Direct children of an element by local name, namespace ignored.
-     *
-     * `getElementsByTagName*` walks the whole subtree, and a deck's spots and
-     * entrances carry `Width`, `Length` and geometry of their own — asking the
-     * deck for its width that way answers with a seat's.
-     *
-     * @param {Element} el Parent to look under.
-     * @param {string} name Local name to match.
-     * @returns {Element[]} Matching children, in document order.
-     */
-    const kids = (el, name) => [...el.children].filter(c => c.localName === name);
-
-    /**
-     * Restate every deck's extent in the two elements the renderer reads.
-     *
-     * A deck's size is the one thing a NeTEx document cannot say and the
-     * renderer cannot do without. `Deck` extends `Zone` directly, so it never
-     * reaches `OnboardSpace` and has no `Width` / `Length` in its content
-     * model; what `Zone` gives it instead — `Centroid` and a `gml:Polygon` —
-     * the 2.0.5 bundle drops on parse, its lowercase `polygon` key never
-     * matching the `Polygon` that namespace-stripping hands it. With nothing to
-     * read the constructor falls back to a literal 2.825 x 26.4 m car, which on
-     * most of the corpus is narrower than its own seats: the stage sizes the
-     * `<svg>` from that same figure and emits no `viewBox`, so the overflow is
-     * clipped rather than merely drawn outside the outline.
-     *
-     * So the extent is copied from the outline into the elements the renderer
-     * does read, and the document stops validating — which is the whole of what
-     * this function does, and why it is named for it. Hand the result to
-     * `parseNeTEx`, never to sobek, and never write it back to disk.
-     *
-     * The outline stays where it is. The renderer ignores it, and it is the
-     * only statement of the extent a schema will take, so dropping it would
-     * leave the fragment saying nothing true about its own size.
-     *
-     * `Width` and `Length` are appended last, out of the `xs:sequence` they
-     * would need to sit in — the parser matches children by name, not by
-     * position (verified against 2.0.5 with both placements), and an invalid
-     * document is better off wearing its invalidity where a reader will see it.
-     *
-     * A deck already carrying `Width` — the editor's own samples do, which is
-     * why they are the only fragments in the set that draw correctly — is left
-     * exactly as it is.
-     *
-     * @param {string} validXML A `<decks>`-rooted fragment whose decks state
-     *   their extent as a `gml:Polygon`, declaration included.
-     * @returns {string} The same document with each deck's extent restated as
-     *   `Width` / `Length`: renderable, and no longer schema-valid.
-     * @throws {Error} If the document does not parse.
-     */
-    const invalidateXMLForDeckExtent = validXML => {
-      const doc = new DOMParser().parseFromString(validXML, 'application/xml');
-      const err = doc.querySelector('parsererror');
-      if (err) throw new Error(`deck fragment does not parse: ${err.textContent.trim()}`);
-
-      for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
-        if (kids(deck, 'Width').length) continue;
-
-        // Zone > gml:Polygon > gml:exterior > gml:LinearRing > gml:posList.
-        const ring = kids(deck, 'Polygon')
-          .flatMap(poly => kids(poly, 'exterior'))
-          .flatMap(ext => kids(ext, 'LinearRing'))
-          .flatMap(lr => kids(lr, 'posList'))[0];
-        if (!ring) continue;
-
-        // `pos` is along-then-across, and the ring is written through the same
-        // transpose — so the odd coordinates span the car's width.
-        const co = ring.textContent.trim().split(/\s+/).map(Number);
-        if (co.length < 4 || co.some(Number.isNaN)) continue;
-        const span = off => {
-          const vs = co.filter((_, i) => i % 2 === off);
-          return Number((Math.max(...vs) - Math.min(...vs)).toFixed(EXTENT_DP));
-        };
-
-        for (const [name, m] of [
-          ['Width', span(1)],
-          ['Length', span(0)],
-        ]) {
-          const el = doc.createElementNS(deck.namespaceURI, name);
-          el.textContent = String(m);
-          deck.append(el);
-        }
-      }
-
-      return (validXML.match(DECL_RE)?.[0] ?? '') + new XMLSerializer().serializeToString(doc);
-    };
-
-    /**
      * Put a `<decks>` fragment back inside the document its parser expects.
      *
      * `parseNeTEx` reaches straight down a fixed
@@ -602,13 +823,35 @@
       '</deckPlans></ResourceFrame></frames></CompositeFrame></dataObjects></PublicationDelivery>';
 
     /**
-     * Decks already fetched and parsed, keyed by plan id.
+     * Fragments already fetched, keyed by plan id — the bytes as served, before
+     * either patch. Both readings of a plan are made from this one copy, so
+     * toggling the hack costs a parse rather than a round trip. A failed fetch
+     * stays out, so selecting the plan again retries it.
+     */
+    const text = new Map();
+
+    /**
+     * Decks already parsed, keyed by plan *and* by which patches made them.
      *
      * A refit on resize and a return to an earlier plan both redraw, and
-     * neither should go back over the network or re-parse tens of KB. A failed
-     * load stays out of the map, so selecting the plan again retries it.
+     * neither should re-parse tens of KB. The reading is part of the key
+     * because the two are different decks built from the same file: keyed on
+     * the plan alone, flipping the toggle would hand back whichever one was
+     * parsed first and the checkbox would look inert.
      */
     const cache = new Map();
+
+    /** Cache key for one plan under one reading. */
+    const keyOf = (plan, hacked) => `${plan.id}|${hacked ? 'hacked' : 'as-written'}`;
+
+    /**
+     * Renders started, so a slow one can tell it has been overtaken.
+     *
+     * `current` cannot tell it: flipping the toggle redraws the *same* plan, so
+     * both passes see `current === plan` and a fetch that started first may
+     * finish last and put the previous reading back on screen.
+     */
+    let gen = 0;
 
     /**
      * First deck of a plan, fetched and parsed on first use.
@@ -617,20 +860,48 @@
      * matches deck spaces with `instanceof`, so a deck parsed by any other copy
      * of the models draws an empty outline.
      *
+     * The extent patch is unconditional: without it most of the corpus draws
+     * clipped inside a car that is not theirs, which is not a reading anyone
+     * asked to compare against. The anchoring patch is the toggle's, and runs
+     * second — it mirrors about the `Width` the first one writes.
+     *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
      * @returns {Promise<object|undefined>} The deck, or undefined if the
      *   fragment holds none.
      * @throws {Error} If the fragment cannot be fetched or parsed.
      */
-    const deckOf = async plan => {
-      const ref = plan[DECKS_REF_KEY];
-      if (!cache.has(plan.id)) {
+    /**
+     * A plan's fragment as served, fetched once.
+     *
+     * Separate from `deckOf` because the explainer dialog needs the same bytes
+     * to show what the patch did to them, and neither reading should be the
+     * one that owns the download.
+     *
+     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
+     * @returns {Promise<string>} The fragment text.
+     * @throws {Error} If it cannot be fetched.
+     */
+    const fragOf = async plan => {
+      if (!text.has(plan.id)) {
+        const ref = plan[DECKS_REF_KEY];
         const res = await fetch(ref);
         if (!res.ok) throw new Error(`${res.status} on ${ref}`);
-        const frag = invalidateXMLForDeckExtent(await res.text());
-        cache.set(plan.id, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
+        text.set(plan.id, await res.text());
       }
-      return cache.get(plan.id);
+      return text.get(plan.id);
+    };
+
+    const deckOf = async (plan, hacked) => {
+      const key = keyOf(plan, hacked);
+      if (!cache.has(key)) {
+        // `hacked` is the reading the caller asked for, not whatever the
+        // checkbox says now: the fetch above gives the reader time to flip it,
+        // and re-reading it here would file this deck under the other key.
+        let frag = invalidateXMLForDeckExtent(await fragOf(plan));
+        if (hacked) frag = hackXMLForDeckEdPlacement(frag);
+        cache.set(key, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
+      }
+      return cache.get(key);
     };
 
     /**
@@ -699,6 +970,8 @@
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
      */
     const draw = async plan => {
+      const mine = ++gen;
+      const hacked = hackEl.checked;
       current = plan;
       titleEl.textContent = plan.name;
       // Neither waits on the decks: both are read off the record itself, and
@@ -714,20 +987,20 @@
       drawArt(plan);
       // Only on a first draw: a cached plan resolves within the same task and
       // would show the spinner for a single frame.
-      if (!cache.has(plan.id)) {
+      if (!cache.has(keyOf(plan, hacked))) {
         metaEl.textContent = '';
         waiting('Fetching the decks fragment…');
       }
       let deck;
       try {
-        deck = await deckOf(plan);
+        deck = await deckOf(plan, hacked);
       } catch (e) {
-        if (current !== plan) return;
+        if (gen !== mine) return;
         metaEl.textContent = '';
         note(`Could not load this plan: ${e.message}`, true);
         return levelRows();
       }
-      if (current !== plan) return;
+      if (gen !== mine) return;
       if (!deck) {
         metaEl.textContent = '';
         note('This fragment carries no decks.', true);
@@ -778,6 +1051,220 @@
       };
       li.append(btn);
       return li;
+    };
+
+    // Redraws the plan already on screen rather than only the next one: the
+    // toggle is a comparison control, and one worth making is the same car
+    // before and after, not two different cars.
+    hackEl.onchange = () => current && draw(current);
+
+    /**
+     * First descendant of `el` by local name, namespace ignored.
+     * @param {Element|Document} el Root to search under.
+     * @param {string} name Local name.
+     * @returns {Element|undefined} The first match in document order.
+     */
+    const first = (el, name) => el.getElementsByTagNameNS('*', name)[0];
+
+    /** A `<gml:pos>`'s two numbers, or undefined if `el` carries none. */
+    const posOf = el => {
+      const p = el && first(el, 'pos');
+      return p ? { el: p, co: p.textContent.trim().split(/\s+/) } : undefined;
+    };
+
+    /**
+     * One line of an XML excerpt, escaped for HTML, optionally highlighting the
+     * fragment of it that the patch moved.
+     *
+     * @param {string} line Raw XML text.
+     * @param {string} [hot] Substring to mark; ignored if absent from `line`.
+     * @returns {string} HTML for one `<pre>` line.
+     */
+    const xmlLine = (line, hot) => {
+      const safe = esc(line);
+      const mark = hot && esc(hot);
+      return mark && safe.includes(mark) ? safe.replace(mark, `<mark>${mark}</mark>`) : safe;
+    };
+
+    /**
+     * A before/after pair of excerpts of the same element.
+     * @param {string[][]} rows `[line, hotBefore, hotAfter]` per line.
+     * @returns {string} HTML for the pair.
+     */
+    const diffPair = rows => {
+      const col = i =>
+        rows.map(([line, ...hot]) => xmlLine(line.replace('%s', hot[i]), hot[i])).join('\n');
+      return (
+        '<div class="info-diff">' +
+        `<figure><figcaption>As written</figcaption><pre>${col(0)}</pre></figure>` +
+        `<figure><figcaption>As the renderer is given it</figcaption><pre>${col(1)}</pre></figure>` +
+        '</div>'
+      );
+    };
+
+    /**
+     * The explainer's body, written from the plan currently on screen.
+     *
+     * Built from that plan's own numbers rather than from an invented example:
+     * this pane exists so a derived deck can be checked against the drawing it
+     * came from, and an explainer that cannot be checked against either would
+     * be one more thing to take on trust.
+     *
+     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
+     * @returns {Promise<string>} Dialog body HTML.
+     */
+    const explainHack = async plan => {
+      const before = invalidateXMLForDeckExtent(await fragOf(plan));
+      const after = hackXMLForDeckEdPlacement(before);
+      const p = s => new DOMParser().parseFromString(s, 'application/xml');
+      const [b, a] = [p(before), p(after)];
+      const deck = first(b, 'Deck');
+      const w = Number(kids(deck, 'Width')[0]?.textContent);
+      const len = Number(kids(deck, 'Length')[0]?.textContent);
+
+      const out = [];
+      out.push(
+        `<p class="info-lede">NeTEx writes a position <em>along the car, then across</em>; the
+         drawing plots across first. That difference is a mirror, and the renderer only offers
+         turns. Three faults, fixed before it sees the plan.</p>`,
+        w > 0
+          ? `<p class="info-rule">Deck ${fmtM(len)} × ${fmtM(w)} m &nbsp;→&nbsp; every across
+             value <code>y</code> becomes <code>${fmtM(w)} − y</code></p>`
+          : ''
+      );
+
+      // A seat: the plain case, one number on one line.
+      const [bs, as] = [b, a].map(d => first(d, 'PassengerSpot'));
+      const [bp, ap] = [bs, as].map(posOf);
+      if (bp && ap) {
+        const tag = bp.el.nodeName;
+        const label = first(bs, 'Label')?.textContent.trim();
+        out.push(
+          '<h4>Every position moves across, never along</h4>',
+          diffPair([
+            [`<PassengerSpot id="${esc(bs.getAttribute('id') ?? '')}">`],
+            ['  <Centroid><Location>'],
+            [`    <${tag}>${bp.co[0]} %s</${tag}>`, bp.co[1], ap.co[1]],
+            ['  </Location></Centroid>'],
+            ...(label ? [[`  <Label>${esc(label)}</Label>`]] : []),
+            ['</PassengerSpot>'],
+          ])
+        );
+      }
+
+      // A door: the case where something next to the moved number stays put.
+      const [bd, ad] = [b, a].map(d => first(d, 'PassengerEntrance') ?? first(d, 'DeckEntrance'));
+      const [bdp, adp] = [bd, ad].map(posOf);
+      const side = bd && first(bd, 'VehicleSide')?.textContent.trim();
+      if (bdp && adp && side) {
+        const tag = bdp.el.nodeName;
+        out.push(
+          '<h4>Doors move — the side they name does not</h4>',
+          `<p><code>${esc(side)}</code> was always right; the mirror is what draws it there.</p>`,
+          diffPair([
+            [`<${bd.nodeName} id="${esc(bd.getAttribute('id') ?? '')}">`],
+            [`  <${tag}>${bdp.co[0]} %s</${tag}>`, bdp.co[1], adp.co[1]],
+            [`  <VehicleSide>${esc(side)}</VehicleSide>`],
+            [`</${bd.nodeName}>`],
+          ])
+        );
+      }
+
+      // Which way seats face, for the two separate reasons it is changed.
+      const orients = [...b.getElementsByTagNameNS('*', 'Orientation')].map(o =>
+        o.textContent.trim()
+      );
+      const anyOf = map => orients.find(v => map[v]);
+
+      const along = anyOf(INVERTED_ORIENTATION);
+      // Only the values actually rewritten: a plan can carry `unknown` spots
+      // too, and those are left exactly as they are.
+      const nAlong = orients.filter(v => INVERTED_ORIENTATION[v]).length;
+      if (along)
+        out.push(
+          '<h4>Which way seats face — not the mirror</h4>',
+          `<p>The renderer has these two the wrong way round: ${nAlong} of this plan's
+           ${orients.length} spots face against the drawing until they are swapped.</p>`,
+          diffPair([['  <Orientation>%s</Orientation>', along, INVERTED_ORIENTATION[along]]])
+        );
+
+      const sideways = anyOf(MIRRORED_ORIENTATION);
+      if (sideways)
+        out.push(
+          '<h4>Sideways seats — this one is the mirror</h4>',
+          diffPair([['  <Orientation>%s</Orientation>', sideways, MIRRORED_ORIENTATION[sideways]]])
+        );
+
+      // Each spot's own extent, on the axis the renderer reads it from.
+      const [bw, bl] = ['Width', 'Length'].map(n => bs && kids(bs, n)[0]?.textContent.trim());
+      if (bw && bl && bw !== bl) {
+        const kind = first(bs, 'LocatableSpotType')?.textContent.trim();
+        out.push(
+          `<h4>How wide and long each ${esc(kind || 'spot')} is</h4>`,
+          `<p>Read onto the wrong axes, so a ${esc(kind || 'spot')} is drawn turned a quarter
+           circle. This one is ${bw} × ${bl} m — barely visible while those two are close,
+           unmistakable once they are not.</p>`,
+          diffPair([
+            [`  <Width>%s</Width>`, bw, bl],
+            [`  <Length>%s</Length>`, bl, bw],
+          ])
+        );
+      }
+
+      const on = t => `<span class="tag tag-on">${t}</span>`;
+      const off = `<span class="tag tag-off">untouched</span>`;
+      out.push(
+        '<h4>Every element, touched or not</h4>',
+        '<table><thead><tr><th>Element</th><th>What happens to it</th></tr></thead><tbody>' +
+          [
+            ['<code>&lt;pos&gt;</code> on every Centroid', on('mirrored'), 'across value only'],
+            [
+              '<code>&lt;posList&gt;</code>, the deck outline',
+              on('mirrored'),
+              'same size, other way round',
+            ],
+            [
+              '<code>&lt;Orientation&gt;</code>',
+              on('swapped'),
+              'forwards ↔ backwards, leftwards ↔ rightwards',
+            ],
+            [
+              '<code>&lt;Width&gt;</code>/<code>&lt;Length&gt;</code> on a spot',
+              on('exchanged'),
+              'read onto the opposite axes',
+            ],
+            ['<code>&lt;VehicleSide&gt;</code>', off, 'already correct'],
+            [
+              '<code>&lt;Width&gt;</code>/<code>&lt;Length&gt;</code> on the deck',
+              off,
+              'this renderer reads these correctly',
+            ],
+            ['<code>&lt;Label&gt;</code>, ids, refs', off, 'seat numbers must not reverse'],
+          ]
+            .map(([el, tag, why]) => `<tr><td>${el}</td><td>${tag} <em>${why}</em></td></tr>`)
+            .join('') +
+          '</tbody></table>',
+        `<p class="info-note"><strong>A rendering patch, not a correction.</strong> The document
+         going in is the one that is right. Never written to disk, never sent to sobek.</p>`
+      );
+      return out.join('');
+    };
+
+    // Built on open rather than on selection: it costs two parses of the
+    // fragment, and most readers never ask.
+    infoBtn.onclick = async () => {
+      if (!current) return;
+      const plan = current;
+      infoBodyEl.innerHTML = '<p>Reading the fragment…</p>';
+      dialogEl.showModal();
+      let html;
+      try {
+        html = await explainHack(plan);
+      } catch (e) {
+        html = `<p class="info-note">Could not read this plan's fragment: ${esc(e.message)}</p>`;
+      }
+      // The reader may have closed it, or moved on, while it was being built.
+      if (dialogEl.open && current === plan) infoBodyEl.innerHTML = html;
     };
 
     listEl.innerHTML = '';
