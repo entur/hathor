@@ -136,11 +136,6 @@
     /* Explicit: the shell's reset zeroes margins on every element, which takes
        the `auto` a dialog otherwise centres itself with. */
     margin: auto;
-    /* A column, so the header keeps its place and only the prose scrolls. Left
-       as a plain block the dialog itself is the scroller, which scrolls the
-       heading and the close button off the top with everything else. */
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
     padding: 0;
     border: none;
@@ -148,6 +143,16 @@
     background: var(--clr-surface);
     color: var(--clr-text);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  }
+  /* A column, so the header keeps its place and only the prose scrolls. Left
+     as a plain block the dialog itself is the scroller, which scrolls the
+     heading and the close button off the top with everything else.
+     Scoped to `[open]`: an author `display` beats the UA's
+     `dialog:not([open]) { display: none }` whatever its specificity, so
+     setting it unconditionally leaves the closed dialog laid out in the flow. */
+  .deck-info[open] {
+    display: flex;
+    flex-direction: column;
   }
   .deck-info::backdrop {
     background: rgba(24, 28, 59, 0.45);
@@ -836,8 +841,17 @@
      */
     const cache = new Map();
 
-    /** Cache key for a plan under the reading the toggle currently asks for. */
-    const keyOf = plan => `${plan.id}|${hackEl.checked ? 'hacked' : 'as-written'}`;
+    /** Cache key for one plan under one reading. */
+    const keyOf = (plan, hacked) => `${plan.id}|${hacked ? 'hacked' : 'as-written'}`;
+
+    /**
+     * Renders started, so a slow one can tell it has been overtaken.
+     *
+     * `current` cannot tell it: flipping the toggle redraws the *same* plan, so
+     * both passes see `current === plan` and a fetch that started first may
+     * finish last and put the previous reading back on screen.
+     */
+    let gen = 0;
 
     /**
      * First deck of a plan, fetched and parsed on first use.
@@ -877,11 +891,14 @@
       return text.get(plan.id);
     };
 
-    const deckOf = async plan => {
-      const key = keyOf(plan);
+    const deckOf = async (plan, hacked) => {
+      const key = keyOf(plan, hacked);
       if (!cache.has(key)) {
+        // `hacked` is the reading the caller asked for, not whatever the
+        // checkbox says now: the fetch above gives the reader time to flip it,
+        // and re-reading it here would file this deck under the other key.
         let frag = invalidateXMLForDeckExtent(await fragOf(plan));
-        if (hackEl.checked) frag = hackXMLForDeckEdPlacement(frag);
+        if (hacked) frag = hackXMLForDeckEdPlacement(frag);
         cache.set(key, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
       }
       return cache.get(key);
@@ -953,6 +970,8 @@
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
      */
     const draw = async plan => {
+      const mine = ++gen;
+      const hacked = hackEl.checked;
       current = plan;
       titleEl.textContent = plan.name;
       // Neither waits on the decks: both are read off the record itself, and
@@ -968,20 +987,20 @@
       drawArt(plan);
       // Only on a first draw: a cached plan resolves within the same task and
       // would show the spinner for a single frame.
-      if (!cache.has(keyOf(plan))) {
+      if (!cache.has(keyOf(plan, hacked))) {
         metaEl.textContent = '';
         waiting('Fetching the decks fragment…');
       }
       let deck;
       try {
-        deck = await deckOf(plan);
+        deck = await deckOf(plan, hacked);
       } catch (e) {
-        if (current !== plan) return;
+        if (gen !== mine) return;
         metaEl.textContent = '';
         note(`Could not load this plan: ${e.message}`, true);
         return levelRows();
       }
-      if (current !== plan) return;
+      if (gen !== mine) return;
       if (!deck) {
         metaEl.textContent = '';
         note('This fragment carries no decks.', true);
@@ -1107,7 +1126,7 @@
       out.push(
         `<p class="info-lede">NeTEx writes a position <em>along the car, then across</em>; the
          drawing plots across first. That difference is a mirror, and the renderer only offers
-         turns. Two faults, fixed before it sees the plan.</p>`,
+         turns. Three faults, fixed before it sees the plan.</p>`,
         w > 0
           ? `<p class="info-rule">Deck ${fmtM(len)} × ${fmtM(w)} m &nbsp;→&nbsp; every across
              value <code>y</code> becomes <code>${fmtM(w)} − y</code></p>`
@@ -1158,11 +1177,14 @@
       const anyOf = map => orients.find(v => map[v]);
 
       const along = anyOf(INVERTED_ORIENTATION);
+      // Only the values actually rewritten: a plan can carry `unknown` spots
+      // too, and those are left exactly as they are.
+      const nAlong = orients.filter(v => INVERTED_ORIENTATION[v]).length;
       if (along)
         out.push(
           '<h4>Which way seats face — not the mirror</h4>',
-          `<p>The renderer has these two the wrong way round: all ${orients.length} seats here
-           face against the drawing until they are swapped.</p>`,
+          `<p>The renderer has these two the wrong way round: ${nAlong} of this plan's
+           ${orients.length} spots face against the drawing until they are swapped.</p>`,
           diffPair([['  <Orientation>%s</Orientation>', along, INVERTED_ORIENTATION[along]]])
         );
 
@@ -1180,8 +1202,8 @@
         out.push(
           `<h4>How wide and long each ${esc(kind || 'spot')} is</h4>`,
           `<p>Read onto the wrong axes, so a ${esc(kind || 'spot')} is drawn turned a quarter
-           circle. Barely visible on a near-square seat; unmistakable on a
-           ${bw} × ${bl} m berth.</p>`,
+           circle. This one is ${bw} × ${bl} m — barely visible while those two are close,
+           unmistakable once they are not.</p>`,
           diffPair([
             [`  <Width>%s</Width>`, bw, bl],
             [`  <Length>%s</Length>`, bl, bw],
