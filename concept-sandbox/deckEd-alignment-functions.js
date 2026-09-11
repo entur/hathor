@@ -17,7 +17,8 @@
  *    renderer reads for a deck's size. The geometry `Zone` *does* give it
  *    (`Centroid`, `gml:Polygon`) is dropped on parse. With nothing to read, the
  *    constructor falls back to a literal 2.825 x 26.4 m car, which for most of
- *    a real corpus is narrower than its own seats — and since the `<svg>` is
+ *    the 81-fragment corpus this module was verified against (see below) is
+ *    narrower than its own seats — and since the `<svg>` is
  *    sized from that same figure with no `viewBox`, the overflow is *clipped*.
  *    → `invalidateXMLForDeckExtent`
  *
@@ -26,7 +27,7 @@
  *    and the only orientation lever the element offers is `vertical`, a
  *    `rotate(90, …)` whose determinant is +1. No rotation composes a
  *    reflection, so the two differ by a mirror that survives every setting.
- *    → `hackXMLForDeckEdAnchoring`
+ *    → `hackXMLForDeckEdPlacement`
  *
  * 3. **Facing.** The backrest is drawn at the seat's `+x` edge and `forwards`
  *    adds `rotate(180)`, which points a forward-facing passenger at the rear of
@@ -36,7 +37,13 @@
  * 4. **Spot extents.** `PassengerSpot.getShape()` reads `Width` onto the deck's
  *    x — the car's *length* — and `Length` onto its y. NeTEx means the
  *    opposite. Latent on a near-square seat, a quarter-turn error on a berth.
- *    → `hackXMLForDeckEdAnchoring`
+ *    → `hackXMLForDeckEdPlacement`
+ *
+ * Two further exports exist for a caller that wants to *explain* the patches
+ * rather than only apply them — `MIRRORED_ORIENTATION` / `INVERTED_ORIENTATION`
+ * name which rewrite answers which fault — alongside `DECL_RE` and `kids`,
+ * which are the patches' own plumbing, exported so a caller doing its own
+ * traversal of these documents need not restate them.
  *
  * (1) is a contract gap: no document can be both valid and renderable, because
  * the fields the renderer needs are the fields the schema forbids. (2), (3) and
@@ -111,6 +118,25 @@ const SWAPPED_ORIENTATION = { ...MIRRORED_ORIENTATION, ...INVERTED_ORIENTATION }
 export const kids = (el, name) => [...el.children].filter(c => c.localName === name);
 
 /**
+ * Parse a `<decks>` fragment, refusing anything that is not well-formed.
+ *
+ * Both patches start here, and both have to: the second re-parses what the
+ * first wrote, so a malformed document must announce itself rather than
+ * silently produce a `<parsererror>` tree that the loops below would then walk
+ * to no effect.
+ *
+ * @param {string} xml Fragment text, declaration optional.
+ * @returns {Document} The parsed document.
+ * @throws {Error} If the document does not parse.
+ */
+const parseFragment = xml => {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const err = doc.querySelector('parsererror');
+  if (err) throw new Error(`deck fragment does not parse: ${err.textContent.trim()}`);
+  return doc;
+};
+
+/**
  * Serialise a patched document, carrying its declaration over exactly once.
  *
  * Browsers disagree about whether `serializeToString` reproduces the XML
@@ -168,18 +194,17 @@ const serialize = (doc, src) =>
  * @throws {Error} If the document does not parse.
  */
 export const invalidateXMLForDeckExtent = validXML => {
-  const doc = new DOMParser().parseFromString(validXML, 'application/xml');
-  const err = doc.querySelector('parsererror');
-  if (err) throw new Error(`deck fragment does not parse: ${err.textContent.trim()}`);
+  const doc = parseFragment(validXML);
 
   for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
     if (kids(deck, 'Width').length) continue;
 
-    // Zone > gml:Polygon > gml:exterior > gml:LinearRing > gml:posList.
-    const ring = kids(deck, 'Polygon')
-      .flatMap(poly => kids(poly, 'exterior'))
-      .flatMap(ext => kids(ext, 'LinearRing'))
-      .flatMap(lr => kids(lr, 'posList'))[0];
+    // One fixed descent, not a fan-out: Zone > gml:Polygon > gml:exterior >
+    // gml:LinearRing > gml:posList. Missing any step leaves the deck alone.
+    const ring = ['Polygon', 'exterior', 'LinearRing', 'posList'].reduce(
+      (el, name) => el && kids(el, name)[0],
+      deck
+    );
     if (!ring) continue;
 
     // `pos` is along-then-across, and the ring is written through the same
@@ -273,14 +298,13 @@ export const invalidateXMLForDeckExtent = validXML => {
  *   that makes the renderer draw the seat the way the drawing does.
  * @throws {Error} If the document does not parse.
  */
-export const hackXMLForDeckEdAnchoring = xml => {
-  const doc = new DOMParser().parseFromString(xml, 'application/xml');
-  const err = doc.querySelector('parsererror');
-  if (err) throw new Error(`deck fragment does not parse: ${err.textContent.trim()}`);
+export const hackXMLForDeckEdPlacement = xml => {
+  const doc = parseFragment(xml);
 
   for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
     const w = Number(kids(deck, 'Width')[0]?.textContent);
-    if (!(w > 0)) continue;
+    // NaN when the deck carries no `Width` at all — see the note above.
+    if (Number.isNaN(w) || w <= 0) continue;
 
     /** Reflect one across-coordinate about the deck's centreline. */
     const flip = c => Number((w - c).toFixed(EXTENT_DP));
@@ -300,7 +324,7 @@ export const hackXMLForDeckEdAnchoring = xml => {
     // it is supposed to bound.
     for (const list of deck.getElementsByTagNameNS('*', 'posList')) {
       const co = list.textContent.trim().split(/\s+/).map(Number);
-      if (co.length % 2 || co.some(Number.isNaN)) continue;
+      if (co.length % 2 !== 0 || co.some(Number.isNaN)) continue;
       list.textContent = co.map((v, i) => (i % 2 ? flip(v) : v)).join(' ');
     }
 

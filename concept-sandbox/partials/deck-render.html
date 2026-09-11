@@ -559,7 +559,7 @@
     DECL_RE,
     INVERTED_ORIENTATION,
     MIRRORED_ORIENTATION,
-    hackXMLForDeckEdAnchoring,
+    hackXMLForDeckEdPlacement,
     invalidateXMLForDeckExtent,
     kids,
   } from './deckEd-alignment-functions.js';
@@ -881,7 +881,7 @@
       const key = keyOf(plan);
       if (!cache.has(key)) {
         let frag = invalidateXMLForDeckExtent(await fragOf(plan));
-        if (hackEl.checked) frag = hackXMLForDeckEdAnchoring(frag);
+        if (hackEl.checked) frag = hackXMLForDeckEdPlacement(frag);
         cache.set(key, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
       }
       return cache.get(key);
@@ -1096,7 +1096,7 @@
      */
     const explainHack = async plan => {
       const before = invalidateXMLForDeckExtent(await fragOf(plan));
-      const after = hackXMLForDeckEdAnchoring(before);
+      const after = hackXMLForDeckEdPlacement(before);
       const p = s => new DOMParser().parseFromString(s, 'application/xml');
       const [b, a] = [p(before), p(after)];
       const deck = first(b, 'Deck');
