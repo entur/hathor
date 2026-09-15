@@ -200,6 +200,8 @@
         flex: 1;
         overflow: hidden;
         padding: 0;
+        /* Ground for `#page-loading`, which floats over the outgoing page. */
+        position: relative;
       }
 
       #main-content {
@@ -327,13 +329,64 @@
       }
 
       /* ── htmx loading indicator ───────────────────────── */
+      /* The generic contract, nothing more: hidden until htmx marks a request
+         in flight, either on an ancestor (the requesting element) or on this
+         element itself (an `hx-indicator` target). Appearance belongs to the
+         indicator, so a second one can look like wherever it sits. */
       .htmx-indicator {
         display: none;
-        margin-left: 8px;
       }
       .htmx-request .htmx-indicator,
       .htmx-request.htmx-indicator {
-        display: inline-block;
+        display: inline-flex;
+      }
+
+      /* The page indicator: one element for every swap into `#main-content`,
+         whether the shell's own landing fetch or a nav click. A pill rather
+         than a bar across the pane, because a nav click keeps the outgoing
+         page on screen until its replacement lands — the page is not gone,
+         it is busy, and the pill says so without hiding what is still there.
+         Centred, so on a cold start it sits in the middle of an empty pane. */
+      #page-loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-md);
+        color: var(--clr-text-dim);
+        font-size: 13px;
+      }
+      #page-loading::before {
+        content: '';
+        flex: 0 0 auto;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--clr-border);
+        border-top-color: var(--clr-accent);
+        border-radius: 50%;
+        animation: nav-spin 0.7s linear infinite;
+      }
+      @keyframes nav-spin {
+        to {
+          transform: rotate(1turn);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #page-loading::before {
+          animation: nav-pulse 1.2s ease-in-out infinite;
+        }
+        @keyframes nav-pulse {
+          50% {
+            opacity: 0.25;
+          }
+        }
       }
 
       /* ── Responsive ───────────────────────────────────── */
@@ -384,7 +437,7 @@
              fires six `hx-trigger="load"` fetches at once and they would then
              abort each other. Nothing inside the nav issues a request of its
              own, so here it reaches exactly the eight buttons it should. -->
-        <ul hx-sync="#main-content:replace">
+        <ul hx-sync="#main-content:replace" hx-indicator="#page-loading">
           <li>
             <button
               id="nav-database"
@@ -472,7 +525,23 @@
 
       <!-- ── Main content ───────────────────────────────── -->
       <main>
-        <div id="main-content" hx-trigger="load" hx-swap="innerHTML"></div>
+        <!-- Sibling of the target, not a child of it: a swap replaces
+             `#main-content`'s contents, so an indicator inside it would be
+             thrown away by the first swap it reported on. -->
+        <span id="page-loading" class="htmx-indicator" role="status">Loading…</span>
+        <!-- `hx-disinherit`, because `hx-indicator` is inherited and everything
+             swapped in here would point at the page pill too: `layouts/` fires
+             six fetches on load and the search box one per keystroke, none of
+             which is a page change. Disinherited, they fall back to htmx's
+             default — the requesting element — and each partial keeps whatever
+             loading affordance it has of its own. -->
+        <div
+          id="main-content"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+          hx-indicator="#page-loading"
+          hx-disinherit="hx-indicator"
+        ></div>
       </main>
     </div>
 
