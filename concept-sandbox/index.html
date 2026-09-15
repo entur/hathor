@@ -368,7 +368,23 @@
       <!-- ── Side pane ──────────────────────────────────── -->
       <aside>
         <h2>Navigation</h2>
-        <ul>
+        <!-- Inherited by every nav button, so all eight share one request queue
+             with `#main-content`'s own `hx-trigger="load"` fetch. htmx queues
+             per element, and the landing fetch is issued by a *different*
+             element than the button, so without this the two race for the same
+             target: on a cold first paint a reader can click a page before the
+             landing partial lands, and whichever response arrives last wins.
+             Landing last silently replaces the page that was asked for; the
+             page last lands after its own markup was already swapped away, and
+             a partial whose script reads its own DOM (`deck-render.html`) dies
+             on the first null — no page, no spinner, no visible error.
+
+             On the `<ul>` rather than on `#main-content`: `hx-sync` is
+             inherited, and swapped-in content would inherit it too — `layouts/`
+             fires six `hx-trigger="load"` fetches at once and they would then
+             abort each other. Nothing inside the nav issues a request of its
+             own, so here it reaches exactly the eight buttons it should. -->
+        <ul hx-sync="#main-content:replace">
           <li>
             <button
               id="nav-database"
