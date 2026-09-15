@@ -191,6 +191,33 @@
     background: var(--clr-bg);
     color: var(--clr-text);
   }
+  /* A source line, not a heading: the patches this dialog describes live in a
+     module of their own, and the only useful thing to say about that is where
+     it is. Sits above the body so it stays put while the body is rebuilt. */
+  .deck-info .info-source {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+    padding: 10px 20px;
+    background: var(--clr-bg);
+    border-bottom: 1px solid var(--clr-border);
+    font-size: 12px;
+  }
+  .deck-info .info-source a {
+    color: var(--clr-accent);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    text-decoration: none;
+  }
+  .deck-info .info-source a:hover,
+  .deck-info .info-source a:focus-visible {
+    text-decoration: underline;
+  }
+  .deck-info .info-source .info-source-repo {
+    margin-left: auto;
+    color: var(--clr-text-dim);
+  }
   .deck-info .info-body {
     flex: 1 1 auto;
     min-height: 0;
@@ -531,6 +558,19 @@
     <h3 id="deck-hack-dialog-title">What “hack anchoring and rotation” changes</h3>
     <button type="submit" class="info-close" aria-label="Close">&times;</button>
   </form>
+  <!-- Static, so it survives every rebuild of the body below. The patches are
+       the point of this dialog and they are not on this page; this is the way
+       to them. -->
+  <p class="info-source">
+    <span>Patched by</span>
+    <a
+      href="https://github.com/entur/hathor/blob/ui-sandboxing/concept-sandbox/deck-ed-alignment-functions.js"
+      target="_blank"
+      rel="noopener noreferrer"
+      >concept-sandbox/deck-ed-alignment-functions.js</a
+    >
+    <span class="info-source-repo">entur/hathor @ ui-sandboxing</span>
+  </p>
   <div class="info-body" id="deck-hack-dialog-body"></div>
 </dialog>
 
