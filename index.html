@@ -5,347 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hathor – Concept Sandbox</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"
     />
-    <style>
-      /* ── Reset & base ─────────────────────────────────── */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+    <link rel="stylesheet" href="assets/shell.css" />
+    <!-- Every partial's sheet, warmed ahead of the swap that needs it.
 
-      :root {
-        --clr-bg: #f4f5f7;
-        --clr-surface: #ffffff;
-        --clr-primary: #181c3b;
-        --clr-accent: #4e6cf2;
-        --clr-accent-fg: #ffffff;
-        --clr-text: #1e1e2e;
-        --clr-text-dim: #6b7280;
-        --clr-border: #e2e5ea;
-        --header-h: 56px;
-        --side-w: 260px;
-        --radius: 8px;
-        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-        --transition: 0.2s ease;
-      }
+         A partial carries its own `<link>` so its rules mount and unmount with
+         it — that is what lets `uml/index.css` write a bare `.tab-bar` without
+         reaching the Layouts page. But a link inserted by a swap does not block
+         paint: the markup lands first and renders unstyled until its sheet
+         arrives, which on a cold cache is a visible flash of the page you just
+         asked for. Warming the sheet here spends that round trip up front, so
+         the swap finds it in cache.
 
-      html {
-        height: 100%;
-      }
+         `preload`, though only one of these is needed by *this* navigation
+         (`fed-db.css`, on the landing path index → database.html →
+         fed-db.html) and `prefetch` is the rel that means "a later navigation
+         will want this". Measured, and prefetch does not arrive in time: with
+         a 1.2s dwell before the click it left 6 of 12 sampled frames
+         unstyled, against 0 for preload — it idles exactly as specified, and
+         the flash comes back. The cost of preload is the honest one to pay
+         here: browsers may warn that a preloaded sheet went unused on a visit
+         that never navigates.
 
-      body {
-        height: 100%;
-        font-family:
-          Inter,
-          -apple-system,
-          BlinkMacSystemFont,
-          'Segoe UI',
-          Roboto,
-          sans-serif;
-        color: var(--clr-text);
-        background: var(--clr-bg);
-        display: flex;
-        flex-direction: column;
-      }
-
-      /* ── Header ───────────────────────────────────────── */
-      header {
-        height: var(--header-h);
-        background: var(--clr-primary);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        padding: 0 24px;
-        gap: 16px;
-        box-shadow: var(--shadow-md);
-        z-index: 10;
-        flex-shrink: 0;
-      }
-
-      header .logo {
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-      }
-
-      header .logo span {
-        color: var(--clr-accent);
-      }
-
-      header nav {
-        margin-left: auto;
-        display: flex;
-        gap: 8px;
-      }
-
-      header nav a {
-        display: inline-flex;
-        align-items: center;
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #fff;
-        padding: 6px 14px;
-        border-radius: var(--radius);
-        font-size: 13px;
-        font-family: inherit;
-        line-height: 1;
-        text-decoration: none;
-        cursor: pointer;
-        transition:
-          background var(--transition),
-          border-color var(--transition),
-          transform var(--transition);
-      }
-
-      header nav a:hover {
-        background: var(--clr-accent);
-        border-color: var(--clr-accent);
-      }
-
-      header nav .nav-cta {
-        background: var(--clr-accent);
-        border-color: var(--clr-accent);
-        font-weight: 600;
-        box-shadow: 0 0 0 2px rgba(78, 108, 242, 0.25);
-      }
-
-      header nav .nav-cta:hover {
-        background: #3d59d9;
-        border-color: #3d59d9;
-        transform: translateY(-1px);
-      }
-
-      /* ── Layout beneath header ────────────────────────── */
-      .layout {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-      }
-
-      /* ── Side pane ────────────────────────────────────── */
-      aside {
-        width: var(--side-w);
-        background: var(--clr-surface);
-        border-right: 1px solid var(--clr-border);
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-        overflow-y: auto;
-      }
-
-      aside h2 {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        color: var(--clr-text-dim);
-        padding: 20px 20px 8px;
-      }
-
-      aside ul {
-        list-style: none;
-        padding: 0 8px;
-      }
-
-      aside li button {
-        width: 100%;
-        text-align: left;
-        background: none;
-        border: none;
-        padding: 10px 12px;
-        border-radius: var(--radius);
-        font-size: 14px;
-        color: var(--clr-text);
-        cursor: pointer;
-        transition: background var(--transition);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      aside li button:hover {
-        background: var(--clr-bg);
-      }
-
-      aside li button.selected {
-        background: rgba(78, 108, 242, 0.1);
-        color: var(--clr-accent);
-        font-weight: 600;
-      }
-
-      aside li button .icon {
-        width: 20px;
-        text-align: center;
-        font-size: 16px;
-        flex-shrink: 0;
-      }
-
-      aside .side-footer {
-        margin-top: auto;
-        padding: 16px 20px;
-        font-size: 12px;
-        color: var(--clr-text-dim);
-        border-top: 1px solid var(--clr-border);
-      }
-
-      /* ── Main content ─────────────────────────────────── */
-      main {
-        flex: 1;
-        overflow: hidden;
-        padding: 0;
-      }
-
-      #main-content {
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-      }
-
-      .card {
-        background: var(--clr-surface);
-        border: 1px solid var(--clr-border);
-        border-radius: var(--radius);
-        padding: 28px 32px;
-        box-shadow: var(--shadow-sm);
-        margin: 32px 40px;
-      }
-
-      /* A card that *is* the page: fills the viewport below the header and
-         scrolls its own content. Partials that fill `#main-content` use it
-         instead of restating the height budget. */
-      .page-card {
-        margin: 0.5rem;
-        height: calc(100vh - var(--header-h) - 1rem);
-        overflow-y: auto;
-      }
-
-      /* Button that reads as a link — the affordance for `gotoDbItem`, so it
-         lives beside the function rather than in each calling partial. */
-      .db-link {
-        background: none;
-        border: none;
-        padding: 0;
-        font: inherit;
-        color: var(--clr-accent);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        cursor: pointer;
-      }
-
-      .card h1 {
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 8px;
-      }
-
-      .card p {
-        color: var(--clr-text-dim);
-        line-height: 1.6;
-        margin-bottom: 20px;
-      }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: var(--radius);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          background var(--transition),
-          transform var(--transition);
-      }
-
-      .btn-primary {
-        background: var(--clr-accent);
-        color: var(--clr-accent-fg);
-      }
-
-      .btn-primary:hover {
-        background: #3d59d9;
-        transform: translateY(-1px);
-      }
-
-      .btn-outline {
-        background: transparent;
-        color: var(--clr-accent);
-        border: 1px solid var(--clr-accent);
-      }
-
-      .btn-outline:hover {
-        background: rgba(78, 108, 242, 0.08);
-      }
-
-      .btn-group {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      /* ── HTMX response area ───────────────────────────── */
-      #response-area {
-        margin-top: 24px;
-        min-height: 24px;
-      }
-
-      .response-card {
-        background: #f0f4ff;
-        border: 1px solid #d0d9f7;
-        border-radius: var(--radius);
-        padding: 16px 20px;
-        font-size: 14px;
-        color: var(--clr-text);
-        animation: fadeIn 0.3s ease;
-      }
-
-      .response-card code {
-        background: rgba(78, 108, 242, 0.1);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 13px;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(6px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      /* ── htmx loading indicator ───────────────────────── */
-      .htmx-indicator {
-        display: none;
-        margin-left: 8px;
-      }
-      .htmx-request .htmx-indicator,
-      .htmx-request.htmx-indicator {
-        display: inline-block;
-      }
-
-      /* ── Responsive ───────────────────────────────────── */
-      @media (max-width: 768px) {
-        aside {
-          display: none;
-        }
-        .card {
-          margin: 20px 16px;
-        }
-      }
-    </style>
+         13 KB over the wire all told, gzipped as the host serves them. Keep
+         the list in step with the partials — a sheet missing here still
+         works, it just flashes once. `uml/dsl.css` is deliberately absent:
+         that partial is never swapped in. -->
+    <link rel="preload" as="style" href="partials/fed-db.css" />
+    <link rel="preload" as="style" href="partials/deck-render.css" />
+    <link rel="preload" as="style" href="partials/fed-search-query.css" />
+    <link rel="preload" as="style" href="partials/layouts/index.css" />
+    <link rel="preload" as="style" href="partials/layouts/last-season.css" />
+    <link rel="preload" as="style" href="partials/layouts/layout-detail-page.css" />
+    <link rel="preload" as="style" href="partials/layouts/layout-drawer.css" />
+    <link rel="preload" as="style" href="partials/layouts/layout-dummy.css" />
+    <link rel="preload" as="style" href="partials/layouts/layout-expandable.css" />
+    <link rel="preload" as="style" href="partials/layouts/layout-master-detail.css" />
+    <link rel="preload" as="style" href="partials/uml/index.css" />
   </head>
 
   <body>
@@ -368,7 +67,23 @@
       <!-- ── Side pane ──────────────────────────────────── -->
       <aside>
         <h2>Navigation</h2>
-        <ul>
+        <!-- Inherited by every nav button, so they share one request queue with
+             `#main-content`'s own `hx-trigger="load"` fetch. htmx queues
+             per element, and the landing fetch is issued by a *different*
+             element than the button, so without this the two race for the same
+             target: on a cold first paint a reader can click a page before the
+             landing partial lands, and whichever response arrives last wins.
+             Landing last silently replaces the page that was asked for; the
+             page last lands after its own markup was already swapped away, and
+             a partial whose script reads its own DOM (`deck-render.html`) dies
+             on the first null — no page, no spinner, no visible error.
+
+             On the `<ul>` rather than on `#main-content`: `hx-sync` is
+             inherited, and swapped-in content would inherit it too — `layouts/`
+             fires six `hx-trigger="load"` fetches at once and they would then
+             abort each other. Nothing inside the nav issues a request of its
+             own, so here it reaches exactly the buttons it should. -->
+        <ul hx-sync="#main-content:replace" hx-indicator="#page-loading">
           <li>
             <button
               id="nav-database"
@@ -422,16 +137,6 @@
           </li>
           <li>
             <button
-              hx-get="partials/definitions.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#9638;</span> Definitions
-            </button>
-          </li>
-          <li>
-            <button
               hx-get="partials/about.html"
               hx-target="#main-content"
               hx-swap="innerHTML"
@@ -456,7 +161,30 @@
 
       <!-- ── Main content ───────────────────────────────── -->
       <main>
-        <div id="main-content" hx-trigger="load" hx-swap="innerHTML"></div>
+        <!-- Sibling of the target, not a child of it: a swap replaces
+             `#main-content`'s contents, so an indicator inside it would be
+             thrown away by the first swap it reported on. -->
+        <span id="page-loading" class="htmx-indicator spin" role="status">Loading…</span>
+        <!-- `hx-disinherit`, because `hx-indicator` is inherited and everything
+             swapped in here would point at the page pill too: `layouts/` fires
+             six fetches on load and the search box one per keystroke, none of
+             which is a page change. Disinherited, they fall back to htmx's
+             default — the requesting element — and each partial keeps whatever
+             loading affordance it has of its own. -->
+        <!-- The landing view, stated here rather than assigned by the boot
+             script. htmx's `load` trigger fires this on its own, so a fresh
+             visit needs no script to reach a page and there is nothing for a
+             script to race. The nav item that points at the same partial is
+             lit up at the bottom of this file; it reads this attribute rather
+             than writing it, so the two cannot disagree. -->
+        <div
+          id="main-content"
+          hx-get="partials/database.html"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+          hx-indicator="#page-loading"
+          hx-disinherit="hx-indicator"
+        ></div>
       </main>
     </div>
 
@@ -543,20 +271,21 @@
         document.getElementById('nav-database').click();
       }
 
-      // Landing view: whatever the first nav item points at. The menu is the
-      // single source of truth, so reordering it reorders the default. A `#db=`
-      // deep link overrides, naming a record only the Database page shows.
+      // Light up the nav item the landing view came from.
       //
-      // Assigned here rather than swapped after load: this script runs while
-      // parsing, before htmx processes `#main-content`'s `load` trigger, so
-      // there is no second fetch and no race over which response lands last.
-      const landing = new URLSearchParams(location.hash.slice(1)).has(DB_HASH_KEY)
-        ? document.getElementById('nav-database')
-        : document.querySelector('aside li button[hx-get]');
-      document
-        .getElementById('main-content')
-        .setAttribute('hx-get', landing.getAttribute('hx-get'));
-      selectNav(landing);
+      // Reads `#main-content`'s `hx-get` rather than writing it: the attribute
+      // is the landing page now, so this cannot introduce a second fetch, and
+      // the menu cannot end up highlighting a page other than the one that
+      // loaded. The trade is that reordering the nav no longer moves the
+      // landing — that lives in the markup above.
+      //
+      // A `#db=` deep link needs no special case: the landing is already the
+      // Database page, and `fed-db.html` reads the hash as it builds the tree.
+      const landingHref = document.getElementById('main-content').getAttribute('hx-get');
+      selectNav(
+        document.querySelector(`aside li button[hx-get="${landingHref}"]`) ??
+          document.querySelector('aside li button[hx-get]')
+      );
     </script>
   </body>
 </html>

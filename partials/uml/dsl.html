@@ -1,18 +1,9 @@
-<style>
-  .dsl-standalone {
-    width: 100%;
-    min-height: 80vh;
-    resize: vertical;
-    font-family: monospace;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    padding: 1rem;
-    border: 1px solid var(--clr-border);
-    border-radius: var(--radius);
-    background: var(--clr-surface);
-    color: var(--clr-text);
-  }
-</style>
+<!-- Relative to this file, unlike every other partial's sheet. This one is
+     never swapped into index.html: `uml/index.html` fetches it and reads the
+     textarea out of a detached DOMParser document, so the only context this
+     link ever resolves in is the file opened on its own — which is what
+     `.dsl-standalone` is named for. -->
+<link rel="stylesheet" href="dsl.css" />
 
 <div class="card">
   <h2>Mermaid DSL</h2>

@@ -1,0 +1,849 @@
+<!-- Archived: deprecated, and no longer in the sandbox's nav.
+
+     It is opened on its own now rather than swapped into index.html, so it
+     has to carry what the shell used to hand it: the token sheet its rules
+     reference (`--clr-accent`, `--clr-surface`, `--header-h`) and d3, which
+     it was the only page in the sandbox to use. Its own sheet is relative to
+     this file, since no document but this one ever resolves it. -->
+<link rel="stylesheet" href="../assets/shell.css" />
+<link rel="stylesheet" href="definitions.css" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+<div class="def-wrapper">
+  <!-- Layer 1: Background table -->
+  <table class="def-table">
+    <thead>
+      <tr>
+        <th class="frame-header" colspan="3">resourceFrames</th>
+        <th class="res-header">resources</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="zone-label">Ruter-Unibuss-2024</span></td>
+        <td><span class="zone-label">AtB-Tide-2025</span></td>
+        <td><span class="zone-label">&lt;?&gt;</span></td>
+        <td rowspan="3">
+          <span class="zone-label">physical material</span>
+        </td>
+      </tr>
+      <tr>
+        <td><span class="zone-label">Skyss-Tide-2026</span></td>
+        <td><span class="zone-label">&lt;?&gt;</span></td>
+        <td><span class="zone-label">AKT-VyBuss-2026</span></td>
+      </tr>
+      <tr>
+        <td><span class="zone-label">&lt;?&gt;</span></td>
+        <td><span class="zone-label">Jernbanedir-NorskeTog-2025</span></td>
+        <td><span class="zone-label">AtB-Boreal-2025</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Layer 2: D3 SVG overlay -->
+  <svg class="def-svg"></svg>
+</div>
+
+<script>
+  (function () {
+    const svg = d3.select('.def-svg');
+    const wrapper = document.querySelector('.def-wrapper');
+
+    // SVG drop-shadow filter
+    const defs = svg.append('defs');
+    const filter = defs
+      .append('filter')
+      .attr('id', 'box-shadow')
+      .attr('x', '-10%')
+      .attr('y', '-10%')
+      .attr('width', '130%')
+      .attr('height', '130%');
+    filter
+      .append('feDropShadow')
+      .attr('dx', 0)
+      .attr('dy', 2)
+      .attr('stdDeviation', 4)
+      .attr('flood-color', 'rgba(0,0,0,0.15)');
+
+    // Arrowhead marker for VehicleType→Vehicle edges (green)
+    defs
+      .append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 0 10 6')
+      .attr('refX', 10)
+      .attr('refY', 3)
+      .attr('markerWidth', 8)
+      .attr('markerHeight', 5)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,0 L10,3 L0,6 Z')
+      .attr('fill', 'rgba(100,200,120,0.6)');
+
+    // Arrowhead marker for Org→Role proximity edges (orange)
+    defs
+      .append('marker')
+      .attr('id', 'arrowhead-orange')
+      .attr('viewBox', '0 0 10 6')
+      .attr('refX', 10)
+      .attr('refY', 3)
+      .attr('markerWidth', 8)
+      .attr('markerHeight', 5)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,0 L10,3 L0,6 Z')
+      .attr('fill', 'rgba(224,120,48,0.6)');
+
+    // Measure table cells to compute zones
+    const table = document.querySelector('.def-table');
+    const bodyRows = table.querySelectorAll('tbody tr');
+
+    function getZones() {
+      const wrapperRect = wrapper.getBoundingClientRect();
+
+      const firstRowCells = bodyRows[0].querySelectorAll('td');
+      const cols = [];
+      for (let i = 0; i < firstRowCells.length; i++) {
+        const r = firstRowCells[i].getBoundingClientRect();
+        cols.push({ x: r.left - wrapperRect.left, w: r.width });
+      }
+
+      const rows = [];
+      for (const row of bodyRows) {
+        const r = row.getBoundingClientRect();
+        rows.push({ y: r.top - wrapperRect.top, h: r.height });
+      }
+
+      const resCol = cols[3] || cols[cols.length - 1];
+      const resY = rows[0].y;
+      const resH = rows.reduce((sum, r) => sum + r.h, 0);
+
+      return { cols, rows, resCol, resY, resH };
+    }
+
+    // Box size ratios (fraction of cell width / height)
+    const BOX_W_R = 0.42;
+    const BOX_H_R = 0.22;
+    const ORG_R = 0.85; // org width = BOX_W * ORG_R
+    const ROLE_R = 0.8; // role width = BOX_W * ROLE_R
+    const GAP_R = 0.022;
+    const PAD_R = 0.022;
+
+    // Computed pixel dimensions (recomputed on each layout pass)
+    let BOX_W = 150,
+      ORG_W = 128,
+      ROLE_W = 120,
+      BOX_H = 44,
+      GAP = 8,
+      PAD = 8;
+
+    // ── Frame boxes — per cell: PTA, PTA-role, PTO, ownership, [VehicleType] ──
+    // Grid packer (2 per row) places each Org left of its paired Role
+
+    const frameBoxes = [
+      // Row 0
+      // Cell (0,0): Ruter-Unibuss-2024
+      {
+        id: 'pta-ruter',
+        label: 'PTA: Ruter',
+        netex: 'Organisation',
+        title: 'Oslo/Viken — bus, tram, metro, ferry',
+        col: 0,
+        row: 0,
+        fill: '#3d59d9',
+      },
+      {
+        id: 'role-plan-0',
+        label: 'planning',
+        netex: 'StakeholderRole',
+        title: 'Planning role assignment',
+        col: 0,
+        row: 0,
+        fill: '#e07830',
+      },
+      {
+        id: 'pto-unibuss',
+        label: 'PTO: Unibuss',
+        netex: 'Organisation',
+        title: 'Bus, Oslo region',
+        col: 0,
+        row: 0,
+        fill: '#5a7af5',
+      },
+      {
+        id: 'role-own-0-0',
+        label: 'ownership',
+        netex: 'StakeholderRole',
+        title: 'Entity legal ownership assignment',
+        col: 0,
+        row: 0,
+        fill: '#d46a28',
+      },
+      {
+        id: 'vt-citybus',
+        label: 'City bus',
+        netex: 'VehicleType',
+        title: 'Standard low-floor city bus',
+        col: 0,
+        row: 0,
+        fill: 'rgba(144,238,144,0.85)',
+        textDark: true,
+      },
+
+      // Cell (1,0): AtB-Tide-2025
+      {
+        id: 'pta-atb',
+        label: 'PTA: AtB',
+        netex: 'Organisation',
+        title: 'Trøndelag',
+        col: 1,
+        row: 0,
+        fill: '#4e6cf2',
+      },
+      {
+        id: 'role-ops-0',
+        label: 'operation',
+        netex: 'StakeholderRole',
+        title: 'Operation role assignment',
+        col: 1,
+        row: 0,
+        fill: '#d46a28',
+      },
+      {
+        id: 'pto-tide',
+        label: 'PTO: Tide',
+        netex: 'Organisation',
+        title: 'Bus, western Norway',
+        col: 1,
+        row: 0,
+        fill: '#6b8af7',
+      },
+      {
+        id: 'role-own-1-0',
+        label: 'ownership',
+        netex: 'StakeholderRole',
+        title: 'Entity legal ownership assignment',
+        col: 1,
+        row: 0,
+        fill: '#d46a28',
+      },
+      {
+        id: 'vt-artic',
+        label: 'Articulated 18m',
+        netex: 'VehicleType',
+        title: '18-metre articulated bus',
+        col: 1,
+        row: 0,
+        fill: 'rgba(144,238,144,0.85)',
+        textDark: true,
+      },
+
+      // Row 1
+      // Cell (0,1): Skyss-Tide-2026
+      {
+        id: 'pta-skyss',
+        label: 'PTA: Skyss',
+        netex: 'Organisation',
+        title: 'Vestland',
+        col: 0,
+        row: 1,
+        fill: '#4e6cf2',
+      },
+      {
+        id: 'role-plan-01',
+        label: 'planning',
+        netex: 'StakeholderRole',
+        title: 'Planning role assignment',
+        col: 0,
+        row: 1,
+        fill: '#e07830',
+      },
+      {
+        id: 'pto-tide2',
+        label: 'PTO: Tide',
+        netex: 'Organisation',
+        title: 'Bus, western Norway (Vestland)',
+        col: 0,
+        row: 1,
+        fill: '#6b8af7',
+      },
+      {
+        id: 'role-own-0-1',
+        label: 'ownership',
+        netex: 'StakeholderRole',
+        title: 'Entity legal ownership assignment',
+        col: 0,
+        row: 1,
+        fill: '#d46a28',
+      },
+      {
+        id: 'vt-ferry',
+        label: 'Electric ferry',
+        netex: 'VehicleType',
+        title: 'Battery-electric ferry',
+        col: 0,
+        row: 1,
+        fill: 'rgba(144,238,144,0.85)',
+        textDark: true,
+      },
+
+      // Cell (2,1): AKT-VyBuss-2026
+      {
+        id: 'pta-akt',
+        label: 'PTA: AKT',
+        netex: 'Organisation',
+        title: 'Agder',
+        col: 2,
+        row: 1,
+        fill: '#4e6cf2',
+      },
+      {
+        id: 'role-plan-1',
+        label: 'planning',
+        netex: 'StakeholderRole',
+        title: 'Planning role assignment',
+        col: 2,
+        row: 1,
+        fill: '#d46a28',
+      },
+      {
+        id: 'pto-vybuss',
+        label: 'PTO: Vy Buss',
+        netex: 'Organisation',
+        title: 'Bus, national',
+        col: 2,
+        row: 1,
+        fill: '#6b8af7',
+      },
+      {
+        id: 'role-own-2-1',
+        label: 'ownership',
+        netex: 'StakeholderRole',
+        title: 'Entity legal ownership assignment',
+        col: 2,
+        row: 1,
+        fill: '#d46a28',
+      },
+      {
+        id: 'vt-citybus2',
+        label: 'City bus',
+        netex: 'VehicleType',
+        title: 'Standard low-floor city bus',
+        col: 2,
+        row: 1,
+        fill: 'rgba(144,238,144,0.85)',
+        textDark: true,
+      },
+
+      // Row 2
+
+      // Cell (1,2): Jernbanedir-NorskeTog-2025
+      {
+        id: 'pta-jdir',
+        label: 'PTA: Jernbanedir.',
+        netex: 'Organisation',
+        title: 'Railway Directorate — PTA for all rail',
+        col: 1,
+        row: 2,
+        fill: '#2c47b8',
+      },
+      {
+        id: 'role-les-0',
+        label: 'lessor',
+        netex: 'StakeholderRole',
+        title: 'Lessor role assignment',
+        col: 1,
+        row: 2,
+        fill: '#e07830',
+      },
+      {
+        id: 'pto-norsketog',
+        label: 'PTO: Norske Tog',
+        netex: 'Organisation',
+        title: 'Single PTO owning all train rolling stock',
+        col: 1,
+        row: 2,
+        fill: '#5a7af5',
+      },
+      {
+        id: 'role-own-1-2',
+        label: 'ownership',
+        netex: 'StakeholderRole',
+        title: 'Entity legal ownership assignment',
+        col: 1,
+        row: 2,
+        fill: '#d46a28',
+      },
+      {
+        id: 'vt-lightrail',
+        label: 'Light rail',
+        netex: 'VehicleType',
+        title: 'Light rail vehicle',
+        col: 1,
+        row: 2,
+        fill: 'rgba(144,238,144,0.85)',
+        textDark: true,
+      },
+      // Cell (2,2): AtB-Boreal-2025
+      {
+        id: 'pta-atb2',
+        label: 'PTA: AtB',
+        netex: 'Organisation',
+        title: 'Trøndelag (different contract)',
+        col: 2,
+        row: 2,
+        fill: '#4e6cf2',
+      },
+      {
+        id: 'role-ops-1',
+        label: 'operation',
+        netex: 'StakeholderRole',
+        title: 'Operation role assignment',
+        col: 2,
+        row: 2,
+        fill: '#d46a28',
+      },
+      {
+        id: 'pto-boreal2',
+        label: 'PTO: Boreal',
+        netex: 'Organisation',
+        title: 'Bus, northern Norway',
+        col: 2,
+        row: 2,
+        fill: '#5a7af5',
+      },
+      {
+        id: 'role-own-2-2',
+        label: 'ownership',
+        netex: 'StakeholderRole',
+        title: 'Entity legal ownership assignment',
+        col: 2,
+        row: 2,
+        fill: '#d46a28',
+      },
+      {
+        id: 'vt-emu',
+        label: 'Regional EMU',
+        netex: 'VehicleType',
+        title: 'Regional electric multiple unit',
+        col: 2,
+        row: 2,
+        fill: 'rgba(144,238,144,0.85)',
+        textDark: true,
+      },
+    ];
+
+    // ── Resource boxes (col 3, green tones) ──
+    const resourceBoxes = [
+      {
+        id: 'v-volvo7900',
+        label: 'Volvo 7900E',
+        netex: 'Vehicle',
+        icon: '\u{1F68C}',
+        title: 'Electric city bus, Oslo',
+        idx: 0,
+        fill: '#2d8a4e',
+      },
+      {
+        id: 'v-volvo8900',
+        label: 'Volvo 8900',
+        netex: 'Vehicle',
+        icon: '\u{1F68C}',
+        title: 'Diesel city bus',
+        idx: 1,
+        fill: '#338a52',
+      },
+      {
+        id: 'v-man',
+        label: "MAN Lion's City",
+        netex: 'Vehicle',
+        icon: '\u{1F68C}',
+        title: '18m articulated bus',
+        idx: 2,
+        fill: '#2d8a4e',
+      },
+      {
+        id: 'v-byd',
+        label: 'BYD K12A',
+        netex: 'Vehicle',
+        icon: '\u{1F68C}',
+        title: 'Electric articulated bus',
+        idx: 3,
+        fill: '#338a52',
+      },
+      {
+        id: 'v-ampere',
+        label: 'Ampere II',
+        netex: 'Vehicle',
+        icon: '\u26F4\uFE0F',
+        title: 'Battery-electric car ferry',
+        idx: 4,
+        fill: '#2d8a4e',
+      },
+      {
+        id: 'v-sl18',
+        label: 'SL18',
+        netex: 'Vehicle',
+        icon: '\u{1F68A}',
+        title: 'CAF Urbos light rail vehicle',
+        idx: 5,
+        fill: '#338a52',
+      },
+      {
+        id: 'v-flirt',
+        label: 'Stadler FLIRT',
+        netex: 'Vehicle',
+        icon: '\u{1F686}',
+        title: 'Regional electric multiple unit',
+        idx: 6,
+        fill: '#2d8a4e',
+      },
+      {
+        id: 'vehiclemodel',
+        label: 'Vehicle Model',
+        netex: 'VehicleModel',
+        title: 'Manufacturer model',
+        idx: 7,
+        fill: '#3aaf63',
+      },
+      {
+        id: 'equipment',
+        label: 'Equip. Profile',
+        netex: 'VehicleEquipmentProfile',
+        title: 'Equipment specs for a vehicle',
+        idx: 8,
+        fill: '#6fcf8a',
+        textDark: true,
+      },
+      {
+        id: 'deckplan',
+        label: 'Deck Plan',
+        netex: 'DeckPlan',
+        title: 'Physical interior layout',
+        idx: 9,
+        fill: '#a8e6be',
+        textDark: true,
+      },
+    ];
+
+    // ── Edges: VehicleType → Vehicle (hardcoded, green) ──
+    const edges = [
+      { from: 'vt-citybus', to: 'v-volvo7900' },
+      { from: 'vt-citybus', to: 'v-volvo8900' },
+      { from: 'vt-artic', to: 'v-man' },
+      { from: 'vt-artic', to: 'v-byd' },
+      { from: 'vt-ferry', to: 'v-ampere' },
+      { from: 'vt-lightrail', to: 'v-sl18' },
+      { from: 'vt-emu', to: 'v-flirt' },
+      { from: 'vt-citybus2', to: 'v-volvo7900' },
+    ];
+
+    // Identify Org and Role boxes for proximity edge detection
+    const orgIds = frameBoxes.filter(b => b.netex === 'Organisation').map(b => b.id);
+    const roleIds = frameBoxes.filter(b => b.id.startsWith('role-')).map(b => b.id);
+
+    // Width lookup per box (repopulated in computePositions)
+    const widthOf = {};
+
+    // Deterministic pseudo-random from a seed (0..1)
+    function jitter(seed) {
+      const x = Math.sin(seed * 9301 + 49297) * 49297;
+      return x - Math.floor(x);
+    }
+
+    function computePositions() {
+      const z = getZones();
+      const positions = {};
+
+      // Recompute dimensions from cell size
+      const cellW = z.cols[0].w;
+      const cellH = z.rows[0].h;
+      BOX_W = cellW * BOX_W_R;
+      ORG_W = BOX_W * ORG_R;
+      ROLE_W = BOX_W * ROLE_R;
+      BOX_H = cellH * BOX_H_R;
+      GAP = cellW * GAP_R;
+      PAD = cellW * PAD_R;
+
+      for (const b of [...frameBoxes, ...resourceBoxes]) {
+        widthOf[b.id] =
+          b.netex === 'StakeholderRole' ? ROLE_W : b.netex === 'Organisation' ? ORG_W : BOX_W;
+      }
+
+      // Split frame boxes: VehicleType separate from others
+      const gridBoxesByCell = {};
+      const vtBoxesByCell = {};
+      for (const box of frameBoxes) {
+        const key = `${box.col}-${box.row}`;
+        if (box.netex === 'VehicleType') {
+          if (!vtBoxesByCell[key]) vtBoxesByCell[key] = [];
+          vtBoxesByCell[key].push(box);
+        } else {
+          if (!gridBoxesByCell[key]) gridBoxesByCell[key] = [];
+          gridBoxesByCell[key].push(box);
+        }
+      }
+
+      // Pack boxes as Org→Role pairs within each cell
+      // Array order: [Org, Role, Org, Role, ...] so pairs are (0,1), (2,3), …
+      const pairW = ORG_W + GAP + ROLE_W;
+      for (const key of Object.keys(gridBoxesByCell)) {
+        const boxes = gridBoxesByCell[key];
+        const [colIdx, rowIdx] = key.split('-').map(Number);
+        const col = z.cols[colIdx];
+        const row = z.rows[rowIdx];
+
+        const startX = col.x + PAD;
+        const startY = row.y + PAD;
+        const availW = col.w - PAD * 2;
+        const pairsPerRow = Math.max(1, Math.floor((availW + GAP) / (pairW + GAP)));
+
+        const nPairs = Math.floor(boxes.length / 2);
+        for (let p = 0; p < nPairs; p++) {
+          const org = boxes[p * 2];
+          const role = boxes[p * 2 + 1];
+          const pairCol = p % pairsPerRow;
+          const pairRow = Math.floor(p / pairsPerRow);
+          // Shared jitter so the pair moves as a unit
+          const seed = colIdx * 17 + rowIdx * 31 + p * 7;
+          const jx = (jitter(seed) - 0.5) * cellW * 0.05;
+          const jy = (jitter(seed + 3) - 0.5) * cellH * 0.05;
+          const baseX = startX + pairCol * (pairW + GAP) + jx;
+          const baseY = startY + pairRow * (BOX_H + GAP) + jy;
+          positions[org.id] = { x: baseX, y: baseY };
+          positions[role.id] = { x: baseX + ORG_W + GAP, y: baseY };
+        }
+      }
+
+      // VehicleType boxes — placed directly below the Org→Role pairs
+      for (const key of Object.keys(vtBoxesByCell)) {
+        const boxes = vtBoxesByCell[key];
+        const [colIdx, rowIdx] = key.split('-').map(Number);
+        const col = z.cols[colIdx];
+        const row = z.rows[rowIdx];
+
+        const grid = gridBoxesByCell[key] || [];
+        const nPairs = Math.floor(grid.length / 2);
+        const startX = col.x + PAD;
+        const startY = row.y + PAD;
+        const vtY = startY + nPairs * (BOX_H + GAP);
+
+        boxes.forEach((box, i) => {
+          const seed = colIdx * 11 + rowIdx * 23 + i * 5;
+          const jx = (jitter(seed) - 0.5) * cellW * 0.033;
+          positions[box.id] = {
+            x: startX + jx,
+            y: vtY + i * (BOX_H + GAP),
+          };
+        });
+      }
+
+      // Resource boxes — evenly spaced in the resources column
+      const resSpacing = z.resH / (resourceBoxes.length + 1);
+      for (const box of resourceBoxes) {
+        positions[box.id] = {
+          x: z.resCol.x + (z.resCol.w - BOX_W) / 2,
+          y: z.resY + resSpacing * (box.idx + 1) - BOX_H / 2,
+        };
+      }
+
+      return positions;
+    }
+
+    let positions = computePositions();
+    // Live positions track drag movement for edge updates
+    let livePos = {};
+    let clipIdCounter = 0;
+
+    function edgePath(fromId, toId) {
+      const fp = livePos[fromId];
+      const tp = livePos[toId];
+      if (!fp || !tp) return '';
+      const x1 = fp.x + (widthOf[fromId] || BOX_W),
+        y1 = fp.y + BOX_H / 2;
+      const x2 = tp.x,
+        y2 = tp.y + BOX_H / 2;
+      const dx = (x2 - x1) * 0.4;
+      return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+    }
+
+    // Detect Org boxes near Role boxes for dynamic edge drawing
+    function findProximityEdges() {
+      const result = [];
+      for (const orgId of orgIds) {
+        const org = livePos[orgId];
+        if (!org) continue;
+        for (const roleId of roleIds) {
+          const role = livePos[roleId];
+          if (!role) continue;
+          const dx = role.x - (org.x + ORG_W);
+          const dy = Math.abs(org.y + BOX_H / 2 - (role.y + BOX_H / 2));
+          if (dx > -BOX_W * 0.07 && dx < BOX_W * 0.27 && dy < BOX_H * 0.45) {
+            result.push({ from: orgId, to: roleId });
+          }
+        }
+      }
+      return result;
+    }
+
+    function updateEdges() {
+      // Update hardcoded VehicleType→Vehicle edges (green)
+      svg.selectAll('.edge-path').each(function () {
+        const el = d3.select(this);
+        el.attr('d', edgePath(el.attr('data-from'), el.attr('data-to')));
+      });
+
+      // Recompute proximity Org→Role edges (orange)
+      const proxG = svg.select('.prox-edges');
+      proxG.selectAll('*').remove();
+      for (const { from, to } of findProximityEdges()) {
+        proxG
+          .append('path')
+          .attr('d', edgePath(from, to))
+          .attr('fill', 'none')
+          .attr('stroke', 'rgba(224,120,48,0.5)')
+          .attr('stroke-width', 1.5)
+          .attr('marker-end', 'url(#arrowhead-orange)')
+          .attr('pointer-events', 'none');
+      }
+    }
+
+    function renderBox(g, box, pos) {
+      const group = g
+        .append('g')
+        .attr('class', 'box-group')
+        .attr('data-id', box.id)
+        .attr('transform', `translate(${pos.x}, ${pos.y})`);
+
+      group.append('title').text(box.title);
+
+      const boxW =
+        box.netex === 'StakeholderRole' ? ROLE_W : box.netex === 'Organisation' ? ORG_W : BOX_W;
+      const rx = BOX_H * 0.18;
+      const clipId = 'clip-' + clipIdCounter++;
+      group
+        .append('clipPath')
+        .attr('id', clipId)
+        .append('rect')
+        .attr('width', boxW)
+        .attr('height', BOX_H)
+        .attr('rx', rx)
+        .attr('ry', rx);
+
+      group
+        .append('rect')
+        .attr('width', boxW)
+        .attr('height', BOX_H)
+        .attr('rx', rx)
+        .attr('ry', rx)
+        .attr('fill', box.fill)
+        .attr('filter', 'url(#box-shadow)');
+
+      const textDark = box.textDark || false;
+      const textG = group.append('g').attr('clip-path', `url(#${clipId})`);
+      const hasIcon = !!box.icon;
+      const textX = hasIcon ? boxW / 2 + BOX_H * 0.23 : boxW / 2;
+
+      if (hasIcon) {
+        textG
+          .append('text')
+          .attr('x', boxW * 0.09)
+          .attr('y', BOX_H * 0.68)
+          .style('font-size', `${BOX_H * 0.41}px`)
+          .attr('text-anchor', 'middle')
+          .text(box.icon);
+      }
+
+      textG
+        .append('text')
+        .attr('class', 'box-label-primary' + (textDark ? ' box-label-dark' : ''))
+        .attr('x', textX)
+        .attr('y', BOX_H * 0.39)
+        .attr('text-anchor', 'middle')
+        .style('font-size', `${BOX_H * 0.27}px`)
+        .text(box.label);
+
+      textG
+        .append('text')
+        .attr('class', 'box-label-secondary' + (textDark ? ' box-label-dark' : ''))
+        .attr('x', textX)
+        .attr('y', BOX_H * 0.77)
+        .attr('text-anchor', 'middle')
+        .style('font-size', `${BOX_H * 0.23}px`)
+        .text('(' + box.netex + ')');
+
+      // D3 drag — updates livePos and redraws edges
+      const boxId = box.id;
+      const drag = d3
+        .drag()
+        .on('start', function () {
+          d3.select(this).raise();
+        })
+        .on('drag', function (event) {
+          const curr = d3.select(this);
+          const [cx, cy] = curr
+            .attr('transform')
+            .match(/translate\(([^,]+),\s*([^)]+)\)/)
+            .slice(1)
+            .map(Number);
+          const nx = cx + event.dx,
+            ny = cy + event.dy;
+          curr.attr('transform', `translate(${nx}, ${ny})`);
+          livePos[boxId] = { x: nx, y: ny };
+          updateEdges();
+        });
+
+      group.call(drag);
+    }
+
+    function renderEdges(g) {
+      for (const edge of edges) {
+        g.append('path')
+          .attr('class', 'edge-path')
+          .attr('data-from', edge.from)
+          .attr('data-to', edge.to)
+          .attr('d', edgePath(edge.from, edge.to))
+          .attr('fill', 'none')
+          .attr('stroke', 'rgba(100,200,120,0.5)')
+          .attr('stroke-width', 1.5)
+          .attr('marker-end', 'url(#arrowhead)')
+          .attr('pointer-events', 'none');
+      }
+    }
+
+    function render() {
+      svg.selectAll('g.box-group, g.edges, g.prox-edges').remove();
+      clipIdCounter = 0;
+      // Sync livePos from computed positions
+      livePos = {};
+      for (const id of Object.keys(positions)) {
+        livePos[id] = { ...positions[id] };
+      }
+      const g = svg.append('g');
+
+      // Green edges behind boxes
+      const edgeG = g.append('g').attr('class', 'edges');
+      renderEdges(edgeG);
+
+      // Orange proximity edges behind boxes
+      g.append('g').attr('class', 'prox-edges');
+
+      for (const box of frameBoxes) {
+        renderBox(g, box, positions[box.id]);
+      }
+      for (const box of resourceBoxes) {
+        renderBox(g, box, positions[box.id]);
+      }
+
+      // Draw initial proximity edges
+      updateEdges();
+    }
+
+    render();
+
+    // Reposition on resize
+    window.addEventListener('resize', () => {
+      positions = computePositions();
+      render();
+    });
+  })();
+</script>

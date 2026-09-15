@@ -1,0 +1,14 @@
+/* `../../`, where the `<style>` block this came from wrote a bare filename.
+   The two resolve against different bases, in opposite directions: a `<link>`
+   href in a partial resolves against the *document* (index.html), but a url()
+   inside a sheet resolves against the *sheet*. Inline, this file's base was
+   the sandbox root; out here it is `partials/layouts/`. */
+.season-bg {
+  flex: 1;
+  background-image: url('../../hathor25.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: var(--radius);
+  min-height: 0;
+}
