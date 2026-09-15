@@ -167,7 +167,7 @@ A standalone HTML/D3 prototype at `concept-sandbox/` deployed via GitHub Pages. 
 | File | Purpose |
 |------|---------|
 | `concept-sandbox/index.html` | htmx shell with 3-pane layout |
-| `concept-sandbox/partials/definitions.html` | D3 SVG visualization (all logic in `<script>`) |
+| `concept-sandbox/archive/definitions.html` | Deprecated D3 SVG visualization — out of the nav, opened standalone |
 | `concept-sandbox/README.md` | Sandbox overview |
 
 ## Legacy Cleanup TODO

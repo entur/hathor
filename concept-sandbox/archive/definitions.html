@@ -1,6 +1,13 @@
-<!-- Document-relative: htmx inserts this link into index.html, so the href
-     resolves against *its* URL, not this partial's. -->
-<link rel="stylesheet" href="partials/definitions.css" />
+<!-- Archived: deprecated, and no longer in the sandbox's nav.
+
+     It is opened on its own now rather than swapped into index.html, so it
+     has to carry what the shell used to hand it: the token sheet its rules
+     reference (`--clr-accent`, `--clr-surface`, `--header-h`) and d3, which
+     it was the only page in the sandbox to use. Its own sheet is relative to
+     this file, since no document but this one ever resolves it. -->
+<link rel="stylesheet" href="../assets/shell.css" />
+<link rel="stylesheet" href="definitions.css" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
 <div class="def-wrapper">
   <!-- Layer 1: Background table -->

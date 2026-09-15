@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hathor – Concept Sandbox</title>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"
@@ -31,13 +30,12 @@
          here: browsers may warn that a preloaded sheet went unused on a visit
          that never navigates.
 
-         13 KB over the wire all told, gzipped as the host serves them, next to
-         d3's ~90 KB above. Keep the list in step with the partials — a sheet
-         missing here still works, it just flashes once. `uml/dsl.css` is
-         deliberately absent: that partial is never swapped in. -->
+         13 KB over the wire all told, gzipped as the host serves them. Keep
+         the list in step with the partials — a sheet missing here still
+         works, it just flashes once. `uml/dsl.css` is deliberately absent:
+         that partial is never swapped in. -->
     <link rel="preload" as="style" href="partials/fed-db.css" />
     <link rel="preload" as="style" href="partials/deck-render.css" />
-    <link rel="preload" as="style" href="partials/definitions.css" />
     <link rel="preload" as="style" href="partials/fed-search-query.css" />
     <link rel="preload" as="style" href="partials/layouts/index.css" />
     <link rel="preload" as="style" href="partials/layouts/last-season.css" />
@@ -69,8 +67,8 @@
       <!-- ── Side pane ──────────────────────────────────── -->
       <aside>
         <h2>Navigation</h2>
-        <!-- Inherited by every nav button, so all eight share one request queue
-             with `#main-content`'s own `hx-trigger="load"` fetch. htmx queues
+        <!-- Inherited by every nav button, so they share one request queue with
+             `#main-content`'s own `hx-trigger="load"` fetch. htmx queues
              per element, and the landing fetch is issued by a *different*
              element than the button, so without this the two race for the same
              target: on a cold first paint a reader can click a page before the
@@ -84,7 +82,7 @@
              inherited, and swapped-in content would inherit it too — `layouts/`
              fires six `hx-trigger="load"` fetches at once and they would then
              abort each other. Nothing inside the nav issues a request of its
-             own, so here it reaches exactly the eight buttons it should. -->
+             own, so here it reaches exactly the buttons it should. -->
         <ul hx-sync="#main-content:replace" hx-indicator="#page-loading">
           <li>
             <button
@@ -135,16 +133,6 @@
               onclick="selectNav(this)"
             >
               <span class="icon">&#9707;</span> UML
-            </button>
-          </li>
-          <li>
-            <button
-              hx-get="partials/definitions.html"
-              hx-target="#main-content"
-              hx-swap="innerHTML"
-              onclick="selectNav(this)"
-            >
-              <span class="icon">&#9638;</span> Definitions
             </button>
           </li>
           <li>
