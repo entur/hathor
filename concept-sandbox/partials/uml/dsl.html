@@ -1,6 +1,9 @@
-<!-- Document-relative: htmx inserts this link into index.html, so the href
-     resolves against *its* URL, not this partial's. -->
-<link rel="stylesheet" href="partials/uml/dsl.css" />
+<!-- Relative to this file, unlike every other partial's sheet. This one is
+     never swapped into index.html: `uml/index.html` fetches it and reads the
+     textarea out of a detached DOMParser document, so the only context this
+     link ever resolves in is the file opened on its own — which is what
+     `.dsl-standalone` is named for. -->
+<link rel="stylesheet" href="dsl.css" />
 
 <div class="card">
   <h2>Mermaid DSL</h2>

@@ -16,6 +16,9 @@
   --clr-text: #1e1e2e;
   --clr-text-dim: #6b7280;
   --clr-border: #e2e5ea;
+  /* The sandbox's code face, named once: eight rules across four sheets
+     were spelling this stack out in full. */
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
   --header-h: 56px;
   --side-w: 260px;
   --radius: 8px;
@@ -207,8 +210,8 @@ main {
 }
 
 /* A card that *is* the page: fills the viewport below the header and
-         scrolls its own content. Partials that fill `#main-content` use it
-         instead of restating the height budget. */
+   scrolls its own content. Partials that fill `#main-content` use it
+   instead of restating the height budget. */
 .page-card {
   margin: 0.5rem;
   height: calc(100vh - var(--header-h) - 1rem);
@@ -216,7 +219,7 @@ main {
 }
 
 /* Button that reads as a link — the affordance for `gotoDbItem`, so it
-         lives beside the function rather than in each calling partial. */
+   lives beside the function rather than in each calling partial. */
 .db-link {
   background: none;
   border: none;
@@ -315,11 +318,47 @@ main {
   }
 }
 
+/* ── Spinner ──────────────────────────────────────── */
+/* One ring for the sandbox. The shell's page pill and the deck page's stage
+   note are the same affordance, and this is the only sheet both can see —
+   `deck-render.css` unmounts with its page, so a spinner defined there could
+   never be reached from here. Consumers own `display` (the pill is hidden
+   until htmx raises it) and the ring's size, via `--spin-size`. */
+.spin {
+  align-items: center;
+  gap: 10px;
+  color: var(--clr-text-dim);
+}
+.spin::before {
+  content: '';
+  flex: 0 0 auto;
+  width: var(--spin-size, 16px);
+  height: var(--spin-size, 16px);
+  border: 2px solid var(--clr-border);
+  border-top-color: var(--clr-accent);
+  border-radius: 50%;
+  animation: spin-turn 0.7s linear infinite;
+}
+@keyframes spin-turn {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin::before {
+    animation: spin-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes spin-pulse {
+    50% {
+      opacity: 0.25;
+    }
+  }
+}
+
 /* ── htmx loading indicator ───────────────────────── */
-/* The generic contract, nothing more: hidden until htmx marks a request
-         in flight, either on an ancestor (the requesting element) or on this
-         element itself (an `hx-indicator` target). Appearance belongs to the
-         indicator, so a second one can look like wherever it sits. */
+/* The generic contract, nothing more: hidden until htmx marks a request in
+   flight, either on an ancestor (the requesting element) or on this element
+   itself (an `hx-indicator` target). Appearance belongs to the indicator. */
 .htmx-indicator {
   display: none;
 }
@@ -329,51 +368,24 @@ main {
 }
 
 /* The page indicator: one element for every swap into `#main-content`,
-         whether the shell's own landing fetch or a nav click. A pill rather
-         than a bar across the pane, because a nav click keeps the outgoing
-         page on screen until its replacement lands — the page is not gone,
-         it is busy, and the pill says so without hiding what is still there.
-         Centred, so on a cold start it sits in the middle of an empty pane. */
+   whether the shell's own landing fetch or a nav click. A pill rather than a
+   bar across the pane, because a nav click keeps the outgoing page on screen
+   until its replacement lands — the page is not gone, it is busy, and the
+   pill says so without hiding what is still there. Centred, so on a cold
+   start it sits in the middle of an empty pane. */
 #page-loading {
+  --spin-size: 14px;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 5;
-  align-items: center;
-  gap: 10px;
   padding: 10px 18px;
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
-  color: var(--clr-text-dim);
   font-size: 13px;
-}
-#page-loading::before {
-  content: '';
-  flex: 0 0 auto;
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--clr-border);
-  border-top-color: var(--clr-accent);
-  border-radius: 50%;
-  animation: nav-spin 0.7s linear infinite;
-}
-@keyframes nav-spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  #page-loading::before {
-    animation: nav-pulse 1.2s ease-in-out infinite;
-  }
-  @keyframes nav-pulse {
-    50% {
-      opacity: 0.25;
-    }
-  }
 }
 
 /* ── Responsive ───────────────────────────────────── */

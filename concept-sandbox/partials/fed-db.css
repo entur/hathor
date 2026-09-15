@@ -65,7 +65,7 @@
 .fed-db .tree-fields {
   padding: 4px 14px 8px 42px;
   font-size: 12px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   line-height: 1.8;
   color: var(--clr-text);
 }
@@ -92,8 +92,8 @@
   color: var(--clr-accent);
 }
 /* The icon has taken over pushing to the right edge, so the id must not
-     also claim the free space — two auto margins would split it and leave a
-     gap between the pair. */
+   also claim the free space — two auto margins would split it and leave a
+   gap between the pair. */
 .fed-db .db-deck-icon + .db-count {
   margin-left: 0;
 }

@@ -11,22 +11,33 @@
       href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11/styles/github.min.css"
     />
     <link rel="stylesheet" href="assets/shell.css" />
-    <!-- Every partial's sheet, warmed but not applied.
+    <!-- Every partial's sheet, warmed ahead of the swap that needs it.
 
          A partial carries its own `<link>` so its rules mount and unmount with
          it — that is what lets `uml/index.css` write a bare `.tab-bar` without
          reaching the Layouts page. But a link inserted by a swap does not block
          paint: the markup lands first and renders unstyled until its sheet
          arrives, which on a cold cache is a visible flash of the page you just
-         asked for. Preloading here spends that round trip while the reader is
-         still on the landing page, so the swap finds the sheet in cache.
+         asked for. Warming the sheet here spends that round trip up front, so
+         the swap finds it in cache.
 
-         46 KB in total, against the 92 KB d3 bundle above. Keep this list in
-         step with the partials — a sheet missing here still works, it just
-         flashes once. -->
+         `preload`, though only one of these is needed by *this* navigation
+         (`fed-db.css`, on the landing path index → database.html →
+         fed-db.html) and `prefetch` is the rel that means "a later navigation
+         will want this". Measured, and prefetch does not arrive in time: with
+         a 1.2s dwell before the click it left 6 of 12 sampled frames
+         unstyled, against 0 for preload — it idles exactly as specified, and
+         the flash comes back. The cost of preload is the honest one to pay
+         here: browsers may warn that a preloaded sheet went unused on a visit
+         that never navigates.
+
+         13 KB over the wire all told, gzipped as the host serves them, next to
+         d3's ~90 KB above. Keep the list in step with the partials — a sheet
+         missing here still works, it just flashes once. `uml/dsl.css` is
+         deliberately absent: that partial is never swapped in. -->
+    <link rel="preload" as="style" href="partials/fed-db.css" />
     <link rel="preload" as="style" href="partials/deck-render.css" />
     <link rel="preload" as="style" href="partials/definitions.css" />
-    <link rel="preload" as="style" href="partials/fed-db.css" />
     <link rel="preload" as="style" href="partials/fed-search-query.css" />
     <link rel="preload" as="style" href="partials/layouts/index.css" />
     <link rel="preload" as="style" href="partials/layouts/last-season.css" />
@@ -35,7 +46,6 @@
     <link rel="preload" as="style" href="partials/layouts/layout-dummy.css" />
     <link rel="preload" as="style" href="partials/layouts/layout-expandable.css" />
     <link rel="preload" as="style" href="partials/layouts/layout-master-detail.css" />
-    <link rel="preload" as="style" href="partials/uml/dsl.css" />
     <link rel="preload" as="style" href="partials/uml/index.css" />
   </head>
 
@@ -166,7 +176,7 @@
         <!-- Sibling of the target, not a child of it: a swap replaces
              `#main-content`'s contents, so an indicator inside it would be
              thrown away by the first swap it reported on. -->
-        <span id="page-loading" class="htmx-indicator" role="status">Loading…</span>
+        <span id="page-loading" class="htmx-indicator spin" role="status">Loading…</span>
         <!-- `hx-disinherit`, because `hx-indicator` is inherited and everything
              swapped in here would point at the page pill too: `layouts/` fires
              six fetches on load and the search box one per keystroke, none of

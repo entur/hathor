@@ -132,7 +132,7 @@
   accent-color: var(--clr-accent);
 }
 .fed-filter-suggestion {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
 }
 .fed-detail dl {
@@ -150,7 +150,7 @@
   overflow-wrap: anywhere;
 }
 /* Base `.db-link` is the shell's; the heading only needs it to stop
-     inheriting `h2`'s weight and size. */
+   inheriting `h2`'s weight and size. */
 .fed-detail .db-link {
   font-weight: 400;
   font-size: 13px;
