@@ -1,0 +1,13 @@
+.dsl-standalone {
+  width: 100%;
+  min-height: 80vh;
+  resize: vertical;
+  font-family: monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 1rem;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  background: var(--clr-surface);
+  color: var(--clr-text);
+}

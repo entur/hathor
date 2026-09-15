@@ -1,0 +1,504 @@
+.deck-grid {
+  display: flex;
+  gap: 0.5rem;
+  height: calc(100vh - var(--header-h) - 1rem);
+}
+.deck-grid > .card {
+  margin: 0;
+  min-width: 0;
+  overflow-y: auto;
+  height: 100%;
+}
+.deck-grid > .deck-list {
+  flex: 0 0 280px;
+}
+/* The two comparison panes: the decks we derived, and the drawing they were
+     derived from. Equal shares — neither is the reference copy of the other. */
+.deck-grid > .deck-stage,
+.deck-grid > .deck-art {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.deck-render h2 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  min-width: 0;
+}
+/* Which pane this is, and which plan it shows. Both panes draw the same
+     railcar, so an unlabelled heading would not say which drawing is which.
+     The label never wraps mid-word: at three columns the qualifier takes the
+     second line instead, which is the half that can be read at a glance. */
+.deck-render .pane-label {
+  white-space: nowrap;
+}
+/* Which record this is and which file it came from. Identity, so it rides
+     with the heading: in the footer the pair cost 389px of a 406px pane and
+     wrapped the figures onto a second row, while the heading had the room to
+     spare. `display: contents` hands both to the heading's own flex row, so
+     they take its gaps and sit on its baseline. */
+.deck-render .pane-src {
+  display: contents;
+}
+.deck-render h2 .db-link {
+  font-size: 12px;
+  font-weight: 400;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  white-space: nowrap;
+}
+.deck-render .pane-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--clr-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A third levelled row, between the heading and the drawing. Only the stage
+     pane has a control to put in it; the artwork's copy stays empty and is
+     there to take the same height, so the two drawings still start at the same
+     line on the page. */
+.deck-render .pane-tools {
+  flex-shrink: 0;
+  padding-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.deck-render .pane-tools label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+.deck-render .pane-tools input {
+  accent-color: var(--clr-accent);
+  cursor: pointer;
+  margin: 0;
+}
+.deck-render .pane-tools :checked + span {
+  color: var(--clr-accent);
+  font-weight: 600;
+}
+/* Amber, because the toggle beside it is the one control on the page that
+     makes the rendering disagree with the document it came from — the reader
+     wants the explanation before drawing a conclusion, not after. Sized in `em`
+     so it tracks the label it annotates rather than the root. Dark ink on the
+     amber rather than white: 9.1:1 against the fill, where white manages 1.5. */
+.deck-render .info-btn {
+  flex: 0 0 auto;
+  width: 1.65em;
+  height: 1.65em;
+  padding: 0;
+  border: 1px solid var(--info-amber-edge);
+  border-radius: 50%;
+  background: var(--info-amber);
+  color: var(--info-amber-ink);
+  font:
+    700 14px/1 Georgia,
+    'Times New Roman',
+    serif;
+  font-style: italic;
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    border-color var(--transition);
+}
+.deck-render .info-btn:hover,
+.deck-render .info-btn:focus-visible {
+  background: var(--info-amber-hi);
+  border-color: var(--info-amber-ink);
+}
+/* Reachable by a screen reader, out of the flex row's way. */
+.deck-render .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* ── The explainer dialog ── */
+.deck-info {
+  width: min(680px, calc(100vw - 2rem));
+  max-height: calc(100vh - 4rem);
+  /* Explicit: the shell's reset zeroes margins on every element, which takes
+       the `auto` a dialog otherwise centres itself with. */
+  margin: auto;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--clr-surface);
+  color: var(--clr-text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+}
+/* A column, so the header keeps its place and only the prose scrolls. Left
+     as a plain block the dialog itself is the scroller, which scrolls the
+     heading and the close button off the top with everything else.
+     Scoped to `[open]`: an author `display` beats the UA's
+     `dialog:not([open]) { display: none }` whatever its specificity, so
+     setting it unconditionally leaves the closed dialog laid out in the flow. */
+.deck-info[open] {
+  display: flex;
+  flex-direction: column;
+}
+.deck-info::backdrop {
+  background: rgba(24, 28, 59, 0.45);
+}
+/* The heading rides in the close button's form so `method="dialog"` closes
+     without script; it is the dialog's header either way. */
+.deck-info .info-close-form {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 20px 20px 12px;
+  background: var(--clr-surface);
+  border-bottom: 1px solid var(--clr-border);
+}
+.deck-info h3 {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 16px;
+}
+.deck-info .info-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--clr-text-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.deck-info .info-close:hover {
+  background: var(--clr-bg);
+  color: var(--clr-text);
+}
+/* A source line, not a heading: the patches this dialog describes live in a
+     module of their own, and the only useful thing to say about that is where
+     it is. Sits above the body so it stays put while the body is rebuilt. */
+.deck-info .info-source {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 20px;
+  background: var(--clr-bg);
+  border-bottom: 1px solid var(--clr-border);
+  font-size: 12px;
+}
+.deck-info .info-source a {
+  color: var(--clr-accent);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  text-decoration: none;
+}
+.deck-info .info-source a:hover,
+.deck-info .info-source a:focus-visible {
+  text-decoration: underline;
+}
+.deck-info .info-source .info-source-repo {
+  margin-left: auto;
+  color: var(--clr-text-dim);
+}
+.deck-info .info-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.deck-info .info-body p {
+  margin: 0 0 12px;
+  color: var(--clr-text-dim);
+}
+.deck-info .info-body h4 {
+  margin: 20px 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--clr-text-dim);
+}
+.deck-info .info-body h4:first-child {
+  margin-top: 0;
+}
+.deck-info .info-lede {
+  color: var(--clr-text);
+}
+/* The mirror stated as the arithmetic it is — the one place a figure says it
+     better than a sentence, so it is set apart from the prose rather than in it. */
+.deck-info .info-rule {
+  margin: 0 0 4px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--clr-accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(78, 108, 242, 0.07);
+  color: var(--clr-text);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12.5px;
+}
+.deck-info table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.deck-info th,
+.deck-info td {
+  text-align: left;
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--clr-border);
+  vertical-align: top;
+}
+.deck-info th {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--clr-text-dim);
+  font-weight: 600;
+}
+.deck-info .tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.deck-info .tag-on {
+  background: rgba(78, 108, 242, 0.12);
+  color: var(--clr-accent);
+}
+.deck-info .tag-off {
+  background: var(--clr-bg);
+  color: var(--clr-text-dim);
+}
+/* Before and after side by side where there is room, stacked where there is
+     not — the pair is the point, so they must not be read a scroll apart. */
+.deck-info .info-diff {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+.deck-info .info-diff figure {
+  margin: 0;
+  min-width: 0;
+}
+.deck-info .info-diff figcaption {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--clr-text-dim);
+}
+.deck-info pre {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  background: var(--clr-bg);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  tab-size: 2;
+  /* Wrapped, not scrolled. Two blocks are being read against each other, and
+       a scrollbar each means the halves of the comparison can slide out of
+       step — the long line is the id, which is also the line least worth
+       chasing sideways for. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* The one number on the line that moved. Marking it is what makes a pair of
+     near-identical blocks readable at a glance. */
+.deck-info pre mark {
+  background: rgba(78, 108, 242, 0.16);
+  color: var(--clr-accent);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 600;
+}
+.deck-info .info-note {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #b42318;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(180, 35, 24, 0.06);
+  color: var(--clr-text);
+  font-size: 13px;
+}
+.deck-list ul {
+  list-style: none;
+  padding: 0;
+}
+.deck-list li button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: background var(--transition);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.deck-list li button:hover {
+  background: var(--clr-bg);
+}
+.deck-list li button.selected {
+  background: rgba(78, 108, 242, 0.1);
+  color: var(--clr-accent);
+  font-weight: 600;
+}
+.deck-list .dp-id {
+  margin-left: auto;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--clr-text-dim);
+  font-weight: 400;
+}
+.deck-stage .stage-host,
+.deck-art .art-host {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: auto;
+}
+/* Figures only, now that identity sits in the heading — so the row is short
+     enough to stay a single line, and the drawings keep the height. */
+.deck-stage .stage-meta,
+.deck-art .art-meta {
+  flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--clr-border);
+  font-size: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: var(--clr-text-dim);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+/* A figure shrunk to `26.0…` is worse than one that wrapped. */
+.deck-stage .stage-meta > span,
+.deck-art .art-meta > span {
+  flex: 0 0 auto;
+}
+/* Scoped to the page, not to one pane: both show notes. */
+.deck-render .stage-note {
+  color: var(--clr-text-dim);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 0 12px;
+  text-align: center;
+}
+.deck-render .stage-note.error {
+  color: #b42318;
+}
+/* Refit animation length; see `fitArt`. The amber is the info button's, kept
+     local: the shell's palette has no warning colour, and one page's affordance
+     is not grounds for adding a token every other page inherits. */
+.deck-render {
+  --art-fit-ms: 240ms;
+  --info-amber: #fbd34d;
+  --info-amber-hi: #f7c01c;
+  --info-amber-edge: #d9a406;
+  --info-amber-ink: #3d2e00;
+}
+/* Drawn at its own scale, contained rather than stretched — a source drawing
+     resampled would stop being evidence of what the legacy system shows. The
+     white plate is the artwork's own ground, extended under any letterboxing. */
+.deck-art .art-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 4px;
+}
+/* Width matched to the rendering opposite, once that width is known. The
+     height then follows the drawing's own aspect ratio and the pane's height
+     stops having a say: a car taller than the pane scrolls rather than
+     shrinking off the scale it is being compared at. */
+.deck-art .art-img.fitted {
+  max-height: none;
+  height: auto;
+}
+.deck-art .art-img.animate {
+  transition: width var(--art-fit-ms) ease;
+}
+/* Centred, but reachable when a width-matched drawing outgrows the pane: an
+     item centred by `align-items` overflows equally at both ends and its top
+     is unscrollable. `safe` drops back to start-alignment at that point. */
+@supports (align-items: safe center) {
+  .deck-art .art-host {
+    align-items: safe center;
+  }
+}
+/* Bundle-load spinner. The renderer is a CDN ESM import with Vue bundled in,
+     so on a cold cache the stage sits empty long enough that a bare line of
+     text reads as a stall rather than as progress. */
+.deck-render .spin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--clr-text-dim);
+  font-size: 14px;
+}
+.deck-render .spin::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--clr-border);
+  border-top-color: var(--clr-accent);
+  border-radius: 50%;
+  animation: deck-spin 0.7s linear infinite;
+}
+.deck-stage .spin {
+  flex-direction: column;
+  gap: 12px;
+}
+.deck-stage .spin::before {
+  width: 28px;
+  height: 28px;
+}
+@keyframes deck-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deck-render .spin::before {
+    animation: deck-pulse 1.2s ease-in-out infinite;
+  }
+  .deck-art .art-img.animate {
+    transition: none;
+  }
+  @keyframes deck-pulse {
+    50% {
+      opacity: 0.25;
+    }
+  }
+}

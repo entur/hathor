@@ -1,0 +1,157 @@
+.fed-search {
+  position: relative;
+  margin: 0 0 24px;
+}
+.fed-search-input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--clr-surface);
+  color: var(--clr-text);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color var(--transition);
+}
+.fed-search-input:focus {
+  border-color: var(--clr-accent);
+}
+.fed-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--clr-text-dim);
+  font-size: 16px;
+  pointer-events: none;
+}
+.fed-search-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+}
+.fed-group-header {
+  padding: 6px 16px 4px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--clr-text-dim);
+  border-top: 1px solid var(--clr-border);
+  border-bottom: 1px solid var(--clr-border);
+}
+.fed-group-header:first-child {
+  border-top: none;
+}
+.fed-result-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  transition: background var(--transition);
+}
+.fed-result-item:hover,
+.fed-result-item[aria-selected='true'] {
+  background: rgba(78, 108, 242, 0.07);
+}
+.fed-item-name {
+  font-weight: 500;
+  color: var(--clr-text);
+}
+.fed-item-meta {
+  font-size: 13px;
+  color: var(--clr-text-dim);
+}
+.fed-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(78, 108, 242, 0.12);
+  color: var(--clr-accent);
+}
+.fed-empty {
+  padding: 12px 16px;
+  color: var(--clr-text-dim);
+  font-size: 14px;
+}
+.fed-skeleton {
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+}
+.fed-skeleton-bar {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--clr-border) 25%,
+    var(--clr-bg) 50%,
+    var(--clr-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.fed-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+.fed-filter-toggle input {
+  accent-color: var(--clr-accent);
+}
+.fed-filter-suggestion {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 13px;
+}
+.fed-detail dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+}
+.fed-detail dt {
+  font-weight: 600;
+  color: var(--clr-text-dim);
+  font-size: 13px;
+}
+.fed-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+/* Base `.db-link` is the shell's; the heading only needs it to stop
+     inheriting `h2`'s weight and size. */
+.fed-detail .db-link {
+  font-weight: 400;
+  font-size: 13px;
+}

@@ -1,0 +1,81 @@
+.uml-grid {
+  display: flex;
+  gap: 0.5rem;
+}
+.uml-grid > .card:first-child {
+  flex: 0 0 calc(76vw - 0.25rem - var(--side-w));
+}
+.uml-grid > .card:last-child {
+  flex: 0 0 calc(24vw - 0.25rem);
+  padding: 0.5rem;
+}
+.uml-grid > .card {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.notes-area {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.4rem;
+}
+.notes-area,
+.dsl-area {
+  min-height: calc(100vh - 200px);
+  width: 100%;
+  flex: 1;
+  resize: vertical;
+  font-family: monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 1rem;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  background: var(--clr-surface);
+  color: var(--clr-text);
+}
+.mermaid svg {
+  border-radius: var(--radius);
+}
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--clr-border);
+}
+.tab-bar button {
+  padding: 0.4rem 1.2rem;
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.tab-bar button.active {
+  color: var(--clr-accent);
+  border-bottom-color: var(--clr-accent);
+  font-weight: 600;
+}
+.tab-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+}
+.tab-panel.active {
+  display: flex;
+  flex: 1;
+}
+@media (max-width: 960px) {
+  .uml-grid {
+    flex-direction: column;
+  }
+  .uml-grid > .card {
+    flex: 1 1 auto;
+  }
+}
