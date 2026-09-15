@@ -1,7 +1,11 @@
+/* The whole viewport, where this used to hold back `--header-h` for the
+   shell's header bar. Archived, the page is opened on its own and renders no
+   header, so that reservation left the drawing 56px short with a dead strip
+   under it. */
 .def-wrapper {
   position: relative;
   width: 100%;
-  height: calc(100vh - var(--header-h));
+  height: 100vh;
   min-height: 500px;
 }
 
