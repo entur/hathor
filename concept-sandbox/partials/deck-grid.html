@@ -288,6 +288,11 @@
       if (!want) return;
       const mine = ++gen;
       const sel = want;
+      // Ahead of the fetch, not after it. The census is a figure about one
+      // deck, and left standing over the spinner it states the plan the reader
+      // has just left as if it were the one arriving — the amber says the grid
+      // disagrees with the document, so it must never be about another one.
+      noteEl.hidden = true;
       // Only on a first read of a plan: a cached one resolves inside this task
       // and would show the spinner for a single frame.
       if (!decks.has(sel.id)) waiting('Reading the lattice…');
@@ -297,14 +302,10 @@
         d = await deckOf(sel);
       } catch (e) {
         if (gen !== mine) return;
-        noteEl.hidden = true;
         return note(`Could not load this plan: ${e.message}`, true);
       }
       if (gen !== mine) return;
-      if (!d) {
-        noteEl.hidden = true;
-        return note('This fragment carries no decks.', true);
-      }
+      if (!d) return note('This fragment carries no decks.', true);
 
       const { placed, dropped } = cellCensus(d);
       noteEl.textContent = dropped

@@ -50,7 +50,12 @@
         <span class="sr-only">What this patch changes</span>
       </button>
     </div>
-    <div class="stage-host tab-panel active" id="deck-host" role="tabpanel">
+    <div
+      class="stage-host tab-panel active"
+      id="deck-host"
+      role="tabpanel"
+      aria-labelledby="deck-tab-exact"
+    >
       <span class="spin" role="status">Fetching the renderer…</span>
     </div>
     <!-- Its own partial, fetched on the first visit to the tab and never
@@ -62,6 +67,7 @@
       class="stage-host tab-panel"
       id="deck-grid-panel"
       role="tabpanel"
+      aria-labelledby="deck-tab-grid"
       hx-get="partials/deck-grid.html"
       hx-trigger="click from:#deck-tab-grid once"
       hx-swap="innerHTML"
