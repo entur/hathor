@@ -88,6 +88,64 @@
   color: var(--clr-accent);
   font-weight: 600;
 }
+/* ── The stage's two readings ── */
+/* Exact draws each spot where its coordinates put it; Grid draws the
+   SpotRow/SpotColumn lattice the same document declares. The tabs ride in the
+   tools row rather than taking one of their own: `levelRows` levels three rows
+   against the artwork pane, and a fourth would need a matching empty row over
+   there to keep the drawings starting at the same line. */
+.deck-render .tab-bar {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 4px;
+}
+.deck-render .tab-bar button {
+  padding: 2px 12px;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  transition:
+    color var(--transition),
+    border-color var(--transition),
+    background var(--transition);
+}
+.deck-render .tab-bar button:hover {
+  color: var(--clr-text);
+}
+.deck-render .tab-bar button.active {
+  border-color: var(--clr-accent);
+  background: rgba(78, 108, 242, 0.1);
+  color: var(--clr-accent);
+  font-weight: 600;
+}
+/* Same row, different jobs — the toggle belongs to the drawing, not to the
+   choice of drawing, so it sits at the far end of the row. */
+.deck-stage .pane-tools label {
+  margin-left: auto;
+}
+/* On Grid the patches have nothing to patch: that reading places spots by
+   reference and reads no coordinate. Dimmed in place rather than removed, so
+   the row keeps the height the artwork pane was levelled to. Applied to the
+   two controls rather than to the row, because opacity on the row would take
+   the tabs with it and a child cannot opt back out. */
+.deck-render .pane-tools.geometry-off label,
+.deck-render .pane-tools.geometry-off .info-btn {
+  opacity: 0.45;
+}
+.deck-render .pane-tools.geometry-off label,
+.deck-render .pane-tools.geometry-off label input {
+  cursor: default;
+}
+/* `:not(.active)` rather than a plain `.tab-panel { display: none }`:
+   `.stage-host` sets `display: flex` at the same specificity, so which one won
+   would otherwise come down to the order of the two blocks in this file. */
+.deck-render .tab-panel:not(.active) {
+  display: none;
+}
 /* Amber, because the toggle beside it is the one control on the page that
    makes the rendering disagree with the document it came from — the reader
    wants the explanation before drawing a conclusion, not after. Sized in `em`

@@ -41,9 +41,9 @@
  *
  * Two further exports exist for a caller that wants to *explain* the patches
  * rather than only apply them — `MIRRORED_ORIENTATION` / `INVERTED_ORIENTATION`
- * name which rewrite answers which fault — alongside `DECL_RE` and `kids`,
- * which are the patches' own plumbing, exported so a caller doing its own
- * traversal of these documents need not restate them.
+ * name which rewrite answers which fault — alongside `DECL_RE`, `kids` and
+ * `wrapFrag`, which are the patches' own plumbing, exported so a caller doing
+ * its own traversal or parse of these documents need not restate them.
  *
  * (1) is a contract gap: no document can be both valid and renderable, because
  * the fields the renderer needs are the fields the schema forbids. (2), (3) and
@@ -116,6 +116,26 @@ const SWAPPED_ORIENTATION = { ...MIRRORED_ORIENTATION, ...INVERTED_ORIENTATION }
  * @returns {Element[]} Matching children, in document order.
  */
 export const kids = (el, name) => [...el.children].filter(c => c.localName === name);
+
+/**
+ * Put a `<decks>` fragment back inside the document its parser expects.
+ *
+ * `parseNeTEx` reaches straight down a fixed
+ * `PublicationDelivery > … > ResourceFrame > deckPlans > DeckPlan` path, so a
+ * bare fragment yields nothing. Only the frame around the decks is rebuilt —
+ * neither renderer reads a field outside `<Deck>`.
+ *
+ * Here rather than in the page that draws with it: both readings of a deck
+ * parse, each through its own copy of the bundle, and a wrapper that drifted
+ * between them would have one pane silently showing nothing.
+ *
+ * @param {string} frag Contents of a fragment file, declaration included.
+ * @returns {string} A document `parseNeTEx` accepts.
+ */
+export const wrapFrag = frag =>
+  '<PublicationDelivery><dataObjects><CompositeFrame><frames><ResourceFrame><deckPlans>' +
+  `<DeckPlan>${frag.replace(DECL_RE, '')}</DeckPlan>` +
+  '</deckPlans></ResourceFrame></frames></CompositeFrame></dataObjects></PublicationDelivery>';
 
 /**
  * Parse a `<decks>` fragment, refusing anything that is not well-formed.
