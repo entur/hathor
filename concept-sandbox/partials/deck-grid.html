@@ -1,0 +1,334 @@
+<!-- Document-relative: htmx inserts this link into index.html, so the href
+     resolves against *its* URL, not this partial's. -->
+<link rel="stylesheet" href="partials/deck-grid.css" />
+
+<div class="deck-grid-pane">
+  <p class="grid-note" id="grid-note" hidden></p>
+  <div class="grid-host" id="grid-host">
+    <span class="spin" role="status">Fetching the grid renderer…</span>
+  </div>
+</div>
+
+<script type="module">
+  /**
+   * The selected deck as its own document declares it: the SpotRow × SpotColumn
+   * lattice, drawn by the editor package's published `DeckGridRenderer`.
+   *
+   * The pane next to this one places every spot by its coordinates, which is
+   * the reading worth checking against the legacy artwork. This one places each
+   * spot by the row and column it *names*, which is the reading a seat
+   * reservation resolves against — and the two can disagree while both look
+   * plausible alone.
+   *
+   * ## Why a second bundle
+   *
+   * `deck-render.html` loads the package's web-component entry, which registers
+   * `<deck-rendering>` and publishes nothing else. `DeckGridRenderer` is a Vue
+   * component on the package's main entry, so it arrives through esm.sh with a
+   * Vue runtime beside it instead.
+   *
+   * **The fragment is therefore parsed twice, once per entry, and must be.**
+   * The grid resolves a cell's occupant with `instanceof` against its own model
+   * classes, so a deck parsed by the other copy of those classes yields a
+   * lattice with every cell empty — no error, no warning, just a plausible
+   * empty grid. The two parses are the price of that, and they are cheap: the
+   * fragment is a file the Exact pane has already put in the browser's cache.
+   *
+   * Parsed from the bytes as served, with neither of the patches
+   * `deck-ed-alignment-functions.js` applies. Those exist to fight the exact
+   * renderer's reading of coordinates and orientation; this reading has no
+   * coordinates in it.
+   */
+  import { wrapFrag } from './deck-ed-alignment-functions.js';
+
+  /**
+   * The Vue entry, and a Vue to render it with.
+   *
+   * Both through esm.sh, and the `deps` pin is load-bearing: it resolves the
+   * package's `vue` import to the same module URL the first specifier does, so
+   * the component and the runtime mounting it share one Vue. Two copies mount
+   * without complaint and then fail to react to anything.
+   *
+   * Version pinned to the Exact pane's bundle — the two readings are of one
+   * package, and a version apart they would be of two.
+   */
+  const VUE_URL = 'https://esm.sh/vue@3.5.41';
+  const EDITOR_VUE_URL =
+    'https://esm.sh/@opentrainticketing/netex-deckplan-editor@2.0.5?deps=vue@3.5.41';
+
+  /**
+   * The package's own stylesheet — Tailwind, including the `ott-*` brand
+   * theme the grid is written in.
+   *
+   * Reachable here only because jsdelivr serves files by path: the package's
+   * `exports` map does not expose it, which is why the Exact pane has to paint
+   * its rendering by hand from the sandbox's tokens. Unstyled, the grid is a
+   * column of bare labels.
+   *
+   * It carries Tailwind's preflight, which resets every element it can reach —
+   * so it is adopted into a shadow root, and reaches nothing on this page.
+   */
+  const EDITOR_CSS_URL =
+    'https://cdn.jsdelivr.net/npm/@opentrainticketing/netex-deckplan-editor@2.0.5/dist/netex-deckplan-editor.css';
+
+  /**
+   * Tailwind v4's registered custom properties, which have to be registered on
+   * the document to take effect.
+   *
+   * Its utilities are written against them — `.border { border-style:
+   * var(--tw-border-style); border-width: 1px }` — and `@property` only
+   * registers from a *document's* stylesheets. Adopted into a shadow root the
+   * rules are ignored, the var resolves to nothing, and the declaration dies
+   * with it: measured, every `border-*` computes to `0px none` while its colour
+   * resolves fine, and `shadow-*` and `scale-*` go the same way. The grid loses
+   * its gridlines and its card edge but keeps its colours, which reads as a
+   * flat design rather than as missing CSS.
+   *
+   * So these are lifted out of the package's sheet and adopted on the document,
+   * where they do register. They match no element and only name initial values
+   * for `--tw-*`, which nothing else on this page reads.
+   */
+  const AT_PROPERTY_RE = /@property\s+--[\w-]+\s*\{[^}]*\}/g;
+
+  /** Cell size in px is `scale × 6`, so 8 lands a 48px cell. */
+  const GRID_SCALE = 8;
+
+  /**
+   * What read-only costs, on top of ignoring the component's four emits.
+   *
+   * Adopted after the package's sheet, so these win on order at equal
+   * specificity — except `cursor-grabbing`, which Tailwind writes behind an
+   * `:active` and has to be met with the same.
+   */
+  const RO_CSS = `
+    /* The corner is the editor's "edit grid" button. Hidden rather than
+       removed: it is a cell of the grid, and dropping it would shift every
+       column label one place left. */
+    .grid > button:first-child { visibility: hidden; }
+    /* A spot is a drag handle upstream. Dragging one here does nothing — the
+       move is emitted and nothing listens — so it should not invite the drag. */
+    .cursor-grab,
+    .active\\:cursor-grabbing:active { cursor: default; }
+  `;
+
+  const hostEl = document.getElementById('grid-host');
+  const noteEl = document.getElementById('grid-note');
+  /** Publisher of the selection: the page this panel is a tab of. */
+  const stageEl = document.querySelector('.deck-render');
+
+  /** Replace the pane's contents with a line of prose. */
+  const note = (msg, isError) => {
+    const el = document.createElement('span');
+    el.className = `stage-note${isError ? ' error' : ''}`;
+    el.textContent = msg;
+    hostEl.replaceChildren(el);
+  };
+
+  /** Same, for a step still in flight. */
+  const waiting = msg => {
+    const el = document.createElement('span');
+    el.className = 'spin';
+    el.setAttribute('role', 'status');
+    el.textContent = msg;
+    hostEl.replaceChildren(el);
+  };
+
+  /**
+   * The plan the list is showing as selected, read off the page.
+   *
+   * This panel is swapped in on its first visit, which is usually several
+   * selections after the first — so the current one is read from where
+   * `deck-render.html` leaves it rather than waited for.
+   *
+   * @returns {{id: string, name: string, ref: string}|null} The selection.
+   */
+  const readSelection = () => {
+    const { planId, planName, planRef } = stageEl.dataset;
+    return planId && planRef ? { id: planId, name: planName, ref: planRef } : null;
+  };
+
+  // Vue's dev/prod branches survive some builds as bare `process.env.NODE_ENV`
+  // reads, which throw on a page that loads the module directly. The Exact
+  // pane shims this too and runs first; repeated here so this partial does not
+  // depend on that being true.
+  globalThis.process ??= { env: { NODE_ENV: 'production' } };
+
+  const [vue, ed, css] = await Promise.all([
+    import(VUE_URL).catch(() => null),
+    import(EDITOR_VUE_URL).catch(() => null),
+    fetch(EDITOR_CSS_URL)
+      .then(r => (r.ok ? r.text() : null))
+      .catch(() => null),
+  ]);
+
+  if (!vue || !ed) {
+    note('Could not load the grid renderer.', true);
+  } else {
+    /** Decks already parsed, by plan id. `null` for a fragment carrying none. */
+    const decks = new Map();
+
+    /**
+     * One plan's first deck, parsed through *this* bundle on first use.
+     *
+     * The first deck, because that is the one the pane opposite draws — two
+     * panes reading different decks of the same car would compare nothing.
+     *
+     * @param {{id: string, ref: string}} sel Selection to resolve.
+     * @returns {Promise<object|null>} The deck, or null if the fragment has none.
+     * @throws {Error} If the fragment cannot be fetched.
+     */
+    const deckOf = async sel => {
+      if (!decks.has(sel.id)) {
+        const res = await fetch(sel.ref);
+        if (!res.ok) throw new Error(`${res.status} on ${sel.ref}`);
+        decks.set(sel.id, ed.parseNeTEx(wrapFrag(await res.text()))[0]?.decks?.[0] ?? null);
+      }
+      return decks.get(sel.id);
+    };
+
+    /**
+     * How many of a deck's spots the grid can actually show.
+     *
+     * `DeckGridRenderer` keys its spots by `column|row` and keeps the first
+     * arrival, dropping later ones without a word (the collision `throw` is
+     * commented out upstream). A third of this corpus has such pairs — 17 of 53
+     * on one plan — so a grid read without this figure understates the deck it
+     * is drawing, and looks complete while doing it.
+     *
+     * Counted here rather than taken from the component, which does not report
+     * it. Spots naming no cell at all are not counted either way: they are the
+     * exact renderer's to draw, and this reading has nowhere to put them.
+     *
+     * @param {object} deck Deck from this bundle's parser.
+     * @returns {{placed: number, dropped: number}} Spots drawn, and spots lost
+     *   to a cell another spot already held.
+     */
+    const cellCensus = deck => {
+      const seen = new Set();
+      let placed = 0,
+        dropped = 0;
+      for (const space of deck.deckspaces ?? []) {
+        if (!(space instanceof ed.PassengerSpace)) continue;
+        for (const spot of [...(space.luggageSpots ?? []), ...(space.passengerSpots ?? [])]) {
+          if (!spot || spot instanceof ed.LuggageSpotRef || spot instanceof ed.PassengerSpotRef)
+            continue;
+          if (!(spot.SpotColumnRef && spot.SpotRowRef)) continue;
+          const cell = `${spot.SpotColumnRef.attr_ref}|${spot.SpotRowRef.attr_ref}`;
+          if (seen.has(cell)) dropped++;
+          else {
+            seen.add(cell);
+            placed++;
+          }
+        }
+      }
+      return { placed, dropped };
+    };
+
+    /**
+     * The grid, mounted once into a shadow root of its own.
+     *
+     * The shadow root is what keeps Tailwind's preflight — and the brand
+     * theme's `Poppins`, white plate and navy accents — off the page around it.
+     * Vue mounts onto an element, not a root, so it gets a `<div>` inside.
+     */
+    const shadowHost = document.createElement('div');
+    shadowHost.className = 'grid-shadow';
+    const shadow = shadowHost.attachShadow({ mode: 'open' });
+    if (css) {
+      // Once per page: leaving the tab and coming back swaps this partial in
+      // again, and a second registration of the same property is a no-op that
+      // still costs a sheet.
+      if (!window.__ottTwProps) {
+        const rules = css.match(AT_PROPERTY_RE) ?? [];
+        const props = new CSSStyleSheet();
+        props.replaceSync(rules.join('\n'));
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, props];
+        window.__ottTwProps = true;
+      }
+      const pkg = new CSSStyleSheet();
+      pkg.replaceSync(css);
+      const ro = new CSSStyleSheet();
+      ro.replaceSync(RO_CSS);
+      shadow.adoptedStyleSheets = [pkg, ro];
+    }
+    const mountEl = document.createElement('div');
+    shadow.append(mountEl);
+
+    /**
+     * The deck on screen. `shallowRef` because a deck is a tree of model
+     * instances that is replaced wholesale and never edited in place — making
+     * one deeply reactive would walk every spot for nothing.
+     */
+    const deck = vue.shallowRef(null);
+
+    // One app for the life of the panel: a selection swaps the ref, not the
+    // mount. The component's `editGrid`, `select`, `drop` and `updateElement`
+    // are left unbound — this is a reading, not an editor.
+    vue
+      .createApp({
+        render: () =>
+          deck.value ? vue.h(ed.DeckGridRenderer, { deck: deck.value, scale: GRID_SCALE }) : null,
+      })
+      .mount(mountEl);
+
+    /**
+     * Draw the latest selection, if there is one and the bundles have landed.
+     *
+     * Every step past the fetch checks it has not been overtaken: a reader can
+     * change plans while a fragment is in flight, and the slower response must
+     * not put its deck on screen after the newer one.
+     */
+    /** Latest selection. */
+    let want = null;
+
+    /** Renders started, so a slow one can tell it has been overtaken. */
+    let gen = 0;
+
+    const draw = async () => {
+      if (!want) return;
+      const mine = ++gen;
+      const sel = want;
+      // Only on a first read of a plan: a cached one resolves inside this task
+      // and would show the spinner for a single frame.
+      if (!decks.has(sel.id)) waiting('Reading the lattice…');
+
+      let d;
+      try {
+        d = await deckOf(sel);
+      } catch (e) {
+        if (gen !== mine) return;
+        noteEl.hidden = true;
+        return note(`Could not load this plan: ${e.message}`, true);
+      }
+      if (gen !== mine) return;
+      if (!d) {
+        noteEl.hidden = true;
+        return note('This fragment carries no decks.', true);
+      }
+
+      const { placed, dropped } = cellCensus(d);
+      noteEl.textContent = dropped
+        ? `${dropped} of ${placed + dropped} spots name a cell another spot already holds, ` +
+          'and are not drawn.'
+        : '';
+      noteEl.hidden = !dropped;
+
+      deck.value = d;
+      // Replaces whatever the pane was showing — a spinner, or a note about a
+      // plan the reader has moved on from.
+      if (hostEl.firstChild !== shadowHost) hostEl.replaceChildren(shadowHost);
+    };
+
+    // Subscribed only now, with everything it needs to draw in place. Nothing
+    // is missed by arriving late: the selections made while the bundles were on
+    // the wire are all in `dataset`, and it is the last of them that matters.
+    stageEl.addEventListener('deck:selected', e => {
+      want = e.detail;
+      draw();
+    });
+
+    want = readSelection();
+    if (want) draw();
+    else note('Select a deck plan to see its lattice.');
+  }
+</script>

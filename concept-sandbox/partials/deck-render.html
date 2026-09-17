@@ -15,6 +15,29 @@
       <span class="pane-src" id="deck-src"></span>
     </h2>
     <div class="pane-tools">
+      <!-- Two readings of the same deck, not two views of the page: the pane's
+           heading, figures and the drawing opposite all stay as they are. -->
+      <div class="tab-bar" role="tablist" aria-label="Deck rendering">
+        <button
+          type="button"
+          id="deck-tab-exact"
+          class="active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="deck-host"
+        >
+          Exact
+        </button>
+        <button
+          type="button"
+          id="deck-tab-grid"
+          role="tab"
+          aria-selected="false"
+          aria-controls="deck-grid-panel"
+        >
+          Grid
+        </button>
+      </div>
       <label>
         <input type="checkbox" id="deck-hack" />
         <span>Hack anchoring and rotation</span>
@@ -27,9 +50,22 @@
         <span class="sr-only">What this patch changes</span>
       </button>
     </div>
-    <div class="stage-host" id="deck-host">
+    <div class="stage-host tab-panel active" id="deck-host" role="tabpanel">
       <span class="spin" role="status">Fetching the renderer…</span>
     </div>
+    <!-- Its own partial, fetched on the first visit to the tab and never
+         again: it pulls a second copy of the editor bundle (the Vue entry,
+         where `DeckGridRenderer` is published) and a reader who never opens
+         the tab should not pay for it. `once` is htmx's, so the swap happens
+         on the first click only. -->
+    <div
+      class="stage-host tab-panel"
+      id="deck-grid-panel"
+      role="tabpanel"
+      hx-get="partials/deck-grid.html"
+      hx-trigger="click from:#deck-tab-grid once"
+      hx-swap="innerHTML"
+    ></div>
     <div class="stage-meta" id="deck-meta"></div>
   </div>
   <div class="card deck-art">
@@ -98,12 +134,12 @@
    * to read them without the sandbox around them.
    */
   import {
-    DECL_RE,
     INVERTED_ORIENTATION,
     MIRRORED_ORIENTATION,
     hackXMLForDeckEdPlacement,
     invalidateXMLForDeckExtent,
     kids,
+    wrapFrag,
   } from './deck-ed-alignment-functions.js';
 
   /**
@@ -144,6 +180,9 @@
   const dialogEl = document.getElementById('deck-hack-dialog');
   const infoBodyEl = document.getElementById('deck-hack-dialog-body');
   const toolsEl = document.querySelector('.deck-stage .pane-tools');
+  const tabExactEl = document.getElementById('deck-tab-exact');
+  const tabGridEl = document.getElementById('deck-tab-grid');
+  const gridPanelEl = document.getElementById('deck-grid-panel');
   const artToolsEl = document.getElementById('deck-art-tools');
 
   /**
@@ -344,22 +383,6 @@
     };
 
     /**
-     * Put a `<decks>` fragment back inside the document its parser expects.
-     *
-     * `parseNeTEx` reaches straight down a fixed
-     * `PublicationDelivery > … > ResourceFrame > deckPlans > DeckPlan` path, so
-     * a bare fragment yields nothing. Only the frame around the decks is
-     * rebuilt — the renderer reads no field outside `<Deck>`.
-     *
-     * @param {string} frag Contents of a fragment file, declaration included.
-     * @returns {string} A document `parseNeTEx` accepts.
-     */
-    const wrapFrag = frag =>
-      '<PublicationDelivery><dataObjects><CompositeFrame><frames><ResourceFrame><deckPlans>' +
-      `<DeckPlan>${frag.replace(DECL_RE, '')}</DeckPlan>` +
-      '</deckPlans></ResourceFrame></frames></CompositeFrame></dataObjects></PublicationDelivery>';
-
-    /**
      * Fragments already fetched, keyed by plan id — the bytes as served, before
      * either patch. Both readings of a plan are made from this one copy, so
      * toggling the hack costs a parse rather than a round trip. A failed fetch
@@ -511,6 +534,21 @@
       const hacked = hackEl.checked;
       current = plan;
       titleEl.textContent = plan.name;
+      // Announced for the Grid panel, and left on the page as well: that panel
+      // is a partial of its own and is swapped in on its first visit, which is
+      // usually several selections after the first one was made. Ahead of the
+      // await, so a reader who opens the tab mid-fetch still finds the plan the
+      // list is showing as selected.
+      Object.assign(grid.dataset, {
+        planId: plan.id,
+        planName: plan.name,
+        planRef: plan[DECKS_REF_KEY],
+      });
+      grid.dispatchEvent(
+        new CustomEvent('deck:selected', {
+          detail: { id: plan.id, name: plan.name, ref: plan[DECKS_REF_KEY] },
+        })
+      );
       // Neither waits on the decks: both are read off the record itself, and
       // the heading is one of the rows `levelRows` measures, so it has to be
       // whole before anything is fitted to what it leaves.
@@ -594,6 +632,43 @@
     // toggle is a comparison control, and one worth making is the same car
     // before and after, not two different cars.
     hackEl.onchange = () => current && draw(current);
+
+    /** The stage's two readings, as `[key, tab, panel]`. */
+    const TABS = [
+      ['exact', tabExactEl, hostEl],
+      ['grid', tabGridEl, gridPanelEl],
+    ];
+
+    /**
+     * Show one reading of the selected deck, hiding the other.
+     *
+     * Exact is redrawn on every activation. `fit` sizes the deck against the
+     * host it is going into, and a host that was `display: none` while the
+     * reader changed plans measures zero — so the element built then sits at
+     * `MIN_SCALE`, and nothing else would ever re-fit it.
+     *
+     * The geometry patches are Exact's alone: the grid places spots by
+     * `SpotRowRef`/`SpotColumnRef` and reads no coordinate, so on that tab the
+     * toggle is a control that changes nothing. Disabled rather than hidden —
+     * the row is one of the three `levelRows` measures against the artwork
+     * pane, and a control that vanished would move the drawings apart.
+     *
+     * @param {'exact'|'grid'} key Reading to show.
+     */
+    const showTab = key => {
+      for (const [k, tab, panel] of TABS) {
+        const on = k === key;
+        tab.classList.toggle('active', on);
+        tab.setAttribute('aria-selected', String(on));
+        panel.classList.toggle('active', on);
+      }
+      const exact = key === 'exact';
+      hackEl.disabled = infoBtn.disabled = !exact;
+      toolsEl.classList.toggle('geometry-off', !exact);
+      if (exact && current) draw(current);
+    };
+
+    for (const [key, tab] of TABS) tab.onclick = () => showTab(key);
 
     /**
      * First descendant of `el` by local name, namespace ignored.

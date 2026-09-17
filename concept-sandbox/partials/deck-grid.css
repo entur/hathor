@@ -1,0 +1,44 @@
+/* The grid itself is the package's component, drawn inside a shadow root with
+   the package's own stylesheet — nothing here can reach it, and nothing it
+   carries can reach out. These are the rules for the pane around it. */
+#deck-grid-panel {
+  /* Overrides `.stage-host`'s centring. The grid is a table, read from its
+     top-left corner, and a centred one that outgrows the pane cannot be
+     scrolled back to its first row. */
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+.deck-grid-pane {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.deck-grid-pane .grid-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.deck-grid-pane .grid-shadow {
+  flex: 0 0 auto;
+}
+/* Spots the lattice cannot show. Amber, and above the drawing rather than
+   under it: it is the one thing on this tab that makes the grid disagree with
+   the document it came from, and a reader wants that before drawing a
+   conclusion, not after. The tokens are the info button's, declared on
+   `.deck-render` and inherited here. */
+.deck-grid-pane .grid-note {
+  flex: 0 0 auto;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--info-amber-edge);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: rgba(251, 211, 77, 0.14);
+  color: var(--clr-text);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
