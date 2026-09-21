@@ -141,24 +141,23 @@ export default function DeckPlanForm({
         <Box>
           {fields}
           <Divider sx={{ my: 1.5 }} />
-          {/* Scoped to the strip so a slow body fetch never blocks typing. */}
-          <BodyState
+          {/* Scoped to the strip so a slow body fetch never blocks typing.
+              `value.id` is the persisted NeTEx id — same one the save patches
+              by, so the drawn plan and the patched plan match. */}
+          <DeckStrip
+            xml={xml}
+            id={value.id || undefined}
             loading={loading}
             fetchError={fetchError}
             onRetry={onRetry}
-            testIdPrefix="deck-plan-decks"
-          >
-            {/* `value.id` is the persisted NeTEx id — same one the save
-                patches by, so the drawn plan and the patched plan match. */}
-            <DeckStrip xml={xml} id={value.id || undefined} />
-          </BodyState>
+          />
         </Box>
       )}
       {tab === 'xml' && (
         <Box data-testid="deck-plan-tab-xml">
           <BodyState
             loading={loading}
-            fetchError={fetchError}
+            error={fetchError}
             onRetry={onRetry}
             testIdPrefix="deck-plan-xml"
           >
@@ -183,11 +182,12 @@ export default function DeckPlanForm({
  */
 function BodyState({
   loading,
-  fetchError,
+  error,
   onRetry,
   testIdPrefix,
   children,
-}: Pick<DeckPlanFormProps, 'loading' | 'fetchError' | 'onRetry'> & {
+}: Pick<DeckPlanFormProps, 'loading' | 'onRetry'> & {
+  error?: string | null;
   testIdPrefix: string;
   children: ReactNode;
 }) {
@@ -199,11 +199,11 @@ function BodyState({
       </Box>
     );
   }
-  if (fetchError) {
+  if (error) {
     return (
       <Stack spacing={1}>
         <Alert severity="error" data-testid={`${testIdPrefix}-fetch-error`}>
-          {fetchError}
+          {error}
         </Alert>
         <Box>
           <Button onClick={onRetry} size="small" variant="outlined">
@@ -226,55 +226,70 @@ function BodyState({
  * `id` picks the plan out of a multi-plan envelope — the same id the save
  * patches by. Undefined (the form has not hydrated yet) falls back to the
  * first plan rather than throwing on a blank id.
+ *
+ * Owns the whole slot: fetching the body and parsing it are two phases of one
+ * wait, so they share a single `BodyState` rather than each drawing their own
+ * spinner and alert into the same space.
  */
-function DeckStrip({ xml, id }: { xml: string; id?: string }) {
+function DeckStrip({
+  xml,
+  id,
+  loading,
+  fetchError,
+  onRetry,
+}: Pick<DeckPlanFormProps, 'loading' | 'fetchError' | 'onRetry'> & {
+  xml: string;
+  id?: string;
+}) {
   const { t } = useTranslation();
-  const { decks, isGhost, loading, error } = useDeckRenderer(xml, id);
+  const { decks, isGhost, loading: parsing, error: parseError } = useDeckRenderer(xml, id);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress data-testid="deck-plan-decks-rendering" />
-      </Box>
+  const body =
+    decks.length === 0 ? null : (
+      <Stack spacing={1} data-testid="deck-plan-decks">
+        {isGhost && (
+          <Box data-testid="deck-plan-decks-sample">
+            <Typography variant="subtitle2">{t('deckPlans.deck.sample', 'SAMPLE')}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {t(
+                'deckPlans.deck.sampleHint',
+                'This plan has no decks yet — showing a sample layout.'
+              )}
+            </Typography>
+          </Box>
+        )}
+        <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1 }}>
+          {decks.map((deck, i) => (
+            <Stack
+              key={deck.attr_id || i}
+              spacing={0.5}
+              alignItems="center"
+              sx={{ flex: '0 0 auto' }}
+            >
+              <DeckRendering deck={deck} vertical data-testid={`deck-plan-deck-${i}`} />
+              <Typography variant="caption" color="text.secondary" noWrap>
+                {deck.Name || t('deckPlans.deck.label', 'Deck {{n}}', { n: i + 1 })}
+              </Typography>
+            </Stack>
+          ))}
+        </Stack>
+      </Stack>
     );
-  }
-  if (error) {
-    return (
-      <Alert severity="error" data-testid="deck-plan-decks-error">
-        {t('deckPlans.render.error', 'Could not render the deck plan')}: {error}
-      </Alert>
-    );
-  }
-  if (decks.length === 0) return null;
 
   return (
-    <Stack spacing={1} data-testid="deck-plan-decks">
-      {isGhost && (
-        <Box data-testid="deck-plan-decks-sample">
-          <Typography variant="subtitle2">{t('deckPlans.deck.sample', 'SAMPLE')}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {t(
-              'deckPlans.deck.sampleHint',
-              'This plan has no decks yet — showing a sample layout.'
-            )}
-          </Typography>
-        </Box>
-      )}
-      <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1 }}>
-        {decks.map((deck, i) => (
-          <Stack
-            key={deck.attr_id || i}
-            spacing={0.5}
-            alignItems="center"
-            sx={{ flex: '0 0 auto' }}
-          >
-            <DeckRendering deck={deck} vertical data-testid={`deck-plan-deck-${i}`} />
-            <Typography variant="caption" color="text.secondary" noWrap>
-              {deck.Name || t('deckPlans.deck.label', 'Deck {{n}}', { n: i + 1 })}
-            </Typography>
-          </Stack>
-        ))}
-      </Stack>
-    </Stack>
+    <BodyState
+      loading={loading || parsing}
+      // A parse failure is reported where the fetch failure is; Retry refetches
+      // the body, which re-parses it.
+      error={
+        fetchError ??
+        (parseError &&
+          `${t('deckPlans.render.error', 'Could not render the deck plan')}: ${parseError}`)
+      }
+      onRetry={onRetry}
+      testIdPrefix="deck-plan-decks"
+    >
+      {body}
+    </BodyState>
   );
 }
