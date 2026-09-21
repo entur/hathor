@@ -47,17 +47,20 @@ export function addDataOwnerRefToFrame(
   };
 }
 
-export const xmlParser = new XMLParser({ ignoreAttributes: false });
-
 /**
- * Parser for documents that are re-serialized and sent back to the backend.
+ * The NeTEx parser. Tag values are never coerced.
  *
- * `parseTagValue` is off so numeric-looking text survives the round-trip
+ * `parseTagValue` is off so numeric-looking text survives a round-trip
  * byte-for-byte: seat labels are zero-padded (`007`), dimensions carry
  * trailing zeros (`1.10`) and occasionally exponent notation, and the default
  * coercion rewrites all three — silently renumbering seats on a pure rename.
+ *
+ * Off by default rather than opt-in, because every path that re-serializes
+ * needs it and no caller reads a tag value as a number: the closest,
+ * `extractVehicleTypeIds`, reads `@_id`, and attribute parsing is governed by
+ * `parseAttributeValue` (off) regardless.
  */
-export const verbatimXmlParser = new XMLParser({
+export const xmlParser = new XMLParser({
   ignoreAttributes: false,
   parseTagValue: false,
 });

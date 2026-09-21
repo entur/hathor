@@ -1,5 +1,5 @@
 import { XMLBuilder } from 'fast-xml-parser';
-import { findResourceFrame, toArray, verbatimXmlParser } from '../../netex/xmlUtils.ts';
+import { findResourceFrame, toArray, xmlParser } from '../../netex/xmlUtils.ts';
 import type { ParsedXml } from '../../netex/xmlUtils.ts';
 import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
@@ -50,7 +50,7 @@ const textNode = (n?: Name): TextNode | undefined => {
  * `ValidBetween`, frame envelope).
  *
  * Every other element, attribute and value survives verbatim — the parser is
- * {@link verbatimXmlParser} precisely so zero-padded seat labels and
+ * {@link xmlParser} precisely so zero-padded seat labels and
  * trailing-zero dimensions are not coerced to numbers. The original bytes do
  * not survive: the parse/build round-trip normalizes whitespace and
  * indentation, and re-keys the patched `DeckPlan` into NeTEx sequence order.
@@ -69,7 +69,7 @@ const textNode = (n?: Name): TextNode | undefined => {
  *   no-op POST would report success while persisting nothing.
  */
 export function patchDeckPlanXml(xml: string, id: string, name?: Name, description?: Name): string {
-  const parsed = verbatimXmlParser.parse(xml);
+  const parsed = xmlParser.parse(xml);
   const frame = findResourceFrame(parsed);
   const dp = toArray(frame?.deckPlans?.DeckPlan).find(n => n['@_id'] === id);
   if (!dp) throw new Error(`DeckPlan ${id} not found in document`);
