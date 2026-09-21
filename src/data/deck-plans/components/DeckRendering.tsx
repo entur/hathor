@@ -3,7 +3,7 @@ import { Alert, Box, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import { DECK_RENDERING_TAG, loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
-import { applyDeckStyle, mkDeckStyle } from '../utils/deckRenderingStyles.ts';
+import { applyDeckStyle, mkDeckCss } from '../utils/deckRenderingStyles.ts';
 
 /**
  * Render scale in px per metre. A deck is a couple of metres across at
@@ -58,9 +58,9 @@ export default function DeckRendering({
 
   // The package's own renderer styles never reach the shadow root, so hathor
   // supplies them — see `deckRenderingStyles`.
-  const style = useMemo(
+  const css = useMemo(
     () =>
-      mkDeckStyle({
+      mkDeckCss({
         frame: palette.background.default,
         deck: palette.background.paper,
         deckLine: palette.divider,
@@ -89,7 +89,7 @@ export default function DeckRendering({
         // Applying after insertion costs an unstyled first frame; failing here
         // used to cost the whole rendering.
         try {
-          if (el.shadowRoot) applyDeckStyle(el.shadowRoot, style);
+          if (el.shadowRoot) applyDeckStyle(el.shadowRoot, css);
         } catch {
           // Drawn but unpainted beats a blank slot.
         }
@@ -101,7 +101,7 @@ export default function DeckRendering({
       live = false;
       node?.replaceChildren();
     };
-  }, [deck, scale, vertical, style]);
+  }, [deck, scale, vertical, css]);
 
   // The host stays mounted either way — unmounting it would null `host.current`
   // and leave every later effect run short-circuiting on a missing node.

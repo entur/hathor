@@ -91,14 +91,11 @@ export const Ghost: Story = {
     // element's own `?? 0` collapses it to the 10px padding alone.
     expect(svg.getBoundingClientRect().height).toBeGreaterThan(100);
 
-    // hathor's sheet must be adopted: the package ships its renderer styles to
-    // a CSS file its `exports` map doesn't expose, so nothing styles the
-    // shadow root otherwise.
-    const root = canvasElement.querySelector('deck-rendering')!.shadowRoot!;
-    expect(root.adoptedStyleSheets.length).toBeGreaterThan(0);
-
-    // Unstyled, the outline falls back to `getShape()`'s `stroke: 'gray'`
-    // presentation attribute. Anything else means the sheet won the cascade.
+    // hathor's CSS must reach the shadow root: the package ships its renderer
+    // styles to a CSS file its `exports` map doesn't expose, so nothing styles
+    // it otherwise. Asserted through the cascade rather than through the
+    // delivery mechanism — unstyled, the outline falls back to `getShape()`'s
+    // `stroke: 'gray'` presentation attribute.
     const outline = svg.querySelector('rect.vehicle-deck')!;
     expect(getComputedStyle(outline).stroke).not.toBe('rgb(128, 128, 128)');
   },
