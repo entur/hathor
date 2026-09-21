@@ -36,8 +36,14 @@ interface DeckRenderingProps {
  * removes the need to augment `JSX.IntrinsicElements`.
  *
  * Renders nothing until the bundle has loaded; callers own the loading UI.
- * A mount that throws reports itself in place — silently rendering nothing
- * would read as "this deck is empty" while the strip around it looks healthy.
+ * A mount that throws reports itself in place rather than rendering nothing,
+ * which would read as "this deck is empty" while the strip around it looks
+ * healthy. In practice `DeckStrip` catches a failed bundle load first, so that
+ * branch is a guard for standalone use (the stories mount this directly), not
+ * a path the app reaches.
+ *
+ * Styling is applied after insertion and cannot fail the rendering — see
+ * `deckRenderingStyles`.
  */
 export default function DeckRendering({
   deck,
@@ -75,11 +81,18 @@ export default function DeckRendering({
       .then(() => {
         if (!live || !node) return;
         const el = document.createElement(DECK_RENDERING_TAG);
-        // Both before insertion: Vue renders in `connectedCallback`, so props
-        // must be set by then, and styling early avoids an unstyled flash.
+        // Props before insertion: Vue renders in `connectedCallback` and
+        // dereferences `deck.getBoundingBox()` there.
         Object.assign(el, { deck, scale, vertical });
-        if (el.shadowRoot) applyDeckStyle(el.shadowRoot, style);
         node.replaceChildren(el);
+        // Styling is decoration, so it must not decide whether the deck draws.
+        // Applying after insertion costs an unstyled first frame; failing here
+        // used to cost the whole rendering.
+        try {
+          if (el.shadowRoot) applyDeckStyle(el.shadowRoot, style);
+        } catch {
+          // Drawn but unpainted beats a blank slot.
+        }
       })
       .catch(() => {
         if (live) setFailed(true);

@@ -34,10 +34,13 @@ const __dirname = path.dirname(__filename);
  *     `deckPlan` prop useUrlEditorSelection never re-commits
  *   - the stored `lang` on <Name> survives a save round-trip
  *   - a failed post-save body refetch blocks a second save on the stale document
- *   - a deck rendering whose mount throws reports it instead of rendering
- *     nothing (the stylesheet fallback itself is unit-tested — see
- *     src/data/deck-plans/utils/deckRenderingStyles.test.ts)
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
+ * Not covered here:
+ *   - DeckRendering's own failure branch. Styling no longer sits on the render
+ *     path, and DeckStrip catches a failed bundle load first, so nothing in
+ *     the app reaches it — the old test only reached it by sabotaging
+ *     ShadowRoot.prototype. The stylesheet fallback is unit-tested instead,
+ *     in src/data/deck-plans/utils/deckRenderingStyles.test.ts
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
  *     fixture, plus fulfill-routes on `/deckplans/<id>` for the XML body —
@@ -312,26 +315,5 @@ test.describe('/deck-plans — sidebar editor', () => {
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#deckPlan-name').fill('Second rename');
     await expect(page.getByTestId('editor-rail-save')).toBeDisabled();
-  });
-
-  test('a deck rendering that fails to mount says so instead of vanishing', async ({ page }) => {
-    // The only live path into DeckRendering's failure branch: the shadow-sheet
-    // adoption inside its mount promise throws, so the `.catch()` fires while
-    // the strip around it is perfectly healthy.
-    await page.addInitScript(() => {
-      Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
-        configurable: true,
-        get: () => ({
-          includes: () => {
-            throw new Error('adoptedStyleSheets unavailable');
-          },
-        }),
-        set: () => {},
-      });
-    });
-    await openFirstRow(page);
-
-    await expect(page.getByTestId('deck-plan-decks')).toBeVisible();
-    await expect(page.getByTestId('deck-plan-deck-0-error')).toBeVisible();
   });
 });
