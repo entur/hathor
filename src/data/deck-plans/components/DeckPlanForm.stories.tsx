@@ -48,7 +48,7 @@ const PLAN_ID = 'NMR:DeckPlan:5';
 /** Six real decks in one plan; more than the rail fits, so the strip scrolls. */
 const SIX_DECKS = mkWagonsXml(WAGONS, PLAN_ID);
 
-/** Seats in the SAMPLE ghost — it is Wagon_2's deck (see `ghostDeckPlanXml`). */
+/** Seats in the SAMPLE ghost — see `GHOST_SEATS` in `parseDecks`. */
 const GHOST_SEATS = 46;
 
 /** A plan whose `<decks/>` is empty — what real Sobek data usually returns. */
@@ -156,11 +156,16 @@ export const EditTabSample: Story = {
     await waitFor(() =>
       expect(canvasElement.querySelector('[data-testid="deck-plan-decks-sample"]')).not.toBeNull()
     );
-    const els = canvasElement.querySelectorAll('deck-rendering');
-    expect(els).toHaveLength(1);
-    // The ghost is Wagon_2's deck, so it draws a populated layout rather than
+    // The heading renders as soon as the decks resolve, but DeckRendering
+    // creates its custom element a microtask later inside the mount promise —
+    // so the element needs its own wait, not the heading's.
+    await waitFor(() => expect(canvasElement.querySelectorAll('deck-rendering')).toHaveLength(1));
+    // The ghost is a full carriage, so it draws a populated layout rather than
     // an empty outline — the SAMPLE tab should look like a real deck plan.
-    expect(els[0].shadowRoot!.querySelectorAll('g.seat')).toHaveLength(GHOST_SEATS);
+    const el = canvasElement.querySelector('deck-rendering')!;
+    await waitFor(() =>
+      expect(el.shadowRoot!.querySelectorAll('g.seat')).toHaveLength(GHOST_SEATS)
+    );
   },
 };
 

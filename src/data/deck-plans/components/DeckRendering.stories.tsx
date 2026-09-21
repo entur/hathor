@@ -5,7 +5,6 @@ import { Box, Stack, Typography } from '@mui/material';
 import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import DeckRendering, { DECK_SCALE } from './DeckRendering.tsx';
 import { loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
-import { GHOST_DECK_PLAN_XML } from '../utils/ghostDeckPlanXml.ts';
 import { mkSampleDeckPlanXml } from '../utils/sampleDeckPlanXml.ts';
 
 /** Sample deck: eight seats in four rows either side of an aisle. */
@@ -79,12 +78,15 @@ export default meta;
 
 type Story = StoryObj<typeof DeckRendering>;
 
+/** Seats in the SAMPLE ghost — kept in step with `GHOST_SEATS` in `parseDecks`. */
+const GHOST_XML = mkSampleDeckPlanXml([{ seats: 46 }]);
+
 /**
  * The `SAMPLE` fallback — what renders when a real plan carries an empty
- * `<decks/>`. Backed by Wagon_2's deck, so it looks like a real layout.
+ * `<decks/>`. A full carriage's worth of seats, so it reads as a real layout.
  */
 export const Ghost: Story = {
-  render: () => <Framed label="ghost" xml={GHOST_DECK_PLAN_XML} vertical />,
+  render: () => <Framed label="ghost" xml={GHOST_XML} vertical />,
   play: async ({ canvasElement }) => {
     const svg = await waitForSvg(canvasElement);
     // Non-degenerate box proves `scale` reached the element — unset, the

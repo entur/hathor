@@ -42,9 +42,9 @@ export function useDeckRenderer(xml: string, id?: string): UseDeckRendererResult
     setLoading(true);
     setError(null);
     loadDeckRenderer()
-      .then(mod => {
+      .then(mod => parseDecks(mod, xml, id))
+      .then(parsed => {
         if (cancelled) return;
-        const parsed = parseDecks(mod, xml, id);
         setDecks(parsed.decks);
         setIsGhost(parsed.isGhost);
       })
