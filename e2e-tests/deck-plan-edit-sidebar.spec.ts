@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { interceptDeckPlansQuery } from './autosys-helpers';
+import { interceptDeckPlanSave, interceptDeckPlansQuery, loadXmlFixture } from './autosys-helpers';
 import { IS_LIVE, seedAuth } from './live-auth-helpers';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * /deck-plans — sidebar editor (#129, realigned to the sibling pattern in #149).
@@ -53,8 +47,7 @@ test.describe('/deck-plans — sidebar editor', () => {
 
   test.skip(IS_LIVE, 'sidebar slider behaviour is asserted against fixtures, not live data');
 
-  const xml = (file = 'deck-plan-xml-mock.xml') =>
-    fs.readFileSync(path.join(__dirname, 'fixtures', file), 'utf8');
+  const xml = (file = 'deck-plan-xml-mock.xml') => loadXmlFixture(file);
 
   const openFirstRow = async (page: import('@playwright/test').Page, body = xml()) => {
     await interceptDeckPlansQuery(page);
@@ -128,21 +121,17 @@ test.describe('/deck-plans — sidebar editor', () => {
   test('saving a renamed deck plan POSTs a patched document without keyList', async ({ page }) => {
     await openFirstRow(page);
 
-    let posted = '';
-    await page.route('**/services/vehicles/netex', async route => {
-      posted = route.request().postData() ?? '';
-      await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
-    });
+    const { posted } = await interceptDeckPlanSave(page, xml());
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
     await page.getByTestId('editor-rail-save').click();
 
-    await expect.poll(() => posted).toContain('Plan Alpha renamed');
+    await expect.poll(posted).toContain('Plan Alpha renamed');
     // Geometry + envelope ride along; provenance keyList is stripped (sobek#180).
-    expect(posted).toContain('NMR:DeckPlan:5');
-    expect(posted).toContain('<decks/>');
-    expect(posted).not.toContain('imported-id');
+    expect(posted()).toContain('NMR:DeckPlan:5');
+    expect(posted()).toContain('<decks/>');
+    expect(posted()).not.toContain('imported-id');
   });
 
   test('?selected=new renders the Edit panel bare and saves via the GQL mutation', async ({
@@ -207,13 +196,13 @@ test.describe('/deck-plans — sidebar editor', () => {
     // The import POST commits, then the list refetch 500s. The warning is
     // correct, but the write landed — collapsing must not offer to discard
     // changes that are already persisted.
-    let saved = false;
     // Registered BEFORE the 500-override: Playwright runs route handlers LIFO,
     // so the override below gets first look and falls back to this one.
     await interceptDeckPlansQuery(page);
+    const { saved } = await interceptDeckPlanSave(page, xml());
     await page.route('**/graphql', async route => {
       const body = route.request().postDataJSON() as { query?: string };
-      if (body?.query?.includes('deckPlans') && saved) {
+      if (body?.query?.includes('deckPlans') && saved()) {
         return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
       }
       return route.fallback();
@@ -221,10 +210,6 @@ test.describe('/deck-plans — sidebar editor', () => {
     await page.route(/\/deckplans\/[^/?#]+$/, route =>
       route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
     );
-    await page.route('**/services/vehicles/netex', async route => {
-      saved = true;
-      await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
-    });
 
     await page.goto('/deck-plans?selected=NMR:DeckPlan:5');
     await expect(page.getByTestId('deck-plan-xml-textarea')).toHaveCount(0);
@@ -243,9 +228,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     page,
   }) => {
     await openFirstRow(page);
-    await page.route('**/services/vehicles/netex', route =>
-      route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
-    );
+    await interceptDeckPlanSave(page, xml());
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
@@ -265,11 +248,7 @@ test.describe('/deck-plans — sidebar editor', () => {
   test('saving preserves the lang attribute the document was stored with', async ({ page }) => {
     await openFirstRow(page);
 
-    let posted = '';
-    await page.route('**/services/vehicles/netex', async route => {
-      posted = route.request().postData() ?? '';
-      await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
-    });
+    const { posted } = await interceptDeckPlanSave(page, xml());
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
@@ -280,8 +259,8 @@ test.describe('/deck-plans — sidebar editor', () => {
     // route mock returns the whole fixture row regardless of the GraphQL
     // selection, so that the query actually *asks* for `lang` is guarded by
     // the unit test on the query document, not here.
-    await expect.poll(() => posted).toContain('Plan Alpha renamed');
-    expect(posted).toMatch(/<Name lang="nb">/);
+    await expect.poll(posted).toContain('Plan Alpha renamed');
+    expect(posted()).toMatch(/<Name lang="nb">/);
   });
 
   test('a failed post-save body refetch blocks a second save on the stale document', async ({
@@ -292,16 +271,12 @@ test.describe('/deck-plans — sidebar editor', () => {
     // Keyed on the write, not on a call count: the body effect re-runs on its
     // own before any save (auth/org identity churn), so a "second fetch" gate
     // would 500 the initial load instead.
-    let saved = false;
+    const { saved } = await interceptDeckPlanSave(page, xml());
     await page.route(/\/deckplans\/[^/?#]+$/, route =>
-      saved
+      saved()
         ? route.fulfill({ status: 500, contentType: 'text/plain', body: 'body fetch failed' })
         : route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
     );
-    await page.route('**/services/vehicles/netex', route => {
-      saved = true;
-      return route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
-    });
 
     await page.goto('/deck-plans?selected=NMR:DeckPlan:5');
     await page.getByTestId('editor-rail-edit').click();
