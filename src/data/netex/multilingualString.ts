@@ -29,3 +29,24 @@ export const mergeNameText = (
   cur: MultilingualString | undefined,
   text: string
 ): MultilingualString | undefined => (text === '' ? undefined : { ...cur, value: text });
+
+/**
+ * Trim a NeTEx Name, dropping it entirely when nothing survives, keeping `lang`.
+ *
+ * Emptiness is decided *after* trimming because Sobek serializes an empty Name
+ * as a whitespace string rather than null, so a fetched value arrives
+ * whitespace-wrapped while `fast-xml-parser` hands back the same field trimmed.
+ * Callers that must emit an explicit `null` (a full-replace input) spell that
+ * at the call site with `?? null`.
+ *
+ * @param {MultilingualString | null} [n] - name as read from GQL or parsed XML
+ * @returns {MultilingualString | undefined} trimmed name, or `undefined` when
+ *   blank
+ */
+export const trimName = (
+  n?: { value?: string; lang?: string } | null
+): MultilingualString | undefined => {
+  const value = n?.value?.trim();
+  if (!value) return undefined;
+  return n?.lang ? { value, lang: n.lang } : { value };
+};

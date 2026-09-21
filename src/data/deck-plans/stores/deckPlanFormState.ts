@@ -1,4 +1,5 @@
-import type { DeckPlan, Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import { trimName } from '../../netex/multilingualString.ts';
 
 /** Empty draft used before a row resolves, and as the create factory's base. */
 const BLANK: DeckPlan = { id: '' };
@@ -9,18 +10,6 @@ export interface FormState {
 }
 
 export const initialFormState: FormState = { form: BLANK, baseline: BLANK };
-
-/**
- * Trim a NeTEx name, dropping it entirely when nothing survives. Sobek re-pads
- * `<Text>` on serialize, so every fetched value arrives whitespace-wrapped
- * while `fast-xml-parser` hands back the same field trimmed — normalising here
- * keeps the two surfaces comparable (sobek#180 probe).
- */
-const trimName = (n?: Name): Name | undefined => {
-  const value = n?.value?.trim();
-  if (!value) return undefined;
-  return n?.lang ? { value, lang: n.lang } : { value };
-};
 
 /** Editable projection of a DeckPlan — the only fields this editor writes. */
 const normalise = (dp: DeckPlan): DeckPlan => ({
