@@ -52,6 +52,8 @@ afterEach(() => vi.unstubAllGlobals());
  * than costing styling, so it must never throw.
  */
 describe('mkDeckStyle', () => {
+  // Absent and non-constructable both land on the same `catch`, so one case
+  // covers the pair.
   it('survives a runtime with no constructable stylesheets', () => {
     vi.stubGlobal('CSSStyleSheet', undefined);
 
@@ -59,22 +61,6 @@ describe('mkDeckStyle', () => {
 
     expect(style.sheet).toBeNull();
     expect(style.css).toContain(PALETTE.seat);
-  });
-
-  it('survives a CSSStyleSheet constructor that throws', () => {
-    vi.stubGlobal(
-      'CSSStyleSheet',
-      class {
-        constructor() {
-          throw new Error('not constructable here');
-        }
-      }
-    );
-
-    const style = mkDeckStyle({ ...PALETTE, seat: '#aaa' });
-
-    expect(style.sheet).toBeNull();
-    expect(style.css).toContain('#aaa');
   });
 
   it('builds a sheet where the constructor works', () => {
@@ -131,22 +117,14 @@ describe('applyDeckStyle', () => {
     expect(root.adoptedStyleSheets).toEqual([]);
   });
 
-  it('falls back to a <style> element when the root cannot adopt', () => {
+  it('falls back to a <style> element, once, when the root cannot adopt', () => {
     const { root, kids } = mkRoot(); // no `adoptedStyleSheets` at all
+    const style = { sheet: SHEET, css: '.seat { fill: red }' };
 
-    applyDeckStyle(root, { sheet: SHEET, css: '.seat { fill: red }' });
+    applyDeckStyle(root, style);
+    applyDeckStyle(root, style);
 
     expect(kids).toHaveLength(1);
     expect(kids[0].tag).toBe('STYLE');
-  });
-
-  it('does not stack duplicate <style> elements', () => {
-    const { root, kids } = mkRoot();
-    const style = { sheet: null, css: '.seat { fill: red }' };
-
-    applyDeckStyle(root, style);
-    applyDeckStyle(root, style);
-
-    expect(kids).toHaveLength(1);
   });
 });

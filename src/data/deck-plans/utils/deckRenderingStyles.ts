@@ -53,7 +53,10 @@ export interface DeckStyle {
   css: string;
 }
 
-const cache = new Map<string, DeckStyle>();
+// One slot, not a Map: `useAppTheme` memoises the theme, so exactly one palette
+// is live at a time and a growing map would just pin every palette the session
+// ever visited, each with its own sheet.
+let memo: { key: string; style: DeckStyle } | null = null;
 
 /** The rendering's rules, painted in deck order. */
 const deckCss = (p: DeckPalette) => `
@@ -91,13 +94,12 @@ const mkSheet = (css: string): CSSStyleSheet | null => {
  */
 export function mkDeckStyle(p: DeckPalette): DeckStyle {
   const key = Object.values(p).join('|');
-  const hit = cache.get(key);
-  if (hit) return hit;
+  if (memo?.key === key) return memo.style;
 
   const css = deckCss(p);
   const style: DeckStyle = { sheet: mkSheet(css), css };
 
-  cache.set(key, style);
+  memo = { key, style };
   return style;
 }
 
