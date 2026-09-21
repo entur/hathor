@@ -12,11 +12,22 @@
  * So hathor owns the rendering's appearance, which also keeps it on the MUI
  * palette instead of the package's brand colours.
  *
+ * Two delivery paths, because the two halves fail in different places:
+ * `mkDeckStyle` runs during `DeckRendering`'s *render* (outside the mount
+ * promise's `.catch()`), so `new CSSStyleSheet()` must not be allowed to throw
+ * out of it; `applyDeckStyle` runs inside that promise. Where constructable
+ * stylesheets are unavailable either way, the same CSS goes in as a `<style>`
+ * element — "unstyled" would mean black seats on a black label, which reads as
+ * a broken rendering rather than a degraded one.
+ *
  * Selectors mirror what the renderer actually emits — `seat__availability-*`,
  * not the `.seat-occupied` family in the package's own stylesheet, which
  * targets class names the model stopped producing. Availability variants are
  * omitted: this is a read-only view that never sets the `availability` prop.
  */
+
+/** Marks the injected fallback element so a repeat apply does not stack copies. */
+const STYLE_MARK = 'data-deck-style';
 
 /** Colours the rendering needs, in the order the deck is painted. */
 export interface DeckPalette {
@@ -34,24 +45,18 @@ export interface DeckPalette {
   label: string;
 }
 
-const cache = new Map<string, CSSStyleSheet>();
+/** A palette's CSS, plus the adoptable sheet where the runtime allows one. */
+export interface DeckStyle {
+  /** Constructable sheet, or `null` where the runtime has no CSSOM for it. */
+  sheet: CSSStyleSheet | null;
+  /** The same rules as text, for the `<style>` fallback. */
+  css: string;
+}
 
-/**
- * Build (and memoise) the constructable stylesheet for a palette.
- *
- * Constructable sheets are shareable, so every `<deck-rendering>` on the page
- * adopts one object per palette rather than parsing its own copy.
- *
- * @param p Colours to paint with, typically derived from the MUI theme.
- * @returns A sheet ready to push onto a shadow root's `adoptedStyleSheets`.
- */
-export function mkDeckSheet(p: DeckPalette): CSSStyleSheet {
-  const key = Object.values(p).join('|');
-  const hit = cache.get(key);
-  if (hit) return hit;
+const cache = new Map<string, DeckStyle>();
 
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(`
+/** The rendering's rules, painted in deck order. */
+const deckCss = (p: DeckPalette) => `
     .vehicle-frame { background-color: ${p.frame}; border-radius: 4px; }
     .vehicle-deck  { fill: ${p.deck}; stroke: ${p.deckLine}; stroke-width: 2px; rx: 5px; }
     .seat .seat__base      { fill: ${p.seat}; stroke: ${p.seatLine}; stroke-width: 1px; rx: 5px; }
@@ -60,24 +65,62 @@ export function mkDeckSheet(p: DeckPalette): CSSStyleSheet {
     .door                  { fill: ${p.seatLine}; stroke: ${p.seatLine}; stroke-width: 1px; }
     /* Read-only view — the element still emits \`select\`, but nothing consumes it. */
     .seat, .door { cursor: default; }
-  `);
+  `;
 
-  cache.set(key, sheet);
-  return sheet;
+/** Constructable sheets are absent (or non-constructable) in older runtimes. */
+const mkSheet = (css: string): CSSStyleSheet | null => {
+  try {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    return sheet;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Build (and memoise) the style for a palette.
+ *
+ * Constructable sheets are shareable, so every `<deck-rendering>` on the page
+ * adopts one object per palette rather than parsing its own copy. Called
+ * during render, so it never throws — a runtime without constructable sheets
+ * yields `{ sheet: null }` and `applyDeckStyle` injects the CSS instead.
+ *
+ * @param p Colours to paint with, typically derived from the MUI theme.
+ * @returns The palette's sheet (where possible) and its CSS text.
+ */
+export function mkDeckStyle(p: DeckPalette): DeckStyle {
+  const key = Object.values(p).join('|');
+  const hit = cache.get(key);
+  if (hit) return hit;
+
+  const css = deckCss(p);
+  const style: DeckStyle = { sheet: mkSheet(css), css };
+
+  cache.set(key, style);
+  return style;
 }
 
 /**
- * Adopt the palette's sheet onto a shadow root, once.
+ * Put the style on a shadow root, once.
  *
  * Runs inside `DeckRendering`'s mount promise, so a throw here lands in that
- * component's `.catch()` and costs the whole rendering. Where constructable
- * stylesheets are unavailable it degrades to unstyled instead.
+ * component's `.catch()` and costs the whole rendering. Adopts where the root
+ * supports it, and appends a `<style>` where it does not.
  *
  * @param root Shadow root of a `<deck-rendering>` element.
- * @param sheet Sheet from {@link mkDeckSheet}.
+ * @param style Style from {@link mkDeckStyle}.
  */
-export function adoptDeckSheet(root: ShadowRoot, sheet: CSSStyleSheet): void {
-  if (!root.adoptedStyleSheets) return;
-  if (root.adoptedStyleSheets.includes(sheet)) return;
-  root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+export function applyDeckStyle(root: ShadowRoot, style: DeckStyle): void {
+  if (style.sheet && root.adoptedStyleSheets) {
+    if (root.adoptedStyleSheets.includes(style.sheet)) return;
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets, style.sheet];
+    return;
+  }
+
+  if (root.querySelector(`style[${STYLE_MARK}]`)) return;
+  const el = root.ownerDocument.createElement('style');
+  el.setAttribute(STYLE_MARK, '');
+  el.textContent = style.css;
+  root.append(el);
 }

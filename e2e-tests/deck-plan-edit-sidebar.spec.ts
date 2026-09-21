@@ -35,7 +35,8 @@ const __dirname = path.dirname(__filename);
  *   - the stored `lang` on <Name> survives a save round-trip
  *   - a failed post-save body refetch blocks a second save on the stale document
  *   - a deck rendering whose mount throws reports it instead of rendering
- *     nothing, and a shadow root without adoptedStyleSheets costs styling only
+ *     nothing; a root that cannot adopt, or a CSSStyleSheet that will not
+ *     construct, falls back to an injected <style> and still draws
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
@@ -334,7 +335,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     await expect(page.getByTestId('deck-plan-deck-0-error')).toBeVisible();
   });
 
-  test('a deck still renders where constructable stylesheets are unavailable', async ({ page }) => {
+  test('a deck still renders where a root cannot adopt stylesheets', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
         configurable: true,
@@ -344,7 +345,30 @@ test.describe('/deck-plans — sidebar editor', () => {
     });
     await openFirstRow(page);
 
-    // Unstyled is a fair degradation; an empty slot is not.
+    // An empty slot is not a fair degradation, and neither is unstyled — the
+    // renderer's own defaults paint black seats with black labels.
     await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(46);
+    await expect(
+      page.locator('[data-testid="deck-plan-deck-0"] style[data-deck-style]')
+    ).toHaveCount(1);
+  });
+
+  test('a deck still renders where CSSStyleSheet is not constructable', async ({ page }) => {
+    // `mkDeckStyle` runs during render, outside the mount promise's `.catch()`
+    // — a throw out of the constructor would take the component down rather
+    // than cost it styling.
+    await page.addInitScript(() => {
+      window.CSSStyleSheet = class {
+        constructor() {
+          throw new Error('Illegal constructor');
+        }
+      } as unknown as typeof CSSStyleSheet;
+    });
+    await openFirstRow(page);
+
+    await expect(page.locator('[data-testid="deck-plan-deck-0"] g.seat')).toHaveCount(46);
+    await expect(
+      page.locator('[data-testid="deck-plan-deck-0"] style[data-deck-style]')
+    ).toHaveCount(1);
   });
 });

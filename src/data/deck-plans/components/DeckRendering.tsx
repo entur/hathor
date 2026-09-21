@@ -3,7 +3,7 @@ import { Alert, Box, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import { DECK_RENDERING_TAG, loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
-import { adoptDeckSheet, mkDeckSheet } from '../utils/deckRenderingStyles.ts';
+import { applyDeckStyle, mkDeckStyle } from '../utils/deckRenderingStyles.ts';
 
 /**
  * Render scale in px per metre. A deck is a couple of metres across at
@@ -52,9 +52,9 @@ export default function DeckRendering({
 
   // The package's own renderer styles never reach the shadow root, so hathor
   // supplies them — see `deckRenderingStyles`.
-  const sheet = useMemo(
+  const style = useMemo(
     () =>
-      mkDeckSheet({
+      mkDeckStyle({
         frame: palette.background.default,
         deck: palette.background.paper,
         deckLine: palette.divider,
@@ -76,9 +76,9 @@ export default function DeckRendering({
         if (!live || !node) return;
         const el = document.createElement(DECK_RENDERING_TAG);
         // Both before insertion: Vue renders in `connectedCallback`, so props
-        // must be set by then, and adopting early avoids an unstyled flash.
+        // must be set by then, and styling early avoids an unstyled flash.
         Object.assign(el, { deck, scale, vertical });
-        if (el.shadowRoot) adoptDeckSheet(el.shadowRoot, sheet);
+        if (el.shadowRoot) applyDeckStyle(el.shadowRoot, style);
         node.replaceChildren(el);
       })
       .catch(() => {
@@ -88,7 +88,7 @@ export default function DeckRendering({
       live = false;
       node?.replaceChildren();
     };
-  }, [deck, scale, vertical, sheet]);
+  }, [deck, scale, vertical, style]);
 
   // The host stays mounted either way — unmounting it would null `host.current`
   // and leave every later effect run short-circuiting on a missing node.
