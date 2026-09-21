@@ -35,7 +35,12 @@
                             </Description>
                             <decks>
                                 <Deck version="1" id="NMR:Deck:1">
-                                    <Name>Lower</Name>
+                                    <!-- MultilingualString form: what JAXB emits for Deck/Name,
+                                         as it already does for DeckPlan/Name above. Deck:2 keeps
+                                         the flat form the editor writes; both must caption. -->
+                                    <Name>
+                                        <Text>Lower</Text>
+                                    </Name>
                                     <deckSpaces>
                                         <PassengerSpace version="1" id="NMR:PassengerSpace:1">
                                             <passengerSpots>

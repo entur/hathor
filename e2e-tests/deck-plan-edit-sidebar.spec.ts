@@ -28,6 +28,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *     `deckPlan` prop useUrlEditorSelection never re-commits
  *   - the stored `lang` on <Name> survives a save round-trip
  *   - a failed post-save body refetch blocks a second save on the stale document
+ *   - Retry re-runs the deck parse, not just the body fetch, so a transient
+ *     renderer-side failure (bundle, ghost fetch, parse) clears
  *   - editor-rail collapse closes the sidebar by clearing ?selected=
  * Not covered here:
  *   - DeckRendering's own failure branch. Styling no longer sits on the render
@@ -67,6 +69,30 @@ test.describe('/deck-plans — sidebar editor', () => {
     await openFirstRow(page);
     await page.getByTestId('editor-rail-collapse').click();
     await expect(page).not.toHaveURL(/\?selected=/);
+  });
+
+  test('Retry recovers a deck strip that failed to render', async ({ page }) => {
+    // The renderer's own failures — bundle load, ghost fetch, parse — are
+    // reported by the same alert as a body-fetch failure, so Retry has to
+    // re-run the parse too. Refetching a body that comes back byte-identical
+    // leaves `xml` referentially unchanged, which is invisible to the parse
+    // effect's deps.
+    let ghostFailed = false;
+    await page.route('**/sample-deck-plan.xml', route => {
+      if (ghostFailed) return route.continue();
+      ghostFailed = true;
+      return route.abort('failed');
+    });
+
+    // The default fixture's <decks/> is empty, so the strip takes the ghost
+    // path and the aborted fetch surfaces as a render error.
+    await openFirstRow(page);
+    const strip = page.getByTestId('deck-plan-tab-edit').locator('..');
+    await expect(strip.getByTestId('deck-plan-decks-fetch-error')).toBeVisible();
+
+    await strip.getByRole('button', { name: 'Retry' }).click();
+    await expect(strip.getByTestId('deck-plan-decks-fetch-error')).toBeHidden();
+    await expect(page.locator('deck-rendering')).toHaveCount(1);
   });
 
   test('Edit tab holds the fields; XML tab holds the read-only body', async ({ page }) => {

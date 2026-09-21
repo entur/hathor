@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeNameText, trimName } from './multilingualString.ts';
+import { mergeNameText, netexText, trimName } from './multilingualString.ts';
 
 /**
  * mergeNameText — a name field edits only `value`; the existing `lang` tag must
@@ -59,5 +59,46 @@ describe('trimName', () => {
     expect(trimName({ value: '' })).toBeUndefined();
     expect(trimName(undefined)).toBeUndefined();
     expect(trimName(null)).toBeUndefined();
+  });
+});
+
+/**
+ * netexText — the read-side counterpart to `trimName`, for values that came
+ * out of an XML parser rather than GQL. The deck-renderer bundle stores
+ * `Deck.Name` verbatim (`this.Name = o ?? ''`), so whichever shape the document
+ * carried reaches the caption unchanged: a `MultilingualString` arrives as
+ * `{text_value}` and would render as `[object Object]` — in React, it throws.
+ * The upstream package's own tree view unwraps exactly these three shapes.
+ */
+describe('netexText', () => {
+  // What the deck-renderer's own parser hands back for a `<Name><Text>` deck
+  // name — verified by the EditTabDeckNames story, which crashed on exactly
+  // this shape ("found: object with keys {Text}").
+  it('unwraps a <Name><Text> node parsed to Text', () => {
+    expect(netexText({ Text: 'Lower' })).toBe('Lower');
+  });
+
+  it('unwraps the text_value spelling the package uses elsewhere', () => {
+    expect(netexText({ text_value: 'Lower' })).toBe('Lower');
+  });
+
+  it('unwraps the GQL-shaped value field too', () => {
+    expect(netexText({ value: 'Lower' })).toBe('Lower');
+  });
+
+  it('passes a plain string through', () => {
+    expect(netexText('Lower')).toBe('Lower');
+  });
+
+  // Same rule as trimName: Sobek writes an empty Name as whitespace, and a
+  // truthy '  ' would suppress the caller's ordinal fallback.
+  it('drops a blank, whitespace, missing or null value in every shape', () => {
+    expect(netexText({ Text: '  \n' })).toBeUndefined();
+    expect(netexText({ text_value: '  \n' })).toBeUndefined();
+    expect(netexText({ value: '' })).toBeUndefined();
+    expect(netexText('   ')).toBeUndefined();
+    expect(netexText(undefined)).toBeUndefined();
+    expect(netexText(null)).toBeUndefined();
+    expect(netexText({})).toBeUndefined();
   });
 });

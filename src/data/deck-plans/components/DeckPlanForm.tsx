@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
-import { mergeNameText } from '../../netex/multilingualString.ts';
+import { mergeNameText, netexText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 import { useDeckRenderer } from '../hooks/useDeckRenderer.ts';
 import DeckRendering from './DeckRendering.tsx';
@@ -242,7 +242,16 @@ function DeckStrip({
   id?: string;
 }) {
   const { t } = useTranslation();
-  const { decks, isGhost, loading: parsing, error: parseError } = useDeckRenderer(xml, id);
+  // Retry has two jobs here: refetch the body (the parent's) and re-run the
+  // parse (ours). A body that comes back byte-identical leaves `xml`
+  // referentially equal, so without the counter the renderer's own failures —
+  // bundle load, ghost fetch, parse — would have an inert Retry button.
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => {
+    setAttempt(n => n + 1);
+    onRetry();
+  };
+  const { decks, isGhost, loading: parsing, error: parseError } = useDeckRenderer(xml, id, attempt);
 
   const body =
     decks.length === 0 ? null : (
@@ -261,14 +270,16 @@ function DeckStrip({
         <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1 }}>
           {decks.map((deck, i) => (
             <Stack
-              key={deck.attr_id || i}
+              // Position, not id: every deck the editor exports carries
+              // `Deck/id/1`, so a plan merged from several exports repeats ids.
+              key={i}
               spacing={0.5}
               alignItems="center"
               sx={{ flex: '0 0 auto' }}
             >
               <DeckRendering deck={deck} vertical data-testid={`deck-plan-deck-${i}`} />
               <Typography variant="caption" color="text.secondary" noWrap>
-                {deck.Name || t('deckPlans.deck.label', 'Deck {{n}}', { n: i + 1 })}
+                {netexText(deck.Name) ?? t('deckPlans.deck.label', 'Deck {{n}}', { n: i + 1 })}
               </Typography>
             </Stack>
           ))}
@@ -286,7 +297,7 @@ function DeckStrip({
         (parseError &&
           `${t('deckPlans.render.error', 'Could not render the deck plan')}: ${parseError}`)
       }
-      onRetry={onRetry}
+      onRetry={retry}
       testIdPrefix="deck-plan-decks"
     >
       {body}

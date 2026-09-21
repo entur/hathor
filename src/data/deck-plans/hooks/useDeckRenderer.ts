@@ -23,8 +23,12 @@ interface UseDeckRendererResult {
  *
  * @param xml NeTEx body for one deck plan; empty pauses the hook.
  * @param id Plan to draw within that body; omitted takes the first.
+ * @param reload Bump to re-run the parse against an unchanged body. Retrying
+ *   the body fetch is not enough on its own: a refetch that returns the same
+ *   bytes leaves `xml` referentially equal, so this effect never re-runs and a
+ *   bundle-load or ghost-fetch error would stick with no way to clear it.
  */
-export function useDeckRenderer(xml: string, id?: string): UseDeckRendererResult {
+export function useDeckRenderer(xml: string, id?: string, reload = 0): UseDeckRendererResult {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [isGhost, setIsGhost] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -60,7 +64,7 @@ export function useDeckRenderer(xml: string, id?: string): UseDeckRendererResult
     return () => {
       cancelled = true;
     };
-  }, [xml, id]);
+  }, [xml, id, reload]);
 
   return { decks, isGhost, loading, error };
 }

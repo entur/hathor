@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect, waitFor } from 'storybook/test';
+import { expect, spyOn, waitFor } from 'storybook/test';
 import { XMLBuilder } from 'fast-xml-parser';
 import { Box } from '@mui/material';
 import DeckPlanForm from './DeckPlanForm.tsx';
@@ -47,6 +47,23 @@ const PLAN_ID = 'NMR:DeckPlan:5';
 
 /** Six real decks in one plan; more than the rail fits, so the strip scrolls. */
 const SIX_DECKS = mkWagonsXml(WAGONS, PLAN_ID);
+
+/**
+ * Two samples merged with their native ids left alone — every wagon the editor
+ * exports carries `id="Deck/id/1"`, so this is what a plan assembled from more
+ * than one export looks like coming back from Sobek.
+ */
+const COLLIDING_IDS = mkWagonsXml([wagon1, wagon2], PLAN_ID, { keepIds: true });
+
+/**
+ * Three decks captioned three ways: the `MultilingualString` form NeTEx types
+ * `Deck/Name` as (and Sobek's JAXB therefore writes), the flat form the editor
+ * writes, and none at all.
+ */
+const MIXED_NAMES = withDeckNames(mkWagonsXml([wagon1, wagon2, wagon3], PLAN_ID), [
+  { Text: 'Lower' },
+  'Upper',
+]);
 
 /** Seats in the SAMPLE ghost — see `GHOST_SEATS` in `parseDecks`. */
 const GHOST_SEATS = 46;
@@ -112,6 +129,9 @@ export default meta;
 
 type Story = StoryObj<FormArgs>;
 
+/** Duplicate-key warnings React logged while the current story rendered. */
+let keyWarnings: string[] = [];
+
 const base = {
   mode: 'edit' as const,
   isCreate: false,
@@ -169,6 +189,53 @@ export const EditTabSample: Story = {
   },
 };
 
+/**
+ * Decks that share a NeTEx id each get their own React identity.
+ *
+ * Both still reach the DOM when keyed on the colliding id alone — React draws
+ * them and warns — but duplicate keys are explicitly unsupported: identity is
+ * not maintained across updates, so a re-render may pair a deck with another
+ * deck's `<deck-rendering>`. The console error is the contract violation, so
+ * that is what this asserts.
+ */
+export const EditTabCollidingDeckIds: Story = {
+  beforeEach: () => {
+    keyWarnings = [];
+    const spy = spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      if (String(args[0]).includes('same key')) keyWarnings.push(String(args[0]));
+    });
+    return () => spy.mockRestore();
+  },
+  render: args => <Editor {...base} railWidth={args.railWidth} xml={COLLIDING_IDS} />,
+  play: async ({ canvasElement }) => {
+    await waitFor(() => {
+      const els = canvasElement.querySelectorAll('deck-rendering');
+      expect(els).toHaveLength(2);
+      const seats = [...els].map(el => el.shadowRoot!.querySelectorAll('g.seat').length);
+      expect(seats).toEqual([WAGON_SEATS[0], WAGON_SEATS[1]]);
+    });
+
+    expect(keyWarnings).toEqual([]);
+  },
+};
+
+/**
+ * Captions read a deck's name whichever shape the document carried, and fall
+ * back to the ordinal when it has none. The renderer bundle stores `Deck.Name`
+ * verbatim, so an unwrapped `MultilingualString` reaches the caption as an
+ * object — which React refuses to render, blanking the whole editor.
+ */
+export const EditTabDeckNames: Story = {
+  render: args => <Editor {...base} railWidth={args.railWidth} xml={MIXED_NAMES} />,
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(canvasElement.querySelectorAll('deck-rendering')).toHaveLength(3));
+    const strip = canvasElement.querySelector('[data-testid="deck-plan-decks"]')!;
+    expect(strip.textContent).toContain('Lower');
+    expect(strip.textContent).toContain('Upper');
+    expect(strip.textContent).toContain('Deck 3');
+  },
+};
+
 /** Read-only: inputs disabled, renderings unaffected. */
 export const ViewMode: Story = {
   render: args => <Editor {...base} railWidth={args.railWidth} mode="view" xml={SIX_DECKS} />,
@@ -208,18 +275,21 @@ export const Create: Story = {
  * six decks.
  *
  * Each sample is its own `PublicationDelivery` with one `DeckPlan` holding one
- * `Deck`, and every one of them uses `id="Deck/id/1"` — so the ids are
- * rewritten while merging, or the strip would render six children under the
- * same React key.
+ * `Deck`, and every one of them uses `id="Deck/id/1"`. The ids are rewritten
+ * while merging so each deck is distinguishable; `keepIds` leaves the
+ * collision in place, which is what a real multi-export plan carries.
  *
  * @param docs Sample NeTEx documents, in the order to draw them.
  * @param id NeTEx id for the merged plan — must match the form's row id.
+ * @param opts `keepIds` preserves each sample's own `Deck` id.
  * @returns One document whose single `DeckPlan` carries every sample's deck.
  */
-function mkWagonsXml(docs: string[], id: string): string {
+function mkWagonsXml(docs: string[], id: string, opts: { keepIds?: boolean } = {}): string {
   const Deck = docs.flatMap((doc, i) =>
     toArray(findResourceFrame(xmlParser.parse(doc))?.deckPlans?.DeckPlan).flatMap(plan =>
-      toArray(plan?.decks?.Deck).map(deck => ({ ...deck, '@_id': `SAMPLE:Deck:${i + 1}` }))
+      toArray(plan?.decks?.Deck).map(deck =>
+        opts.keepIds ? deck : { ...deck, '@_id': `SAMPLE:Deck:${i + 1}` }
+      )
     )
   );
 
@@ -247,4 +317,26 @@ function mkWagonsXml(docs: string[], id: string): string {
       },
     },
   });
+}
+
+/**
+ * Caption each `Deck` in a document, in the shape given.
+ *
+ * The samples ship nameless, and the two valid serializations of a NeTEx
+ * `MultilingualString` — `<Name>Upper</Name>` and `<Name><Text>Lower</Text>
+ * </Name>` — reach the renderer's `Deck.Name` as a string and an object
+ * respectively. Both have to caption.
+ *
+ * @param xml One NeTEx document.
+ * @param names Name per deck, in order; a short array leaves the rest unnamed.
+ * @returns The same document with those names written in.
+ */
+function withDeckNames(xml: string, names: (string | { Text: string })[]): string {
+  const doc = xmlParser.parse(xml);
+  toArray(findResourceFrame(doc)?.deckPlans?.DeckPlan).forEach(plan =>
+    toArray(plan?.decks?.Deck).forEach((deck, i) => {
+      if (names[i] !== undefined) deck.Name = names[i];
+    })
+  );
+  return new XMLBuilder({ ignoreAttributes: false, suppressEmptyNode: true }).build(doc);
 }
