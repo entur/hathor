@@ -26,4 +26,22 @@ i18n
     },
   });
 
+/**
+ * Mirror the active language onto `<html lang>`.
+ *
+ * `index.html` ships a static `lang="en"` that nothing updated, so a user on
+ * Norwegian was served Norwegian text inside an element still claiming to be
+ * English — screen readers pick the wrong pronunciation and CSS `:lang()`
+ * never matches. The `document` guard keeps this import safe for the
+ * node-environment unit tests.
+ *
+ * @param {string} lng - Language code to publish, e.g. `'nb'`.
+ */
+const syncDocLang = (lng: string) => {
+  if (typeof document !== 'undefined') document.documentElement.lang = lng;
+};
+
+syncDocLang(i18n.resolvedLanguage ?? 'en');
+i18n.on('languageChanged', syncDocLang);
+
 export default i18n;
