@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
@@ -21,6 +22,7 @@ interface UseVehiclePairSaveResult {
 }
 
 export function useVehiclePairSave(): UseVehiclePairSaveResult {
+  const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
   const [saving, setSaving] = useState(false);
@@ -30,12 +32,15 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const save = useCallback(
     async (form: VehicleEditFormValue): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = 'Application base URL is not configured';
+        const message = t('error.noBaseUrl', 'Application base URL is not configured');
         setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = 'No organisation selected — cannot save vehicle';
+        const message = t(
+          'vehicles.save.noOrganisation',
+          'No organisation selected — cannot save vehicle'
+        );
         setError(message);
         return { newId: null, error: message };
       }
@@ -75,7 +80,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
   return { save, saving, error, clearError: () => setError(null) };
