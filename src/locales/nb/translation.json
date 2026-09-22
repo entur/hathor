@@ -276,6 +276,9 @@
   "import.multi.next": "Neste",
   "import.multi.submit": "Importer",
 
+  "autosys.errResp.incomplete.autosys.data": "Ufullstendig kjøretøydata i Autosys",
+  "autosys.errResp.badFormat.or.unknown": "Ugyldig format eller ukjent registreringsnummer",
+
   "product": "Produkt",
 
   "organisations.select.label": "Velg organisasjon",

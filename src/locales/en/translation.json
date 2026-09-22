@@ -277,6 +277,9 @@
   "import.multi.next": "Next",
   "import.multi.submit": "Submit",
 
+  "autosys.errResp.incomplete.autosys.data": "Incomplete vehicle data in Autosys",
+  "autosys.errResp.badFormat.or.unknown": "Invalid format or unknown registration number",
+
   "product": "Product",
 
   "organisations.select.label": "Select organisation",
