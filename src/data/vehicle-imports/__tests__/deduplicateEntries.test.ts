@@ -1,6 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import i18next from 'i18next';
 import { deduplicateEntries } from '../regNumbersTextTransformer';
 import type { ImportEntry } from '../types';
+import en from '../../../locales/en/translation.json';
+
+// `buildStatus` resolves through i18next — initialise so the plural forms
+// are exercised rather than the uninitialised fallback.
+beforeAll(async () => {
+  if (!i18next.isInitialized) {
+    await i18next.init({ lng: 'en', fallbackLng: 'en', resources: { en: { translation: en } } });
+  }
+});
 
 describe('deduplicateEntries', () => {
   it('returns empty result for empty input', () => {
@@ -30,7 +40,7 @@ describe('deduplicateEntries', () => {
     expect(result.entries[1]).toEqual({ queryRegNumber: 'CD5678' });
     expect(result.status.uniqueCount).toBe(2);
     expect(result.status.warnLevel).toBe('warning');
-    expect(result.status.message).toContain('1 duplicate(s) removed');
+    expect(result.status.message).toBe('2 unique registration numbers (1 duplicate removed)');
   });
 
   it('preserves first occurrence when deduplicating', () => {

@@ -72,6 +72,8 @@
   "deckPlans.tab.xml": "XML",
   "deckPlans.field.id": "ID",
   "deckPlans.xmlAriaLabel": "setekartdata",
+  "deckPlans.invalidXml": "Ugyldig XML-data",
+  "deckPlans.noResourceFrame": "Fant ingen ResourceFrame i XML-dataene",
   "breadcrumbs.home": "Hjem",
 
   "home.notLoggedIn": "Du må logge inn for å bruke registeret",
@@ -283,6 +285,15 @@
   "import.multi.skip": "Hopp over",
   "import.multi.next": "Neste",
   "import.multi.submit": "Importer",
+  "import.multi.noOrganisation": "Ingen organisasjon er valgt",
+  "import.multi.importFailed": "Importen feilet",
+  "import.multi.noRegNumbers": "Fant ingen registreringsnumre",
+  "import.multi.regNumbers_one": "{{count}} registreringsnummer",
+  "import.multi.regNumbers_other": "{{count}} registreringsnumre",
+  "import.multi.regNumbersDeduped_one": "{{uniqueCount}} unike registreringsnumre ({{count}} duplikat fjernet)",
+  "import.multi.regNumbersDeduped_other": "{{uniqueCount}} unike registreringsnumre ({{count}} duplikater fjernet)",
+  "import.multi.noResourceFrame": "Fant ingen ResourceFrame i svaret",
+  "import.multi.xmlParseFailed": "Klarte ikke å tolke XML",
 
   "autosys.errResp.incomplete.autosys.data": "Ufullstendig kjøretøydata i Autosys",
   "autosys.errResp.badFormat.or.unknown": "Ugyldig format eller ukjent registreringsnummer",
@@ -292,6 +303,7 @@
   "error.serverError": "Serverfeil ({{status}})",
   "error.unreachable": "Får ikke kontakt med serveren — sjekk at backend kjører",
   "error.unexpected": "En uventet feil oppstod",
+  "error.unknown": "Ukjent feil",
   "error.noBaseUrl": "Applikasjonens base-URL er ikke konfigurert",
   "error.noImportBaseUrl": "Applikasjonens import-base-URL er ikke konfigurert",
 

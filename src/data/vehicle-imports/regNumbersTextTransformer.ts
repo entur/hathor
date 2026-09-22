@@ -1,4 +1,5 @@
 import type { ImportEntry } from './types';
+import { tOutside } from '../../utils/tOutside';
 
 /** Severity level for the status message returned after parsing. */
 export type WarnLevel = 'success' | 'info' | 'warning' | 'error';
@@ -20,16 +21,32 @@ export interface RegNumbersResult {
 function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus {
   const duplicateCount = totalCount - uniqueCount;
   if (uniqueCount === 0) {
-    return { uniqueCount, message: 'No registration numbers found', warnLevel: 'error' };
+    return {
+      uniqueCount,
+      message: tOutside('import.multi.noRegNumbers', 'No registration numbers found'),
+      warnLevel: 'error',
+    };
   }
   if (duplicateCount > 0) {
     return {
       uniqueCount,
-      message: `${uniqueCount} unique registration numbers (${duplicateCount} duplicate(s) removed)`,
+      // Pluralises on the *duplicate* count — that is the `(s)` the old
+      // template hand-rolled. `uniqueCount` rides along as plain interpolation.
+      message: tOutside(
+        'import.multi.regNumbersDeduped',
+        '{{uniqueCount}} unique registration numbers ({{count}} duplicates removed)',
+        { count: duplicateCount, uniqueCount }
+      ),
       warnLevel: 'warning',
     };
   }
-  return { uniqueCount, message: `${uniqueCount} registration numbers`, warnLevel: 'success' };
+  return {
+    uniqueCount,
+    message: tOutside('import.multi.regNumbers', '{{count}} registration numbers', {
+      count: uniqueCount,
+    }),
+    warnLevel: 'success',
+  };
 }
 
 /**

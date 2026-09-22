@@ -1,3 +1,4 @@
+import { tOutside } from '../../utils/tOutside';
 import { translateAutosysError } from './autosysErrorTranslator';
 import type { ParsedXml, FramesByQueryRegNumber } from './types';
 import type { MergedEntities } from './xmlUtils';
@@ -63,7 +64,7 @@ export function assembleAutosysResults(
       if (!resourceFrame) {
         errors.push({
           queryRegNumber: result.queryRegNumber,
-          message: 'No ResourceFrame found in response',
+          message: tOutside('import.multi.noResourceFrame', 'No ResourceFrame found in response'),
         });
         continue;
       }
@@ -77,7 +78,10 @@ export function assembleAutosysResults(
     } catch (e) {
       errors.push({
         queryRegNumber: result.queryRegNumber,
-        message: e instanceof Error ? e.message : 'Failed to parse XML',
+        message:
+          e instanceof Error
+            ? e.message
+            : tOutside('import.multi.xmlParseFailed', 'Failed to parse XML'),
       });
     }
   }
