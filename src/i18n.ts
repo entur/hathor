@@ -43,5 +43,8 @@ const syncDocLang = (lng: string) => {
 
 syncDocLang(i18n.resolvedLanguage ?? 'en');
 i18n.on('languageChanged', syncDocLang);
+// The i18next singleton outlives this module under HMR, so drop the listener
+// when the module is replaced — otherwise dev accumulates one per reload.
+import.meta.hot?.dispose(() => i18n.off('languageChanged', syncDocLang));
 
 export default i18n;

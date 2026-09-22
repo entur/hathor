@@ -1,5 +1,5 @@
 import { ClientError } from 'graphql-request';
-import { tOutside } from '../utils/tOutside';
+import i18next from 'i18next';
 
 /**
  * Map a thrown value from any Sobek GraphQL fetch into a user-visible string.
@@ -17,12 +17,12 @@ export function graphqlErrMsg(err: unknown): string {
   if (err instanceof ClientError) {
     const status = err.response.status;
     if (status === 401)
-      return tOutside(
+      return i18next.t(
         'error.notAuthenticated',
         'Not authenticated — please log in to access this data'
       );
     if (status === 403)
-      return tOutside(
+      return i18next.t(
         'error.accessDenied',
         'Access denied — you do not have permission to view this data'
       );
@@ -30,14 +30,14 @@ export function graphqlErrMsg(err: unknown): string {
     // untranslated, since only the generic wrapper is ours to localise.
     return (
       err.response.errors?.[0]?.message ??
-      tOutside('error.serverError', 'Server error ({{status}})', { status })
+      i18next.t('error.serverError', 'Server error ({{status}})', { status })
     );
   }
   if (err instanceof TypeError)
-    return tOutside(
+    return i18next.t(
       'error.unreachable',
       'Unable to reach server — check that the backend is running'
     );
   if (err instanceof Error) return err.message;
-  return tOutside('error.unexpected', 'An unexpected error occurred');
+  return i18next.t('error.unexpected', 'An unexpected error occurred');
 }

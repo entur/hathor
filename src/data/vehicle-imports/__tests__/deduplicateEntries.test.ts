@@ -1,16 +1,9 @@
-import { beforeAll, describe, expect, it } from 'vitest';
-import i18next from 'i18next';
+import { describe, expect, it } from 'vitest';
 import { deduplicateEntries } from '../regNumbersTextTransformer';
 import type { ImportEntry } from '../types';
-import en from '../../../locales/en/translation.json';
 
-// `buildStatus` resolves through i18next — initialise so the plural forms
-// are exercised rather than the uninitialised fallback.
-beforeAll(async () => {
-  if (!i18next.isInitialized) {
-    await i18next.init({ lng: 'en', fallbackLng: 'en', resources: { en: { translation: en } } });
-  }
-});
+// `buildStatus` resolves through i18next, initialised with the real bundles by
+// the project's `setupFiles` (`vite.config.ts`).
 
 describe('deduplicateEntries', () => {
   it('returns empty result for empty input', () => {

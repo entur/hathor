@@ -6,7 +6,7 @@
  * Remove this file once Sobek returns typed error responses.
  * See: https://github.com/entur/hathor/issues/4
  */
-import { tOutside } from '../../utils/tOutside';
+import i18next from 'i18next';
 
 interface ErrorPattern {
   pattern: RegExp;
@@ -37,7 +37,7 @@ const ERROR_PATTERNS: ErrorPattern[] = [
 export function translateAutosysError(raw: string): string {
   for (const { pattern, key, defaultMessage } of ERROR_PATTERNS) {
     if (pattern.test(raw)) {
-      return tOutside(key, defaultMessage);
+      return i18next.t(key, defaultMessage);
     }
   }
   return raw;

@@ -1,20 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ClientError } from 'graphql-request';
 import { fetchVehiclesAndApply } from './fetchVehiclesAndApply';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
 const noop = () => {};
-
-const mkClientErr = (status: number, message?: string) =>
-  new ClientError(
-    {
-      status,
-      headers: new Headers(),
-      body: '',
-      errors: message ? [{ message }] : [],
-    } as never,
-    { query: '' }
-  );
 
 const aRow = { id: 'NMR:Vehicle:1' } as unknown as VehicleGQLShaped;
 
@@ -83,6 +71,8 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
     expect(setData).not.toHaveBeenCalled();
   });
 
+  // Only the routing is asserted here; the status/type → message mapping is
+  // pinned once in `graphqlErrMsg.test.ts`.
   it('routes errors through graphqlErrMsg', async () => {
     const setError = vi.fn();
     await fetchVehiclesAndApply({
@@ -91,11 +81,9 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
       setData: noop,
       setError,
       fetchVehiclesImpl: async () => {
-        throw mkClientErr(401);
+        throw new Error('boom');
       },
     });
-    expect(setError).toHaveBeenLastCalledWith(
-      'Not authenticated — please log in to access this data'
-    );
+    expect(setError).toHaveBeenLastCalledWith('boom');
   });
 });

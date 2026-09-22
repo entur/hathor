@@ -1,4 +1,4 @@
-import { tOutside } from '../../../utils/tOutside';
+import i18next from 'i18next';
 import { XMLBuilder } from 'fast-xml-parser';
 import { authHeader, type AccessToken } from '../../../auth';
 import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../../netex/xmlUtils';
@@ -37,11 +37,11 @@ export const saveDeckPlanAsNetexToBackend = async (
 ): Promise<string> => {
   const xml = xmlParser.parse(deckPlanData);
   if (!xml) {
-    throw new Error(tOutside('deckPlans.invalidXml', 'Invalid XML data'));
+    throw new Error(i18next.t('deckPlans.invalidXml', 'Invalid XML data'));
   }
   const resourceFrame = findResourceFrame(xml);
   if (!resourceFrame) {
-    throw new Error(tOutside('deckPlans.noResourceFrame', 'No ResourceFrame found in XML data'));
+    throw new Error(i18next.t('deckPlans.noResourceFrame', 'No ResourceFrame found in XML data'));
   }
   const builder = new XMLBuilder({
     ignoreAttributes: false,

@@ -1,5 +1,5 @@
 import type { ImportEntry } from './types';
-import { tOutside } from '../../utils/tOutside';
+import i18next from 'i18next';
 
 /** Severity level for the status message returned after parsing. */
 export type WarnLevel = 'success' | 'info' | 'warning' | 'error';
@@ -23,7 +23,7 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
   if (uniqueCount === 0) {
     return {
       uniqueCount,
-      message: tOutside('import.multi.noRegNumbers', 'No registration numbers found'),
+      message: i18next.t('import.multi.noRegNumbers', 'No registration numbers found'),
       warnLevel: 'error',
     };
   }
@@ -33,11 +33,15 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
       // Both numbers inflect independently, and i18next pluralises on a single
       // `count` per key — so each clause is its own key and the join is a
       // third, leaving order and punctuation to the translator.
-      message: tOutside('import.multi.regNumbersDeduped', '{{unique}} ({{duplicates}})', {
-        unique: tOutside('import.multi.uniqueRegNumbers', '{{count}} unique registration numbers', {
-          count: uniqueCount,
-        }),
-        duplicates: tOutside('import.multi.duplicatesRemoved', '{{count}} duplicates removed', {
+      message: i18next.t('import.multi.regNumbersDeduped', '{{unique}} ({{duplicates}})', {
+        unique: i18next.t(
+          'import.multi.uniqueRegNumbers',
+          '{{count}} unique registration numbers',
+          {
+            count: uniqueCount,
+          }
+        ),
+        duplicates: i18next.t('import.multi.duplicatesRemoved', '{{count}} duplicates removed', {
           count: duplicateCount,
         }),
       }),
@@ -46,7 +50,7 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
   }
   return {
     uniqueCount,
-    message: tOutside('import.multi.regNumbers', '{{count}} registration numbers', {
+    message: i18next.t('import.multi.regNumbers', '{{count}} registration numbers', {
       count: uniqueCount,
     }),
     warnLevel: 'success',

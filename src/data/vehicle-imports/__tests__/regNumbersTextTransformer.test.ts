@@ -1,18 +1,12 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import i18next from 'i18next';
 import { regNumbersTextTransformer } from '../regNumbersTextTransformer';
-import en from '../../../locales/en/translation.json';
-import nb from '../../../locales/nb/translation.json';
 
-// Status messages now resolve through i18next, so initialise it here rather
-// than asserting the uninitialised fallback — otherwise these tests would
-// never exercise the plural forms they exist to pin down.
-beforeAll(async () => {
-  await i18next.init({
-    lng: 'en',
-    fallbackLng: 'en',
-    resources: { en: { translation: en }, nb: { translation: nb } },
-  });
+// i18next is initialised with the real en/nb bundles by the project's
+// `setupFiles` (`vite.config.ts`), so these tests exercise the shipped plural
+// forms rather than a hand-seeded stub.
+afterAll(async () => {
+  await i18next.changeLanguage('en');
 });
 
 describe('regNumbersTextTransformer', () => {
@@ -99,6 +93,5 @@ describe('regNumbersTextTransformer — plural forms', () => {
     expect(regNumbersTextTransformer('AB1234\nAB1234').status.message).toBe(
       '1 unikt registreringsnummer (1 duplikat fjernet)'
     );
-    await i18next.changeLanguage('en');
   });
 });
