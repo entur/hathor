@@ -290,8 +290,11 @@
   "import.multi.noRegNumbers": "Fant ingen registreringsnumre",
   "import.multi.regNumbers_one": "{{count}} registreringsnummer",
   "import.multi.regNumbers_other": "{{count}} registreringsnumre",
-  "import.multi.regNumbersDeduped_one": "{{uniqueCount}} unike registreringsnumre ({{count}} duplikat fjernet)",
-  "import.multi.regNumbersDeduped_other": "{{uniqueCount}} unike registreringsnumre ({{count}} duplikater fjernet)",
+  "import.multi.regNumbersDeduped": "{{unique}} ({{duplicates}})",
+  "import.multi.uniqueRegNumbers_one": "{{count}} unikt registreringsnummer",
+  "import.multi.uniqueRegNumbers_other": "{{count}} unike registreringsnumre",
+  "import.multi.duplicatesRemoved_one": "{{count}} duplikat fjernet",
+  "import.multi.duplicatesRemoved_other": "{{count}} duplikater fjernet",
   "import.multi.noResourceFrame": "Fant ingen ResourceFrame i svaret",
   "import.multi.xmlParseFailed": "Klarte ikke å tolke XML",
 

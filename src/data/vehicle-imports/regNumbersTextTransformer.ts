@@ -30,13 +30,17 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
   if (duplicateCount > 0) {
     return {
       uniqueCount,
-      // Pluralises on the *duplicate* count — that is the `(s)` the old
-      // template hand-rolled. `uniqueCount` rides along as plain interpolation.
-      message: tOutside(
-        'import.multi.regNumbersDeduped',
-        '{{uniqueCount}} unique registration numbers ({{count}} duplicates removed)',
-        { count: duplicateCount, uniqueCount }
-      ),
+      // Both numbers inflect independently, and i18next pluralises on a single
+      // `count` per key — so each clause is its own key and the join is a
+      // third, leaving order and punctuation to the translator.
+      message: tOutside('import.multi.regNumbersDeduped', '{{unique}} ({{duplicates}})', {
+        unique: tOutside('import.multi.uniqueRegNumbers', '{{count}} unique registration numbers', {
+          count: uniqueCount,
+        }),
+        duplicates: tOutside('import.multi.duplicatesRemoved', '{{count}} duplicates removed', {
+          count: duplicateCount,
+        }),
+      }),
       warnLevel: 'warning',
     };
   }

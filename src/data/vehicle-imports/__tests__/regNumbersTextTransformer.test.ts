@@ -81,9 +81,15 @@ describe('regNumbersTextTransformer', () => {
 });
 
 describe('regNumbersTextTransformer — plural forms', () => {
-  it('uses the singular when exactly one duplicate was removed', () => {
-    const result = regNumbersTextTransformer('AB1234\nCD5678\nAB1234');
-    expect(result.status.message).toBe('2 unique registration numbers (1 duplicate removed)');
+  // The two counts inflect independently, so all four combinations matter —
+  // a single plural key driven by one count gets the other noun wrong.
+  it.each([
+    ['AB1234\nAB1234', '1 unique registration number (1 duplicate removed)'],
+    ['AB1234\nAB1234\nAB1234', '1 unique registration number (2 duplicates removed)'],
+    ['AB1234\nCD5678\nAB1234', '2 unique registration numbers (1 duplicate removed)'],
+    ['AB1234\nCD5678\nAB1234\nCD5678', '2 unique registration numbers (2 duplicates removed)'],
+  ])('inflects both counts independently: %s', (input, expected) => {
+    expect(regNumbersTextTransformer(input).status.message).toBe(expected);
   });
 
   it('renders nb forms, singular and plural', async () => {
@@ -91,7 +97,7 @@ describe('regNumbersTextTransformer — plural forms', () => {
     expect(regNumbersTextTransformer('AB1234').status.message).toBe('1 registreringsnummer');
     expect(regNumbersTextTransformer('AB1234\nCD5678').status.message).toBe('2 registreringsnumre');
     expect(regNumbersTextTransformer('AB1234\nAB1234').status.message).toBe(
-      '1 unike registreringsnumre (1 duplikat fjernet)'
+      '1 unikt registreringsnummer (1 duplikat fjernet)'
     );
     await i18next.changeLanguage('en');
   });

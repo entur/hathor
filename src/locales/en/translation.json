@@ -291,8 +291,11 @@
   "import.multi.noRegNumbers": "No registration numbers found",
   "import.multi.regNumbers_one": "{{count}} registration number",
   "import.multi.regNumbers_other": "{{count}} registration numbers",
-  "import.multi.regNumbersDeduped_one": "{{uniqueCount}} unique registration numbers ({{count}} duplicate removed)",
-  "import.multi.regNumbersDeduped_other": "{{uniqueCount}} unique registration numbers ({{count}} duplicates removed)",
+  "import.multi.regNumbersDeduped": "{{unique}} ({{duplicates}})",
+  "import.multi.uniqueRegNumbers_one": "{{count}} unique registration number",
+  "import.multi.uniqueRegNumbers_other": "{{count}} unique registration numbers",
+  "import.multi.duplicatesRemoved_one": "{{count}} duplicate removed",
+  "import.multi.duplicatesRemoved_other": "{{count}} duplicates removed",
   "import.multi.noResourceFrame": "No ResourceFrame found in response",
   "import.multi.xmlParseFailed": "Failed to parse XML",
 
