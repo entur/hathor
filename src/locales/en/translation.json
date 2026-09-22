@@ -280,6 +280,12 @@
   "autosys.errResp.incomplete.autosys.data": "Incomplete vehicle data in Autosys",
   "autosys.errResp.badFormat.or.unknown": "Invalid format or unknown registration number",
 
+  "error.notAuthenticated": "Not authenticated — please log in to access this data",
+  "error.accessDenied": "Access denied — you do not have permission to view this data",
+  "error.serverError": "Server error ({{status}})",
+  "error.unreachable": "Unable to reach server — check that the backend is running",
+  "error.unexpected": "An unexpected error occurred",
+
   "product": "Product",
 
   "organisations.select.label": "Select organisation",

@@ -6,7 +6,7 @@
  * Remove this file once Sobek returns typed error responses.
  * See: https://github.com/entur/hathor/issues/4
  */
-import i18next from 'i18next';
+import { tOutside } from '../../utils/tOutside';
 
 interface ErrorPattern {
   pattern: RegExp;
@@ -37,10 +37,7 @@ const ERROR_PATTERNS: ErrorPattern[] = [
 export function translateAutosysError(raw: string): string {
   for (const { pattern, key, defaultMessage } of ERROR_PATTERNS) {
     if (pattern.test(raw)) {
-      // Called from plain modules, not components, so there is no `useTranslation`
-      // to lean on. `isInitialized` is false in the node-env unit tests, which
-      // import this file without `src/i18n.ts` — fall back rather than warn.
-      return i18next.isInitialized ? i18next.t(key, defaultMessage) : defaultMessage;
+      return tOutside(key, defaultMessage);
     }
   }
   return raw;
