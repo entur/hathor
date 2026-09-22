@@ -72,6 +72,7 @@
   "deckPlans.tab.edit": "Edit",
   "deckPlans.tab.xml": "XML",
   "deckPlans.field.id": "ID",
+  "deckPlans.xmlAriaLabel": "deck plan data",
   "breadcrumbs.home": "Home",
 
   "home.notLoggedIn": "You need to log in to use the registry",
@@ -183,6 +184,8 @@
 
   "common.none": "None",
   "common.saveNoIdReturned": "Saved, but no id was returned — please refresh.",
+  "common.showLess": "Show less",
+  "common.showMore": "+{{count}} more",
 
   "vehicles": "Vehicles",
   "vehicles.title": "Vehicles",
@@ -244,6 +247,7 @@
   "rail.label": "Main navigation",
   "rail.collapse": "Collapse menu",
   "rail.expand": "Expand menu",
+  "sidebar.close": "close sidebar",
   "vehicles.rail.deactivateTooltip": "Deactivate",
   "vehicles.rail.deactivateAria": "Deactivate",
   "vehicles.rail.collapse": "Collapse",
@@ -299,6 +303,7 @@
   "organisations.loadError": "Could not load organisations.",
   "protectedRoute.loadingAuthStatus": "Checking authentication status...",
   "protectedRoute.loadingOrganisations": "Loading organisations...",
+  "auth.redirecting": "Redirecting to login provider...",
   "deckPlan.deactivateConfirmTitle": "Deactivate deck plan?",
   "deckPlan.deactivateConfirmMessage": "This deck plan will be deactivated.",
   "deckPlans.save.noOrganisation": "No organisation selected — cannot save deck plan",

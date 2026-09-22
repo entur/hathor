@@ -71,6 +71,7 @@
   "deckPlans.tab.edit": "Rediger",
   "deckPlans.tab.xml": "XML",
   "deckPlans.field.id": "ID",
+  "deckPlans.xmlAriaLabel": "setekartdata",
   "breadcrumbs.home": "Hjem",
 
   "home.notLoggedIn": "Du må logge inn for å bruke registeret",
@@ -182,6 +183,8 @@
 
   "common.none": "Ingen",
   "common.saveNoIdReturned": "Lagret, men ingen id ble returnert — last på nytt.",
+  "common.showLess": "Vis mindre",
+  "common.showMore": "+{{count}} til",
 
   "vehicles": "Kjøretøy",
   "vehicles.title": "Kjøretøy",
@@ -243,6 +246,7 @@
   "rail.label": "Hovedmeny",
   "rail.collapse": "Skjul meny",
   "rail.expand": "Vis meny",
+  "sidebar.close": "lukk sidepanel",
   "vehicles.rail.deactivateTooltip": "Deaktiver",
   "vehicles.rail.deactivateAria": "Deaktiver",
   "vehicles.rail.collapse": "Skjul",
@@ -298,6 +302,7 @@
   "organisations.loadError": "Kunne ikke hente organisasjoner.",
   "protectedRoute.loadingAuthStatus": "Sjekker autentiseringsstatus...",
   "protectedRoute.loadingOrganisations": "Laster organisasjoner...",
+  "auth.redirecting": "Videresender til innloggingsleverandør...",
   "deckPlan.deactivateConfirmTitle": "Deaktivere setekart?",
   "deckPlan.deactivateConfirmMessage": "Dette setekartet vil bli deaktivert.",
   "deckPlans.save.noOrganisation": "Ingen organisasjon valgt — kan ikke lagre setekart",

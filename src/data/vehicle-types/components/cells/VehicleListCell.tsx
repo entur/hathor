@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Chip, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { vehicleSelectedHref } from '../../../vehicles/utils/vehicleUrlParams.ts';
@@ -11,6 +12,7 @@ interface VehicleListCellProps {
 }
 
 export default function VehicleListCell({ vehicles }: VehicleListCellProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   if (vehicles.length === 0) return null;
@@ -50,7 +52,9 @@ export default function VehicleListCell({ vehicles }: VehicleListCellProps) {
           }}
           sx={{ mt: 0.5 }}
         >
-          {expanded ? 'Show less' : `+${hidden.length} more`}
+          {expanded
+            ? t('common.showLess', 'Show less')
+            : t('common.showMore', '+{{count}} more', { count: hidden.length })}
         </Link>
       )}
     </Box>

@@ -170,7 +170,7 @@ function XmlBody({
   }
   return (
     <TextareaAutosize
-      aria-label="deck plan data"
+      aria-label={t('deckPlans.xmlAriaLabel', 'deck plan data')}
       data-testid="deck-plan-xml-textarea"
       readOnly
       value={xml}
