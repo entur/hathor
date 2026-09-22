@@ -1,5 +1,17 @@
 import { ClientError } from 'graphql-request';
 
+/**
+ * Map a thrown value from any Sobek GraphQL fetch into a user-visible string.
+ *
+ * Shared by every list fetch (`useVehicleTypes`, `useDeckPlans`,
+ * `fetchVehiclesAndApply`), each of which used to inline its own identical
+ * copy of this switch — see hathor#119.
+ *
+ * @param {unknown} err - Value thrown by the fetch; any type, since a `catch`
+ *   binding is not guaranteed to be an `Error`.
+ * @returns {string} A message safe to render. Sobek's own GraphQL error text
+ *   is preferred over a generic one whenever the response carries it.
+ */
 export function graphqlErrMsg(err: unknown): string {
   if (err instanceof ClientError) {
     const status = err.response.status;
