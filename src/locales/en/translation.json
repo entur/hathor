@@ -146,7 +146,7 @@
   "vehicleType.deactivateConfirmMessage": "This vehicle type will be deactivated.",
   "vehicleType.save.noOrganisation": "No organisation selected — cannot save vehicle type",
   "vehicleType.deactivate.noOrganisation": "No organisation selected — cannot deactivate vehicle type",
-  "vehicleType.tab.edit": "Edit",
+  "vehicleType.tab.general": "General",
   "vehicleType.tab.propulsion": "Propulsion/perf.",
   "vehicleType.tab.capacity": "Passenger Capacity",
   "vehicleType.tab.environment": "Environment",

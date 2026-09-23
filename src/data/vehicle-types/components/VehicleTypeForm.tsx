@@ -34,7 +34,7 @@ import {
 } from '../types/vehicleTypeTypes.ts';
 
 /** Editor tabs — Edit (identity + dimensions) first, then the field-group tabs. */
-type TabKey = 'edit' | 'propulsion' | 'capacity' | 'environment' | 'vehicles';
+type TabKey = 'general' | 'propulsion' | 'capacity' | 'environment' | 'vehicles';
 
 interface VehicleTypeFormProps {
   value: VehicleType;
@@ -59,7 +59,7 @@ const textOr = (s: string): string | undefined => (s === '' ? undefined : s);
  */
 export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFormProps) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<TabKey>('edit');
+  const [tab, setTab] = useState<TabKey>('general');
   const ro = mode === 'view';
 
   const setField = (patch: Partial<VehicleType>) => onChange({ ...value, ...patch });
@@ -129,15 +129,15 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           },
         }}
       >
-        <Tab value="edit" label={t('vehicleType.tab.edit', 'Edit')} />
+        <Tab value="general" label={t('vehicleType.tab.general', 'General')} />
         <Tab value="propulsion" label={t('vehicleType.tab.propulsion', 'Propulsion/perf.')} />
         <Tab value="capacity" label={t('vehicleType.tab.capacity', 'Passenger Capacity')} />
         <Tab value="environment" label={t('vehicleType.tab.environment', 'Environment')} />
         <Tab value="vehicles" label={t('vehicleType.tab.vehicles', 'Vehicles')} />
       </Tabs>
 
-      {tab === 'edit' && (
-        <FormLayout data-testid="vtype-tab-edit">
+      {tab === 'general' && (
+        <FormLayout data-testid="vtype-tab-general">
           <FieldRow id="vtype-name" label={t('vehicleType.field.name', 'Name')}>
             <TextField
               id="vtype-name"

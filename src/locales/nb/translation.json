@@ -145,7 +145,7 @@
   "vehicleType.deactivateConfirmMessage": "Denne kjøretøytypen vil bli deaktivert.",
   "vehicleType.save.noOrganisation": "Ingen organisasjon valgt — kan ikke lagre kjøretøytype",
   "vehicleType.deactivate.noOrganisation": "Ingen organisasjon valgt — kan ikke deaktivere kjøretøytype",
-  "vehicleType.tab.edit": "Rediger",
+  "vehicleType.tab.general": "Generelt",
   "vehicleType.tab.propulsion": "Fremdrift/yt.",
   "vehicleType.tab.capacity": "Passasjerkapasitet",
   "vehicleType.tab.environment": "Miljø",
