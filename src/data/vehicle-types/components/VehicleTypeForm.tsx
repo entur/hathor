@@ -193,10 +193,10 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             />
           </FieldRow>
           <Divider sx={{ gridColumn: '1 / -1', my: 0.5 }} />
-          {numRow('length', t('vehicleType.field.length', 'Length'))}
-          {numRow('width', t('vehicleType.field.width', 'Width'))}
-          {numRow('height', t('vehicleType.field.height', 'Height'))}
-          {numRow('weight', t('vehicleType.field.weight', 'Weight'))}
+          {numRow('length', t('vehicleType.field.length', 'Length (m)'))}
+          {numRow('width', t('vehicleType.field.width', 'Width (m)'))}
+          {numRow('height', t('vehicleType.field.height', 'Height (m)'))}
+          {numRow('weight', t('vehicleType.field.weight', 'Weight (kg)'))}
         </FormLayout>
       )}
 
@@ -258,8 +258,11 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               fullWidth
             />
           </FieldRow>
-          {numRow('maximumVelocity', t('vehicleType.field.maximumVelocity', 'Maximum Velocity'))}
-          {numRow('maximumRange', t('vehicleType.field.maximumRange', 'Maximum Range'))}
+          {numRow(
+            'maximumVelocity',
+            t('vehicleType.field.maximumVelocity', 'Maximum Velocity (km/h)')
+          )}
+          {numRow('maximumRange', t('vehicleType.field.maximumRange', 'Maximum Range (km)'))}
         </FormLayout>
       )}
 
