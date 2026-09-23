@@ -41,6 +41,7 @@
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@mui/x-data-grid": "^8.2.0",
+    "@opentrainticketing/netex-deckplan-editor": "^2.0.5",
     "@types/papaparse": "^5.5.2",
     "fast-xml-parser": "^5.7.3",
     "graphql": "^16.11.0",

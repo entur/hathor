@@ -63,6 +63,48 @@ export const interceptVehicleTypesQuery = (page: import('@playwright/test').Page
 export const interceptDeckPlansQuery = (page: import('@playwright/test').Page) =>
   interceptGraphQLQuery(page, 'DeckPlans', MOCK_DECK_PLANS);
 
+/**
+ * Read an XML fixture from `e2e-tests/fixtures/`.
+ *
+ * @param name Fixture file name (e.g. 'deck-plan-xml-mock.xml').
+ * @returns Raw file contents.
+ */
+export const loadXmlFixture = (name: string): string =>
+  fs.readFileSync(path.join(fixturesDir, name), 'utf-8');
+
+/**
+ * Intercept the NeTEx import POST that every deck-plan save routes through,
+ * capturing the posted document.
+ *
+ * Sibling of {@link interceptVehicleTypesWithSave}: deck plans save by POSTing
+ * a patched document rather than by GraphQL mutation, so the capture is the
+ * raw body, not a mutation input. `saved()` is exposed because the two
+ * post-save failure paths — a 500 on the list refetch, a 500 on the body
+ * refetch — are both keyed on "has the write landed yet", and each is
+ * registered on a route this helper does not own.
+ *
+ * @param page Playwright Page instance.
+ * @param body XML to answer the POST with (normally the same fixture the body
+ *   route serves).
+ * @returns `posted()` — the most recent POST body, `''` before the first save;
+ *   `saved()` — whether a POST has been answered.
+ */
+export async function interceptDeckPlanSave(
+  page: import('@playwright/test').Page,
+  body: string
+): Promise<{ posted: () => string; saved: () => boolean }> {
+  let posted = '';
+  let saved = false;
+
+  await page.route('**/services/vehicles/netex', async route => {
+    posted = route.request().postData() ?? '';
+    saved = true;
+    await route.fulfill({ status: 200, contentType: 'application/xml', body });
+  });
+
+  return { posted: () => posted, saved: () => saved };
+}
+
 interface VehicleTypeInputCapture {
   netexId?: string;
   name?: { value?: string } | null;

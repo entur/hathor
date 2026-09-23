@@ -47,4 +47,22 @@ export function addDataOwnerRefToFrame(
   };
 }
 
-export const xmlParser = new XMLParser({ ignoreAttributes: false });
+/**
+ * The NeTEx parser. Tag values are never coerced.
+ *
+ * `parseTagValue` is off because the default guesses a type per value, the way
+ * a spreadsheet does: seat label `1B` comes back a string, `1` a number, `007`
+ * the number `7`, dimension `1.10` the number `1.1`. Two things follow, and the
+ * second is the worse one — numeric-looking text is rewritten on a round-trip
+ * (a pure rename silently renumbers seats), and no caller can know the type of
+ * a parsed field without re-deriving the guess from the data it is holding.
+ *
+ * Off by default rather than opt-in, because every path that re-serializes
+ * needs it and no caller reads a tag value as a number: the closest,
+ * `extractVehicleTypeIds`, reads `@_id`, and attribute parsing is governed by
+ * `parseAttributeValue` (off) regardless.
+ */
+export const xmlParser = new XMLParser({
+  ignoreAttributes: false,
+  parseTagValue: false,
+});

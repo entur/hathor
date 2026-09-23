@@ -5,7 +5,10 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  // Build output. `storybook-static` is gitignored but not eslint-ignored, so
+  // `npm run lint` after `npm run build-storybook` otherwise reports errors
+  // from bundled vendor code.
+  { ignores: ['dist', 'build', 'storybook-static'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

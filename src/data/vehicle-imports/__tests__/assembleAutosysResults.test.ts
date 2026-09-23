@@ -177,4 +177,17 @@ describe('assembleAutosysResults', () => {
     expect(summary.errors[0].queryRegNumber).toBe('AB1234');
     expect(postPayload).toBeUndefined();
   });
+
+  // This payload is parsed and re-serialized before it is POSTed, so tag-value
+  // coercion would rewrite the document on the way through: `0080` -> `80`.
+  it('sends numeric-looking text back verbatim', () => {
+    const results: AutosysFetchResult[] = [
+      { queryRegNumber: '0080', xml: makeXmlFlat({ vehicleReg: '0080' }), error: null },
+    ];
+
+    const { postPayload } = assembleAutosysResults('NOG:Authority:1', results);
+
+    expect(postPayload).toContain('<RegistrationNumber>0080</RegistrationNumber>');
+    expect(postPayload).not.toContain('<RegistrationNumber>80</RegistrationNumber>');
+  });
 });

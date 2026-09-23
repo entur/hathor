@@ -35,6 +35,9 @@ export const saveDeckPlanAsNetexToBackend = async (
   deckPlanData: string,
   token: AccessToken
 ): Promise<string> => {
+  // Verbatim: this re-serializes the whole document to graft the owning
+  // organisation on, so coercing text here would undo patchDeckPlanXml's
+  // care with the geometry.
   const xml = xmlParser.parse(deckPlanData);
   if (!xml) {
     throw new Error(i18next.t('deckPlans.invalidXml', 'Invalid XML data'));

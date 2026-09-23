@@ -14,6 +14,13 @@ export default defineConfig({
     port: process.env.PORT ? Number(process.env.PORT) : 5000,
   },
   publicDir: 'public',
+  optimizeDeps: {
+    // The deck renderer is reached only through a dynamic import inside a
+    // lazily-loaded module, so Vite's initial scan misses it and the first
+    // import races re-optimization ("Failed to fetch dynamically imported
+    // module"). Pre-bundle it at startup instead.
+    include: ['@opentrainticketing/netex-deckplan-editor/webcomponent'],
+  },
   build: {
     outDir: 'build',
     sourcemap: true,

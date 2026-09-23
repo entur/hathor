@@ -21,6 +21,7 @@ import {
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
+  restore,
   type FormState,
 } from '../stores/deckPlanFormState.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
@@ -38,10 +39,20 @@ interface DeckPlanDetailsProps {
   mode?: 'view' | 'edit';
 }
 
-type FormAction = { type: 'hydrate'; dp: DeckPlan | null } | { type: 'edit'; form: DeckPlan };
+type FormAction =
+  | { type: 'hydrate'; dp: DeckPlan | null }
+  | { type: 'edit'; form: DeckPlan }
+  | { type: 'restore' };
 
 function formReducer(state: FormState, action: FormAction): FormState {
-  return action.type === 'hydrate' ? hydrate(state, action.dp) : edit(state, action.form);
+  switch (action.type) {
+    case 'hydrate':
+      return hydrate(state, action.dp);
+    case 'edit':
+      return edit(state, action.form);
+    case 'restore':
+      return restore(state);
+  }
 }
 
 /**
@@ -162,6 +173,15 @@ export default function DeckPlanDetails({
     // Edit — patch the identity fields into the fetched document so the deck
     // body survives the round-trip, then POST the whole thing.
     if (!deckPlan?.id) return;
+    // The body the hook holds is the last one that arrived, not necessarily the
+    // current one: a post-save refetch that failed leaves the pre-save document
+    // there, and POSTing it back would resurrect what the save replaced. The
+    // save button is already disabled for this, so reaching here means some
+    // other submit path did — fail loud rather than write the wrong document.
+    if (fetchError) {
+      setRefreshError(fetchError);
+      return;
+    }
     let patched: string;
     try {
       patched = patchDeckPlanXml(xml, deckPlan.id, form.name, form.description);
@@ -289,7 +309,9 @@ export default function DeckPlanDetails({
         )}
         deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', dp: deckPlan });
+          // Baseline, not the `deckPlan` prop: a save re-baselines here but
+          // never re-commits the editor, so the prop is stale from then on.
+          dispatch({ type: 'restore' });
           setMode('view');
         }}
         onSave={handleSave}
@@ -297,8 +319,10 @@ export default function DeckPlanDetails({
         saving={saving}
         // An edit patches the fetched document, so block save until the body is
         // here — otherwise patchDeckPlanXml throws a misleading "not found in
-        // document" for what is really "not loaded yet". Create has no body.
-        canSubmit={isCreate || (!loading && !!xml)}
+        // document" for what is really "not loaded yet". `fetchError` blocks it
+        // too: the body may be present but stale (see handleSave). Create has
+        // no body.
+        canSubmit={isCreate || (!loading && !fetchError && !!xml)}
       />
     </Box>
   );

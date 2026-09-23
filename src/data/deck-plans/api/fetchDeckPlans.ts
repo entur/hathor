@@ -2,6 +2,7 @@ import type { AccessToken } from '../../../auth/index.ts';
 import { fetchDeckPlansRequest } from '../../../graphql/vehicles/queries/fetchDeckPlans.ts';
 import type { DeckPlanContext } from '../types/deckPlanTypes.ts';
 import type { DeckPlan, Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import { netexName } from '../../netex/multilingualString.ts';
 import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 
@@ -39,12 +40,15 @@ const projectDeckPlan = (dp: DeckPlanWire): DeckPlan => ({
  * Domain → input inverse of {@link projectDeckPlan}. Emits the full document
  * with blanks as explicit `null` — Sobek's `createOrUpdateDeckPlan` is a
  * full-replace, so an omitted/blank input field nulls the persisted value.
+ * `netexName` reports a blank name as absent; the `?? null` is that absence
+ * spelled for the wire, where an omitted key would mean the same thing but
+ * reads as an oversight.
  */
 export const serializeDeckPlan = (dp: DeckPlan, dataOwnerRef: string): DeckPlanInput => ({
   netexId: dp.id === '' ? undefined : dp.id,
   dataOwnerRef,
-  name: dp.name ?? null,
-  description: dp.description ?? null,
+  name: netexName(dp.name) ?? null,
+  description: netexName(dp.description) ?? null,
 });
 
 export const fetchDeckPlans = async (

@@ -8,9 +8,11 @@ const fetchDeckPlansGQL = gql`
         netexId
         name {
           value
+          lang
         }
         description {
           value
+          lang
         }
         version
       }
