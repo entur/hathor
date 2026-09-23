@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
@@ -32,6 +33,7 @@ interface UseDeckPlanSaveResult {
  * without unmounting the slider.
  */
 export function useDeckPlanSave(): UseDeckPlanSaveResult {
+  const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl, applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
@@ -41,12 +43,15 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const save = useCallback(
     async (xml: string): Promise<SaveResult> => {
       if (!applicationImportBaseUrl) {
-        const message = 'Application import base URL is not configured';
+        const message = t('error.noImportBaseUrl', 'Application import base URL is not configured');
         setError(message);
         return { error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = 'No organisation selected — cannot save deck plan';
+        const message = t(
+          'deckPlans.save.noOrganisation',
+          'No organisation selected — cannot save deck plan'
+        );
         setError(message);
         return { error: message };
       }
@@ -69,18 +74,21 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
         setSaving(false);
       }
     },
-    [applicationImportBaseUrl, getAccessToken, currentOrganisation?.id]
+    [applicationImportBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
   const saveGQL = useCallback(
     async (form: DeckPlan): Promise<{ newId: string | null; error: string | null }> => {
       if (!applicationBaseUrl) {
-        const message = 'Application base URL is not configured';
+        const message = t('error.noBaseUrl', 'Application base URL is not configured');
         setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = 'No organisation selected — cannot save deck plan';
+        const message = t(
+          'deckPlans.save.noOrganisation',
+          'No organisation selected — cannot save deck plan'
+        );
         setError(message);
         return { newId: null, error: message };
       }
@@ -102,7 +110,7 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
   return { save, saveGQL, saving, error, clearError: () => setError(null) };

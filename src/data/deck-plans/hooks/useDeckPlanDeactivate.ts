@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
@@ -23,6 +24,7 @@ interface UseDeckPlanDeactivateResult {
  * @returns `deactivate` (→ `{ newVersion, error }`), plus `saving`, `error`, `clearError`.
  */
 export function useDeckPlanDeactivate(): UseDeckPlanDeactivateResult {
+  const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
@@ -32,12 +34,15 @@ export function useDeckPlanDeactivate(): UseDeckPlanDeactivateResult {
   const deactivate = useCallback(
     async (form: DeckPlan): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = 'Application base URL is not configured';
+        const message = t('error.noBaseUrl', 'Application base URL is not configured');
         setError(message);
         return { newVersion: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = 'No organisation selected — cannot deactivate deck plan';
+        const message = t(
+          'deckPlans.deactivate.noOrganisation',
+          'No organisation selected — cannot deactivate deck plan'
+        );
         setError(message);
         return { newVersion: null, error: message };
       }
@@ -59,7 +64,7 @@ export function useDeckPlanDeactivate(): UseDeckPlanDeactivateResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
   return { deactivate, saving, error, clearError: () => setError(null) };

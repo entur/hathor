@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import { serializeVehicleType } from '../api/fetchVehicleTypes.ts';
@@ -28,6 +29,7 @@ interface UseVehicleTypeSaveResult {
  * @returns `save` (→ `{ newId, error }`), plus `saving`, `error`, `clearError`.
  */
 export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
+  const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
@@ -37,12 +39,15 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
   const save = useCallback(
     async (form: VehicleType): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = 'Application base URL is not configured';
+        const message = t('error.noBaseUrl', 'Application base URL is not configured');
         setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = 'No organisation selected — cannot save vehicle type';
+        const message = t(
+          'vehicleType.save.noOrganisation',
+          'No organisation selected — cannot save vehicle type'
+        );
         setError(message);
         return { newId: null, error: message };
       }
@@ -64,7 +69,7 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         setSaving(false);
       }
     },
-    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
+    [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
   return { save, saving, error, clearError: () => setError(null) };

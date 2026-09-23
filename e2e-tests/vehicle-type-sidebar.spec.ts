@@ -64,7 +64,7 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
       // Data-agnostic: open the org's first real row, assert the deep-link + the
       // Edit tab are present (fixture name/id don't exist live).
       await openFirstVtype(page);
-      await expect(page.getByTestId('vtype-tab-edit')).toBeVisible();
+      await expect(page.getByTestId('vtype-tab-general')).toBeVisible();
       return;
     }
 
@@ -76,7 +76,7 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
 
     await expect(page).toHaveURL(/selected=NMR%3AVehicleType%3A1/);
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha');
-    await expect(page.getByTestId('vtype-tab-edit')).toBeVisible();
+    await expect(page.getByTestId('vtype-tab-general')).toBeVisible();
   });
 
   test('tabs group the fields; Edit holds name + dimensions, others are reachable', async ({

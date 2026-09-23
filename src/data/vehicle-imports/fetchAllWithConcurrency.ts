@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import type { AutosysFetchResult } from './assembleAutosysResults';
 
 /** Fetch multiple registration numbers with bounded concurrency.
@@ -23,7 +24,7 @@ export async function fetchAllWithConcurrency(
         results[i] = {
           queryRegNumber,
           xml: '',
-          error: e instanceof Error ? e.message : 'Unknown error',
+          error: e instanceof Error ? e.message : i18next.t('error.unknown', 'Unknown error'),
         };
       }
       completed++;
