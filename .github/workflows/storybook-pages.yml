@@ -1,0 +1,67 @@
+name: Deploy Storybook to GitHub Pages
+
+# Publishes the static Storybook build into the `storybook/` subdirectory of
+# the `concept-sandbox` publish branch, which GitHub Pages serves at the repo
+# root. Result: https://entur.github.io/hathor/storybook/
+#
+# The concept sandbox owns the site root (see pages.yml). Both workflows push
+# to the same publish branch, so:
+#   - both set `keep_files: true` so neither wipes the other's output
+#   - both share the `pages-publish` concurrency group so their pushes to the
+#     branch serialise instead of racing into a non-fast-forward failure
+#
+# Runs from `ui-sandboxing`, NOT main — the same branch that owns the sandbox,
+# so a single push publishes both halves of the site from one consistent tree.
+# The file stays on main only so it merges down cleanly; with main absent from
+# the branch filter it never fires there. Scoping the trigger rather than
+# deleting the file avoids a delete/modify conflict every time main is merged
+# into the long-lived `ui-sandboxing` branch.
+
+on:
+  push:
+    branches: [ui-sandboxing]
+    paths:
+      - 'src/**'
+      - '.storybook/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/storybook-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-publish
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Same guard as pages.yml — keeps the whole published site sourced from one
+    # tree, so a dispatch from main can't mix main's Storybook with the
+    # sandbox built from ui-sandboxing.
+    if: github.ref == 'refs/heads/ui-sandboxing'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build static Storybook
+        run: npm run build-storybook
+
+      - name: Deploy to concept-sandbox branch under /storybook
+        # Pinned to an immutable commit, not the mutable `v4` tag (CodeQL
+        # "Unpinned tag for a non-immutable Action"). Bump deliberately.
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook-static
+          publish_branch: concept-sandbox
+          destination_dir: storybook
+          keep_files: true

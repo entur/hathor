@@ -1,20 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ClientError } from 'graphql-request';
-import { fetchVehiclesAndApply, translateVehiclesFetchError } from './fetchVehiclesAndApply';
+import { fetchVehiclesAndApply } from './fetchVehiclesAndApply';
 import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
 const noop = () => {};
-
-const mkClientErr = (status: number, message?: string) =>
-  new ClientError(
-    {
-      status,
-      headers: new Headers(),
-      body: '',
-      errors: message ? [{ message }] : [],
-    } as never,
-    { query: '' }
-  );
 
 const aRow = { id: 'NMR:Vehicle:1' } as unknown as VehicleGQLShaped;
 
@@ -83,7 +71,9 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
     expect(setData).not.toHaveBeenCalled();
   });
 
-  it('routes errors through translateVehiclesFetchError', async () => {
+  // Only the routing is asserted here; the status/type → message mapping is
+  // pinned once in `graphqlErrMsg.test.ts`.
+  it('routes errors through graphqlErrMsg', async () => {
     const setError = vi.fn();
     await fetchVehiclesAndApply({
       applicationBaseUrl: 'http://x/',
@@ -91,41 +81,9 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
       setData: noop,
       setError,
       fetchVehiclesImpl: async () => {
-        throw mkClientErr(401);
+        throw new Error('boom');
       },
     });
-    expect(setError).toHaveBeenLastCalledWith(
-      'Not authenticated — please log in to access this data'
-    );
-  });
-});
-
-describe('translateVehiclesFetchError — error message mapping', () => {
-  it('401 → "Not authenticated"', () => {
-    expect(translateVehiclesFetchError(mkClientErr(401))).toContain('Not authenticated');
-  });
-
-  it('403 → "Access denied"', () => {
-    expect(translateVehiclesFetchError(mkClientErr(403))).toContain('Access denied');
-  });
-
-  it('other ClientError → server error with status or first GraphQL error message', () => {
-    expect(translateVehiclesFetchError(mkClientErr(500))).toContain('500');
-    expect(translateVehiclesFetchError(mkClientErr(500, 'oops'))).toBe('oops');
-  });
-
-  it('TypeError → "Unable to reach server"', () => {
-    expect(translateVehiclesFetchError(new TypeError('fetch failed'))).toContain(
-      'Unable to reach server'
-    );
-  });
-
-  it('generic Error → error.message', () => {
-    expect(translateVehiclesFetchError(new Error('boom'))).toBe('boom');
-  });
-
-  it('non-Error → "An unexpected error occurred"', () => {
-    expect(translateVehiclesFetchError({ weird: true })).toBe('An unexpected error occurred');
-    expect(translateVehiclesFetchError('string-thrown')).toBe('An unexpected error occurred');
+    expect(setError).toHaveBeenLastCalledWith('boom');
   });
 });

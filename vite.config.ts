@@ -39,6 +39,11 @@ export default defineConfig({
           globals: true,
           environment: 'node',
           include: ['src/**/*.test.{ts,tsx}'],
+          // Initialise i18next once for the whole project, exactly as
+          // `.storybook/preview.tsx` and `src/main.tsx` do for their entries.
+          // Without it `i18next.t()` is unbound and returns `undefined`, so
+          // every module that localises a string would need a guarded wrapper.
+          setupFiles: ['src/i18n.ts'],
         },
       },
       {

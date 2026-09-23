@@ -1,4 +1,5 @@
 import type { ImportEntry } from './types';
+import i18next from 'i18next';
 
 /** Severity level for the status message returned after parsing. */
 export type WarnLevel = 'success' | 'info' | 'warning' | 'error';
@@ -20,16 +21,40 @@ export interface RegNumbersResult {
 function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus {
   const duplicateCount = totalCount - uniqueCount;
   if (uniqueCount === 0) {
-    return { uniqueCount, message: 'No registration numbers found', warnLevel: 'error' };
+    return {
+      uniqueCount,
+      message: i18next.t('import.multi.noRegNumbers', 'No registration numbers found'),
+      warnLevel: 'error',
+    };
   }
   if (duplicateCount > 0) {
     return {
       uniqueCount,
-      message: `${uniqueCount} unique registration numbers (${duplicateCount} duplicate(s) removed)`,
+      // Both numbers inflect independently, and i18next pluralises on a single
+      // `count` per key — so each clause is its own key and the join is a
+      // third, leaving order and punctuation to the translator.
+      message: i18next.t('import.multi.regNumbersDeduped', '{{unique}} ({{duplicates}})', {
+        unique: i18next.t(
+          'import.multi.uniqueRegNumbers',
+          '{{count}} unique registration numbers',
+          {
+            count: uniqueCount,
+          }
+        ),
+        duplicates: i18next.t('import.multi.duplicatesRemoved', '{{count}} duplicates removed', {
+          count: duplicateCount,
+        }),
+      }),
       warnLevel: 'warning',
     };
   }
-  return { uniqueCount, message: `${uniqueCount} registration numbers`, warnLevel: 'success' };
+  return {
+    uniqueCount,
+    message: i18next.t('import.multi.regNumbers', '{{count}} registration numbers', {
+      count: uniqueCount,
+    }),
+    warnLevel: 'success',
+  };
 }
 
 /**

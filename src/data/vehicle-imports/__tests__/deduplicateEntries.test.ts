@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { deduplicateEntries } from '../regNumbersTextTransformer';
 import type { ImportEntry } from '../types';
 
+// `buildStatus` resolves through i18next, initialised with the real bundles by
+// the project's `setupFiles` (`vite.config.ts`).
+
 describe('deduplicateEntries', () => {
   it('returns empty result for empty input', () => {
     const result = deduplicateEntries([]);
@@ -30,7 +33,7 @@ describe('deduplicateEntries', () => {
     expect(result.entries[1]).toEqual({ queryRegNumber: 'CD5678' });
     expect(result.status.uniqueCount).toBe(2);
     expect(result.status.warnLevel).toBe('warning');
-    expect(result.status.message).toContain('1 duplicate(s) removed');
+    expect(result.status.message).toBe('2 unique registration numbers (1 duplicate removed)');
   });
 
   it('preserves first occurrence when deduplicating', () => {

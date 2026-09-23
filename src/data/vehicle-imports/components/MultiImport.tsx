@@ -125,7 +125,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const startFetch = async () => {
     if (currentOrganisation?.id === undefined) {
-      setSubmitError('Current organisation is not set');
+      setSubmitError(t('import.multi.noOrganisation', 'Current organisation is not set'));
       return;
     }
     const regNumbers = entries.map(e => e.queryRegNumber);
@@ -164,7 +164,9 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       }
       onClose();
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Import failed');
+      setSubmitError(
+        e instanceof Error ? e.message : t('import.multi.importFailed', 'Import failed')
+      );
     } finally {
       setSubmitting(false);
     }

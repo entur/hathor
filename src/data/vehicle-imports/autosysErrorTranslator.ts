@@ -6,6 +6,7 @@
  * Remove this file once Sobek returns typed error responses.
  * See: https://github.com/entur/hathor/issues/4
  */
+import i18next from 'i18next';
 
 interface ErrorPattern {
   pattern: RegExp;
@@ -26,10 +27,17 @@ const ERROR_PATTERNS: ErrorPattern[] = [
   },
 ];
 
+/**
+ * Map a raw Autosys/Sobek error body to a localised, user-facing message.
+ *
+ * @param {string} raw - Error body as returned by Sobek.
+ * @returns {string} The translated message for a known pattern, else `raw`
+ *   unchanged (an untranslated backend string beats swallowing the detail).
+ */
 export function translateAutosysError(raw: string): string {
-  for (const { pattern, defaultMessage } of ERROR_PATTERNS) {
+  for (const { pattern, key, defaultMessage } of ERROR_PATTERNS) {
     if (pattern.test(raw)) {
-      return defaultMessage;
+      return i18next.t(key, defaultMessage);
     }
   }
   return raw;

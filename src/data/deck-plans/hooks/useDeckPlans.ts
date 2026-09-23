@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ClientError } from 'graphql-request';
+import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
 import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../../contexts/configContext.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
@@ -30,9 +30,9 @@ export function useDeckPlans() {
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
 
-  // This doFetch shape (gate → fetch chain → translate error → setLoading)
-  // is duplicated in `useVehicleTypes` and `useVehicles`. The duplication
-  // is tracked for lift in hathor#119 — keep variants in sync until then.
+  // This doFetch shape (gate → fetch chain → setLoading) is still duplicated
+  // in `useVehicleTypes` and `useVehicles`; the error translation it used to
+  // inline now lives in `graphqlErrMsg`. Remaining lift tracked in hathor#119.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
     setLoading(true);
@@ -46,27 +46,7 @@ export function useDeckPlans() {
         setData(ctx.deckPlans);
       })
       .catch((err: unknown) => {
-        if (err instanceof ClientError) {
-          const status = err.response.status;
-          switch (status) {
-            case 401:
-              setError('Not authenticated — please log in to access this data');
-              break;
-            case 403:
-              setError('Access denied — you do not have permission to view this data');
-              break;
-            default: {
-              const message = err.response.errors?.[0]?.message;
-              setError(message ?? `Server error (${status})`);
-            }
-          }
-        } else if (err instanceof TypeError) {
-          setError('Unable to reach server — check that the backend is running');
-        } else if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
+        setError(graphqlErrMsg(err));
         // Re-throw so `refetch()` honestly rejects on failure (e.g. a failed
         // post-save refresh) instead of resolving and masking the error.
         throw err;

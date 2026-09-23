@@ -1,5 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
+import i18next from 'i18next';
 import { regNumbersTextTransformer } from '../regNumbersTextTransformer';
+
+// i18next is initialised with the real en/nb bundles by the project's
+// `setupFiles` (`vite.config.ts`), so these tests exercise the shipped plural
+// forms rather than a hand-seeded stub.
+afterAll(async () => {
+  await i18next.changeLanguage('en');
+});
 
 describe('regNumbersTextTransformer', () => {
   it('parses newline-separated registration numbers', () => {
@@ -30,7 +38,7 @@ describe('regNumbersTextTransformer', () => {
     expect(result.registrationNumbers).toEqual(['AB1234', 'CD5678', 'EF9012']);
     expect(result.status.uniqueCount).toBe(3);
     expect(result.status.warnLevel).toBe('warning');
-    expect(result.status.message).toContain('2 duplicate(s) removed');
+    expect(result.status.message).toBe('3 unique registration numbers (2 duplicates removed)');
   });
 
   it('returns error status for empty input', () => {
@@ -51,7 +59,8 @@ describe('regNumbersTextTransformer', () => {
     expect(result.registrationNumbers).toEqual(['AB1234']);
     expect(result.status.uniqueCount).toBe(1);
     expect(result.status.warnLevel).toBe('success');
-    expect(result.status.message).toBe('1 registration numbers');
+    // Was '1 registration numbers' — the hand-rolled template had no singular.
+    expect(result.status.message).toBe('1 registration number');
   });
 
   it('handles Windows-style line endings (CRLF)', () => {
@@ -62,5 +71,27 @@ describe('regNumbersTextTransformer', () => {
   it('preserves order of first occurrence when deduplicating', () => {
     const result = regNumbersTextTransformer('ZZ999\nAA111\nZZ999\nBB222');
     expect(result.registrationNumbers).toEqual(['ZZ999', 'AA111', 'BB222']);
+  });
+});
+
+describe('regNumbersTextTransformer — plural forms', () => {
+  // The two counts inflect independently, so all four combinations matter —
+  // a single plural key driven by one count gets the other noun wrong.
+  it.each([
+    ['AB1234\nAB1234', '1 unique registration number (1 duplicate removed)'],
+    ['AB1234\nAB1234\nAB1234', '1 unique registration number (2 duplicates removed)'],
+    ['AB1234\nCD5678\nAB1234', '2 unique registration numbers (1 duplicate removed)'],
+    ['AB1234\nCD5678\nAB1234\nCD5678', '2 unique registration numbers (2 duplicates removed)'],
+  ])('inflects both counts independently: %s', (input, expected) => {
+    expect(regNumbersTextTransformer(input).status.message).toBe(expected);
+  });
+
+  it('renders nb forms, singular and plural', async () => {
+    await i18next.changeLanguage('nb');
+    expect(regNumbersTextTransformer('AB1234').status.message).toBe('1 registreringsnummer');
+    expect(regNumbersTextTransformer('AB1234\nCD5678').status.message).toBe('2 registreringsnumre');
+    expect(regNumbersTextTransformer('AB1234\nAB1234').status.message).toBe(
+      '1 unikt registreringsnummer (1 duplikat fjernet)'
+    );
   });
 });
