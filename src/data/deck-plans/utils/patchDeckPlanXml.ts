@@ -1,6 +1,6 @@
 import { XMLBuilder } from 'fast-xml-parser';
 import { findResourceFrame, toArray, xmlParser } from '../../netex/xmlUtils.ts';
-import { trimName } from '../../netex/multilingualString.ts';
+import { netexName } from '../../netex/multilingualString.ts';
 import type { ParsedXml } from '../../netex/xmlUtils.ts';
 import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
@@ -39,7 +39,7 @@ function reorderInPlace(dp: ParsedXml): void {
 
 /** Domain Name → NeTEx text node, or `undefined` when blank after trimming. */
 const textNode = (n?: Name): TextNode | undefined => {
-  const t = trimName(n);
+  const t = netexName(n);
   if (!t) return undefined;
   return t.lang ? { Text: t.value, '@_lang': t.lang } : { Text: t.value };
 };

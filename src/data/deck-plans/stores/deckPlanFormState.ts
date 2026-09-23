@@ -1,5 +1,5 @@
 import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
-import { trimName } from '../../netex/multilingualString.ts';
+import { netexName } from '../../netex/multilingualString.ts';
 
 /** Empty draft used before a row resolves, and as the create factory's base. */
 const BLANK: DeckPlan = { id: '' };
@@ -14,8 +14,8 @@ export const initialFormState: FormState = { form: BLANK, baseline: BLANK };
 /** Editable projection of a DeckPlan — the only fields this editor writes. */
 const normalise = (dp: DeckPlan): DeckPlan => ({
   ...dp,
-  name: trimName(dp.name),
-  description: trimName(dp.description),
+  name: netexName(dp.name),
+  description: netexName(dp.description),
 });
 
 /**

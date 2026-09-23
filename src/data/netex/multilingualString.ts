@@ -31,19 +31,26 @@ export const mergeNameText = (
 ): MultilingualString | undefined => (text === '' ? undefined : { ...cur, value: text });
 
 /**
- * Trim a NeTEx Name, dropping it entirely when nothing survives, keeping `lang`.
+ * Canonicalise a NeTEx Name: trimmed, `lang` kept, absent when blank.
  *
- * Emptiness is decided *after* trimming because Sobek serializes an empty Name
- * as a whitespace string rather than null, so a fetched value arrives
- * whitespace-wrapped while `fast-xml-parser` hands back the same field trimmed.
- * Callers that must emit an explicit `null` (a full-replace input) spell that
- * at the call site with `?? null`.
+ * Deliberately not a `trim` — blank is not a value here. NeTEx spells "no
+ * name" as no element at all, so `{ value: '   ' }` and `{ value: '' }` mean
+ * the same thing, and handing back `''` would only move that judgement into
+ * every caller. Emptiness is decided *after* trimming because Sobek serializes
+ * an empty Name as a whitespace string rather than null, so a fetched value
+ * arrives whitespace-wrapped while `fast-xml-parser` hands back the same field
+ * trimmed.
+ *
+ * Absence is then spelled in each caller's own dialect: `undefined` in the form
+ * store, an explicit `null` on a full-replace GQL input (`?? null`), no `<Text>`
+ * node at all in the XML patcher. Pairs with {@link netexText}, the same rule
+ * for a value read back out of a parsed document.
  *
  * @param {MultilingualString | null} [n] - name as read from GQL or parsed XML
  * @returns {MultilingualString | undefined} trimmed name, or `undefined` when
  *   blank
  */
-export const trimName = (
+export const netexName = (
   n?: { value?: string; lang?: string } | null
 ): MultilingualString | undefined => {
   const value = n?.value?.trim();
@@ -55,17 +62,17 @@ export const trimName = (
  * Read a NeTEx text value that arrived from an XML parser, in whichever shape
  * the document produced.
  *
- * `trimName`'s counterpart on the read side. NeTEx types most name-ish
- * elements as `MultilingualString`, so `<Name>Lower</Name>` and
- * `<Name><Text>Lower</Text></Name>` are both valid for the same field and the
- * deck-renderer bundle stores whichever it got verbatim (`this.Name = o ?? ''`
- * — unlike its own equipment classes, which unwrap). Rendering that object as
- * a React child throws, so every read of such a value goes through here. The
- * three accepted shapes are the ones the package's own tree view unwraps.
+ * {@link netexName}'s counterpart on the read side, absent on blank for the
+ * same reason. NeTEx types most name-ish elements as `MultilingualString`, so
+ * `<Name>Lower</Name>` and `<Name><Text>Lower</Text></Name>` are both valid
+ * for the same field, and the deck-renderer bundle stores whichever it got
+ * verbatim (`this.Name = o ?? ''` — unlike its own equipment classes, which
+ * unwrap). Rendering that object as a React child throws, so every read of
+ * such a value goes through here. The three accepted shapes are the ones the
+ * package's own tree view unwraps.
  *
- * Blank is decided after trimming, as in {@link trimName}: Sobek writes an
- * empty Name as whitespace, and a truthy `'  '` would suppress a caller's
- * fallback label.
+ * Blank is decided after trimming: Sobek writes an empty Name as whitespace,
+ * and a truthy `'  '` would suppress a caller's fallback label.
  *
  * @param {unknown} [v] - value as parsed: a string, `{Text}` (what the
  *   deck-renderer's parser yields), `{text_value}`, `{value}`, or nothing

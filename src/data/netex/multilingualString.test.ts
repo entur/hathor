@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeNameText, netexText, trimName } from './multilingualString.ts';
+import { mergeNameText, netexText, netexName } from './multilingualString.ts';
 
 /**
  * mergeNameText — a name field edits only `value`; the existing `lang` tag must
@@ -34,36 +34,37 @@ describe('mergeNameText', () => {
  * Canonical home for the trim-drop-blank-keep-lang rule. Three call sites
  * spell the emptiness decision differently on the way out — GQL wants an
  * explicit `null`, the form store wants `undefined`, the XML patcher wants a
- * `<Text>` node — but they share this one.
+ * `<Text>` node — but they share this one. Hence absent rather than `''`: a
+ * blank that survives as a value has to be re-judged at all three.
  */
-describe('trimName', () => {
+describe('netexName', () => {
   it('trims the value and keeps lang', () => {
-    expect(trimName({ value: '  Plan Alpha  ', lang: 'nb' })).toEqual({
+    expect(netexName({ value: '  Plan Alpha  ', lang: 'nb' })).toEqual({
       value: 'Plan Alpha',
       lang: 'nb',
     });
   });
 
   it('omits lang when there was none', () => {
-    expect(trimName({ value: ' Plan Alpha ' })).toEqual({ value: 'Plan Alpha' });
+    expect(netexName({ value: ' Plan Alpha ' })).toEqual({ value: 'Plan Alpha' });
   });
 
   // Sobek serializes an empty Name as a whitespace string, not null — so
   // emptiness has to be decided after trimming, not before.
   it('drops a name that is only whitespace', () => {
-    expect(trimName({ value: '   ' })).toBeUndefined();
-    expect(trimName({ value: '\n  \t ', lang: 'nb' })).toBeUndefined();
+    expect(netexName({ value: '   ' })).toBeUndefined();
+    expect(netexName({ value: '\n  \t ', lang: 'nb' })).toBeUndefined();
   });
 
   it('drops an empty, missing or null name', () => {
-    expect(trimName({ value: '' })).toBeUndefined();
-    expect(trimName(undefined)).toBeUndefined();
-    expect(trimName(null)).toBeUndefined();
+    expect(netexName({ value: '' })).toBeUndefined();
+    expect(netexName(undefined)).toBeUndefined();
+    expect(netexName(null)).toBeUndefined();
   });
 });
 
 /**
- * netexText — the read-side counterpart to `trimName`, for values that came
+ * netexText — the read-side counterpart to `netexName`, for values that came
  * out of an XML parser rather than GQL. The deck-renderer bundle stores
  * `Deck.Name` verbatim (`this.Name = o ?? ''`), so whichever shape the document
  * carried reaches the caption unchanged: a `MultilingualString` arrives as
@@ -90,7 +91,7 @@ describe('netexText', () => {
     expect(netexText('Lower')).toBe('Lower');
   });
 
-  // Same rule as trimName: Sobek writes an empty Name as whitespace, and a
+  // Same rule as netexName: Sobek writes an empty Name as whitespace, and a
   // truthy '  ' would suppress the caller's ordinal fallback.
   it('drops a blank, whitespace, missing or null value in every shape', () => {
     expect(netexText({ Text: '  \n' })).toBeUndefined();
