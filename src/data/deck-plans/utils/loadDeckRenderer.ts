@@ -3,6 +3,13 @@ import type { DeckPlan } from '@opentrainticketing/netex-deckplan-editor';
 /** Custom-element tag registered by the editor's web-component entry. */
 export const DECK_RENDERING_TAG = 'deck-rendering';
 
+/**
+ * How long to wait for that registration before giving up. Generous — it is a
+ * deadlock detector, not a performance budget; the bundle has already loaded by
+ * the time the clock starts.
+ */
+export const TAG_DEFINE_MS = 10_000;
+
 /** The slice of the entry's default export we depend on. */
 export interface DeckRendererModule {
   parseNeTEx: (xml: string) => DeckPlan[];
@@ -31,9 +38,32 @@ let pending: Promise<DeckRendererModule> | null = null;
  */
 export function loadDeckRenderer(): Promise<DeckRendererModule> {
   return (pending ??= import('@opentrainticketing/netex-deckplan-editor/webcomponent')
-    .then(m => customElements.whenDefined(DECK_RENDERING_TAG).then(() => m.default))
+    .then(m => awaitTag().then(() => m.default))
     .catch(e => {
       pending = null;
       throw e;
     }));
+}
+
+/**
+ * Wait for the tag, but fail rather than hang.
+ *
+ * `whenDefined` has no rejection path: a bundle that loads without registering
+ * the element — tree-shaken side effect, upstream rename, a `customElements.get`
+ * short-circuit against a half-initialised registry — leaves the promise
+ * pending forever, and `useDeckRenderer` sits at `loading: true` with no error
+ * to retry from. Racing a timer converts that silence into the failure the
+ * caller already knows how to show.
+ */
+function awaitTag(): Promise<void> {
+  let timer: ReturnType<typeof setTimeout>;
+  const expiry = new Promise<never>((_, rej) => {
+    timer = setTimeout(
+      () => rej(new Error(`<${DECK_RENDERING_TAG}> was not registered within ${TAG_DEFINE_MS} ms`)),
+      TAG_DEFINE_MS
+    );
+  });
+  return Promise.race([customElements.whenDefined(DECK_RENDERING_TAG), expiry])
+    .then(() => undefined)
+    .finally(() => clearTimeout(timer));
 }

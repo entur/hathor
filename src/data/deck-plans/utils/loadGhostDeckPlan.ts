@@ -18,6 +18,9 @@ const GHOST_URL = `${import.meta.env.BASE_URL}sample-deck-plan.xml`;
 /** NeTEx id inside that document. Distinct from any real plan's id. */
 export const GHOST_PLAN_ID = 'GHOST:DeckPlan:1';
 
+/** How a NeTEx document may open. Anything else is not one. */
+const XML_OPENINGS = ['<?xml', '<PublicationDelivery'];
+
 let pending: Promise<string> | null = null;
 
 /**
@@ -27,13 +30,23 @@ let pending: Promise<string> | null = null;
  * request, and a failure clears the memo so a later mount can retry rather
  * than replaying a rejected promise forever.
  *
+ * `r.ok` is not enough on its own. A host with history fallback answers a
+ * missing asset — or a wrong `BASE_URL` — with `200 text/html` and `index.html`
+ * in the body, so the check passes and the failure surfaces a layer out as
+ * `parseNeTEx` choking on `<!doctype html>`: an internal parser message where
+ * the truth is "the file is not there". Checking how the body opens names it
+ * here, at the fetch.
+ *
  * @returns Resolves with the raw NeTEx XML.
  */
 export function loadGhostDeckPlanXml(): Promise<string> {
   return (pending ??= fetch(GHOST_URL)
-    .then(r => {
+    .then(async r => {
       if (!r.ok) throw new Error(`Sample deck plan ${r.status}`);
-      return r.text();
+      const body = await r.text();
+      if (!XML_OPENINGS.some(o => body.trimStart().startsWith(o)))
+        throw new Error(`Sample deck plan at ${GHOST_URL} is not NeTEx XML`);
+      return body;
     })
     .catch(e => {
       pending = null;

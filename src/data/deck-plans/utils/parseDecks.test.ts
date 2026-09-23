@@ -3,8 +3,13 @@ import type { Deck, DeckPlan } from '@opentrainticketing/netex-deckplan-editor';
 import { parseDecks } from './parseDecks.ts';
 import type { DeckRendererModule } from './loadDeckRenderer.ts';
 
-/** Stand-in for the fetched ghost document; recognised by its NeTEx id. */
-const GHOST_XML = '<ghost id="GHOST:DeckPlan:1"/>';
+/**
+ * Stand-in for the fetched ghost document; recognised by its NeTEx id. Opens
+ * like the real asset because `loadGhostDeckPlanXml` now checks that much — a
+ * body that does not is an SPA fallback, not a deck plan.
+ */
+const GHOST_XML =
+  '<?xml version="1.0"?><PublicationDelivery><DeckPlan id="GHOST:DeckPlan:1"/></PublicationDelivery>';
 const isGhostXml = (xml: string) => xml.includes('GHOST:DeckPlan:1');
 
 /**
