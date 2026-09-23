@@ -64,7 +64,7 @@
   "deckPlans.actions.new": "Nytt setekart",
   "deckPlans.field.name": "Navn",
   "deckPlans.field.description": "Beskrivelse",
-  "deckPlans.tab.edit": "Rediger",
+  "deckPlans.tab.general": "Generelt",
   "deckPlans.tab.xml": "XML",
   "deckPlans.deck.label": "Dekk {{n}}",
   "deckPlans.deck.sample": "EKSEMPEL",

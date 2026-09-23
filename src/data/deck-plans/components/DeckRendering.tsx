@@ -9,7 +9,7 @@ import { applyDeckStyle, mkDeckCss } from '../utils/deckRenderingStyles.ts';
  * Render scale in px per metre. A deck is a couple of metres across at
  * real-world size, so this sets how wide a `vertical` deck column lands in the
  * sidebar: at 36 a 2m-wide wagon deck is ~82px, which reads legibly against
- * the Edit tab's width while leaving room for several decks side by side.
+ * the General tab's width while leaving room for several decks side by side.
  */
 export const DECK_SCALE = 36;
 

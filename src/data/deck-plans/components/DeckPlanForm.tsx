@@ -133,7 +133,7 @@ export default function DeckPlanForm({
   return (
     <Box>
       <Tabs value={tab} onChange={(_e, v: TabKey) => setTab(v)} sx={TAB_SX}>
-        <Tab value="edit" label={t('deckPlans.tab.edit', 'Edit')} />
+        <Tab value="edit" label={t('deckPlans.tab.general', 'General')} />
         <Tab value="xml" label={t('deckPlans.tab.xml', 'XML')} />
       </Tabs>
 

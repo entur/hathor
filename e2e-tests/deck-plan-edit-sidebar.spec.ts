@@ -7,7 +7,7 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *
  * Workflow:
  *   load /deck-plans → click the first deck-plan row → assert ?selected=<id>
- *   in URL + sidebar title testid visible → Edit tab shows the trimmed name
+ *   in URL + sidebar title testid visible → General tab shows the trimmed name
  *   and a deck rendering per Deck → switch to the XML tab and assert the
  *   read-only body rendered → back on Edit, edit the name and save → assert the intercepted import POST
  *   carries the patched <Name> and no <keyList> → click EditorRail collapse →
@@ -15,8 +15,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  * Covers:
  *   - row click writes ?selected=<id> (replaces the deprecated /deck-plans/:id
  *     route view)
- *   - Edit/XML tab split: name+description editable, XML body read-only
- *   - Edit tab draws one read-only <deck-rendering> per Deck, captioned by
+ *   - General/XML tab split: name+description editable, XML body read-only
+ *   - General tab draws one read-only <deck-rendering> per Deck, captioned by
  *     name, with seats asserted through the element's shadow root
  *   - a plan with an empty <decks/> falls back to the SAMPLE ghost
  *   - name/description save routes through the NeTEx import POST with a
@@ -95,7 +95,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     await expect(page.locator('deck-rendering')).toHaveCount(1);
   });
 
-  test('Edit tab holds the fields; XML tab holds the read-only body', async ({ page }) => {
+  test('General tab holds the fields; XML tab holds the read-only body', async ({ page }) => {
     await openFirstRow(page);
 
     // Edit is the default tab: name arrives trimmed, not whitespace-padded.
@@ -111,7 +111,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     await expect(area).toHaveAttribute('readonly', '');
   });
 
-  test('Edit tab renders one deck per Deck, captioned by name', async ({ page }) => {
+  test('General tab renders one deck per Deck, captioned by name', async ({ page }) => {
     await openFirstRow(page, xml('deck-plan-xml-with-decks-mock.xml'));
 
     const strip = page.getByTestId('deck-plan-decks');

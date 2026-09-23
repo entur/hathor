@@ -117,7 +117,7 @@ const meta: Meta<FormArgs> = {
     docs: {
       description: {
         component:
-          'The deck-plan sidebar editor. Tabs stay `Edit | XML`; the per-deck renderings live *inside* the Edit tab, below Name/Description, as a horizontal strip. Decks draw `vertical` — at ~26.4m × 2.8m the native orientation overflows the sidebar for even one deck, where rotated columns sit side by side and read as a vehicle seen from above. Both tabs render from the same fetched body, so they share its loading and fetch-error states; that chrome wraps only the body panes, never the fields.',
+          'The deck-plan sidebar editor. Tabs stay `General | XML`; the per-deck renderings live *inside* the General tab, below Name/Description, as a horizontal strip. Decks draw `vertical` — at ~26.4m × 2.8m the native orientation overflows the sidebar for even one deck, where rotated columns sit side by side and read as a vehicle seen from above. Both tabs render from the same fetched body, so they share its loading and fetch-error states; that chrome wraps only the body panes, never the fields.',
       },
     },
   },
@@ -276,7 +276,7 @@ export const Create: Story = {
 };
 
 /**
- * Merge the wagon samples into one deck plan so a single Edit tab shows all
+ * Merge the wagon samples into one deck plan so a single General tab shows all
  * six decks.
  *
  * Each sample is its own `PublicationDelivery` with one `DeckPlan` holding one

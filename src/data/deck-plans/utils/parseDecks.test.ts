@@ -97,7 +97,7 @@ describe('parseDecks', () => {
 /**
  * A document can carry more than one DeckPlan. `patchDeckPlanXml` already
  * selects by id before writing, so the render path must select by the same id
- * — otherwise the Edit tab draws one plan while a save patches another.
+ * — otherwise the General tab draws one plan while a save patches another.
  */
 describe('parseDecks — plan selection by id', () => {
   const mkPlanWithId = (id: string, ...decks: Deck[]) =>
