@@ -20,6 +20,15 @@ interface UseDeckPlanXmlResult {
  * Returns `{xml, loading, error, refetch}`. The component is responsible
  * for rendering a loading state until `loading === false && xml !== ''`.
  *
+ * `error` is authoritative, `xml` is only ever the last body that arrived: a
+ * failure leaves the previous one in place rather than blanking it, so an empty
+ * `xml` keeps its one meaning — nothing fetched yet — for every consumer,
+ * `useDeckRenderer` included. The cost is that after a failed refetch `xml`
+ * holds a *stale* document, and patching and POSTing that would resurrect the
+ * values the last save replaced. So a write path must gate on `error` being
+ * null, not merely on `xml` being non-empty — `DeckPlanDetails` does, at its
+ * save guard and again in `handleSave`.
+ *
  * @param id Full NeTEx id of the deck plan to fetch; `null`/empty pauses the fetch.
  */
 export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlResult {
@@ -51,13 +60,7 @@ export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlRes
         const data = await fetchDeckPlanDetails(applicationImportBaseUrl, id!, token);
         if (!cancelled) setXml(data);
       } catch (e) {
-        if (!cancelled) {
-          // Drop the previous body too. A post-save refetch that fails would
-          // otherwise leave the pre-save document cached, and the next save
-          // would patch and POST *that* — resurrecting the old values.
-          setXml('');
-          setError(e instanceof Error ? e.message : String(e));
-        }
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
