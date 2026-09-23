@@ -33,6 +33,11 @@ type FormArgs = ComponentProps<typeof DeckPlanForm> & { railWidth: number };
  * input, and keeping them outside the source tree makes that structural. They
  * are copied rather than imported across the repo boundary so
  * `npm run test:stories` works in CI and without the sibling checkout.
+ *
+ * Verbatim 2020 documents (`version="1.2.2"`), never touched up: bare `<pos>`
+ * outside the GML namespace, `version="1.0"` throughout, no `TimeZone`, a
+ * fractional `SequenceFromFront`, deck-level `Width`/`Length`. They parse for
+ * the renderer but are not postable to Sobek as-is — story input only.
  */
 const WAGONS = [wagon1, wagon2, wagon3, wagon1mod, wagon2mod, wagon3mod];
 
