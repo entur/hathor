@@ -83,6 +83,8 @@
   "breadcrumbs.home": "Home",
 
   "home.notLoggedIn": "You need to log in to use the registry",
+  "home.login.body": "Sign in to browse and edit vehicles, vehicle types and deck plans.",
+  "home.login.provider": "via {{provider}}",
   "home.noOrganisation": "You need to choose an organisation to use the registry. This is done in the selector at the top right of the page. If you do not see any organisations to select, please contact your administrator to grant you access.",
 
   "home.eyebrow": "National vehicle registry",

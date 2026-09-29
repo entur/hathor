@@ -2,6 +2,7 @@ import { Alert, Box, Button, Divider, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
+import LoginPanel from '../components/auth/LoginPanel.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useAuth } from '../auth/index.ts';
 
@@ -122,7 +123,7 @@ export default function HomePage() {
     error: organisationsError,
     refetch: refetchOrganisations,
   } = useOrganisationsContext();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100%' }}>
@@ -263,13 +264,7 @@ export default function HomePage() {
             </Box>
           </Box>
         )}
-        {!isAuthenticated && (
-          <Box component="section">
-            <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('home.notLoggedIn', 'You need to log in to use the registry')}
-            </Typography>
-          </Box>
-        )}
+        {!isAuthenticated && <LoginPanel onLogin={() => void login()} />}
         {!currentOrganisation && isAuthenticated && (
           <Box component="section">
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>

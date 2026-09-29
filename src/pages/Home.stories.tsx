@@ -51,3 +51,15 @@ export const Default: Story = {};
 export const Mobile: Story = {
   globals: { viewport: { value: 'mobile1', isRotated: false } },
 };
+
+/**
+ * Signed out: the auth decorator is overridden to an unauthenticated context,
+ * so the org-gated sections drop away and the dashboard renders the
+ * {@link LoginPanel} band under the hero instead.
+ */
+export const SignedOut: Story = {
+  decorators: [
+    withAuth({ isAuthenticated: false, user: undefined }),
+    withOrganisations({ currentOrganisation: null }),
+  ],
+};

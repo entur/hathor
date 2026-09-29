@@ -82,6 +82,8 @@
   "breadcrumbs.home": "Hjem",
 
   "home.notLoggedIn": "Du må logge inn for å bruke registeret",
+  "home.login.body": "Logg inn for å utforske og redigere kjøretøy, kjøretøytyper og setekart.",
+  "home.login.provider": "via {{provider}}",
   "home.noOrganisation": "Du må velge en organisasjon for å bruke registeret. Dette gjøres i velgeren øverst til høyre på siden. Hvis du ikke ser noen organisasjoner å velge, kontakt administratoren din for å få tilgang.",
 
   "home.eyebrow": "Nasjonalt materiellregister",
