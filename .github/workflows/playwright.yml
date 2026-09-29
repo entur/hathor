@@ -59,11 +59,13 @@ jobs:
       matrix:
         project: [chromium, firefox]
     # Browsers + OS deps come preinstalled in the official Playwright image,
-    # pinned to the @playwright/test version the e2e runner resolves to
-    # (1.58.2). This sidesteps the `npx playwright install` browser-download
-    # that hung and cancelled every run at the 60-min timeout.
+    # pinned to the exact `@playwright/test` / `playwright` version pinned in
+    # package.json (1.60.0 — both are exact, not carets, so the runner and the
+    # image can never drift apart again). This sidesteps the `npx playwright
+    # install` browser-download that hung and cancelled every run at the
+    # 60-min timeout. Bumping playwright means bumping this tag in lockstep.
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
       # Firefox/WebKit sandbox via user namespaces (clone()), which the default
       # container seccomp profile blocks → "CanCreateUserNamespace EPERM".
       # Relax seccomp so Firefox can launch; Chromium is unaffected.
