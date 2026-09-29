@@ -50,8 +50,8 @@
   "settings.enableCustomTheme": "Aktiver egendefinert tema & ikoner",
 
   "home": "Hjem",
-  "home.welcomeMessage": "Velkommen til Materiellregister",
-  "home.description": "Materillregisteret inneholder informasjon om kjøretøy som brukes i kollektivtransport i Norge. Det gir transportoperatører, myndigheter og utviklere tilgang til oppdaterte data om båter, ferger, busser, trikker, tog og andre kjøretøy.",
+  "home.welcomeMessage": "Velkommen til Materiellregisteret",
+  "home.description": "Materiellregisteret inneholder informasjon om kjøretøy som brukes i kollektivtransport i Norge. Det gir transportoperatører, myndigheter og utviklere tilgang til oppdaterte data om båter, ferger, busser, trikker, tog og andre kjøretøy.",
   "home.features.title": "Velg funksjon",
 
   "home.features.vehicletypes.headline": "Kjøretøytyper",
