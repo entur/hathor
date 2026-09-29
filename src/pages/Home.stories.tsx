@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect } from 'storybook/test';
 import { MemoryRouter } from 'react-router-dom';
 import HomePage from './Home';
 import { withOrganisations } from '../contexts/mockOrganisations.tsx';
 import { withAuth } from '../auth/mockAuth.tsx';
+import { withConfig } from '../contexts/mockConfig.tsx';
 
 /**
  * Stories for the Home dashboard. A MemoryRouter decorator supplies the routing
@@ -61,5 +63,27 @@ export const SignedOut: Story = {
   decorators: [
     withAuth({ isAuthenticated: false, user: undefined }),
     withOrganisations({ currentOrganisation: null }),
+    withConfig(),
   ],
+  play: async ({ canvasElement }) => {
+    // The band is gated on `oidcConfig`, which only `withConfig` supplies —
+    // without it ConfigContext's `{}` default silently empties this story.
+    await expect(canvasElement.querySelector('[data-testid="login-panel"]')).not.toBeNull();
+  },
+};
+
+/**
+ * Auth-off profile: OIDC is not configured at all, so there is nothing to sign
+ * in to and the dashboard must offer no login affordance — `useAuth().login()`
+ * is a no-op in this mode.
+ */
+export const SignedOutAuthNotConfigured: Story = {
+  decorators: [
+    withAuth({ isAuthenticated: false, user: undefined }),
+    withOrganisations({ currentOrganisation: null }),
+    withConfig({ oidcConfig: undefined }),
+  ],
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-testid="login-panel"]')).toBeNull();
+  },
 };

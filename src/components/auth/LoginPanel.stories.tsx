@@ -25,7 +25,7 @@ const meta: Meta<typeof LoginPanel> = {
     docs: {
       description: {
         component:
-          'Full-width signed-out band for the dashboard: headline + context on the left, a provider-marked sign-in button on the right, stacking below `sm`. The mark identifies the identity provider (Entur Partner, from `oidcConfig.authority`), not the app — so it stays put when the theme swaps `logoUrl`.',
+          'Signed-out band for the dashboard, full content width: one line of context, a provider-marked sign-in button, then the provider name. No headline — the hero above it already names the registry. Left-aligned column at every breakpoint; the frame is a single top rule, no fill and no rounded corners. The mark identifies the identity provider rather than the app, so a theme swapping `logoUrl` does not change it; it is hardcoded to Entur Partner and overridden per call site via `providerName` / `providerLogoUrl`, not derived from `oidcConfig.authority`.',
       },
     },
   },
@@ -81,7 +81,11 @@ export const Default: Story = {
   },
 };
 
-/** Mobile layout: the band is a left-aligned column at any width, so it only narrows. */
+/**
+ * Mobile: the band does not reflow — it is the same left-aligned column at
+ * every width, so this only narrows the measure and checks the button and
+ * provider line still fit.
+ */
 export const Mobile: Story = {
   globals: { viewport: { value: 'mobile1', isRotated: false } },
 };

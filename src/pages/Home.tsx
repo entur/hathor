@@ -5,6 +5,7 @@ import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
 import LoginPanel from '../components/auth/LoginPanel.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useAuth } from '../auth/index.ts';
+import { useConfig } from '../contexts/configContext.ts';
 
 /**
  * Home — the registry dashboard. A flat, left-aligned layout: a typographic
@@ -124,6 +125,7 @@ export default function HomePage() {
     refetch: refetchOrganisations,
   } = useOrganisationsContext();
   const { isAuthenticated, login } = useAuth();
+  const { oidcConfig } = useConfig();
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100%' }}>
@@ -264,7 +266,7 @@ export default function HomePage() {
             </Box>
           </Box>
         )}
-        {!isAuthenticated && <LoginPanel onLogin={() => void login()} />}
+        {!isAuthenticated && oidcConfig && <LoginPanel onLogin={() => void login()} />}
         {!currentOrganisation && isAuthenticated && (
           <Box component="section">
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>

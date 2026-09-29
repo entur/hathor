@@ -16,12 +16,18 @@ async function openProtectedRoute(page: Page) {
 
 /**
  * Navigate to / and return locators for the header auth UI elements.
+ *
+ * `loginButton` is scoped to the banner landmark: the signed-out dashboard
+ * carries its own Log in button inside LoginPanel, so an unscoped
+ * `getByRole('button', { name: /log in/i })` resolves to two elements and
+ * trips Playwright's strict mode. The page-level panel has its own locator.
  */
 async function openHomePage(page: Page) {
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
   return {
-    loginButton: page.getByRole('button', { name: /log in/i }),
+    loginButton: page.getByRole('banner').getByRole('button', { name: /log in/i }),
+    loginPanel: page.getByTestId('login-panel'),
     authDisabledLabel: page.getByTestId('auth-disabled-label'),
   };
 }
@@ -30,11 +36,11 @@ async function openHomePage(page: Page) {
  * Auth-config UI — the app reflects whether oidcConfig is present, without ever logging in or selecting an org.
  *
  * Workflow (each test serves its own config.json via route interception — no shared disk state, parallel-safe):
- *   1. Auth-off profile: setConfig 'auth-off' (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip and no Log in button; nav rail toggle flips aria-expanded false↔true↔false.
- *   2. Auth-on profile: setConfig 'auth-on' (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows Log in button and hides the "Auth off" chip.
+ *   1. Auth-off profile: setConfig 'auth-off' (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip, no header Log in button and no LoginPanel; nav rail toggle flips aria-expanded false↔true↔false.
+ *   2. Auth-on profile: setConfig 'auth-on' (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows the header Log in button plus the LoginPanel band, and hides the "Auth off" chip.
  * Covers:
- *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip.
- *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button.
+ *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip + no login affordance anywhere (login() is a no-op without oidcConfig).
+ *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button + dashboard LoginPanel.
  *   - Nav rail collapsed/expanded toggle (localStorage hathor:navRailExpanded cleared first).
  * Modes:
  *   - mode-agnostic: NO E2E_BACKEND branching, NO seedAuth, NO org selection — it deliberately does not authenticate or pick an org, asserting only the pre-login auth-config UI. Runs identically regardless of E2E_BACKEND.
@@ -50,9 +56,12 @@ test.describe('Auth-off profile (oidcConfig undefined)', () => {
     await expect(appContent).toBeVisible();
   });
 
-  test('header shows auth-disabled (no login button)', async ({ page }) => {
-    const { loginButton, authDisabledLabel } = await openHomePage(page);
+  test('header shows auth-disabled (no login button, no login panel)', async ({ page }) => {
+    const { loginButton, loginPanel, authDisabledLabel } = await openHomePage(page);
     await expect(loginButton).not.toBeVisible();
+    // With no oidcConfig there is nothing to sign in to — useAuth().login() is
+    // a no-op, so the dashboard must not offer a button that cannot work.
+    await expect(loginPanel).not.toBeVisible();
     await expect(authDisabledLabel).toBeVisible();
     await expect(authDisabledLabel).toContainText('Auth off');
   });
@@ -94,9 +103,10 @@ test.describe('Auth-on profile (oidcConfig defined)', () => {
     }).toPass({ timeout: 10_000 });
   });
 
-  test('header now shows login button', async ({ page }) => {
-    const { loginButton, authDisabledLabel } = await openHomePage(page);
+  test('header now shows login button, dashboard shows the login panel', async ({ page }) => {
+    const { loginButton, loginPanel, authDisabledLabel } = await openHomePage(page);
     await expect(authDisabledLabel).not.toBeVisible();
     await expect(loginButton).toBeVisible();
+    await expect(loginPanel).toBeVisible();
   });
 });

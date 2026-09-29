@@ -29,7 +29,7 @@ const BODY_MEASURE = '56ch';
 // the button stays `outlined` (a `contained` primary button is the same navy
 // and would swallow it).
 const PROVIDER_NAME = 'Entur Partner';
-const PROVIDER_LOGO = '/assets/en-mark.png';
+const PROVIDER_LOGO = `${import.meta.env.BASE_URL}assets/en-mark.png`;
 
 export interface LoginPanelProps {
   /** Starts the sign-in redirect. Wire to `useAuth().login` at the call site. */
