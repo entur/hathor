@@ -19,7 +19,6 @@ import { useTranslation } from 'react-i18next';
  */
 
 // Layout tunables — bubbled per repo style.
-const PANEL_RADIUS = 2; // ×theme.shape.borderRadius, matching Home's flat tiles
 const LOGO_H = 22; // px; provider mark inside the button
 const BODY_MEASURE = '56ch';
 
@@ -67,9 +66,16 @@ export default function LoginPanel({
         alignItems: 'flex-start',
         gap: 0.75,
         width: '100%',
-        p: { xs: 3, md: 4 },
-        borderRadius: PANEL_RADIUS,
-        bgcolor: 'action.hover',
+        // Square, unfilled band: a single hairline rule across the top is the
+        // whole frame — no tile fill, no rounded corners, nothing on the other
+        // three sides.
+        px: 0,
+        pt: { xs: 3, md: 4 },
+        pb: 0,
+        borderTop: 1,
+        borderColor: 'divider',
+        borderRadius: 0,
+        bgcolor: 'transparent',
       }}
     >
       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, maxWidth: BODY_MEASURE }}>
