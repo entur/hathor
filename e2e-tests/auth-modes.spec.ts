@@ -17,16 +17,15 @@ async function openProtectedRoute(page: Page) {
 /**
  * Navigate to / and return locators for the header auth UI elements.
  *
- * `loginButton` is scoped to the banner landmark: the signed-out dashboard
- * carries its own Log in button inside LoginPanel, so an unscoped
- * `getByRole('button', { name: /log in/i })` resolves to two elements and
- * trips Playwright's strict mode. The page-level panel has its own locator.
+ * Both the header and the signed-out dashboard carry a Log in button, so each
+ * is selected by its own testid rather than by accessible name — a name-based
+ * `getByRole('button', { name: /log in/i })` matches both and trips strict mode.
  */
 async function openHomePage(page: Page) {
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
   return {
-    loginButton: page.getByRole('banner').getByRole('button', { name: /log in/i }),
+    loginButton: page.getByTestId('header-login-button'),
     loginPanel: page.getByTestId('login-panel'),
     authDisabledLabel: page.getByTestId('auth-disabled-label'),
   };

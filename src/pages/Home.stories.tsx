@@ -54,17 +54,19 @@ export const Mobile: Story = {
   globals: { viewport: { value: 'mobile1', isRotated: false } },
 };
 
+// Shared by every signed-out story; only the config profile differs.
+const SIGNED_OUT = [
+  withAuth({ isAuthenticated: false, user: undefined }),
+  withOrganisations({ currentOrganisation: null }),
+];
+
 /**
  * Signed out: the auth decorator is overridden to an unauthenticated context,
  * so the org-gated sections drop away and the dashboard renders the
  * {@link LoginPanel} band under the hero instead.
  */
 export const SignedOut: Story = {
-  decorators: [
-    withAuth({ isAuthenticated: false, user: undefined }),
-    withOrganisations({ currentOrganisation: null }),
-    withConfig(),
-  ],
+  decorators: [...SIGNED_OUT, withConfig()],
   play: async ({ canvasElement }) => {
     // The band is gated on `oidcConfig`, which only `withConfig` supplies —
     // without it ConfigContext's `{}` default silently empties this story.
@@ -78,11 +80,7 @@ export const SignedOut: Story = {
  * is a no-op in this mode.
  */
 export const SignedOutAuthNotConfigured: Story = {
-  decorators: [
-    withAuth({ isAuthenticated: false, user: undefined }),
-    withOrganisations({ currentOrganisation: null }),
-    withConfig({ oidcConfig: undefined }),
-  ],
+  decorators: [...SIGNED_OUT, withConfig({ oidcConfig: undefined })],
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[data-testid="login-panel"]')).toBeNull();
   },

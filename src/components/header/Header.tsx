@@ -3,7 +3,6 @@ import { AppBar, Toolbar, useTheme, useMediaQuery } from '@mui/material';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
-import { useConfig } from '../../contexts/configContext.ts';
 import { useNavRail } from '../../contexts/NavRailContext.tsx';
 // import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
@@ -19,7 +18,6 @@ export default function Header() {
   const [searchActive, setSearchActive] = useState(false);
 
   const auth = useAuth();
-  const { oidcConfig } = useConfig();
   // const { t } = useTranslation();
 
   const theme = useTheme();
@@ -59,7 +57,7 @@ export default function Header() {
                 onSettingsIconClick={() => setSettingsOpen(true)}
                 onMenuIconClick={toggleMobile}
                 isAuthenticated={auth.isAuthenticated}
-                authConfigured={!!oidcConfig}
+                authConfigured={auth.canLogin}
               />
             </>
           )}

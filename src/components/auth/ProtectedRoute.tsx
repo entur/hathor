@@ -2,7 +2,6 @@ import React from 'react';
 import { Alert, Box, Button } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth';
-import { useConfig } from '../../contexts/configContext.ts';
 import LoginRedirect from '../../auth/LoginRedirect';
 import { useOrganisationsContext } from '../../contexts/useOrganisationsContext.ts';
 import { Navigate } from 'react-router-dom';
@@ -13,8 +12,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, isLoading } = useAuth();
-  const { oidcConfig } = useConfig();
+  const { isAuthenticated, isLoading, canLogin } = useAuth();
   const {
     currentOrganisation,
     loading: organisationsLoading,
@@ -22,7 +20,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
     refetch,
   } = useOrganisationsContext();
 
-  if (!oidcConfig) {
+  if (!canLogin) {
     return element;
   }
 

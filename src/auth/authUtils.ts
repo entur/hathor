@@ -15,6 +15,8 @@ export interface Auth {
     name?: string;
   };
   roleAssignments?: string[] | null;
+  /** Whether signing in is possible at all — false when no oidcConfig is set, which makes login()/logout() no-ops. */
+  canLogin: boolean;
   getAccessToken: () => Promise<AccessToken>;
   logout: ({ returnTo }: { returnTo?: string }) => Promise<void>;
   login: (redirectUri?: string) => Promise<void>;
@@ -23,7 +25,7 @@ export interface Auth {
 export const useAuth = (): Auth => {
   const oidcAuth = useOidcAuth() as AuthContextProps | undefined;
 
-  const { claimsNamespace, preferredNameNamespace } = useConfig();
+  const { claimsNamespace, preferredNameNamespace, oidcConfig } = useConfig();
 
   const getAccessToken = useCallback((): Promise<AccessToken> => {
     return Promise.resolve(oidcAuth?.user?.access_token ?? null);
@@ -52,6 +54,7 @@ export const useAuth = (): Auth => {
       name: oidcAuth?.user?.profile[preferredNameNamespace!] as string,
     },
     roleAssignments: oidcAuth?.user?.profile[claimsNamespace!] as string[],
+    canLogin: !!oidcConfig,
     getAccessToken,
     logout,
     login,

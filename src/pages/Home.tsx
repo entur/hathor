@@ -5,7 +5,6 @@ import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
 import LoginPanel from '../components/auth/LoginPanel.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useAuth } from '../auth/index.ts';
-import { useConfig } from '../contexts/configContext.ts';
 
 /**
  * Home — the registry dashboard. A flat, left-aligned layout: a typographic
@@ -17,7 +16,7 @@ import { useConfig } from '../contexts/configContext.ts';
  */
 
 // Layout tunables — bubbled per repo style.
-const CONTENT_MAX = 1180; // px; content measure for the whole dashboard
+export const CONTENT_MAX = 1180; // px; content measure for the whole dashboard
 const NAV_ICON = 30; // px; browse-tile glyph
 const STAT_ICON = 20; // px; overview-strip glyph
 const ACTION_ICON = 22; // px; create-action glyph
@@ -124,8 +123,7 @@ export default function HomePage() {
     error: organisationsError,
     refetch: refetchOrganisations,
   } = useOrganisationsContext();
-  const { isAuthenticated, login } = useAuth();
-  const { oidcConfig } = useConfig();
+  const { isAuthenticated, canLogin, login } = useAuth();
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100%' }}>
@@ -266,7 +264,7 @@ export default function HomePage() {
             </Box>
           </Box>
         )}
-        {!isAuthenticated && oidcConfig && <LoginPanel onLogin={() => void login()} />}
+        {!isAuthenticated && canLogin && <LoginPanel onLogin={() => void login()} />}
         {!currentOrganisation && isAuthenticated && (
           <Box component="section">
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>

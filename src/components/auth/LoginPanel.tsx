@@ -19,8 +19,12 @@ import { useTranslation } from 'react-i18next';
  */
 
 // Layout tunables — bubbled per repo style.
-const LOGO_H = 22; // px; provider mark inside the button
-const BODY_MEASURE = '56ch';
+const LOGO_H = 22,
+  BODY_MEASURE = '56ch';
+// The mark's `EN` capitals sit 13/192 above its plate centre (the coral rule
+// weighs the bottom down), so box-centring alone reads high against the label.
+// Nudge it back down by that fraction of the rendered height.
+const LOGO_NUDGE = `${((13 / 192) * LOGO_H).toFixed(2)}px`;
 
 // Default identity provider: Entur Partner. The mark is the IdP's own squared
 // EN badge, lifted verbatim from its Auth0 universal-login page
@@ -65,17 +69,11 @@ export default function LoginPanel({
         flexDirection: 'column',
         alignItems: 'flex-start',
         gap: 0.75,
-        width: '100%',
         // Square, unfilled band: a single hairline rule across the top is the
-        // whole frame — no tile fill, no rounded corners, nothing on the other
-        // three sides.
-        px: 0,
+        // whole frame — nothing on the other three sides.
         pt: { xs: 3, md: 4 },
-        pb: 0,
         borderTop: 1,
         borderColor: 'divider',
-        borderRadius: 0,
-        bgcolor: 'transparent',
       }}
     >
       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, maxWidth: BODY_MEASURE }}>
@@ -92,10 +90,9 @@ export default function LoginPanel({
               component="img"
               src={providerLogoUrl}
               alt=""
-              // MUI's startIcon already centres this against the label; the
-              // Default story asserts both the box and cap-height centres, so
-              // no alignment override is carried here.
-              sx={{ height: LOGO_H, width: 'auto' }}
+              // Square asset, so width is known before decode — stating it
+              // keeps the button from reflowing when the image lands.
+              sx={{ height: LOGO_H, width: LOGO_H, position: 'relative', top: LOGO_NUDGE }}
             />
           ) : undefined
         }
