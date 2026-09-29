@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn } from 'storybook/test';
+import { expect, fn, waitFor } from 'storybook/test';
 import { Box } from '@mui/material';
 import LoginPanel from './LoginPanel';
+
+// Alignment probe tunables. EN_CAP_* are the `EN` capitals' band inside the
+// MARK_PX-tall provider asset (`public/assets/en-mark.png`).
+const MARK_PX = 192,
+  EN_CAP_TOP = 47,
+  EN_CAP_BOT = 119;
+const ALIGN_TOL = 1.5; // px; sub-pixel drift is the browser rounding, not a bug
 
 /**
  * Stories for the signed-out login band. The component takes `onLogin` as a
@@ -38,13 +45,43 @@ export default meta;
 
 type Story = StoryObj<typeof LoginPanel>;
 
-/** Default: Entur Partner mark, side-by-side layout. */
-export const Default: Story = {};
-
 /**
- * Mobile layout: below `sm` the band stacks — copy first, then button and
- * provider line left-aligned beneath it.
+ * Default: Entur Partner mark on the button.
+ *
+ * The play function pins the mark's vertical alignment against the label, on
+ * both measures that matter. Box centring alone is not enough: the asset's
+ * coral rule sits low in the plate (y 138..149 of 192) and drags its geometric
+ * centre below the letterforms, so the `EN` capitals can read high even when
+ * the image box is perfectly centred. The second assertion compares the `EN`
+ * cap band with the label's own cap band, derived from canvas text metrics
+ * rather than the line box (which includes descender leading).
  */
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const btn = canvasElement.querySelector<HTMLElement>('[data-testid="login-panel-button"]')!;
+    const mark = btn.querySelector('img')!;
+    await waitFor(() => expect(mark.getBoundingClientRect().height).toBeGreaterThan(0));
+
+    const text = [...btn.childNodes].find(n => n.nodeType === Node.TEXT_NODE)!;
+    const range = document.createRange();
+    range.selectNodeContents(text);
+    const m = mark.getBoundingClientRect();
+    const l = range.getBoundingClientRect();
+
+    expect(Math.abs((m.top + m.bottom) / 2 - (l.top + l.bottom) / 2)).toBeLessThan(ALIGN_TOL);
+
+    const cs = getComputedStyle(btn);
+    const ctx = document.createElement('canvas').getContext('2d')!;
+    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const tm = ctx.measureText(text.textContent!);
+    const capTop =
+      l.top + (l.height - (tm.actualBoundingBoxAscent + tm.actualBoundingBoxDescent)) / 2;
+    const enCentre = m.top + ((EN_CAP_TOP + EN_CAP_BOT) / 2) * (m.height / MARK_PX);
+    expect(Math.abs(enCentre - (capTop + tm.actualBoundingBoxAscent / 2))).toBeLessThan(ALIGN_TOL);
+  },
+};
+
+/** Mobile layout: the band is a left-aligned column at any width, so it only narrows. */
 export const Mobile: Story = {
   globals: { viewport: { value: 'mobile1', isRotated: false } },
 };

@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * LoginPanel — the full-width band shown on the dashboard while signed out.
- * Replaces the bare `home.notLoggedIn` sentence with an actual affordance:
- * headline + one line of context on the left, a provider-marked sign-in button
- * on the right (stacked below `sm`).
+ * Replaces the bare "you need to log in" sentence with an actual affordance:
+ * one line of context, a provider-marked sign-in button, and the provider name
+ * under it. No headline — the hero above already says where the user is.
  *
  * The button carries the identity provider's mark, not the app logo — the app
  * logo is theme-driven (`theme.logoUrl`, which the default theme points at
@@ -20,13 +20,17 @@ import { useTranslation } from 'react-i18next';
 
 // Layout tunables — bubbled per repo style.
 const PANEL_RADIUS = 2; // ×theme.shape.borderRadius, matching Home's flat tiles
-const LOGO_H = 18; // px; provider mark inside the button
+const LOGO_H = 22; // px; provider mark inside the button
 const BODY_MEASURE = '56ch';
 
-// Default identity provider: Entur Partner, whose mark ships with the header
-// theme (white + coral on transparent — hence a `contained` dark button).
+// Default identity provider: Entur Partner. The mark is the IdP's own squared
+// EN badge, lifted verbatim from its Auth0 universal-login page
+// (auth-resources.entur.org/icons/logo-192x192.png, 2026-09-29) — NOT the
+// `entur-logo.png` wordmark the header uses. It carries its own navy plate, so
+// the button stays `outlined` (a `contained` primary button is the same navy
+// and would swallow it).
 const PROVIDER_NAME = 'Entur Partner';
-const PROVIDER_LOGO = '/assets/entur-logo.png';
+const PROVIDER_LOGO = '/assets/en-mark.png';
 
 export interface LoginPanelProps {
   /** Starts the sign-in redirect. Wire to `useAuth().login` at the call site. */
@@ -56,62 +60,45 @@ export default function LoginPanel({
     <Box
       component="section"
       data-testid="login-panel"
-      aria-labelledby="login-panel-headline"
+      aria-label={t('header.actions.login', 'Log in')}
       sx={{
         display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'flex-start', sm: 'center' },
-        justifyContent: 'space-between',
-        gap: { xs: 2.5, sm: 4 },
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 0.75,
         width: '100%',
         p: { xs: 3, md: 4 },
         borderRadius: PANEL_RADIUS,
         bgcolor: 'action.hover',
       }}
     >
-      <Box>
-        <Typography id="login-panel-headline" variant="h6" component="h2" sx={{ fontWeight: 700 }}>
-          {t('home.notLoggedIn', 'You need to log in to use the registry')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, maxWidth: BODY_MEASURE }}>
-          {t(
-            'home.login.body',
-            'Sign in to browse and edit vehicles, vehicle types and deck plans.'
-          )}
-        </Typography>
-      </Box>
-
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: { xs: 'flex-start', sm: 'flex-end' },
-          gap: 0.75,
-          flexShrink: 0,
-        }}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, maxWidth: BODY_MEASURE }}>
+        {t('home.login.body', 'Sign in to browse and edit vehicles, vehicle types and deck plans.')}
+      </Typography>
+      <Button
+        variant="outlined"
+        size="large"
+        onClick={onLogin}
+        data-testid="login-panel-button"
+        startIcon={
+          providerLogoUrl ? (
+            <Box
+              component="img"
+              src={providerLogoUrl}
+              alt=""
+              // MUI's startIcon already centres this against the label; the
+              // Default story asserts both the box and cap-height centres, so
+              // no alignment override is carried here.
+              sx={{ height: LOGO_H, width: 'auto' }}
+            />
+          ) : undefined
+        }
       >
-        <Button
-          variant="contained"
-          size="large"
-          onClick={onLogin}
-          data-testid="login-panel-button"
-          startIcon={
-            providerLogoUrl ? (
-              <Box
-                component="img"
-                src={providerLogoUrl}
-                alt=""
-                sx={{ height: LOGO_H, width: 'auto' }}
-              />
-            ) : undefined
-          }
-        >
-          {t('header.actions.login', 'Log in')}
-        </Button>
-        <Typography variant="caption" color="text.secondary">
-          {t('home.login.provider', 'via {{provider}}', { provider: providerName })}
-        </Typography>
-      </Box>
+        {t('header.actions.login', 'Log in')}
+      </Button>
+      <Typography variant="caption" color="text.secondary">
+        {t('home.login.provider', 'via {{provider}}', { provider: providerName })}
+      </Typography>
     </Box>
   );
 }
