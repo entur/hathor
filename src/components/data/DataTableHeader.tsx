@@ -1,10 +1,6 @@
-import { Box, TableCell, TableHead, TableRow, TableSortLabel, Tooltip } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { TableCell, TableHead, TableRow, TableSortLabel } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { ColumnDefinition, Order } from './dataTableTypes.ts';
-
-const LOCK_TOOLTIP_KEY = 'data.table.sortLocked';
-const LOCK_DIM_OPACITY = 0.55;
 
 interface Props<T, K extends string> {
   useCompactView: boolean;
@@ -12,10 +8,6 @@ interface Props<T, K extends string> {
   orderBy: K;
   onRequestSort: (prop: K) => void;
   columns: ColumnDefinition<T, K>[];
-  /** When true, sortable headers render dimmed, the click is a no-op, and
-   *  hover surfaces a lock tooltip. The active-column sort arrow stays
-   *  visible so the user retains context on the current order. */
-  sortLocked?: boolean;
 }
 
 export default function DataTableHeader<T, K extends string>({
@@ -24,16 +16,8 @@ export default function DataTableHeader<T, K extends string>({
   orderBy,
   onRequestSort,
   columns,
-  sortLocked = false,
 }: Props<T, K>) {
   const { t } = useTranslation();
-  const lockText = t(LOCK_TOOLTIP_KEY);
-  const lockTitle = (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-      <LockOutlinedIcon fontSize="small" />
-      <span>{lockText}</span>
-    </Box>
-  );
 
   return (
     <TableHead>
@@ -51,25 +35,15 @@ export default function DataTableHeader<T, K extends string>({
               </TableCell>
             );
           }
-          const sortLabel = (
-            <TableSortLabel
-              active={orderBy === col.id}
-              direction={orderBy === col.id ? order : 'asc'}
-              onClick={sortLocked ? undefined : () => onRequestSort(col.id)}
-              sx={sortLocked ? { opacity: LOCK_DIM_OPACITY, cursor: 'not-allowed' } : undefined}
-            >
-              {label}
-            </TableSortLabel>
-          );
           return (
             <TableCell key={col.id} align={col.align} sx={col.sx}>
-              {sortLocked ? (
-                <Tooltip title={lockTitle} arrow>
-                  <span>{sortLabel}</span>
-                </Tooltip>
-              ) : (
-                sortLabel
-              )}
+              <TableSortLabel
+                active={orderBy === col.id}
+                direction={orderBy === col.id ? order : 'asc'}
+                onClick={() => onRequestSort(col.id)}
+              >
+                {label}
+              </TableSortLabel>
             </TableCell>
           );
         })}

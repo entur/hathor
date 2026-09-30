@@ -164,7 +164,6 @@ export default function GenericDataViewPage<T, K extends string>({
           addAction={addAction}
           importAction={importAction}
           urlFilterInfo={urlFilterInfo}
-          sortLocked={!!editingItem}
         />
       </Box>
     </Box>
