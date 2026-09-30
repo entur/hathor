@@ -12,8 +12,9 @@ import nb from './nb/translation.json';
  *
  * This is the check the old inline `t('key', 'Default')` defaults pretended to
  * be — they hid misses instead of failing on them. Bundles are flat dotted
- * maps, so lookup is a direct `in` plus plural-suffix probing (`_one`,
- * `_other`, …), never a nested `split('.')` walk.
+ * maps, so lookup is a direct `in`, else *every* plural form the locale
+ * needs (`_one` + `_other` for en/nb, per `Intl.PluralRules`) — never a
+ * nested `split('.')` walk.
  *
  * Scope: `t(...)` / `x.t(...)` whose first arg is a string literal, or an
  * identifier bound to a same-file `const X = '…'`. Keys built at runtime
@@ -24,7 +25,6 @@ import nb from './nb/translation.json';
 const SRC = join(import.meta.dirname, '..');
 const SRC_RE = /\.tsx?$/,
   SKIP_RE = /\.(test|stories)\.tsx?$|\.d\.ts$/;
-const PLURAL_SFX = ['zero', 'one', 'two', 'few', 'many', 'other'];
 // Floor on scanned keys, so a broken scanner can't pass vacuously.
 const MIN_KEYS = 150;
 
@@ -70,16 +70,21 @@ const scan = (f: string): Hit[] => {
 
 /**
  * @param {Bundle} b - Flat translation bundle.
+ * @param {string[]} cats - The locale's plural categories.
  * @param {string} k - Key as passed to `t()`.
- * @returns {boolean} Whether `k` resolves directly or via a plural suffix.
+ * @returns {boolean} Whether `k` resolves directly, or has every plural form —
+ *   a lone `_one` would still miss `t(k, { count: 2 })`.
  */
-const has = (b: Bundle, k: string) => k in b || PLURAL_SFX.some(s => `${k}_${s}` in b);
+const has = (b: Bundle, cats: string[], k: string) => k in b || cats.every(s => `${k}_${s}` in b);
 
 const hits = (readdirSync(SRC, { recursive: true }) as string[])
   .filter(p => SRC_RE.test(p) && !SKIP_RE.test(p))
   .flatMap(p => scan(join(SRC, p)));
 
-const missing = (b: Bundle) => hits.filter(h => !has(b, h.key)).map(h => `${h.at}  ${h.key}`);
+const missing = (lng: string, b: Bundle) => {
+  const cats = new Intl.PluralRules(lng).resolvedOptions().pluralCategories;
+  return hits.filter(h => !has(b, cats, h.key)).map(h => `${h.at}  ${h.key}`);
+};
 
 describe('i18n key coverage', () => {
   it('finds a plausible number of t() keys', () => {
@@ -89,8 +94,8 @@ describe('i18n key coverage', () => {
   it.each([
     ['en', en as Bundle],
     ['nb', nb as Bundle],
-  ])('every t() key resolves in %s', (_, b) => {
-    expect(missing(b)).toEqual([]);
+  ])('every t() key resolves in %s', (lng, b) => {
+    expect(missing(lng, b)).toEqual([]);
   });
 });
 
