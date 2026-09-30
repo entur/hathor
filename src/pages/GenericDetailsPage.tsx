@@ -60,7 +60,7 @@ export default function GenericDetailsPage({
           {onBack && (
             <IconButton
               onClick={onBack}
-              aria-label={t('vehicles.actions.back', 'Back to list')}
+              aria-label={t('vehicles.actions.back')}
               edge="start"
               size="small"
             >

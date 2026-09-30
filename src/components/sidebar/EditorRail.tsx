@@ -130,12 +130,12 @@ export default function EditorRail({
   };
 
   const saveLabel = saving
-    ? t('saving', 'Saving…')
+    ? t('saving')
     : !isDirty
-      ? t('vehicles.rail.saveDisabled', 'Save (no changes)')
+      ? t('vehicles.rail.saveDisabled')
       : !canSubmit
-        ? t('vehicles.rail.saveMissingFields', 'Save (required fields missing)')
-        : t('save', 'Save');
+        ? t('vehicles.rail.saveMissingFields')
+        : t('save');
   const saveDisabled = !isDirty || saving || !canSubmit;
 
   return (
@@ -158,10 +158,10 @@ export default function EditorRail({
           zIndex: theme.zIndex.fab,
         }}
       >
-        <Tooltip title={t('vehicles.rail.collapse', 'Collapse')} placement="left" arrow>
+        <Tooltip title={t('vehicles.rail.collapse')} placement="left" arrow>
           <IconButton
             onClick={handleCollapseClick}
-            aria-label={t('vehicles.rail.collapseAria', 'Collapse pane')}
+            aria-label={t('vehicles.rail.collapseAria')}
             data-testid="editor-rail-collapse"
             sx={{ width: SEGMENT_SIZE, height: SEGMENT_SIZE, borderRadius: 0 }}
           >
@@ -172,10 +172,10 @@ export default function EditorRail({
         {showPen && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
-            <Tooltip title={t('vehicles.rail.editTooltip', 'Edit')} placement="left" arrow>
+            <Tooltip title={t('vehicles.rail.editTooltip')} placement="left" arrow>
               <IconButton
                 onClick={onEnterEdit}
-                aria-label={t('edit', 'Edit')}
+                aria-label={t('edit')}
                 data-testid="editor-rail-edit"
                 sx={{
                   width: SEGMENT_SIZE,
@@ -194,14 +194,10 @@ export default function EditorRail({
         {showDeactivate && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
-            <Tooltip
-              title={t('vehicles.rail.deactivateTooltip', 'Deactivate')}
-              placement="left"
-              arrow
-            >
+            <Tooltip title={t('vehicles.rail.deactivateTooltip')} placement="left" arrow>
               <IconButton
                 onClick={handleDeactivateClick}
-                aria-label={t('vehicles.rail.deactivateAria', 'Deactivate')}
+                aria-label={t('vehicles.rail.deactivateAria')}
                 data-testid="editor-rail-deactivate"
                 sx={{
                   width: SEGMENT_SIZE,
@@ -220,10 +216,10 @@ export default function EditorRail({
         {showCancel && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
-            <Tooltip title={t('vehicles.rail.cancelTooltip', 'Cancel edit')} placement="left" arrow>
+            <Tooltip title={t('vehicles.rail.cancelTooltip')} placement="left" arrow>
               <IconButton
                 onClick={handleCancelClick}
-                aria-label={t('vehicles.rail.cancelAria', 'Cancel edit')}
+                aria-label={t('vehicles.rail.cancelAria')}
                 data-testid="editor-rail-cancel"
                 sx={{
                   width: SEGMENT_SIZE,
@@ -273,22 +269,16 @@ export default function EditorRail({
       />
 
       <Dialog open={confirmDeactivateOpen} onClose={() => setConfirmDeactivateOpen(false)}>
-        <DialogTitle>
-          {deactivateConfirmTitle ?? t('common.deactivateConfirmTitle', 'Deactivate this item?')}
-        </DialogTitle>
+        <DialogTitle>{deactivateConfirmTitle ?? t('common.deactivateConfirmTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {deactivateConfirmMessage ??
-              t(
-                'common.deactivateConfirmMessage',
-                'This action deactivates the selected item. Do you want to continue?'
-              )}
+            {deactivateConfirmMessage ?? t('common.deactivateConfirmMessage')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDeactivateOpen(false)}>{t('cancel', 'Cancel')}</Button>
+          <Button onClick={() => setConfirmDeactivateOpen(false)}>{t('cancel')}</Button>
           <Button color="error" variant="contained" onClick={handleDeactivateConfirm}>
-            {deactivateConfirmActionLabel ?? t('common.deactivate', 'Deactivate')}
+            {deactivateConfirmActionLabel ?? t('common.deactivate')}
           </Button>
         </DialogActions>
       </Dialog>

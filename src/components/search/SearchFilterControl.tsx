@@ -69,7 +69,7 @@ export default function SearchFilterControl() {
       >
         <Box sx={{ p: 2, minWidth: 240 }}>
           <Typography variant="subtitle1" gutterBottom>
-            {t('search.filter.title', 'Filter by Type')}
+            {t('search.filter.title')}
           </Typography>
           <FormGroup>
             {filterConfig.map(type => (
@@ -94,7 +94,7 @@ export default function SearchFilterControl() {
           </FormGroup>
           <Box sx={{ mt: 2, textAlign: 'right' }}>
             <Button size="small" onClick={handleClearFilters} disabled={activeFilters.length === 0}>
-              {t('search.filter.clear', 'Clear All')}
+              {t('search.filter.clear')}
             </Button>
           </Box>
         </Box>

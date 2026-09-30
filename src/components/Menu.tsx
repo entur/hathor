@@ -158,7 +158,7 @@ export default function Menu() {
     <Box
       component="nav"
       data-testid="nav-rail"
-      aria-label={t('rail.label', 'Main navigation')}
+      aria-label={t('rail.label')}
       sx={{
         position: 'fixed',
         top: APP_HEADER_HEIGHT_PX,
@@ -182,9 +182,7 @@ export default function Menu() {
           <IconButton
             data-testid="nav-rail-toggle"
             onClick={toggleExpanded}
-            aria-label={
-              expanded ? t('rail.collapse', 'Collapse menu') : t('rail.expand', 'Expand menu')
-            }
+            aria-label={expanded ? t('rail.collapse') : t('rail.expand')}
             aria-expanded={expanded}
           >
             <MenuIcon name="menu" size={28} />

@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (isLoading) {
-    return <div>{t('protectedRoute.loadingAuthStatus', 'Loading authentication status...')}</div>;
+    return <div>{t('protectedRoute.loadingAuthStatus')}</div>;
   }
 
   if (!isAuthenticated) {
@@ -35,7 +35,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (organisationsLoading) {
-    return <div>{t('protectedRoute.loadingOrganisations', 'Loading organisations...')}</div>;
+    return <div>{t('protectedRoute.loadingOrganisations')}</div>;
   }
 
   if (organisationsError) {
@@ -46,11 +46,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
           data-testid="organisations-load-error"
           action={
             <Button color="inherit" size="small" onClick={() => void refetch()}>
-              {t('common.retry', 'Retry')}
+              {t('common.retry')}
             </Button>
           }
         >
-          {t('organisations.loadError', 'Could not load organisations.')} {organisationsError}
+          {t('organisations.loadError')} {organisationsError}
         </Alert>
       </Box>
     );

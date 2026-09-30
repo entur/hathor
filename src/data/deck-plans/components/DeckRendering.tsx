@@ -113,7 +113,7 @@ export default function DeckRendering({
           variant="outlined"
           data-testid={testId ? `${testId}-error` : undefined}
         >
-          {t('deckPlans.render.deckError', 'Could not draw this deck')}
+          {t('deckPlans.render.deckError')}
         </Alert>
       )}
       <Box ref={host} data-testid={testId} sx={{ lineHeight: 0 }} />

@@ -14,9 +14,9 @@ export default function SelectOrganisation() {
       {isAuthenticated && data !== undefined && (
         <Autocomplete<Organisation, false>
           options={data}
-          title={t('organisations.select.label', 'Select organisation')}
+          title={t('organisations.select.label')}
           getOptionLabel={option => (option.name?.value ?? '-') + ' (' + option.type + ')'}
-          noOptionsText={t('organisations.select.noOptions', 'No organisations available')}
+          noOptionsText={t('organisations.select.noOptions')}
           value={currentOrganisation}
           onChange={(_e, v) => setCurrentOrganisation(v)}
           size="small"
@@ -29,7 +29,7 @@ export default function SelectOrganisation() {
               {...params}
               id="organisation-select"
               size="small"
-              aria-label={t('organisations.select.label', 'Select organisation')}
+              aria-label={t('organisations.select.label')}
               variant="outlined"
               sx={{ bgcolor: 'common.white', borderRadius: 1 }}
             />

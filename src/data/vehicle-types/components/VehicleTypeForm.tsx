@@ -129,16 +129,16 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           },
         }}
       >
-        <Tab value="general" label={t('vehicleType.tab.general', 'General')} />
-        <Tab value="propulsion" label={t('vehicleType.tab.propulsion', 'Propulsion/perf.')} />
-        <Tab value="capacity" label={t('vehicleType.tab.capacity', 'Passenger Capacity')} />
-        <Tab value="environment" label={t('vehicleType.tab.environment', 'Environment')} />
-        <Tab value="vehicles" label={t('vehicleType.tab.vehicles', 'Vehicles')} />
+        <Tab value="general" label={t('vehicleType.tab.general')} />
+        <Tab value="propulsion" label={t('vehicleType.tab.propulsion')} />
+        <Tab value="capacity" label={t('vehicleType.tab.capacity')} />
+        <Tab value="environment" label={t('vehicleType.tab.environment')} />
+        <Tab value="vehicles" label={t('vehicleType.tab.vehicles')} />
       </Tabs>
 
       {tab === 'general' && (
         <FormLayout data-testid="vtype-tab-general">
-          <FieldRow id="vtype-name" label={t('vehicleType.field.name', 'Name')}>
+          <FieldRow id="vtype-name" label={t('vehicleType.field.name')}>
             <TextField
               id="vtype-name"
               value={value.name?.value ?? ''}
@@ -148,10 +148,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               fullWidth
             />
           </FieldRow>
-          <FieldRow
-            id="vtype-transport-mode"
-            label={t('vehicleType.field.transportMode', 'Transport Mode')}
-          >
+          <FieldRow id="vtype-transport-mode" label={t('vehicleType.field.transportMode')}>
             <TextField
               id="vtype-transport-mode"
               select
@@ -169,7 +166,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               fullWidth
             >
               <MenuItem value="">
-                <em>{t('common.none', 'None')}</em>
+                <em>{t('common.none')}</em>
               </MenuItem>
               {TRANSPORT_MODES.map(mode => (
                 <MenuItem key={mode} value={mode}>
@@ -178,7 +175,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               ))}
             </TextField>
           </FieldRow>
-          <FieldRow id="vtype-low-floor" label={t('vehicleType.field.lowFloor', 'Low Floor')}>
+          <FieldRow id="vtype-low-floor" label={t('vehicleType.field.lowFloor')}>
             <FormControlLabel
               control={
                 <Switch
@@ -193,19 +190,16 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             />
           </FieldRow>
           <Divider sx={{ gridColumn: '1 / -1', my: 0.5 }} />
-          {numRow('length', t('vehicleType.field.length', 'Length (m)'))}
-          {numRow('width', t('vehicleType.field.width', 'Width (m)'))}
-          {numRow('height', t('vehicleType.field.height', 'Height (m)'))}
-          {numRow('weight', t('vehicleType.field.weight', 'Weight (kg)'))}
+          {numRow('length', t('vehicleType.field.length'))}
+          {numRow('width', t('vehicleType.field.width'))}
+          {numRow('height', t('vehicleType.field.height'))}
+          {numRow('weight', t('vehicleType.field.weight'))}
         </FormLayout>
       )}
 
       {tab === 'propulsion' && (
         <FormLayout data-testid="vtype-tab-propulsion">
-          <FieldRow
-            id="vtype-propulsion-types"
-            label={t('vehicleType.field.propulsionTypes', 'Propulsion Types')}
-          >
+          <FieldRow id="vtype-propulsion-types" label={t('vehicleType.field.propulsionTypes')}>
             <Autocomplete<PropulsionType, true>
               multiple
               options={[...PROPULSION_TYPES]}
@@ -219,7 +213,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               )}
             />
           </FieldRow>
-          <FieldRow id="vtype-fuel-types" label={t('vehicleType.field.fuelTypes', 'Fuel Types')}>
+          <FieldRow id="vtype-fuel-types" label={t('vehicleType.field.fuelTypes')}>
             <Autocomplete<FuelType, true>
               multiple
               options={[...FUEL_TYPES]}
@@ -231,10 +225,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               renderInput={params => <TextField {...params} id="vtype-fuel-types" size="small" />}
             />
           </FieldRow>
-          <FieldRow
-            id="vtype-self-propelled"
-            label={t('vehicleType.field.selfPropelled', 'Self Propelled')}
-          >
+          <FieldRow id="vtype-self-propelled" label={t('vehicleType.field.selfPropelled')}>
             <FormControlLabel
               control={
                 <Switch
@@ -248,7 +239,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               label=""
             />
           </FieldRow>
-          <FieldRow id="vtype-euro-class" label={t('vehicleType.field.euroClass', 'Euro Class')}>
+          <FieldRow id="vtype-euro-class" label={t('vehicleType.field.euroClass')}>
             <TextField
               id="vtype-euro-class"
               value={value.euroClass ?? ''}
@@ -258,53 +249,29 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               fullWidth
             />
           </FieldRow>
-          {numRow(
-            'maximumVelocity',
-            t('vehicleType.field.maximumVelocity', 'Maximum Velocity (km/h)')
-          )}
-          {numRow('maximumRange', t('vehicleType.field.maximumRange', 'Maximum Range (km)'))}
+          {numRow('maximumVelocity', t('vehicleType.field.maximumVelocity'))}
+          {numRow('maximumRange', t('vehicleType.field.maximumRange'))}
         </FormLayout>
       )}
 
       {tab === 'capacity' && (
         <FormLayout data-testid="vtype-tab-capacity">
-          {capRow('totalCapacity', t('vehicleType.field.totalCapacity', 'Total Capacity'))}
-          {capRow('seatingCapacity', t('vehicleType.field.seatingCapacity', 'Seating Capacity'))}
-          {capRow('standingCapacity', t('vehicleType.field.standingCapacity', 'Standing Capacity'))}
-          {capRow(
-            'pushchairCapacity',
-            t('vehicleType.field.pushchairCapacity', 'Pushchair Capacity')
-          )}
-          {capRow(
-            'wheelchairPlaceCapacity',
-            t('vehicleType.field.wheelchairPlaceCapacity', 'Wheelchair Places')
-          )}
-          {capRow('pramPlaceCapacity', t('vehicleType.field.pramPlaceCapacity', 'Pram Places'))}
-          {capRow(
-            'bicycleRackCapacity',
-            t('vehicleType.field.bicycleRackCapacity', 'Bicycle Racks')
-          )}
+          {capRow('totalCapacity', t('vehicleType.field.totalCapacity'))}
+          {capRow('seatingCapacity', t('vehicleType.field.seatingCapacity'))}
+          {capRow('standingCapacity', t('vehicleType.field.standingCapacity'))}
+          {capRow('pushchairCapacity', t('vehicleType.field.pushchairCapacity'))}
+          {capRow('wheelchairPlaceCapacity', t('vehicleType.field.wheelchairPlaceCapacity'))}
+          {capRow('pramPlaceCapacity', t('vehicleType.field.pramPlaceCapacity'))}
+          {capRow('bicycleRackCapacity', t('vehicleType.field.bicycleRackCapacity'))}
         </FormLayout>
       )}
 
       {tab === 'environment' && (
         <FormLayout data-testid="vtype-tab-environment">
-          {numRow(
-            'formDragCoefficient',
-            t('vehicleType.field.formDragCoefficient', 'Form Drag Coefficient')
-          )}
-          {numRow(
-            'rollResistanceCoefficient',
-            t('vehicleType.field.rollResistanceCoefficient', 'Roll Resistance Coefficient')
-          )}
-          {numRow(
-            'maximumEngineEffectKW',
-            t('vehicleType.field.maximumEngineEffectKW', 'Max Engine Effect (kW)')
-          )}
-          <FieldRow
-            id="vtype-hybrid-category"
-            label={t('vehicleType.field.hybridCategory', 'Hybrid Category')}
-          >
+          {numRow('formDragCoefficient', t('vehicleType.field.formDragCoefficient'))}
+          {numRow('rollResistanceCoefficient', t('vehicleType.field.rollResistanceCoefficient'))}
+          {numRow('maximumEngineEffectKW', t('vehicleType.field.maximumEngineEffectKW'))}
+          <FieldRow id="vtype-hybrid-category" label={t('vehicleType.field.hybridCategory')}>
             <TextField
               id="vtype-hybrid-category"
               select
@@ -319,7 +286,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
               fullWidth
             >
               <MenuItem value="">
-                <em>{t('common.none', 'None')}</em>
+                <em>{t('common.none')}</em>
               </MenuItem>
               {HYBRID_CATEGORIES.map(c => (
                 <MenuItem key={c} value={c}>
@@ -359,7 +326,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             ))
           ) : (
             <Typography variant="body2" color="text.secondary">
-              {t('vehicleType.noVehicles', 'No vehicles')}
+              {t('vehicleType.noVehicles')}
             </Typography>
           )}
         </Box>

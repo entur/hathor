@@ -39,15 +39,12 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
   const save = useCallback(
     async (form: VehicleType): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl', 'Application base URL is not configured');
+        const message = t('error.noBaseUrl');
         setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = t(
-          'vehicleType.save.noOrganisation',
-          'No organisation selected — cannot save vehicle type'
-        );
+        const message = t('vehicleType.save.noOrganisation');
         setError(message);
         return { newId: null, error: message };
       }

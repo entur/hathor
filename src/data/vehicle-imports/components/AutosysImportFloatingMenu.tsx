@@ -9,7 +9,7 @@ export default function AutosysImportFloatingMenu() {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const label = t('vehicleType.actions.importMulti', 'Import');
+  const label = t('vehicleType.actions.importMulti');
 
   const handleImportComplete = (vehicleTypeIds: string[]) => {
     setOpen(false);

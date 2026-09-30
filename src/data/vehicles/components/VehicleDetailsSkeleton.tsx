@@ -18,7 +18,7 @@ export default function VehicleDetailsSkeleton() {
   const { t } = useTranslation();
   return (
     <FormLayoutSkeleton
-      ariaLabel={t('vehicles.loading', 'Loading vehicle…')}
+      ariaLabel={t('vehicles.loading')}
       showTitle
       sections={[
         { rowCount: CONTEXT_ROWS, rowHeight: CONTEXT_VALUE_HEIGHT, rowGap: CONTEXT_ROW_GAP },

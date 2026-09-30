@@ -34,15 +34,12 @@ export function useDeckPlanDeactivate(): UseDeckPlanDeactivateResult {
   const deactivate = useCallback(
     async (form: DeckPlan): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl', 'Application base URL is not configured');
+        const message = t('error.noBaseUrl');
         setError(message);
         return { newVersion: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = t(
-          'deckPlans.deactivate.noOrganisation',
-          'No organisation selected — cannot deactivate deck plan'
-        );
+        const message = t('deckPlans.deactivate.noOrganisation');
         setError(message);
         return { newVersion: null, error: message };
       }

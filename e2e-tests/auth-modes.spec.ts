@@ -9,7 +9,7 @@ async function openProtectedRoute(page: Page) {
   await page.waitForLoadState('domcontentloaded');
   return {
     appContent: page.locator('.app-content'),
-    loadingAuth: page.getByText('Loading authentication status...'),
+    loadingAuth: page.getByText('Checking authentication status...'),
     redirectAuth: page.getByText('Redirecting to login provider...'),
   };
 }

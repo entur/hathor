@@ -114,7 +114,7 @@ export default function DataPageContent<
         </Typography>
         {urlFilterInfo && urlFilterInfo.filterCount > 0 && (
           <Chip
-            label={t('data.filteredCount', 'Filtering on IDs', {
+            label={t('data.filteredCount', {
               count: urlFilterInfo.filterCount,
             })}
             onDelete={urlFilterInfo.clearUrlFilters}
@@ -173,7 +173,7 @@ export default function DataPageContent<
             {data.length === 0 && !loading && (
               <TableRow data-testid="no-data-row">
                 <TableCell colSpan={colSpan} align="center">
-                  {t('data.noResults', 'No data to display.')}
+                  {t('data.noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -194,20 +194,18 @@ export default function DataPageContent<
               setRowsPerPage(parseInt(event.target.value, 10));
               setPage(0);
             }}
-            labelRowsPerPage={t('data.pagination.rowsPerPage', 'Rows per page:')}
+            labelRowsPerPage={t('data.pagination.rowsPerPage')}
             labelDisplayedRows={({ from, to, count }) =>
               count === -1
                 ? t('data.pagination.displayedRowsOfMore', {
                     from,
                     to,
                     count: to,
-                    defaultValue: '{{from}}–{{to}} of more than {{count}}',
                   })
                 : t('data.pagination.displayedRows', {
                     from,
                     to,
                     count,
-                    defaultValue: '{{from}}–{{to}} of {{count}}',
                   })
             }
             data-testid="table-pagination"

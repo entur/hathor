@@ -137,10 +137,10 @@ export default function NetexId({
     timerRef.current = window.setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
   };
   const copyTooltip = copied
-    ? t('netex.copied', 'Copied!')
+    ? t('netex.copied')
     : copy === 'only'
-      ? t('netex.copyIdWith', 'Copy id {{id}}', { id })
-      : t('netex.copyId', 'Copy id');
+      ? t('netex.copyIdWith', { id })
+      : t('netex.copyId');
   if (copy === 'only') {
     return (
       <Tooltip title={copyTooltip}>

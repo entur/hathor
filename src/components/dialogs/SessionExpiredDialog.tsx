@@ -27,18 +27,13 @@ export default function SessionExpiredDialog() {
         backdrop: { style: { pointerEvents: 'none' } },
       }}
     >
-      <DialogTitle>{t('session.expired.title', 'Session Expired')}</DialogTitle>
+      <DialogTitle>{t('session.expired.title')}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {t(
-            'session.expired.message',
-            'Your session has expired. To protect your information, you have been logged out. Please log in again to continue.'
-          )}
-        </DialogContentText>
+        <DialogContentText>{t('session.expired.message')}</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleRelogin} variant="contained" color="primary">
-          {t('session.expired.reloginButton', 'Log In Again')}
+          {t('session.expired.reloginButton')}
         </Button>
       </DialogActions>
     </Dialog>

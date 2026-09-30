@@ -93,12 +93,7 @@ export default function VehicleDetails({
       await onSaved?.();
       setCommitError(null);
     } catch {
-      setCommitError(
-        t(
-          'vehicle.deactivateStaleList',
-          'Deactivated — but the list could not refresh; it may be stale.'
-        )
-      );
+      setCommitError(t('vehicle.deactivateStaleList'));
     }
   };
 
@@ -112,9 +107,7 @@ export default function VehicleDetails({
       // break. Re-baselining with id='' would let the next Edit→Save fire
       // CREATE again and mint a duplicate.
       if (!result.newId) {
-        setCommitError(
-          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
-        );
+        setCommitError(t('common.saveNoIdReturned'));
         return;
       }
       // Re-baseline the form with the assigned id so isDirty=false immediately,
@@ -144,11 +137,11 @@ export default function VehicleDetails({
       <>
         <Box sx={{ p: 2 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-            <Typography variant="h6">{t('vehicles.detailsTitle', 'Vehicle Details')}</Typography>
+            <Typography variant="h6">{t('vehicles.detailsTitle')}</Typography>
           </Stack>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {t('vehicles.notFound', 'Vehicle not found')}
+            {t('vehicles.notFound')}
           </Typography>
           {requestedId && (
             <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
@@ -214,7 +207,7 @@ export default function VehicleDetails({
       <Divider sx={{ mb: 2 }} />
 
       <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
-        <MetaRow label={t('vehicles.field.parentVehicleType', 'Vehicle Type')}>
+        <MetaRow label={t('vehicles.field.parentVehicleType')}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
             <span>{vehicle.transportType?.name?.value ?? '—'}</span>
             {xmlVehicle?.transportType?.id && (
@@ -222,7 +215,7 @@ export default function VehicleDetails({
             )}
           </Stack>
         </MetaRow>
-        <MetaRow label={t('vehicles.field.parentTransportMode', 'Transport Mode')}>
+        <MetaRow label={t('vehicles.field.parentTransportMode')}>
           <TransportModeIcon mode={tmode} iconPosition="left" />
         </MetaRow>
       </FormLayout>
@@ -244,12 +237,12 @@ export default function VehicleDetails({
       />
       <SaveSuccessSnackbar
         open={savedAt !== null}
-        message={t('vehicles.saveSuccess', 'Vehicle saved')}
+        message={t('vehicles.saveSuccess')}
         onClose={() => setSavedAt(null)}
       />
       <SaveSuccessSnackbar
         open={deactivatedOK}
-        message={t('vehicles.deactivateSuccess', 'Vehicle deactivated')}
+        message={t('vehicles.deactivateSuccess')}
         onClose={closeSlider}
       />
       <EditorRail
@@ -258,12 +251,9 @@ export default function VehicleDetails({
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
-        deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle', 'Deactivate vehicle?')}
-        deactivateConfirmMessage={t(
-          'vehicle.deactivateConfirmMessage',
-          'This vehicle will be deactivated.'
-        )}
-        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
+        deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle')}
+        deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
+        deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
           dispatch({ type: 'hydrate', xmlVehicle });
           setMode('view');

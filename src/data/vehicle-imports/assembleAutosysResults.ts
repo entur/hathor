@@ -64,7 +64,7 @@ export function assembleAutosysResults(
       if (!resourceFrame) {
         errors.push({
           queryRegNumber: result.queryRegNumber,
-          message: i18next.t('import.multi.noResourceFrame', 'No ResourceFrame found in response'),
+          message: i18next.t('import.multi.noResourceFrame'),
         });
         continue;
       }
@@ -78,10 +78,7 @@ export function assembleAutosysResults(
     } catch (e) {
       errors.push({
         queryRegNumber: result.queryRegNumber,
-        message:
-          e instanceof Error
-            ? e.message
-            : i18next.t('import.multi.xmlParseFailed', 'Failed to parse XML'),
+        message: e instanceof Error ? e.message : i18next.t('import.multi.xmlParseFailed'),
       });
     }
   }

@@ -18,7 +18,7 @@ export default function VehicleTypeView() {
         importAction: <AutosysImportFloatingMenu />,
         addAction: (
           <NewEntityFab
-            label={t('vehicleTypes.actions.new', 'New Vehicle Type')}
+            label={t('vehicleTypes.actions.new')}
             to="/vehicle-types?selected=new"
             testid="create-vehicle-type-fab"
           />

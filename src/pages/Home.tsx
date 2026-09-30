@@ -140,7 +140,7 @@ export default function HomePage() {
             variant="overline"
             sx={{ color: 'primary.main', letterSpacing: '0.12em', fontWeight: 700 }}
           >
-            {t('home.eyebrow', 'National vehicle registry')}
+            {t('home.eyebrow')}
           </Typography>
           <Typography
             variant="h3"
@@ -158,7 +158,7 @@ export default function HomePage() {
         {currentOrganisation && (
           <Box
             component="section"
-            aria-label={t('home.overview', 'Overview')}
+            aria-label={t('home.overview')}
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
@@ -197,7 +197,7 @@ export default function HomePage() {
         {currentOrganisation && (
           <Box component="section" sx={{ mb: { xs: 4, md: 6 } }}>
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('home.browse', 'Browse the registry')}
+              {t('home.browse')}
             </Typography>
             <Box
               sx={{
@@ -223,7 +223,7 @@ export default function HomePage() {
         {currentOrganisation && (
           <Box component="section">
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('home.createNew.title', 'Create new')}
+              {t('home.createNew.title')}
             </Typography>
             <Box
               sx={{
@@ -238,7 +238,7 @@ export default function HomePage() {
               <CreateAction
                 to="/vehicle-types?selected=new"
                 icon="vehicleTypes"
-                label={t('home.createNew.vehicleType', 'Vehicle Type')}
+                label={t('home.createNew.vehicleType')}
               />
               <Divider
                 flexItem
@@ -248,7 +248,7 @@ export default function HomePage() {
               <CreateAction
                 to="/vehicles?selected=new"
                 icon="vehicles"
-                label={t('home.createNew.vehicle', 'Vehicle')}
+                label={t('home.createNew.vehicle')}
               />
               <Divider
                 flexItem
@@ -258,7 +258,7 @@ export default function HomePage() {
               <CreateAction
                 to="/deck-plans?selected=new"
                 icon="deckPlans"
-                label={t('home.createNew.deckPlan', 'Deck Plan')}
+                label={t('home.createNew.deckPlan')}
               />
             </Box>
           </Box>
@@ -266,17 +266,14 @@ export default function HomePage() {
         {!isAuthenticated && (
           <Box component="section">
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('home.notLoggedIn', 'You need to log in to use the registry')}
+              {t('home.notLoggedIn')}
             </Typography>
           </Box>
         )}
         {!currentOrganisation && isAuthenticated && (
           <Box component="section">
             <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t(
-                'home.noOrganisation',
-                'You need to choose an organisation to use the registry. This is done in the selector at the top right of the page. If you do not see any organisations to select, please contact your administrator to grant you access.'
-              )}
+              {t('home.noOrganisation')}
             </Typography>
             {organisationsError && (
               <Alert
@@ -284,11 +281,11 @@ export default function HomePage() {
                 data-testid="home-organisations-load-error"
                 action={
                   <Button color="inherit" size="small" onClick={() => void refetchOrganisations()}>
-                    {t('common.retry', 'Retry')}
+                    {t('common.retry')}
                   </Button>
                 }
               >
-                {t('organisations.loadError', 'Could not load organisations.')} {organisationsError}
+                {t('organisations.loadError')} {organisationsError}
               </Alert>
             )}
           </Box>

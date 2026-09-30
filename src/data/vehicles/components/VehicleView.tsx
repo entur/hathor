@@ -16,7 +16,7 @@ export default function VehicleView() {
         ...vehicleViewConfig,
         addAction: (
           <NewEntityFab
-            label={t('vehicles.actions.new', 'New Vehicle')}
+            label={t('vehicles.actions.new')}
             to="/vehicles?selected=new"
             testid="create-vehicle-fab"
           />

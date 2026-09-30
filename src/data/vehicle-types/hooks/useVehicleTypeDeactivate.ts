@@ -34,15 +34,12 @@ export function useVehicleTypeDeactivate(): UseVehicleTypeDeactivateResult {
   const deactivate = useCallback(
     async (form: VehicleType): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl', 'Application base URL is not configured');
+        const message = t('error.noBaseUrl');
         setError(message);
         return { newVersion: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = t(
-          'vehicleType.deactivate.noOrganisation',
-          'No organisation selected — cannot deactivate vehicle type'
-        );
+        const message = t('vehicleType.deactivate.noOrganisation');
         setError(message);
         return { newVersion: null, error: message };
       }
