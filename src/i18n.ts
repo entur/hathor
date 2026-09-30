@@ -14,6 +14,20 @@ const resources = {
   },
 };
 
+/**
+ * Dev-time alarm for a key that resolves in no bundle — `fallbackLng`
+ * included. Replaces the inline `t('key', 'Default')` pattern (#176), which
+ * silently masked misses instead of surfacing them. Prod behaviour is unchanged.
+ *
+ * @param {string} key - The unresolved key.
+ * @param {string} [def] - Caller-supplied default, if any.
+ * @returns {string} `def` when given, else the raw key (i18next's default).
+ */
+const onMissingKey = (key: string, def?: string) => {
+  if (import.meta.env.DEV) console.error(`i18n: missing key "${key}"`);
+  return def ?? key;
+};
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -24,6 +38,7 @@ i18n
     interpolation: {
       escapeValue: false,
     },
+    parseMissingKeyHandler: onMissingKey,
   });
 
 /**
