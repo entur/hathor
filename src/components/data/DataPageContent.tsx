@@ -132,10 +132,6 @@ export default function DataPageContent<
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                // Gutter past the floating EditorRail when an editor is open
-                // — `--editor-rail-clear` is published by GenericDataViewPage.
-                mr: 'var(--editor-rail-clear, 0px)',
-                transition: 'margin-right 0.2s ease',
               }}
             >
               {addAction}

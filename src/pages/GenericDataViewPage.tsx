@@ -1,19 +1,14 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
 import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
-import { RAIL_W } from '../components/sidebar/EditorRail.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
-const DETAILS_PANE_WIDTH_FACTOR = 0.25;
-const DETAILS_PANE_GUTTER_PX = 4;
 const DETAILS_PANE_SIDE: Side = 'right';
-const DETAILS_PANE_MARGIN = DETAILS_PANE_SIDE === 'right' ? 'marginRight' : 'marginLeft';
-const MARGIN_TRANSITION = `${DETAILS_PANE_MARGIN} 0.2s ease`;
 const APP_HEADER_HEIGHT_PX = 64;
 
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
@@ -46,16 +41,10 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const theme = useTheme();
 
-  const initWidth = () => Math.round(window.innerWidth * DETAILS_PANE_WIDTH_FACTOR);
-  const {
-    width: sidebarWidth,
-    collapsed: sidebarCollapsed,
-    setIsResizing: setIsSidebarResizing,
-    toggle: toggleSidebar,
-  } = useResizableSidebar(initWidth, true, DETAILS_PANE_SIDE);
+  const { ratio: paneRatio, setIsResizing: setIsSidebarResizing } =
+    useResizableSidebar(DETAILS_PANE_SIDE);
 
   const { editingItem } = useEditingItem();
-  const prevEditingIdRef = useRef<string | null>(null);
 
   const {
     searchResults,
@@ -120,19 +109,6 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const onRowClick = (viewConfig.useRowClick ?? noopRowClick)();
 
-  // Open the sidebar when a new editor is set; collapse it when the editor
-  // is cleared (e.g. the editor's Close button → `setEditingItem(null)`, or
-  // a URL-driven page like `/vehicles?selected=…` dropping its param).
-  useEffect(() => {
-    const prevId = prevEditingIdRef.current;
-    if (editingItem && editingItem.id !== prevId) {
-      if (sidebarCollapsed) toggleSidebar();
-    } else if (!editingItem && prevId !== null) {
-      if (!sidebarCollapsed) toggleSidebar();
-    }
-    prevEditingIdRef.current = editingItem?.id ?? null;
-  }, [editingItem, sidebarCollapsed, toggleSidebar]);
-
   useEffect(() => {
     setPage(0);
   }, [searchQuery, activeSearchContext, selectedItem, setPage, activeFilters]);
@@ -149,16 +125,10 @@ export default function GenericDataViewPage<T, K extends string>({
         display: 'flex',
         height: `calc(100dvh - ${APP_HEADER_HEIGHT_PX}px)`,
         position: 'relative',
-        '--sidebar-width': sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
-        '--app-header-height': `${APP_HEADER_HEIGHT_PX}px`,
-        // Rail floats over the content's right edge once an editor is open;
-        // right-aligned chrome (add/import) gutters past it.
-        '--editor-rail-clear': editingItem ? `${RAIL_W}px` : '0px',
       }}
     >
       <Sidebar
-        width={sidebarWidth}
-        collapsed={sidebarCollapsed}
+        ratio={paneRatio}
         onMouseDownResize={() => setIsSidebarResizing(true)}
         theme={theme}
         side={DETAILS_PANE_SIDE}
@@ -168,10 +138,6 @@ export default function GenericDataViewPage<T, K extends string>({
         sx={{
           flexGrow: 1,
           height: '100%',
-          [DETAILS_PANE_MARGIN]: sidebarCollapsed
-            ? '0px'
-            : `${sidebarWidth + DETAILS_PANE_GUTTER_PX}px`,
-          transition: MARGIN_TRANSITION,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',

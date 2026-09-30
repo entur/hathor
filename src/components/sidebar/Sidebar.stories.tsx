@@ -3,14 +3,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { Box, Button, Stack, TextField, Typography, createTheme, useTheme } from '@mui/material';
 import { Sidebar, type Side } from './Sidebar.tsx';
-import EditorRail, { RAIL_W } from './EditorRail.tsx';
+import EditorRail from './EditorRail.tsx';
 import { EditingProvider, useEditingItem } from '../../contexts/EditingContext.tsx';
 import { useResizableSidebar } from '../../hooks/useResizableSidebar.ts';
 import { useLiftEditorDirty } from '../../hooks/useLiftEditorDirty.ts';
 
 const SIDE: Side = 'right';
-const PANE_W = 420,
-  STAGE_H = 560;
+const STAGE_H = 560;
 const DEMO_ID = 'NMR:VehicleType:1';
 
 /**
@@ -67,14 +66,14 @@ function DemoEditor({ dirty: initDirty, mode: initMode }: Omit<StageArgs, 'layou
 }
 
 /**
- * Mirrors GenericDataViewPage's chrome: the resizable pane collapse follows
- * `editingItem`, and the rail vars are published on the page box.
+ * Mirrors GenericDataViewPage's chrome: a modal Drawer whose open state is
+ * `editingItem`; the ratio-sized pane resizes from its inner edge.
  */
 function Stage({ layout, dirty, mode }: StageArgs) {
   const base = useTheme();
   const theme = layout === 'mobile' ? MOBILE_THEME : base;
   const { editingItem, setEditingItem } = useEditingItem();
-  const { width, collapsed, setIsResizing, toggle } = useResizableSidebar(PANE_W, true, SIDE);
+  const { ratio, setIsResizing } = useResizableSidebar(SIDE);
 
   const open = () =>
     setEditingItem({
@@ -84,27 +83,15 @@ function Stage({ layout, dirty, mode }: StageArgs) {
 
   useEffect(open, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (!!editingItem === collapsed) toggle();
-  }, [editingItem, collapsed, toggle]);
-
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        height: STAGE_H,
-        '--sidebar-width': collapsed ? '0px' : `${width}px`,
-        '--app-header-height': '0px',
-      }}
-    >
+    <Box sx={{ position: 'relative', height: STAGE_H }}>
       <Sidebar
-        width={width}
-        collapsed={collapsed}
+        ratio={ratio}
         onMouseDownResize={() => setIsResizing(true)}
         theme={theme}
         side={SIDE}
       />
-      <Stack spacing={2} sx={{ p: 2, mr: editingItem ? `${RAIL_W}px` : 0 }}>
+      <Stack spacing={2} sx={{ p: 2 }}>
         <Typography data-testid="stage-selection">
           {editingItem ? `Selected: ${editingItem.id}` : 'No selection'}
         </Typography>
@@ -137,10 +124,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Body lives in a portal on mobile (Drawer) — query the whole document. */
+/** Body lives in the Drawer's portal — query the whole document. */
 const body = () => within(document.body);
 
 const collapse = () => userEvent.click(body().getByTestId('editor-rail-collapse'));
+
+/** MUI Backdrop behind the Drawer paper — the scrim over the list. */
+const clickBackdrop = () =>
+  userEvent.click(document.querySelector<HTMLElement>('.MuiBackdrop-root')!);
 
 const expectClosed = () =>
   waitFor(() => expect(body().getByTestId('stage-selection')).toHaveTextContent('No selection'));
@@ -149,7 +140,7 @@ const expectClosed = () =>
 const expectDiscardPrompt = () =>
   waitFor(() => expect(body().getByText('Discard unsaved changes?')).toBeVisible());
 
-/** Resizable inline pane; rail on its content-facing edge. Rail collapse clears the selection. */
+/** Modal pane, resizable from its inner edge; rail collapse clears the selection. */
 export const Desktop: Story = {
   play: async () => {
     await collapse();
@@ -165,6 +156,25 @@ export const DesktopDirty: Story = {
     await expectDiscardPrompt();
     await userEvent.click(body().getByRole('button', { name: 'Discard' }));
     await expectClosed();
+  },
+};
+
+/** Desktop modal: Escape on a clean editor closes straight away. */
+export const DesktopEscape: Story = {
+  play: async () => {
+    await userEvent.keyboard('{Escape}');
+    await expectClosed();
+  },
+};
+
+/** Desktop modal: a backdrop click on a dirty editor prompts; Cancel keeps it open. */
+export const DesktopBackdropDirty: Story = {
+  args: { dirty: true, mode: 'edit' },
+  play: async () => {
+    await clickBackdrop();
+    await expectDiscardPrompt();
+    await userEvent.click(body().getByRole('button', { name: 'Cancel' }));
+    await expect(body().getByTestId('stage-selection')).toHaveTextContent(`Selected: ${DEMO_ID}`);
   },
 };
 

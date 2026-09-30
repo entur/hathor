@@ -70,7 +70,8 @@ interface EditorRailProps {
  * shows collapse + cancel + save. Replaces the per-feature Edit chip +
  * Save button + Close button trio. Reads `--sidebar-width` and
  * `--app-header-height` CSS variables (set by the chrome) to position
- * itself outside the sidebar's overflow context via `position: fixed`.
+ * itself via `position: fixed`; the details Drawer zeroes both, pinning
+ * the rail into its paper's `RAIL_W` gutter at the anchored edge.
  */
 export default function EditorRail({
   onCollapse,
