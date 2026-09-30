@@ -34,6 +34,8 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *   - transportType ref round-trips as the option's full netex id
  *   - After a successful create, ?selected=new is rewritten to ?selected=<newId>
  *     and the sidebar resolves into the new row
+ *   - The list-head `create-vehicle-fab` is hidden while ?selected=new is open
+ *     and returns once the URL advances to the new id (#173)
  *   - An existing non-numeric TransportTypeRef stays selectable via the picker
  *     (orphan-option fallback) AND can be swapped for a known option
  * Modes:
@@ -100,6 +102,10 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await page.goto('/vehicles?selected=new');
     await page.waitForLoadState('networkidle');
 
+    // #173: the list-head New button is a no-op while the create sidebar is open.
+    const fab = page.getByTestId('create-vehicle-fab');
+    await expect(fab).toBeHidden();
+
     const save = page.getByTestId('editor-rail-save');
 
     await page.getByLabel('Registration Number').fill('NEW-001');
@@ -113,6 +119,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await expect
       .poll(() => page.url(), { timeout: 10_000 })
       .toContain(`selected=${ENCODED_NEW_ID}`);
+    await expect(fab).toBeVisible();
     const input = capture.input() as { transportType?: { netexId?: string } } | null;
     expect(input?.transportType?.netexId).toBe(EXPECTED_REF);
   });

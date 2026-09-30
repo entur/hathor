@@ -3,6 +3,7 @@ import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
+import { NEW_SEL } from '../hooks/useUrlEditorSelection.tsx';
 import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
@@ -59,6 +60,9 @@ export default function GenericDataViewPage<T, K extends string>({
   } = useResizableSidebar(initWidth, true, DETAILS_PANE_SIDE);
 
   const { editingItem } = useEditingItem();
+  // Create sidebar open → list-head add/import would be a no-op next to a
+  // half-filled form (#173). Returns once save advances `new` → `<newId>`.
+  const creating = editingItem?.id === NEW_SEL;
   const prevEditingIdRef = useRef<string | null>(null);
 
   const {
@@ -198,8 +202,8 @@ export default function GenericDataViewPage<T, K extends string>({
           handleColumnEvent={viewConfig.handleColumnEvent}
           onRowClick={onRowClick}
           selectedId={editingItem?.id ?? null}
-          addAction={addAction}
-          importAction={importAction}
+          addAction={creating ? undefined : addAction}
+          importAction={creating ? undefined : importAction}
           urlFilterInfo={urlFilterInfo}
           sortLocked={!!editingItem}
         />

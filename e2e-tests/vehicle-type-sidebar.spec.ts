@@ -26,7 +26,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  * Covers:
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
- *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form
+ *     the param; ?selected=new hides the New + Import list-head actions (#173); toggling a null-baseline Low Floor switch on/off must not dirty the form
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
@@ -153,6 +153,27 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page).toHaveURL(/\/vehicle-types(\?|$)/);
     await expect(page).not.toHaveURL(/selected=/);
     await expect(page.getByTestId('vehicle-type-details-title')).not.toBeVisible();
+  });
+
+  test('?selected=new hides the list-head New + Import actions; bare list shows them (#173)', async ({
+    page,
+  }) => {
+    const fab = page.getByTestId('create-vehicle-type-fab');
+    const imp = page.getByTestId('import-vehicle-multi-button');
+
+    await page.goto('/vehicle-types');
+    await selectFirstOrg(page);
+    await expect(fab).toBeVisible();
+    await expect(imp).toBeVisible();
+
+    await fab.click();
+    await expect(page).toHaveURL(/selected=new/);
+    await expect(fab).toBeHidden();
+    await expect(imp).toBeHidden();
+
+    await page.getByTestId('editor-rail-collapse').click();
+    await expect(fab).toBeVisible();
+    await expect(imp).toBeVisible();
   });
 
   // Regression guard: VehicleType:3 (Gamma) has lowFloor:null → the projection

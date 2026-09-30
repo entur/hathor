@@ -2,6 +2,9 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
 
+/** Sentinel `?selected=` value opening the create (empty-row) editor. */
+export const NEW_SEL = 'new';
+
 interface UrlEditorSelectionParams<T> {
   /** URL search param key holding the selected id (e.g. 'selected'). */
   paramKey: string;
@@ -83,7 +86,7 @@ export function useUrlEditorSelection<T>({
     if (loading) return;
     if (allData === null) return;
 
-    const isNew = selected === 'new';
+    const isNew = selected === NEW_SEL;
     const idx = isNew ? -1 : allData.findIndex(v => getIdRef.current(v) === selected);
     const row = isNew ? (getEmptyRowRef.current?.() ?? null) : idx >= 0 ? allData[idx] : null;
 
@@ -92,9 +95,7 @@ export function useUrlEditorSelection<T>({
     if (idChanged || resolvedFromMissing) {
       setEditingItem({
         id: selected,
-        EditorComponent: () => (
-          <>{renderEditorRef.current(row, selected === 'new' ? 'edit' : 'view')}</>
-        ),
+        EditorComponent: () => <>{renderEditorRef.current(row, isNew ? 'edit' : 'view')}</>,
       });
       lastCommittedIdRef.current = selected;
       lastCommittedRowRef.current = row;
