@@ -52,9 +52,7 @@ export default function VehicleListCell({ vehicles }: VehicleListCellProps) {
           }}
           sx={{ mt: 0.5 }}
         >
-          {expanded
-            ? t('common.showLess', 'Show less')
-            : t('common.showMore', '+{{count}} more', { count: hidden.length })}
+          {expanded ? t('common.showLess') : t('common.showMore', { count: hidden.length })}
         </Link>
       )}
     </Box>

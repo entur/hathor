@@ -93,17 +93,9 @@ export default function MultiImportFileInput({
         data-testid="multi-import-dropzone"
       >
         <CloudUpload sx={{ fontSize: 48, color: 'action.active', mb: 1 }} />
-        <Typography>
-          {t(
-            'import.multi.dropzoneLabel',
-            'Drag and drop a CSV or TXT file here, or click to upload'
-          )}
-        </Typography>
+        <Typography>{t('import.multi.dropzoneLabel')}</Typography>
         <Typography variant="caption" color="text.secondary">
-          {t(
-            'import.multi.dropzoneHint',
-            'One registration number per line, or separated by commas'
-          )}
+          {t('import.multi.dropzoneHint')}
         </Typography>
       </Box>
     </>

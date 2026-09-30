@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import type { ColumnDefinition, Order } from './dataTableTypes.ts';
 
 const LOCK_TOOLTIP_KEY = 'data.table.sortLocked';
-const LOCK_TOOLTIP_FALLBACK = 'Close details to change sort';
 const LOCK_DIM_OPACITY = 0.55;
 
 interface Props<T, K extends string> {
@@ -28,7 +27,7 @@ export default function DataTableHeader<T, K extends string>({
   sortLocked = false,
 }: Props<T, K>) {
   const { t } = useTranslation();
-  const lockText = t(LOCK_TOOLTIP_KEY, LOCK_TOOLTIP_FALLBACK);
+  const lockText = t(LOCK_TOOLTIP_KEY);
   const lockTitle = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <LockOutlinedIcon fontSize="small" />

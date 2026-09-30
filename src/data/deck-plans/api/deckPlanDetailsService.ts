@@ -40,11 +40,11 @@ export const saveDeckPlanAsNetexToBackend = async (
   // care with the geometry.
   const xml = xmlParser.parse(deckPlanData);
   if (!xml) {
-    throw new Error(i18next.t('deckPlans.invalidXml', 'Invalid XML data'));
+    throw new Error(i18next.t('deckPlans.invalidXml'));
   }
   const resourceFrame = findResourceFrame(xml);
   if (!resourceFrame) {
-    throw new Error(i18next.t('deckPlans.noResourceFrame', 'No ResourceFrame found in XML data'));
+    throw new Error(i18next.t('deckPlans.noResourceFrame'));
   }
   const builder = new XMLBuilder({
     ignoreAttributes: false,

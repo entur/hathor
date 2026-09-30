@@ -20,10 +20,9 @@ const LoginRedirect = () => {
   }, [isLoading, isAuthenticated, login, navigate, returnUrl, oidcConfig?.redirect_uri]);
 
   // Same wording as ProtectedRoute's pre-auth gate — one key, both places.
-  if (isLoading)
-    return <div>{t('protectedRoute.loadingAuthStatus', 'Checking authentication status...')}</div>;
+  if (isLoading) return <div>{t('protectedRoute.loadingAuthStatus')}</div>;
 
-  return <div>{t('auth.redirecting', 'Redirecting to login provider...')}</div>;
+  return <div>{t('auth.redirecting')}</div>;
 };
 
 export default LoginRedirect;

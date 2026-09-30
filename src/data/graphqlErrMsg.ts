@@ -16,28 +16,13 @@ import i18next from 'i18next';
 export function graphqlErrMsg(err: unknown): string {
   if (err instanceof ClientError) {
     const status = err.response.status;
-    if (status === 401)
-      return i18next.t(
-        'error.notAuthenticated',
-        'Not authenticated — please log in to access this data'
-      );
-    if (status === 403)
-      return i18next.t(
-        'error.accessDenied',
-        'Access denied — you do not have permission to view this data'
-      );
+    if (status === 401) return i18next.t('error.notAuthenticated');
+    if (status === 403) return i18next.t('error.accessDenied');
     // Sobek's own message is already prose from the backend — passed through
     // untranslated, since only the generic wrapper is ours to localise.
-    return (
-      err.response.errors?.[0]?.message ??
-      i18next.t('error.serverError', 'Server error ({{status}})', { status })
-    );
+    return err.response.errors?.[0]?.message ?? i18next.t('error.serverError', { status });
   }
-  if (err instanceof TypeError)
-    return i18next.t(
-      'error.unreachable',
-      'Unable to reach server — check that the backend is running'
-    );
+  if (err instanceof TypeError) return i18next.t('error.unreachable');
   if (err instanceof Error) return err.message;
-  return i18next.t('error.unexpected', 'An unexpected error occurred');
+  return i18next.t('error.unexpected');
 }

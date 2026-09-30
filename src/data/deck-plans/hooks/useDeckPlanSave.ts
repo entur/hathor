@@ -43,15 +43,12 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const save = useCallback(
     async (xml: string): Promise<SaveResult> => {
       if (!applicationImportBaseUrl) {
-        const message = t('error.noImportBaseUrl', 'Application import base URL is not configured');
+        const message = t('error.noImportBaseUrl');
         setError(message);
         return { error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = t(
-          'deckPlans.save.noOrganisation',
-          'No organisation selected — cannot save deck plan'
-        );
+        const message = t('deckPlans.save.noOrganisation');
         setError(message);
         return { error: message };
       }
@@ -80,15 +77,12 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const saveGQL = useCallback(
     async (form: DeckPlan): Promise<{ newId: string | null; error: string | null }> => {
       if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl', 'Application base URL is not configured');
+        const message = t('error.noBaseUrl');
         setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = t(
-          'deckPlans.save.noOrganisation',
-          'No organisation selected — cannot save deck plan'
-        );
+        const message = t('deckPlans.save.noOrganisation');
         setError(message);
         return { newId: null, error: message };
       }

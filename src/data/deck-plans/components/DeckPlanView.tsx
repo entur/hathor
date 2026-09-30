@@ -15,7 +15,7 @@ export default function DeckPlanView() {
         ...deckPlanViewConfig,
         addAction: (
           <NewEntityFab
-            label={t('deckPlans.actions.new', 'New Deck Plan')}
+            label={t('deckPlans.actions.new')}
             to="/deck-plans?selected=new"
             testid="create-deck-plan-fab"
           />

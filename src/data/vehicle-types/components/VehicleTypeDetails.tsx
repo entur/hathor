@@ -115,12 +115,7 @@ export default function VehicleTypeDetails({
       await onSaved?.();
       setRefreshError(null);
     } catch {
-      setRefreshError(
-        t(
-          'vehicleType.deactivateStaleList',
-          'Deactivated — but the list could not refresh; it may be stale.'
-        )
-      );
+      setRefreshError(t('vehicleType.deactivateStaleList'));
     }
   };
 
@@ -143,9 +138,7 @@ export default function VehicleTypeDetails({
       // Sobek invariant break: silently re-baselining to id='' would let the
       // next Edit→Save fire CREATE again and mint a duplicate.
       if (!result.newId) {
-        setRefreshError(
-          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
-        );
+        setRefreshError(t('common.saveNoIdReturned'));
         return;
       }
       hydrateRow.id = result.newId;
@@ -165,9 +158,7 @@ export default function VehicleTypeDetails({
     } catch {
       // Save is real, but the list couldn't refresh — warn instead of a clean
       // success over a stale table.
-      setRefreshError(
-        t('vehicleType.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
-      );
+      setRefreshError(t('vehicleType.saveStaleList'));
     }
   };
 
@@ -177,11 +168,11 @@ export default function VehicleTypeDetails({
       <>
         <Box sx={{ p: 2 }}>
           <Typography variant="h6" sx={{ mb: 1 }}>
-            {t('vehicleType.detailsTitle', 'Vehicle Type Details')}
+            {t('vehicleType.detailsTitle')}
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {t('vehicleType.notFound', 'Vehicle type not found')}
+            {t('vehicleType.notFound')}
           </Typography>
           {requestedId && (
             <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
@@ -252,12 +243,12 @@ export default function VehicleTypeDetails({
       />
       <SaveSuccessSnackbar
         open={savedAt !== null}
-        message={t('vehicleType.saveSuccess', 'Vehicle type saved')}
+        message={t('vehicleType.saveSuccess')}
         onClose={() => setSavedAt(null)}
       />
       <SaveSuccessSnackbar
         open={deactivatedOK}
-        message={t('vehicleType.deactivateSuccess', 'Vehicle type deactivated')}
+        message={t('vehicleType.deactivateSuccess')}
         onClose={closeSlider}
       />
       <EditorRail
@@ -266,12 +257,9 @@ export default function VehicleTypeDetails({
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
-        deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle', 'Deactivate vehicle type?')}
-        deactivateConfirmMessage={t(
-          'vehicleType.deactivateConfirmMessage',
-          'This vehicle type will be deactivated.'
-        )}
-        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
+        deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle')}
+        deactivateConfirmMessage={t('vehicleType.deactivateConfirmMessage')}
+        deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
           // Revert to the last committed baseline (post-save = saved values),
           // not the `vehicleType` prop which goes stale after a same-id save.

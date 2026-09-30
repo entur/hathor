@@ -34,15 +34,12 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
   const deactivate = useCallback(
     async (form: VehicleGQLShaped): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl', 'Application base URL is not configured');
+        const message = t('error.noBaseUrl');
         setError(message);
         return { newVersion: null, error: message };
       }
       if (!currentOrganisation?.id) {
-        const message = t(
-          'vehicles.deactivate.noOrganisation',
-          'No organisation selected — cannot deactivate vehicle'
-        );
+        const message = t('vehicles.deactivate.noOrganisation');
         setError(message);
         return { newVersion: null, error: message };
       }

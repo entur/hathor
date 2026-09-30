@@ -59,11 +59,7 @@ export function Sidebar({
             justifyContent: 'flex-end',
           }}
         >
-          <IconButton
-            onClick={toggleCollapse}
-            color="inherit"
-            aria-label={t('sidebar.close', 'close sidebar')}
-          >
+          <IconButton onClick={toggleCollapse} color="inherit" aria-label={t('sidebar.close')}>
             {closeIcon}
           </IconButton>
         </Toolbar>

@@ -23,7 +23,7 @@ export default function HeadBreadcrumbs({ title }: HeadBreadcrumbsProps) {
   return (
     <Breadcrumbs aria-label="breadcrumb" data-testid="breadcrumbs-nav">
       <Link component={RouterLink} to={HOME_ROUTE} underline="hover" color="inherit">
-        {t('breadcrumbs.home', 'Home')}
+        {t('breadcrumbs.home')}
       </Link>
       <Typography component="span" color="text.primary">
         {title}

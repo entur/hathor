@@ -32,20 +32,18 @@ export default function DiscardDialog({ open, onCancel, onDiscard, onSave }: Dis
   const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onCancel}>
-      <DialogTitle>{t('vehicles.discardTitle', 'Discard unsaved changes?')}</DialogTitle>
+      <DialogTitle>{t('vehicles.discardTitle')}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {t('vehicles.discardBody', 'You have unsaved edits on this vehicle.')}
-        </DialogContentText>
+        <DialogContentText>{t('vehicles.discardBody')}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>{t('cancel', 'Cancel')}</Button>
+        <Button onClick={onCancel}>{t('cancel')}</Button>
         <Button color="error" onClick={onDiscard}>
-          {t('discard', 'Discard')}
+          {t('discard')}
         </Button>
         {onSave && (
           <Button variant="contained" onClick={onSave}>
-            {t('save', 'Save')}
+            {t('save')}
           </Button>
         )}
       </DialogActions>

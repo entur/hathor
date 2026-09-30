@@ -69,19 +69,15 @@ export default function MultiImportColumnMapper({
   return (
     <>
       <Typography variant="body2" sx={{ mb: 2 }}>
-        {t(
-          'import.multi.columnMapperDescription',
-          'We detected {{count}} columns in your file. Map the columns to the correct fields.',
-          { count: headers.length }
-        )}
+        {t('import.multi.columnMapperDescription', { count: headers.length })}
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>{t('import.multi.regNumberColumn', 'Registration number')}</InputLabel>
+          <InputLabel>{t('import.multi.regNumberColumn')}</InputLabel>
           <Select
             value={regNumberCol}
-            label={t('import.multi.regNumberColumn', 'Registration number')}
+            label={t('import.multi.regNumberColumn')}
             onChange={e => handleRegNumberColChange(e.target.value)}
             data-testid="column-mapper-reg-number"
           >
@@ -94,17 +90,15 @@ export default function MultiImportColumnMapper({
         </FormControl>
 
         <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>
-            {t('import.multi.operationalRefColumn', 'Operational ID (optional)')}
-          </InputLabel>
+          <InputLabel>{t('import.multi.operationalRefColumn')}</InputLabel>
           <Select
             value={operationalRefCol}
-            label={t('import.multi.operationalRefColumn', 'Operational ID (optional)')}
+            label={t('import.multi.operationalRefColumn')}
             onChange={e => handleOperationalRefColChange(e.target.value)}
             data-testid="column-mapper-operational-ref"
           >
             <MenuItem value={NONE}>
-              <em>{t('import.multi.none', 'None')}</em>
+              <em>{t('import.multi.none')}</em>
             </MenuItem>
             {headers.map(h => (
               <MenuItem key={h} value={h}>
@@ -116,7 +110,7 @@ export default function MultiImportColumnMapper({
       </Box>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        {t('import.multi.preview', 'Preview (first {{count}} rows)', { count: previewRows.length })}
+        {t('import.multi.preview', { count: previewRows.length })}
       </Typography>
 
       <TableContainer
@@ -159,7 +153,7 @@ export default function MultiImportColumnMapper({
 
       {rows.length > PREVIEW_ROWS && (
         <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-          {t('import.multi.moreRows', '...and {{count}} more rows', {
+          {t('import.multi.moreRows', {
             count: rows.length - PREVIEW_ROWS,
           })}
         </Typography>

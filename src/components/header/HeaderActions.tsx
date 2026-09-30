@@ -44,7 +44,7 @@ export default function HeaderActions({
         <IconButton
           color="inherit"
           onClick={onSearchIconClick}
-          aria-label={t('header.actions.search', 'search')}
+          aria-label={t('header.actions.search')}
         >
           <SearchIcon />
         </IconButton>
@@ -56,7 +56,7 @@ export default function HeaderActions({
           <IconButton
             color="inherit"
             onClick={onUserIconClick}
-            aria-label={t('header.actions.userAccount', 'user account')}
+            aria-label={t('header.actions.userAccount')}
           >
             <Badge color="success" overlap="circular" variant="dot">
               {renderHeaderIcon('user')}
@@ -65,11 +65,11 @@ export default function HeaderActions({
         </>
       ) : authConfigured ? (
         <Button variant="outlined" color="inherit" onClick={onUserIconClick}>
-          {t('header.actions.login', 'Log in')}
+          {t('header.actions.login')}
         </Button>
       ) : (
         <Chip
-          label={t('header.actions.authDisabled', 'Auth off')}
+          label={t('header.actions.authDisabled')}
           color="warning"
           size="small"
           data-testid="auth-disabled-label"
@@ -79,7 +79,7 @@ export default function HeaderActions({
       <IconButton
         color="inherit"
         onClick={onSettingsIconClick}
-        aria-label={t('header.actions.settings', 'settings')}
+        aria-label={t('header.actions.settings')}
       >
         {renderHeaderIcon('settings')}
       </IconButton>
@@ -87,9 +87,7 @@ export default function HeaderActions({
         <IconButton
           color="inherit"
           onClick={onMenuIconClick}
-          aria-label={
-            mobileOpen ? t('rail.collapse', 'Collapse menu') : t('rail.expand', 'Expand menu')
-          }
+          aria-label={mobileOpen ? t('rail.collapse') : t('rail.expand')}
           aria-expanded={mobileOpen}
         >
           {renderHeaderIcon('menu')}

@@ -101,7 +101,7 @@ export default function DeckPlanForm({
 
   const fields = (
     <FormLayout data-testid="deck-plan-tab-edit">
-      <FieldRow id="deckPlan-name" label={t('deckPlans.field.name', 'Name')}>
+      <FieldRow id="deckPlan-name" label={t('deckPlans.field.name')}>
         <TextField
           id="deckPlan-name"
           value={value.name?.value ?? ''}
@@ -111,7 +111,7 @@ export default function DeckPlanForm({
           fullWidth
         />
       </FieldRow>
-      <FieldRow id="deckPlan-description" label={t('deckPlans.field.description', 'Description')}>
+      <FieldRow id="deckPlan-description" label={t('deckPlans.field.description')}>
         <TextField
           id="deckPlan-description"
           value={value.description?.value ?? ''}
@@ -133,8 +133,8 @@ export default function DeckPlanForm({
   return (
     <Box>
       <Tabs value={tab} onChange={(_e, v: TabKey) => setTab(v)} sx={TAB_SX}>
-        <Tab value="edit" label={t('deckPlans.tab.general', 'General')} />
-        <Tab value="xml" label={t('deckPlans.tab.xml', 'XML')} />
+        <Tab value="edit" label={t('deckPlans.tab.general')} />
+        <Tab value="xml" label={t('deckPlans.tab.xml')} />
       </Tabs>
 
       {tab === 'edit' && (
@@ -162,7 +162,7 @@ export default function DeckPlanForm({
             testIdPrefix="deck-plan-xml"
           >
             <TextareaAutosize
-              aria-label={t('deckPlans.xmlAriaLabel', 'deck plan data')}
+              aria-label={t('deckPlans.xmlAriaLabel')}
               data-testid="deck-plan-xml-textarea"
               readOnly
               value={xml}
@@ -207,7 +207,7 @@ function BodyState({
         </Alert>
         <Box>
           <Button onClick={onRetry} size="small" variant="outlined">
-            {t('common.retry', 'Retry')}
+            {t('common.retry')}
           </Button>
         </Box>
       </Stack>
@@ -258,12 +258,9 @@ function DeckStrip({
       <Stack spacing={1} data-testid="deck-plan-decks">
         {isGhost && (
           <Box data-testid="deck-plan-decks-sample">
-            <Typography variant="subtitle2">{t('deckPlans.deck.sample', 'SAMPLE')}</Typography>
+            <Typography variant="subtitle2">{t('deckPlans.deck.sample')}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {t(
-                'deckPlans.deck.sampleHint',
-                'This plan has no decks yet — showing a sample layout.'
-              )}
+              {t('deckPlans.deck.sampleHint')}
             </Typography>
           </Box>
         )}
@@ -279,7 +276,7 @@ function DeckStrip({
             >
               <DeckRendering deck={deck} vertical data-testid={`deck-plan-deck-${i}`} />
               <Typography variant="caption" color="text.secondary" noWrap>
-                {netexText(deck.Name) ?? t('deckPlans.deck.label', 'Deck {{n}}', { n: i + 1 })}
+                {netexText(deck.Name) ?? t('deckPlans.deck.label', { n: i + 1 })}
               </Typography>
             </Stack>
           ))}
@@ -292,11 +289,7 @@ function DeckStrip({
       loading={loading || parsing}
       // A parse failure is reported where the fetch failure is; Retry refetches
       // the body, which re-parses it.
-      error={
-        fetchError ??
-        (parseError &&
-          `${t('deckPlans.render.error', 'Could not render the deck plan')}: ${parseError}`)
-      }
+      error={fetchError ?? (parseError && `${t('deckPlans.render.error')}: ${parseError}`)}
       onRetry={retry}
       testIdPrefix="deck-plan-decks"
     >

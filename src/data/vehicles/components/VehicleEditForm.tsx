@@ -58,7 +58,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
 
   return (
     <FormLayout>
-      <FieldRow id="vehicle-name" label={t('vehicles.field.name', 'Name')}>
+      <FieldRow id="vehicle-name" label={t('vehicles.field.name')}>
         <TextField
           id="vehicle-name"
           value={v.name?.value ?? ''}
@@ -69,10 +69,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow
-        id="vehicle-registration-number"
-        label={t('vehicles.field.registrationNumber', 'Registration Number')}
-      >
+      <FieldRow id="vehicle-registration-number" label={t('vehicles.field.registrationNumber')}>
         <TextField
           id="vehicle-registration-number"
           value={v.registrationNumber}
@@ -83,10 +80,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow
-        id="vehicle-transport-type"
-        label={t('vehicles.field.transportType', 'Vehicle Type')}
-      >
+      <FieldRow id="vehicle-transport-type" label={t('vehicles.field.transportType')}>
         <Autocomplete<VTOption, false, true>
           options={vtOptionsWithOrphan}
           // VehicleType is required, so the picker is non-clearable; MUI's
@@ -99,8 +93,8 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
           disabled={ro}
           getOptionLabel={o => o.name}
           isOptionEqualToValue={(a, b) => a.id === b.id}
-          loadingText={t('vehicleTypePicker.loading', 'Loading vehicle types…')}
-          noOptionsText={t('vehicleTypePicker.noOptions', 'No vehicle types')}
+          loadingText={t('vehicleTypePicker.loading')}
+          noOptionsText={t('vehicleTypePicker.noOptions')}
           onChange={(_e, opt) => setV({ transportType: { id: opt.id } })}
           size="small"
           fullWidth
@@ -113,7 +107,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
               inputProps={{ ...params.inputProps, id: 'vehicle-transport-type' }}
               size="small"
               required
-              aria-label={t('vehicles.field.transportType', 'Vehicle Type')}
+              aria-label={t('vehicles.field.transportType')}
               error={!ro && !currentVtId}
               helperText={
                 vtError ? (
@@ -124,7 +118,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
                       type="button"
                       onClick={() => void refetchVehicleTypes().catch(() => {})}
                     >
-                      {t('common.retry', 'Retry')}
+                      {t('common.retry')}
                     </Link>
                   </>
                 ) : undefined
@@ -134,10 +128,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow
-        id="vehicle-operational-number"
-        label={t('vehicles.field.operationalNumber', 'Operational Number')}
-      >
+      <FieldRow id="vehicle-operational-number" label={t('vehicles.field.operationalNumber')}>
         <TextField
           id="vehicle-operational-number"
           value={v.operationalNumber ?? ''}
@@ -148,10 +139,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow
-        id="vehicle-chassis-number"
-        label={t('vehicles.field.chassisNumber', 'Chassis Number')}
-      >
+      <FieldRow id="vehicle-chassis-number" label={t('vehicles.field.chassisNumber')}>
         <TextField
           id="vehicle-chassis-number"
           value={v.chassisNumber ?? ''}
@@ -162,7 +150,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow id="vehicle-build-date" label={t('vehicles.field.buildDate', 'Build Date')}>
+      <FieldRow id="vehicle-build-date" label={t('vehicles.field.buildDate')}>
         <TextField
           id="vehicle-build-date"
           type="date"
@@ -174,10 +162,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow
-        id="vehicle-registration-date"
-        label={t('vehicles.field.registrationDate', 'Registration Date')}
-      >
+      <FieldRow id="vehicle-registration-date" label={t('vehicles.field.registrationDate')}>
         <TextField
           id="vehicle-registration-date"
           type="date"
@@ -189,7 +174,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow id="vehicle-description" label={t('vehicles.field.description', 'Description')}>
+      <FieldRow id="vehicle-description" label={t('vehicles.field.description')}>
         <TextField
           id="vehicle-description"
           value={v.description?.value ?? ''}

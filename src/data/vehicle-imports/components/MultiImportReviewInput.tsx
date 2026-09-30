@@ -80,7 +80,7 @@ export default function MultiImportReviewInput({
     return (
       <Box sx={{ textAlign: 'center', py: 3 }}>
         <Typography sx={{ mb: 2 }}>
-          {t('import.multi.fetching', 'Fetching {{completed}} of {{total}}...', {
+          {t('import.multi.fetching', {
             completed: fetchProgress.completed,
             total: fetchProgress.total,
           })}
@@ -132,7 +132,7 @@ export default function MultiImportReviewInput({
           value={newEntry}
           onChange={e => setNewEntry(e.target.value)}
           onKeyDown={handleEntryKeyDown}
-          placeholder={t('import.multi.addPlaceholder', 'AB1234 or AB1234:OP-001')}
+          placeholder={t('import.multi.addPlaceholder')}
           fullWidth
           data-testid="multi-import-add-input"
         />
@@ -142,7 +142,7 @@ export default function MultiImportReviewInput({
           disabled={!newEntry.trim()}
           data-testid="multi-import-add-button"
         >
-          {t('import.multi.add', 'Add')}
+          {t('import.multi.add')}
         </Button>
       </Box>
     </>

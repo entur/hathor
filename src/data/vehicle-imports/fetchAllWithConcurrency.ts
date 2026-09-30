@@ -24,7 +24,7 @@ export async function fetchAllWithConcurrency(
         results[i] = {
           queryRegNumber,
           xml: '',
-          error: e instanceof Error ? e.message : i18next.t('error.unknown', 'Unknown error'),
+          error: e instanceof Error ? e.message : i18next.t('error.unknown'),
         };
       }
       completed++;

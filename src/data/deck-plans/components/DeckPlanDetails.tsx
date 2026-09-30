@@ -123,19 +123,11 @@ export default function DeckPlanDetails({
       await onSaved?.();
       setRefreshError(null);
     } catch {
-      setRefreshError(
-        t(
-          'deckPlan.deactivateStaleList',
-          'Deactivated — but the list could not refresh; it may be stale.'
-        )
-      );
+      setRefreshError(t('deckPlan.deactivateStaleList'));
     }
   };
 
-  const staleList = () =>
-    setRefreshError(
-      t('deckPlans.saveStaleList', 'Saved — but the list could not refresh; it may be stale.')
-    );
+  const staleList = () => setRefreshError(t('deckPlans.saveStaleList'));
 
   const handleSave = async () => {
     setRefreshError(null);
@@ -146,9 +138,7 @@ export default function DeckPlanDetails({
       // Blank id factory → a create. A successful save with no `newId` is a
       // Sobek invariant break: surfaced as a snackbar so the user can refresh.
       if (!result.newId) {
-        setRefreshError(
-          t('common.saveNoIdReturned', 'Saved, but no id was returned — please refresh.')
-        );
+        setRefreshError(t('common.saveNoIdReturned'));
         return;
       }
 
@@ -212,11 +202,11 @@ export default function DeckPlanDetails({
       <>
         <Box sx={{ p: 2 }}>
           <Typography variant="h6" sx={{ mb: 1 }}>
-            {t('deckPlans.detailsTitle', 'Deck Plan Details')}
+            {t('deckPlans.detailsTitle')}
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {t('deckPlans.notFound', 'Deck plan not found')}
+            {t('deckPlans.notFound')}
           </Typography>
           {requestedId && (
             <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
@@ -288,12 +278,12 @@ export default function DeckPlanDetails({
       />
       <SaveSuccessSnackbar
         open={savedAt !== null}
-        message={t('deckPlans.saveSuccess', 'Deck plan saved')}
+        message={t('deckPlans.saveSuccess')}
         onClose={() => setSavedAt(null)}
       />
       <SaveSuccessSnackbar
         open={deactivatedOK}
-        message={t('deckPlan.deactivateSuccess', 'Deck plan deactivated')}
+        message={t('deckPlan.deactivateSuccess')}
         onClose={closeSlider}
       />
       <EditorRail
@@ -302,12 +292,9 @@ export default function DeckPlanDetails({
         mode={mode}
         onEnterEdit={() => !deactivatedOK && setMode('edit')}
         onDeactivate={isCreate ? undefined : handleDeactivate}
-        deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle', 'Deactivate deck plan?')}
-        deactivateConfirmMessage={t(
-          'deckPlan.deactivateConfirmMessage',
-          'This deck plan will be deactivated.'
-        )}
-        deactivateConfirmActionLabel={t('common.deactivate', 'Deactivate')}
+        deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle')}
+        deactivateConfirmMessage={t('deckPlan.deactivateConfirmMessage')}
+        deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
           // Baseline, not the `deckPlan` prop: a save re-baselines here but
           // never re-commits the editor, so the prop is stale from then on.

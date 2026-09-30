@@ -61,16 +61,12 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const translatedSteps = isTableFlow
     ? [
-        t('import.multi.stepUpload', 'Upload file'),
-        t('import.multi.stepMapColumns', 'Map columns'),
-        t('import.multi.stepReview', 'Review'),
-        t('import.multi.stepConfirm', 'Confirm'),
+        t('import.multi.stepUpload'),
+        t('import.multi.stepMapColumns'),
+        t('import.multi.stepReview'),
+        t('import.multi.stepConfirm'),
       ]
-    : [
-        t('import.multi.stepUpload', 'Upload file'),
-        t('import.multi.stepReview', 'Review'),
-        t('import.multi.stepConfirm', 'Confirm'),
-      ];
+    : [t('import.multi.stepUpload'), t('import.multi.stepReview'), t('import.multi.stepConfirm')];
 
   // --- Upload step callbacks ---
 
@@ -125,7 +121,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const startFetch = async () => {
     if (currentOrganisation?.id === undefined) {
-      setSubmitError(t('import.multi.noOrganisation', 'Current organisation is not set'));
+      setSubmitError(t('import.multi.noOrganisation'));
       return;
     }
     const regNumbers = entries.map(e => e.queryRegNumber);
@@ -164,9 +160,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       }
       onClose();
     } catch (e) {
-      setSubmitError(
-        e instanceof Error ? e.message : t('import.multi.importFailed', 'Import failed')
-      );
+      setSubmitError(e instanceof Error ? e.message : t('import.multi.importFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -210,21 +204,21 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   const nextLabel = (() => {
     switch (currentStepName) {
       case 'Upload file':
-        return t('import.multi.skip', 'Skip');
+        return t('import.multi.skip');
       case 'Map columns':
-        return t('import.multi.next', 'Next');
+        return t('import.multi.next');
       case 'Review':
-        return t('import.multi.next', 'Next');
+        return t('import.multi.next');
       case 'Confirm':
-        return t('import.multi.submit', 'Submit');
+        return t('import.multi.submit');
       default:
-        return t('import.multi.next', 'Next');
+        return t('import.multi.next');
     }
   })();
 
   return (
     <>
-      <DialogTitle>{t('import.multi.title', 'Bulk Import Vehicles')}</DialogTitle>
+      <DialogTitle>{t('import.multi.title')}</DialogTitle>
       <DialogContent dividers>
         <Stepper
           activeStep={activeStep}
@@ -267,7 +261,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
           {t('close')}
         </Button>
         <Button disabled={activeStep === 0 || fetching || submitting} onClick={handleBack}>
-          {t('import.multi.back', 'Back')}
+          {t('import.multi.back')}
         </Button>
         <Button variant="contained" onClick={handleNext} disabled={isNextDisabled}>
           {nextLabel}

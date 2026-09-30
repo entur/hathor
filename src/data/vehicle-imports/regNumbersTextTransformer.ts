@@ -23,7 +23,7 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
   if (uniqueCount === 0) {
     return {
       uniqueCount,
-      message: i18next.t('import.multi.noRegNumbers', 'No registration numbers found'),
+      message: i18next.t('import.multi.noRegNumbers'),
       warnLevel: 'error',
     };
   }
@@ -33,15 +33,11 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
       // Both numbers inflect independently, and i18next pluralises on a single
       // `count` per key — so each clause is its own key and the join is a
       // third, leaving order and punctuation to the translator.
-      message: i18next.t('import.multi.regNumbersDeduped', '{{unique}} ({{duplicates}})', {
-        unique: i18next.t(
-          'import.multi.uniqueRegNumbers',
-          '{{count}} unique registration numbers',
-          {
-            count: uniqueCount,
-          }
-        ),
-        duplicates: i18next.t('import.multi.duplicatesRemoved', '{{count}} duplicates removed', {
+      message: i18next.t('import.multi.regNumbersDeduped', {
+        unique: i18next.t('import.multi.uniqueRegNumbers', {
+          count: uniqueCount,
+        }),
+        duplicates: i18next.t('import.multi.duplicatesRemoved', {
           count: duplicateCount,
         }),
       }),
@@ -50,7 +46,7 @@ function buildStatus(uniqueCount: number, totalCount: number): RegNumbersStatus 
   }
   return {
     uniqueCount,
-    message: i18next.t('import.multi.regNumbers', '{{count}} registration numbers', {
+    message: i18next.t('import.multi.regNumbers', {
       count: uniqueCount,
     }),
     warnLevel: 'success',
