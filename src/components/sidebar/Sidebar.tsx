@@ -1,9 +1,7 @@
-import { Box, Drawer, useMediaQuery, IconButton, Toolbar } from '@mui/material';
+import { Box, Drawer, useMediaQuery } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useTranslation } from 'react-i18next';
-import { useEditingItem } from '../../contexts/EditingContext.tsx';
+import { useEditingItem, useEditorClose } from '../../contexts/EditingContext.tsx';
+import { RAIL_W } from './EditorRail.tsx';
 
 export type Side = 'left' | 'right';
 
@@ -12,7 +10,6 @@ interface SidebarProps {
   collapsed: boolean;
   onMouseDownResize: () => void;
   theme: Theme;
-  toggleCollapse: () => void;
   side?: Side;
 }
 
@@ -21,23 +18,21 @@ export function Sidebar({
   collapsed,
   onMouseDownResize,
   theme,
-  toggleCollapse,
   side = 'left',
 }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
-  const { t } = useTranslation();
   const { editingItem } = useEditingItem();
+  const { requestClose } = useEditorClose();
 
   if (isMobile) {
     return (
       <Drawer
         anchor={side}
-        // Gate `open` on both `!collapsed` AND a present editingItem so
-        // the Drawer doesn't surface a blank pane during the frame
-        // between editingItem clearing and the chrome effect collapsing.
-        open={!collapsed && !!editingItem}
-        onClose={toggleCollapse}
+        // URL selection is the only open-state source on mobile: the Drawer
+        // has no collapsed-but-selected state to strand (#179 review).
+        open={!!editingItem}
+        // Backdrop / Escape run the editor's own guarded collapse.
+        onClose={requestClose}
         variant="temporary"
         ModalProps={{
           keepMounted: true,
@@ -48,21 +43,16 @@ export function Sidebar({
               width: '100%',
               boxSizing: 'border-box',
               backgroundColor: theme.palette.background.paper,
+              // Portaled out of the page, so the page's rail vars don't reach
+              // here: pin the EditorRail to the paper's top edge and gutter
+              // the editor past it. The rail is the Drawer's close control.
+              '--app-header-height': '0px',
+              '--sidebar-width': '0px',
+              [side === 'right' ? 'pr' : 'pl']: `${RAIL_W}px`,
             },
           },
         }}
       >
-        <Toolbar
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <IconButton onClick={toggleCollapse} color="inherit" aria-label={t('sidebar.close')}>
-            {closeIcon}
-          </IconButton>
-        </Toolbar>
         {editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
       </Drawer>
     );
