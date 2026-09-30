@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
+/** Below MUI's `sm` (600px) so the sidebar renders as the temporary Drawer. */
+const MOBILE_VIEWPORT = { width: 400, height: 800 };
+
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
   await page.goto('/vehicle-types');
@@ -26,7 +29,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  * Covers:
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
- *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form
+ *     the param; the mobile Drawer Escape drops ?selected=new; toggling a null-baseline Low Floor switch on/off must not dirty the form
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
@@ -153,6 +156,25 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page).toHaveURL(/\/vehicle-types(\?|$)/);
     await expect(page).not.toHaveURL(/selected=/);
     await expect(page.getByTestId('vehicle-type-details-title')).not.toBeVisible();
+  });
+
+  // #179 review: the mobile Drawer's own close path (Escape) used to only
+  // collapse the pane, stranding ?selected=new with the actions hidden.
+  test('mobile: Escape on the create Drawer drops ?selected=new and the list is live again', async ({
+    page,
+  }) => {
+    await page.setViewportSize(MOBILE_VIEWPORT);
+    const fab = page.getByTestId('create-vehicle-type-fab');
+
+    await page.goto('/vehicle-types');
+    await selectFirstOrg(page);
+    await fab.click();
+    await expect(page).toHaveURL(/selected=new/);
+    await expect(page.getByTestId('editor-rail')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page).not.toHaveURL(/selected=/);
+    await expect(fab).toBeVisible();
   });
 
   // Regression guard: VehicleType:3 (Gamma) has lowFloor:null → the projection
