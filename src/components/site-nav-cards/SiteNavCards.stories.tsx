@@ -27,6 +27,15 @@ const meta: Meta<typeof SiteNavCards> = {
   title: 'components/SiteNavCards',
   component: SiteNavCards,
   args: { ctx: CTX },
+  argTypes: {
+    variant: { control: 'inline-radio', options: ['combo', 'rows'] },
+    ink: { control: 'inline-radio', options: ['black', 'white'] },
+    createAlign: { control: 'inline-radio', options: ['right', 'left'] },
+    busOpacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
+    halo: { control: 'boolean' },
+    bg: { control: 'text' },
+    hoverBg: { control: 'text' },
+  },
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -50,8 +59,11 @@ export default meta;
 
 type Story = StoryObj<typeof SiteNavCards>;
 
-/** Combo layout, as on Home — counts resolve one by one. */
+/** Combo layout, as on Home — counts resolve one by one; black-ink (faint watermark) bus. */
 export const Combo: Story = {};
+
+/** Combo layout with the opt-in white-ink (embossed-negative) bus backdrop. */
+export const ComboWhiteInk: Story = { args: { ink: 'white' } };
 
 /** Legacy three-row layout. */
 export const Rows: Story = { args: { variant: 'rows' } };

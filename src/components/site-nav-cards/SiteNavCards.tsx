@@ -1,4 +1,5 @@
 import { Box, Divider, Skeleton, Typography, type Theme } from '@mui/material';
+import { alpha, decomposeColor, recomposeColor } from '@mui/material/styles';
 import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -25,12 +26,49 @@ const TILE_RADIUS = 2; // ×theme.shape.borderRadius (≈8px at the 4px default)
 const ROW_GAP = { xs: 4, md: 6 }; // vertical gap between rows
 const COUNT_SKELETON_W = 96; // px; placeholder width while a count is pending
 const CARD_GAP = 2; // ×theme.spacing; combo-strip gutter (also feeds the bus-slice offset)
+const HALO_BLUR = [2, 4]; // px; stacked card-coloured text-shadows that knock the bus out behind glyphs
 
 // Combo backdrop — one pencil-sketch bus sliced across the cards.
 const BUS_SRC = '/assets/bus-sketch-alpha.png'; // black ink on transparent (paper keyed out)
 const BUS_SCALE = 1.0; // image width ÷ strip width; overflow crops freely
 const BUS_Y = '75%'; // vertical anchor — badge · headlight · wheel band
-const BUS_OPACITY = 0.1;
+// Ink treatments for the backdrop — the source is black ink; `white` inverts it.
+const BUS_INK = {
+  white: { filter: 'invert(1)', opacity: 1 }, // embossed-negative on the light cards
+  black: { filter: 'none', opacity: 0.1 }, // faint pencil watermark
+} as const;
+
+/** Backdrop ink colour for the combo cards' bus sketch. */
+export type BusInk = keyof typeof BUS_INK;
+
+/** A card colour: a theme palette path (`'action.hover'`), a CSS colour, or a theme fn. */
+export type Paint = string | ((theme: Theme) => string);
+
+/** Nav-rail look: muted primary tint at rest (as a selected menu item), action.hover on hover. */
+const MENU_BG: Paint = theme =>
+  alpha(theme.palette.primary.main, theme.palette.action.selectedOpacity);
+const MENU_HOVER_BG: Paint = 'action.hover';
+
+/** Resolves a {@link Paint} against the theme palette. */
+const paint = (theme: Theme, p: Paint): string => {
+  if (typeof p === 'function') return p(theme);
+  const [k, v] = p.split('.');
+  const hit = v && (theme.palette as unknown as Record<string, Record<string, unknown>>)[k]?.[v];
+  return typeof hit === 'string' ? hit : p;
+};
+
+/** Composites colour `c` (maybe translucent) over opaque `under`; non-parsable `c` passes through. */
+const over = (under: string, c: string): string => {
+  try {
+    const u = decomposeColor(under).values;
+    const o = decomposeColor(c).values;
+    const a = o[3] ?? 1;
+    const rgb = [0, 1, 2].map(i => Math.round(u[i] * (1 - a) + o[i] * a));
+    return recomposeColor({ type: 'rgb', values: rgb as [number, number, number] });
+  } catch {
+    return c;
+  }
+};
 
 /** `?selected=new` opens the list view's sidebar editor in create mode. */
 const createPath = (path: string) => `${path}?selected=new`;
@@ -133,13 +171,45 @@ export function CreateRow({ types = TYPES }: { types?: SiteType[] }) {
   );
 }
 
+/** Combo-card look toggles. */
+type ComboLook = {
+  /** Bus backdrop colour. */
+  ink: BusInk;
+  /** Bus backdrop opacity, 0–1; unset → the ink's preset ({@link BUS_INK}). */
+  busOpacity?: number;
+  /** Horizontal alignment of the "+ <entity>" create footer. */
+  createAlign: 'left' | 'right';
+  /** Card-coloured text-shadow halo that lifts text off the backdrop. */
+  halo: boolean;
+  /** Card fill at rest. */
+  bg: Paint;
+  /** Fill of the hovered area (browse body or create footer). */
+  hoverBg: Paint;
+};
+
+type ComboProps = LayoutProps & Partial<ComboLook>;
+
 /**
  * Combo strip — one {@link ComboCard} per type: count + browse link on top,
  * create action in a divided footer. 1-up below md, 3-up from md.
- * @param {LayoutProps} props - `ctx` for the count fetchers; `types` defaults to {@link TYPES}.
+ * @param {ComboProps} props - `ctx` for the count fetchers; `types` defaults to
+ *   {@link TYPES}; `ink` bus backdrop colour (default `black`);
+ *   `busOpacity` overrides the ink's preset opacity; `createAlign`
+ *   footer alignment (default `right`); `halo` text-shadow on/off (default on);
+ *   `bg` / `hoverBg` card fill at rest / on hover (default: nav-rail menu look).
  * @returns the equal-height card grid.
  */
-export function ComboStrip({ ctx, types = TYPES }: LayoutProps) {
+export function ComboStrip({
+  ctx,
+  types = TYPES,
+  ink = 'black',
+  busOpacity,
+  createAlign = 'right',
+  halo = true,
+  bg = MENU_BG,
+  hoverBg = MENU_HOVER_BG,
+}: ComboProps) {
+  const look: ComboLook = { ink, busOpacity, createAlign, halo, bg, hoverBg };
   const { t } = useTranslation();
   return (
     <Box
@@ -154,7 +224,7 @@ export function ComboStrip({ ctx, types = TYPES }: LayoutProps) {
       }}
     >
       {types.map((x, i) => (
-        <ComboCard key={x.id} type={x} ctx={ctx} idx={i} n={types.length} />
+        <ComboCard key={x.id} type={x} ctx={ctx} idx={i} n={types.length} {...look} />
       ))}
     </Box>
   );
@@ -162,15 +232,33 @@ export function ComboStrip({ ctx, types = TYPES }: LayoutProps) {
 
 /**
  * The Home dashboard's org-gated body.
- * @param {LayoutProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the
- *   layout (default `combo`); `ctx` feeds the count fetchers.
+ * @param {ComboProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the
+ *   layout (default `combo`); `ctx` feeds the count fetchers; `ink` / `busOpacity` /
+ *   `createAlign` / `halo` / `bg` / `hoverBg` apply to combo only (see {@link ComboStrip}).
  * @returns the combo strip, or the metric strip + browse grid + create row stacked.
  */
 export default function SiteNavCards({
   variant = 'combo',
+  ink,
+  busOpacity,
+  createAlign,
+  halo,
+  bg,
+  hoverBg,
   ...rest
-}: LayoutProps & { variant?: 'combo' | 'rows' }) {
-  if (variant === 'combo') return <ComboStrip {...rest} />;
+}: ComboProps & { variant?: 'combo' | 'rows' }) {
+  if (variant === 'combo')
+    return (
+      <ComboStrip
+        {...rest}
+        ink={ink}
+        busOpacity={busOpacity}
+        createAlign={createAlign}
+        halo={halo}
+        bg={bg}
+        hoverBg={hoverBg}
+      />
+    );
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
       <StatStrip {...rest} />
@@ -241,16 +329,33 @@ function ComboCard({
   ctx,
   idx,
   n,
+  ink,
+  busOpacity,
+  createAlign,
+  halo,
+  bg,
+  hoverBg,
 }: {
   type: SiteType;
   ctx: CountCtx;
   idx: number;
   n: number;
-}) {
+} & ComboLook) {
   const { t } = useTranslation();
-  const hover = {
-    transition: (theme: Theme) => theme.transitions.create('background-color', { duration: 150 }),
-    '&:hover': { bgcolor: 'action.selected' },
+  // Shared by both link areas: hover fill, a `--halo` that tracks the area's rendered
+  // fill (page → card → hover, composited), and content lifted above the bus layer.
+  const area = (theme: Theme) => {
+    const rest = over(theme.palette.background.default, paint(theme, bg));
+    const hot = over(rest, paint(theme, hoverBg));
+    return {
+      position: 'relative',
+      textDecoration: 'none',
+      transition: theme.transitions.create('background-color', { duration: 150 }),
+      '--halo': rest,
+      textShadow: halo ? HALO_BLUR.map(b => `0 0 ${b}px var(--halo)`).join(', ') : 'none',
+      '&:hover': { bgcolor: paint(theme, hoverBg), '--halo': hot },
+      '& > *': { position: 'relative', zIndex: 2 },
+    } as const;
   };
   return (
     <Box
@@ -258,15 +363,17 @@ function ComboCard({
         display: 'flex',
         flexDirection: 'column',
         borderRadius: TILE_RADIUS,
-        bgcolor: 'action.hover',
+        bgcolor: theme => paint(theme, bg),
         overflow: 'hidden',
         position: 'relative',
-        // Bus backdrop. Positioned + earlier in tree order than the (positioned)
-        // links/divider, so it paints beneath them.
+        // Own stacking context: the bus (z 1) sits above the link areas' hover fills
+        // but below their content (z 2), without escaping into page-level z-order.
+        isolation: 'isolate',
         '&::before': theme => ({
           content: '""',
           position: 'absolute',
           inset: 0,
+          zIndex: 1,
           pointerEvents: 'none',
           backgroundImage: `url(${BUS_SRC})`,
           backgroundRepeat: 'no-repeat',
@@ -276,24 +383,23 @@ function ComboCard({
           [theme.breakpoints.up('md')]: {
             backgroundPosition: busSlicePos(idx, n, theme.spacing(CARD_GAP)),
           },
-          opacity: BUS_OPACITY,
+          ...BUS_INK[ink],
+          ...(busOpacity !== undefined && { opacity: busOpacity }),
         }),
       }}
     >
       <Box
         component={Link}
         to={x.path}
-        sx={{
-          position: 'relative',
+        sx={theme => ({
+          ...area(theme),
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           gap: 1.25,
           p: 2.5,
-          textDecoration: 'none',
           color: 'text.primary',
-          ...hover,
-        }}
+        })}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ color: 'primary.main', display: 'flex' }}>
@@ -308,21 +414,20 @@ function ComboCard({
           {t(x.descKey)}
         </Typography>
       </Box>
-      <Divider sx={{ position: 'relative' }} />
+      <Divider />
       <Box
         component={Link}
         to={createPath(x.path)}
-        sx={{
-          position: 'relative',
+        sx={theme => ({
+          ...area(theme),
           display: 'flex',
           alignItems: 'center',
+          justifyContent: createAlign === 'right' ? 'flex-end' : 'flex-start',
           gap: 1,
           px: 2.5,
           py: 1.5,
-          textDecoration: 'none',
           color: 'primary.main',
-          ...hover,
-        }}
+        })}
       >
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           + {t(x.createKey)}
