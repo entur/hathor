@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../components/icons/MenuIcon.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useAuth } from '../auth/index.ts';
+import { useConfig } from '../contexts/configContext.ts';
 
 /**
  * Home — the registry dashboard. A flat, left-aligned layout: a typographic
@@ -122,7 +123,8 @@ export default function HomePage() {
     error: organisationsError,
     refetch: refetchOrganisations,
   } = useOrganisationsContext();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
+  const { oidcConfig } = useConfig();
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100%' }}>
@@ -263,10 +265,25 @@ export default function HomePage() {
             </Box>
           </Box>
         )}
-        {!isAuthenticated && (
-          <Box component="section">
-            <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('home.notLoggedIn')}
+        {/* Signed out — only when OIDC is configured; without it login() is a no-op */}
+        {!isAuthenticated && oidcConfig && (
+          <Box
+            component="section"
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}
+          >
+            <Typography variant="body1" color="text.secondary">
+              {t('home.login.body')}
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => void login()}
+              data-testid="home-login-button"
+            >
+              {t('header.actions.login')}
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              {t('home.login.provider')}
             </Typography>
           </Box>
         )}

@@ -64,7 +64,12 @@ export default function HeaderActions({
           </IconButton>
         </>
       ) : authConfigured ? (
-        <Button variant="outlined" color="inherit" onClick={onUserIconClick}>
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={onUserIconClick}
+          data-testid="header-login-button"
+        >
           {t('header.actions.login')}
         </Button>
       ) : (
