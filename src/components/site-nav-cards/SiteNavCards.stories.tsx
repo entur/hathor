@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mui/material';
 import { MemoryRouter } from 'react-router-dom';
-import SiteNavCards, { ComboStrip, CreateRow, NavGrid, StatStrip } from './SiteNavCards';
+import SiteNavCards, { BUS_SRC, ComboStrip, CreateRow, NavGrid, StatStrip } from './SiteNavCards';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes';
 
 /**
@@ -29,6 +29,7 @@ const meta: Meta<typeof SiteNavCards> = {
   args: { ctx: CTX },
   argTypes: {
     variant: { control: 'inline-radio', options: ['combo', 'rows'] },
+    bgURL: { control: 'inline-radio', options: ['none', BUS_SRC] },
     ink: { control: 'inline-radio', options: ['black', 'white'] },
     createAlign: { control: 'inline-radio', options: ['right', 'left'] },
     busOpacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
@@ -59,11 +60,14 @@ export default meta;
 
 type Story = StoryObj<typeof SiteNavCards>;
 
-/** Combo layout, as on Home — counts resolve one by one; black-ink (faint watermark) bus. */
+/** Combo layout, as on Home — counts resolve one by one; no backdrop (`bgURL='none'`). */
 export const Combo: Story = {};
 
+/** Combo layout with the opt-in bus backdrop — black ink (faint watermark). */
+export const ComboBus: Story = { args: { bgURL: BUS_SRC } };
+
 /** Combo layout with the opt-in white-ink (embossed-negative) bus backdrop. */
-export const ComboWhiteInk: Story = { args: { ink: 'white' } };
+export const ComboWhiteInk: Story = { args: { bgURL: BUS_SRC, ink: 'white' } };
 
 /** Legacy three-row layout. */
 export const Rows: Story = { args: { variant: 'rows' } };

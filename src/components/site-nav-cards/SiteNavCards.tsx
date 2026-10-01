@@ -30,7 +30,8 @@ const HALO_BLUR = [2, 4]; // px; stacked card-coloured text-shadows that knock t
 const HOVER_MS = 150; // hover background-colour transition
 
 // Combo backdrop — one pencil-sketch bus sliced across the cards.
-const BUS_SRC = '/assets/bus-sketch-alpha.png'; // black ink on transparent (paper keyed out)
+/** Bundled backdrop for `bgURL`: black ink on transparent (paper keyed out). */
+export const BUS_SRC = '/assets/bus-sketch-alpha.png';
 const BUS_SCALE = 1.0; // image width ÷ strip width; overflow crops freely
 const BUS_Y = '75%'; // vertical anchor — badge · headlight · wheel band
 // Ink treatments for the backdrop — the source is black ink; `white` inverts it.
@@ -174,6 +175,8 @@ export function CreateRow({ types = TYPES }: { types?: SiteType[] }) {
 
 /** Combo-card look toggles. */
 type ComboLook = {
+  /** Backdrop image sliced across the cards, or `'none'` for no backdrop (e.g. {@link BUS_SRC}). */
+  bgURL: 'none' | (string & {});
   /** Bus backdrop colour. */
   ink: BusInk;
   /** Bus backdrop opacity, 0–1; unset → the ink's preset ({@link BUS_INK}). */
@@ -190,6 +193,7 @@ type ComboLook = {
 
 /** Default combo look — what Home renders. */
 const DEF_LOOK: ComboLook = {
+  bgURL: 'none',
   ink: 'black',
   createAlign: 'right',
   halo: true,
@@ -309,7 +313,7 @@ function ComboCard({
   ctx,
   idx,
   n,
-  look: { ink, busOpacity, createAlign, halo, bg, hoverBg },
+  look: { bgURL, ink, busOpacity, createAlign, halo, bg, hoverBg },
 }: {
   type: SiteType;
   ctx: CountCtx;
@@ -346,23 +350,26 @@ function ComboCard({
         // Own stacking context: the bus (z 1) sits above the link areas' hover fills
         // but below their content (z 2), without escaping into page-level z-order.
         isolation: 'isolate',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          backgroundImage: `url(${BUS_SRC})`,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: `${BUS_SCALE * 100}cqw auto`,
-          // Stacked (< md): every card shows the same centred band.
-          backgroundPosition: `center ${BUS_Y}`,
-          [theme.breakpoints.up('md')]: {
-            backgroundPosition: busSlicePos(idx, n, theme.spacing(CARD_GAP)),
-          },
-          ...BUS_INK[ink],
-          ...(busOpacity !== undefined && { opacity: busOpacity }),
-        },
+        '&::before':
+          bgURL === 'none'
+            ? undefined
+            : {
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                pointerEvents: 'none',
+                backgroundImage: `url(${bgURL})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: `${BUS_SCALE * 100}cqw auto`,
+                // Stacked (< md): every card shows the same centred band.
+                backgroundPosition: `center ${BUS_Y}`,
+                [theme.breakpoints.up('md')]: {
+                  backgroundPosition: busSlicePos(idx, n, theme.spacing(CARD_GAP)),
+                },
+                ...BUS_INK[ink],
+                ...(busOpacity !== undefined && { opacity: busOpacity }),
+              },
       }}
     >
       <Box
