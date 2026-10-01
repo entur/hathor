@@ -2,8 +2,10 @@ import { LibraryAdd } from '@mui/icons-material';
 import { Button, Dialog, type ButtonProps } from '@mui/material';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MultiImport from './MultiImport';
+
+const VT_PATH = '/vehicle-types';
 
 interface AutosysImportFloatingMenuProps {
   /** Button text; defaults to `vehicleType.actions.importMulti`. */
@@ -18,7 +20,9 @@ interface AutosysImportFloatingMenuProps {
 
 /**
  * Button that opens the Autosys bulk-import dialog ({@link MultiImport}); on
- * completion navigates to /vehicle-types filtered to the imported ids.
+ * completion navigates to /vehicle-types filtered to the imported ids —
+ * replacing the history entry only when already there, so Back from a
+ * Home-launched import returns to Home.
  * @param {AutosysImportFloatingMenuProps} props - optional look overrides.
  * @returns the trigger button plus its dialog.
  */
@@ -32,13 +36,16 @@ export default function AutosysImportFloatingMenu({
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const text = label ?? t('vehicleType.actions.importMulti');
 
   const handleImportComplete = (vehicleTypeIds: string[]) => {
     setOpen(false);
     if (vehicleTypeIds.length > 0) {
       const filterParam = vehicleTypeIds.join(',');
-      navigate(`/vehicle-types?filter=${encodeURIComponent(filterParam)}`, { replace: true });
+      navigate(`${VT_PATH}?filter=${encodeURIComponent(filterParam)}`, {
+        replace: pathname === VT_PATH,
+      });
     }
   };
 
