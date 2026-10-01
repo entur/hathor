@@ -29,6 +29,8 @@ const meta: Meta<typeof SiteNavCards> = {
   args: { ctx: CTX },
   argTypes: {
     variant: { control: 'inline-radio', options: ['combo', 'rows'] },
+    counts: { control: 'boolean' },
+    iconSize: { control: { type: 'range', min: 16, max: 72, step: 2 } },
     bgURL: { control: 'inline-radio', options: ['none', BUS_SRC] },
     ink: { control: 'inline-radio', options: ['black', 'white'] },
     createAlign: { control: 'inline-radio', options: ['right', 'left'] },
@@ -42,7 +44,7 @@ const meta: Meta<typeof SiteNavCards> = {
     docs: {
       description: {
         component:
-          'The Home dashboard cards. `variant="combo"` (default) shows one card per type — count, browse link, create footer; `variant="rows"` stacks the metric strip, browse tiles and create-new actions. Each layout is exported separately (`ComboStrip`, `StatStrip`, `NavGrid`, `CreateRow`). Sample counts resolve after a staggered fake delay.',
+          'The Home dashboard cards. `variant="combo"` (default) shows one card per type — browse link (optional count via `counts`), create footer; `variant="rows"` stacks the metric strip, browse tiles and create-new actions. Each layout is exported separately (`ComboStrip`, `StatStrip`, `NavGrid`, `CreateRow`). Sample counts resolve after a staggered fake delay.',
       },
     },
   },
@@ -60,8 +62,11 @@ export default meta;
 
 type Story = StoryObj<typeof SiteNavCards>;
 
-/** Combo layout, as on Home — counts resolve one by one; no backdrop (`bgURL='none'`). */
+/** Combo layout, as on Home — 40px glyph, no counts, no backdrop (`bgURL='none'`). */
 export const Combo: Story = {};
+
+/** Combo layout with per-type counts — they resolve one by one. */
+export const ComboCounts: Story = { args: { counts: true } };
 
 /** Combo layout with the opt-in bus backdrop — black ink (faint watermark). */
 export const ComboBus: Story = { args: { bgURL: BUS_SRC } };
@@ -73,10 +78,14 @@ export const ComboWhiteInk: Story = { args: { bgURL: BUS_SRC, ink: 'white' } };
 export const Rows: Story = { args: { variant: 'rows' } };
 
 /** Combo cards while every count is still pending (Skeleton). */
-export const Loading: Story = { render: () => <ComboStrip ctx={CTX} types={PENDING} /> };
+export const Loading: Story = {
+  render: () => <ComboStrip ctx={CTX} types={PENDING} counts />,
+};
 
 /** Combo cards when every count fetch fails (muted dash + tooltip). */
-export const Failed: Story = { render: () => <ComboStrip ctx={CTX} types={FAILING} /> };
+export const Failed: Story = {
+  render: () => <ComboStrip ctx={CTX} types={FAILING} counts />,
+};
 
 /** Overview metric strip only (sample figures). */
 export const Stats: Story = { render: () => <StatStrip ctx={CTX} /> };

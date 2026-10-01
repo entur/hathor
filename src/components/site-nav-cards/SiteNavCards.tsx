@@ -8,7 +8,7 @@ import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 
 /**
  * SiteNavCards — the Home dashboard's per-type navigation cards. Two layouts:
- * `combo` ({@link ComboStrip}, default) folds each type's count, browse link and
+ * `combo` ({@link ComboStrip}, default) folds each type's browse link, optional count and
  * create action into one card; `rows` stacks the overview metric strip
  * ({@link StatStrip}), browse tiles ({@link NavGrid}) and create-new actions
  * ({@link CreateRow}). Both read the single {@link TYPES} list. Each layout is
@@ -20,7 +20,8 @@ import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 
 // Layout tunables — bubbled per repo style.
 const NAV_ICON = 30; // px; browse-tile glyph
-const STAT_ICON = 20; // px; overview-strip / combo-header glyph
+const STAT_ICON = 20; // px; overview-strip glyph
+const COMBO_ICON = 40; // px; combo-header glyph default (look.iconSize)
 const ACTION_ICON = 22; // px; create-action glyph
 const TILE_RADIUS = 2; // ×theme.shape.borderRadius (≈8px at the 4px default) for flat tile corners
 const ROW_GAP = { xs: 4, md: 6 }; // vertical gap between rows
@@ -175,6 +176,10 @@ export function CreateRow({ types = TYPES }: { types?: SiteType[] }) {
 
 /** Combo-card look toggles. */
 type ComboLook = {
+  /** Show each type's count under the header (off → no count fetch). */
+  counts: boolean;
+  /** Combo-header glyph size, px. */
+  iconSize: number;
   /** Backdrop image sliced across the cards, or `'none'` for no backdrop (e.g. {@link BUS_SRC}). */
   bgURL: 'none' | (string & {});
   /** Bus backdrop colour. */
@@ -193,6 +198,8 @@ type ComboLook = {
 
 /** Default combo look — what Home renders. */
 const DEF_LOOK: ComboLook = {
+  counts: false,
+  iconSize: COMBO_ICON,
   bgURL: 'none',
   ink: 'black',
   createAlign: 'right',
@@ -313,7 +320,7 @@ function ComboCard({
   ctx,
   idx,
   n,
-  look: { bgURL, ink, busOpacity, createAlign, halo, bg, hoverBg },
+  look: { counts, iconSize, bgURL, ink, busOpacity, createAlign, halo, bg, hoverBg },
 }: {
   type: SiteType;
   ctx: CountCtx;
@@ -386,12 +393,12 @@ function ComboCard({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Glyph name={x.icon} size={STAT_ICON} />
+          <Glyph name={x.icon} size={iconSize} />
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
             {t(x.titleKey)}
           </Typography>
         </Box>
-        <Count fn={x.count} ctx={ctx} />
+        {counts && <Count fn={x.count} ctx={ctx} />}
         <Typography variant="body2" color="text.secondary">
           {t(x.descKey)}
         </Typography>
