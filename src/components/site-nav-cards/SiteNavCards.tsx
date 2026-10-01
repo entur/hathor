@@ -1,4 +1,4 @@
-import { Box, Divider, Skeleton, Typography, type Theme } from '@mui/material';
+import { Box, Divider, Skeleton, Typography, useTheme, type Theme } from '@mui/material';
 import { alpha, decomposeColor, recomposeColor } from '@mui/material/styles';
 import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -27,6 +27,7 @@ const ROW_GAP = { xs: 4, md: 6 }; // vertical gap between rows
 const COUNT_SKELETON_W = 96; // px; placeholder width while a count is pending
 const CARD_GAP = 2; // ×theme.spacing; combo-strip gutter (also feeds the bus-slice offset)
 const HALO_BLUR = [2, 4]; // px; stacked card-coloured text-shadows that knock the bus out behind glyphs
+const HOVER_MS = 150; // hover background-colour transition
 
 // Combo backdrop — one pencil-sketch bus sliced across the cards.
 const BUS_SRC = '/assets/bus-sketch-alpha.png'; // black ink on transparent (paper keyed out)
@@ -187,29 +188,30 @@ type ComboLook = {
   hoverBg: Paint;
 };
 
+/** Default combo look — what Home renders. */
+const DEF_LOOK: ComboLook = {
+  ink: 'black',
+  createAlign: 'right',
+  halo: true,
+  bg: MENU_BG,
+  hoverBg: MENU_HOVER_BG,
+};
+
 type ComboProps = LayoutProps & Partial<ComboLook>;
+
+/** Drops `undefined` values so they don't shadow defaults when spread. */
+const defined = <T extends object>(o: T) =>
+  Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
 
 /**
  * Combo strip — one {@link ComboCard} per type: count + browse link on top,
  * create action in a divided footer. 1-up below md, 3-up from md.
  * @param {ComboProps} props - `ctx` for the count fetchers; `types` defaults to
- *   {@link TYPES}; `ink` bus backdrop colour (default `black`);
- *   `busOpacity` overrides the ink's preset opacity; `createAlign`
- *   footer alignment (default `right`); `halo` text-shadow on/off (default on);
- *   `bg` / `hoverBg` card fill at rest / on hover (default: nav-rail menu look).
+ *   {@link TYPES}; remaining {@link ComboLook} toggles default to {@link DEF_LOOK}.
  * @returns the equal-height card grid.
  */
-export function ComboStrip({
-  ctx,
-  types = TYPES,
-  ink = 'black',
-  busOpacity,
-  createAlign = 'right',
-  halo = true,
-  bg = MENU_BG,
-  hoverBg = MENU_HOVER_BG,
-}: ComboProps) {
-  const look: ComboLook = { ink, busOpacity, createAlign, halo, bg, hoverBg };
+export function ComboStrip({ ctx, types = TYPES, ...p }: ComboProps) {
+  const look: ComboLook = { ...DEF_LOOK, ...defined(p) };
   const { t } = useTranslation();
   return (
     <Box
@@ -224,7 +226,7 @@ export function ComboStrip({
       }}
     >
       {types.map((x, i) => (
-        <ComboCard key={x.id} type={x} ctx={ctx} idx={i} n={types.length} {...look} />
+        <ComboCard key={x.id} type={x} ctx={ctx} idx={i} n={types.length} look={look} />
       ))}
     </Box>
   );
@@ -233,37 +235,19 @@ export function ComboStrip({
 /**
  * The Home dashboard's org-gated body.
  * @param {ComboProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the
- *   layout (default `combo`); `ctx` feeds the count fetchers; `ink` / `busOpacity` /
- *   `createAlign` / `halo` / `bg` / `hoverBg` apply to combo only (see {@link ComboStrip}).
+ *   layout (default `combo`); look toggles apply to combo only (see {@link ComboStrip}).
  * @returns the combo strip, or the metric strip + browse grid + create row stacked.
  */
 export default function SiteNavCards({
   variant = 'combo',
-  ink,
-  busOpacity,
-  createAlign,
-  halo,
-  bg,
-  hoverBg,
-  ...rest
+  ...p
 }: ComboProps & { variant?: 'combo' | 'rows' }) {
-  if (variant === 'combo')
-    return (
-      <ComboStrip
-        {...rest}
-        ink={ink}
-        busOpacity={busOpacity}
-        createAlign={createAlign}
-        halo={halo}
-        bg={bg}
-        hoverBg={hoverBg}
-      />
-    );
+  if (variant === 'combo') return <ComboStrip {...p} />;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
-      <StatStrip {...rest} />
-      <NavGrid types={rest.types} />
-      <CreateRow types={rest.types} />
+      <StatStrip ctx={p.ctx} types={p.types} />
+      <NavGrid types={p.types} />
+      <CreateRow types={p.types} />
     </Box>
   );
 }
@@ -291,26 +275,21 @@ function useCount(fn: SiteType['count'], ctx: CountCtx): CountState {
 function Count({ fn, ctx }: { fn: SiteType['count']; ctx: CountCtx }) {
   const { t, i18n } = useTranslation();
   const s = useCount(fn, ctx);
-  const sx = { fontWeight: 800, lineHeight: 1 };
-  if (s.st === 'pending')
-    return (
-      <Typography variant="h4" sx={sx} data-testid="site-count-pending">
-        <Skeleton width={COUNT_SKELETON_W} />
-      </Typography>
-    );
-  if (s.st === 'err')
-    return (
-      <Typography
-        variant="h4"
-        sx={{ ...sx, color: 'text.disabled' }}
-        title={t('home.countUnavailable')}
-      >
-        —
-      </Typography>
-    );
+  const err = s.st === 'err';
   return (
-    <Typography variant="h4" sx={sx}>
-      {new Intl.NumberFormat(i18n.language).format(s.n)}
+    <Typography
+      variant="h4"
+      sx={{ fontWeight: 800, lineHeight: 1, ...(err && { color: 'text.disabled' }) }}
+      title={err ? t('home.countUnavailable') : undefined}
+      data-testid={s.st === 'pending' ? 'site-count-pending' : undefined}
+    >
+      {s.st === 'ok' ? (
+        s.n.toLocaleString(i18n.language)
+      ) : err ? (
+        '—'
+      ) : (
+        <Skeleton width={COUNT_SKELETON_W} />
+      )}
     </Typography>
   );
 }
@@ -319,6 +298,7 @@ function Count({ fn, ctx }: { fn: SiteType['count']; ctx: CountCtx }) {
  * Background-position for card `idx` of `n` so the cards read as windows onto one
  * centred, BUS_SCALE-wide bus: the image's left edge sits at -(scale-1)/2 of the
  * strip, and each column steps left by one card width + gap ((strip + gap) / n).
+ * Assumes equal `1fr` columns and a `CARD_GAP` gutter — keep in step with ComboStrip.
  */
 const busSlicePos = (idx: number, n: number, gap: string) =>
   `calc(${-((BUS_SCALE - 1) / 2) * 100}cqw - ${idx} * (100cqw + ${gap}) / ${n}) ${BUS_Y}`;
@@ -329,47 +309,44 @@ function ComboCard({
   ctx,
   idx,
   n,
-  ink,
-  busOpacity,
-  createAlign,
-  halo,
-  bg,
-  hoverBg,
+  look: { ink, busOpacity, createAlign, halo, bg, hoverBg },
 }: {
   type: SiteType;
   ctx: CountCtx;
   idx: number;
   n: number;
-} & ComboLook) {
+  look: ComboLook;
+}) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const fill = paint(theme, bg),
+    hoverFill = paint(theme, hoverBg);
+  const rest = over(theme.palette.background.default, fill),
+    hot = over(rest, hoverFill);
   // Shared by both link areas: hover fill, a `--halo` that tracks the area's rendered
   // fill (page → card → hover, composited), and content lifted above the bus layer.
-  const area = (theme: Theme) => {
-    const rest = over(theme.palette.background.default, paint(theme, bg));
-    const hot = over(rest, paint(theme, hoverBg));
-    return {
-      position: 'relative',
-      textDecoration: 'none',
-      transition: theme.transitions.create('background-color', { duration: 150 }),
-      '--halo': rest,
-      textShadow: halo ? HALO_BLUR.map(b => `0 0 ${b}px var(--halo)`).join(', ') : 'none',
-      '&:hover': { bgcolor: paint(theme, hoverBg), '--halo': hot },
-      '& > *': { position: 'relative', zIndex: 2 },
-    } as const;
-  };
+  const area = {
+    position: 'relative',
+    textDecoration: 'none',
+    transition: theme.transitions.create('background-color', { duration: HOVER_MS }),
+    '--halo': rest,
+    textShadow: halo ? HALO_BLUR.map(b => `0 0 ${b}px var(--halo)`).join(', ') : 'none',
+    '&:hover': { bgcolor: hoverFill, '--halo': hot },
+    '& > *': { position: 'relative', zIndex: 2 },
+  } as const;
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
         borderRadius: TILE_RADIUS,
-        bgcolor: theme => paint(theme, bg),
+        bgcolor: fill,
         overflow: 'hidden',
         position: 'relative',
         // Own stacking context: the bus (z 1) sits above the link areas' hover fills
         // but below their content (z 2), without escaping into page-level z-order.
         isolation: 'isolate',
-        '&::before': theme => ({
+        '&::before': {
           content: '""',
           position: 'absolute',
           inset: 0,
@@ -385,26 +362,24 @@ function ComboCard({
           },
           ...BUS_INK[ink],
           ...(busOpacity !== undefined && { opacity: busOpacity }),
-        }),
+        },
       }}
     >
       <Box
         component={Link}
         to={x.path}
-        sx={theme => ({
-          ...area(theme),
+        sx={{
+          ...area,
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           gap: 1.25,
           p: 2.5,
           color: 'text.primary',
-        })}
+        }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ color: 'primary.main', display: 'flex' }}>
-            <MenuIcon name={x.icon} size={STAT_ICON} />
-          </Box>
+          <Glyph name={x.icon} size={STAT_ICON} />
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
             {t(x.titleKey)}
           </Typography>
@@ -418,8 +393,8 @@ function ComboCard({
       <Box
         component={Link}
         to={createPath(x.path)}
-        sx={theme => ({
-          ...area(theme),
+        sx={{
+          ...area,
           display: 'flex',
           alignItems: 'center',
           justifyContent: createAlign === 'right' ? 'flex-end' : 'flex-start',
@@ -427,7 +402,7 @@ function ComboCard({
           px: 2.5,
           py: 1.5,
           color: 'primary.main',
-        })}
+        }}
       >
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           + {t(x.createKey)}
@@ -463,13 +438,11 @@ function NavTile({
         color: 'text.primary',
         bgcolor: 'action.hover',
         transition: theme =>
-          theme.transitions.create(['background-color', 'transform'], { duration: 150 }),
+          theme.transitions.create(['background-color', 'transform'], { duration: HOVER_MS }),
         '&:hover': { bgcolor: 'action.selected', transform: 'translateY(-2px)' },
       }}
     >
-      <Box sx={{ color: 'primary.main', display: 'flex' }}>
-        <MenuIcon name={icon} size={NAV_ICON} />
-      </Box>
+      <Glyph name={icon} size={NAV_ICON} />
       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
         {title}
       </Typography>
@@ -494,16 +467,23 @@ function CreateAction({ to, icon, label }: { to: string; icon: MenuIconName; lab
         p: 2.5,
         textDecoration: 'none',
         color: 'text.primary',
-        transition: theme => theme.transitions.create('background-color', { duration: 150 }),
+        transition: theme => theme.transitions.create('background-color', { duration: HOVER_MS }),
         '&:hover': { bgcolor: 'action.selected' },
       }}
     >
-      <Box sx={{ color: 'primary.main', display: 'flex' }}>
-        <MenuIcon name={icon} size={ACTION_ICON} />
-      </Box>
+      <Glyph name={icon} size={ACTION_ICON} />
       <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
         {label}
       </Typography>
+    </Box>
+  );
+}
+
+/** Primary-tinted sprite glyph, sized per call site. */
+function Glyph({ name, size }: { name: MenuIconName; size: number }) {
+  return (
+    <Box sx={{ color: 'primary.main', display: 'flex' }}>
+      <MenuIcon name={name} size={size} />
     </Box>
   );
 }

@@ -1,5 +1,5 @@
 import { Alert, Box, Button, Typography } from '@mui/material';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import SiteNavCards from '../components/site-nav-cards/SiteNavCards.tsx';
 import type { CountCtx } from '../components/site-nav-cards/siteTypes.ts';
@@ -31,10 +31,19 @@ export default function HomePage() {
   } = useOrganisationsContext();
   const { isAuthenticated, getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
-  // Memoized: a fresh ctx object would re-run every card's count fetch on each render.
+  // getAccessToken's identity changes on every OIDC silent renew; read it through a
+  // ref so a token refresh doesn't rebuild ctx and re-run every card's count fetch.
+  const tokenRef = useRef(getAccessToken);
+  useEffect(() => {
+    tokenRef.current = getAccessToken;
+  }, [getAccessToken]);
   const ctx = useMemo<CountCtx>(
-    () => ({ apiUrl: applicationBaseUrl, getToken: getAccessToken, org: currentOrganisation?.id }),
-    [applicationBaseUrl, getAccessToken, currentOrganisation?.id]
+    () => ({
+      apiUrl: applicationBaseUrl,
+      getToken: () => tokenRef.current(),
+      org: currentOrganisation?.id,
+    }),
+    [applicationBaseUrl, currentOrganisation?.id]
   );
 
   return (
