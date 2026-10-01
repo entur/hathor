@@ -2,6 +2,7 @@ import { Alert, Box, Button, Typography } from '@mui/material';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import SiteNavCards from '../components/site-nav-cards/SiteNavCards.tsx';
+import AutosysImportFloatingMenu from '../data/vehicle-imports/components/AutosysImportFloatingMenu.tsx';
 import type { CountCtx } from '../components/site-nav-cards/siteTypes.ts';
 import { useConfig } from '../contexts/configContext.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
@@ -17,6 +18,8 @@ import { useAuth } from '../auth/index.ts';
 
 // Layout tunables — bubbled per repo style.
 const CONTENT_MAX = 1180; // px; content measure for the whole dashboard
+const SVV_LOGO_SRC = '/assets/statens-vegvesen-emblem.svg',
+  SVV_LOGO_H = 28; // px; emblem-only crop (wordmark is white-on-white), width follows
 
 /**
  * Registry dashboard home page.
@@ -76,6 +79,24 @@ export default function HomePage() {
           </Typography>
         </Box>
 
+        {isAuthenticated && currentOrganisation && (
+          <Box sx={{ mb: 3 }}>
+            <AutosysImportFloatingMenu
+              variant="outlined"
+              label={t('home.bulkImportSvv')}
+              startIcon={null}
+              endIcon={
+                <Box
+                  component="img"
+                  src={SVV_LOGO_SRC}
+                  alt=""
+                  sx={{ display: 'block', height: SVV_LOGO_H, width: 'auto' }}
+                />
+              }
+              testId="home-bulk-import-svv"
+            />
+          </Box>
+        )}
         {currentOrganisation && <SiteNavCards ctx={ctx} />}
         {!isAuthenticated && (
           <Box component="section">

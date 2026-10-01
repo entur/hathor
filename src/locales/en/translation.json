@@ -97,6 +97,7 @@
   "home.createNew.vehicleType": "Vehicle Type",
   "home.createNew.vehicle": "Vehicle",
   "home.createNew.deckPlan": "Deck Plan",
+  "home.bulkImportSvv": "Bulk import from Statens vegvesen",
 
   "map.layers.title": "Map Layers",
   "map.layers.circles": "Circles",

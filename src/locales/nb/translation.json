@@ -96,6 +96,7 @@
   "home.createNew.vehicleType": "Kjøretøytype",
   "home.createNew.vehicle": "Kjøretøy",
   "home.createNew.deckPlan": "Setekart",
+  "home.bulkImportSvv": "Masseimport fra Statens vegvesen",
 
   "map.layers.title": "Kartlag",
   "map.layers.circles": "Sirkler",
