@@ -29,6 +29,18 @@ const COUNT_SKELETON_W = 96; // px; placeholder width while a count is pending
 const CARD_GAP = 2; // ×theme.spacing; combo-strip gutter (also feeds the bus-slice offset)
 const HALO_BLUR = [2, 4]; // px; stacked card-coloured text-shadows that knock the bus out behind glyphs
 const HOVER_MS = 150; // hover background-colour transition
+// Screen-reader-only text (same as @mui/utils visuallyHidden — a transitive dep, not ours).
+const SR_ONLY = {
+  border: 0,
+  clip: 'rect(0 0 0 0)',
+  height: '1px',
+  margin: '-1px',
+  overflow: 'hidden',
+  padding: 0,
+  position: 'absolute',
+  whiteSpace: 'nowrap',
+  width: '1px',
+} as const;
 
 // Combo backdrop — one pencil-sketch bus sliced across the cards.
 /** Bundled backdrop for `bgURL`: black ink on transparent (paper keyed out). */
@@ -282,7 +294,11 @@ function useCount(fn: SiteType['count'], ctx: CountCtx): CountState {
   return s;
 }
 
-/** A count in h4 type: Skeleton while pending, locale-formatted number, muted dash on error. */
+/**
+ * A count in h4 type: Skeleton while pending, locale-formatted number, muted dash on
+ * error — the dash is aria-hidden and announced via visually-hidden text (the `title`
+ * tooltip alone isn't exposed to assistive tech on a non-focusable element).
+ */
 function Count({ fn, ctx }: { fn: SiteType['count']; ctx: CountCtx }) {
   const { t, i18n } = useTranslation();
   const s = useCount(fn, ctx);
@@ -292,12 +308,17 @@ function Count({ fn, ctx }: { fn: SiteType['count']; ctx: CountCtx }) {
       variant="h4"
       sx={{ fontWeight: 800, lineHeight: 1, ...(err && { color: 'text.disabled' }) }}
       title={err ? t('home.countUnavailable') : undefined}
-      data-testid={s.st === 'pending' ? 'site-count-pending' : undefined}
+      data-testid={s.st === 'pending' ? 'site-count-pending' : err ? 'site-count-err' : undefined}
     >
       {s.st === 'ok' ? (
         s.n.toLocaleString(i18n.language)
       ) : err ? (
-        '—'
+        <>
+          <span aria-hidden="true">—</span>
+          <Box component="span" sx={SR_ONLY}>
+            {t('home.countUnavailable')}
+          </Box>
+        </>
       ) : (
         <Skeleton width={COUNT_SKELETON_W} />
       )}

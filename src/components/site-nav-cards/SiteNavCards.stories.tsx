@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mui/material';
+import { expect, waitFor } from 'storybook/test';
 import { MemoryRouter } from 'react-router-dom';
 import SiteNavCards, { BUS_SRC, ComboStrip, CreateRow, NavGrid, StatStrip } from './SiteNavCards';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes';
@@ -82,9 +83,21 @@ export const Loading: Story = {
   render: () => <ComboStrip ctx={CTX} types={PENDING} counts />,
 };
 
-/** Combo cards when every count fetch fails (muted dash + tooltip). */
+/** Combo cards when every count fetch fails (muted dash + tooltip; screen-reader text). */
 export const Failed: Story = {
   render: () => <ComboStrip ctx={CTX} types={FAILING} counts />,
+  play: async ({ canvasElement }) => {
+    await waitFor(() =>
+      expect(canvasElement.querySelectorAll('[data-testid="site-count-err"]')).toHaveLength(
+        TYPES.length
+      )
+    );
+    canvasElement.querySelectorAll('[data-testid="site-count-err"]').forEach(el => {
+      // dash hidden from AT; the visually-hidden label carries the meaning
+      expect(el.querySelector('[aria-hidden="true"]')?.textContent).toBe('—');
+      expect(el.textContent?.replace('—', '').trim()).not.toBe('');
+    });
+  },
 };
 
 /** Overview metric strip only (sample figures). */
