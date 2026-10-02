@@ -28,8 +28,6 @@
   "data.pagination.displayedRows": "{{from}}–{{to}} of {{count}}",
   "data.pagination.displayedRowsOfMore": "{{from}}–{{to}} of more than {{count}}",
 
-  "data.table.sortLocked": "Close details to change sort",
-
   "data.table.header.name": "Name",
   "data.table.header.id": "ID",
   "data.table.header.longitude": "Longitude",
@@ -255,7 +253,6 @@
   "rail.label": "Main navigation",
   "rail.collapse": "Collapse menu",
   "rail.expand": "Expand menu",
-  "sidebar.close": "close sidebar",
   "vehicles.rail.deactivateTooltip": "Deactivate",
   "vehicles.rail.deactivateAria": "Deactivate",
   "vehicles.rail.collapse": "Collapse",

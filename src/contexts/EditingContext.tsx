@@ -2,6 +2,8 @@ import {
   createContext,
   useState,
   useMemo,
+  useRef,
+  useCallback,
   useContext,
   type ReactNode,
   type ComponentType,
@@ -27,10 +29,23 @@ interface EditorDirtyContextType {
   setEditorDirty: (dirty: boolean) => void;
 }
 
+interface EditorCloseContextType {
+  /**
+   * Ask the mounted editor to close. Routes through the editor's own
+   * collapse flow (dirty → DiscardDialog, else drop `?selected=`), so chrome
+   * close paths (mobile Drawer backdrop / Escape) can't strand the URL
+   * selection or skip the discard guard. No-op when no editor is registered.
+   */
+  requestClose: () => void;
+  /** Register the editor's close handler; `null` unregisters. Stable. */
+  setCloseHandler: (fn: (() => void) | null) => void;
+}
+
 // Split so per-keystroke dirty flips don't re-render consumers that only
 // care about `editingItem` (Sidebar, GenericDataViewPage).
 const EditingItemContext = createContext<EditingItemContextType | undefined>(undefined);
 const EditorDirtyContext = createContext<EditorDirtyContextType | undefined>(undefined);
+const EditorCloseContext = createContext<EditorCloseContextType | undefined>(undefined);
 
 interface EditingProviderProps {
   children: ReactNode;
@@ -43,9 +58,23 @@ export function EditingProvider({ children }: EditingProviderProps) {
   const itemValue = useMemo(() => ({ editingItem, setEditingItem }), [editingItem]);
   const dirtyValue = useMemo(() => ({ isEditorDirty, setEditorDirty }), [isEditorDirty]);
 
+  // Ref, not state: the handler is a per-render closure and swapping it must
+  // not re-render consumers.
+  const closeRef = useRef<(() => void) | null>(null);
+  const requestClose = useCallback(() => closeRef.current?.(), []);
+  const setCloseHandler = useCallback((fn: (() => void) | null) => {
+    closeRef.current = fn;
+  }, []);
+  const closeValue = useMemo(
+    () => ({ requestClose, setCloseHandler }),
+    [requestClose, setCloseHandler]
+  );
+
   return (
     <EditingItemContext.Provider value={itemValue}>
-      <EditorDirtyContext.Provider value={dirtyValue}>{children}</EditorDirtyContext.Provider>
+      <EditorDirtyContext.Provider value={dirtyValue}>
+        <EditorCloseContext.Provider value={closeValue}>{children}</EditorCloseContext.Provider>
+      </EditorDirtyContext.Provider>
     </EditingItemContext.Provider>
   );
 }
@@ -73,6 +102,15 @@ export function useEditorDirty(): EditorDirtyContextType {
   const ctx = useContext(EditorDirtyContext);
   if (ctx === undefined) {
     throw new Error('useEditorDirty must be used within an EditingProvider');
+  }
+  return ctx;
+}
+
+/** Request / register the editor close flow. Stable across all editing changes. */
+export function useEditorClose(): EditorCloseContextType {
+  const ctx = useContext(EditorCloseContext);
+  if (ctx === undefined) {
+    throw new Error('useEditorClose must be used within an EditingProvider');
   }
   return ctx;
 }

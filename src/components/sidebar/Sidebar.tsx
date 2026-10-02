@@ -1,108 +1,84 @@
-import { Box, Drawer, useMediaQuery, IconButton, Toolbar } from '@mui/material';
+import { Box, Drawer, useMediaQuery } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { useTranslation } from 'react-i18next';
-import { useEditingItem } from '../../contexts/EditingContext.tsx';
+import { useEditingItem, useEditorClose } from '../../contexts/EditingContext.tsx';
+import { RAIL_W } from './EditorRail.tsx';
+import { MIN_W, MAX_RATIO } from '../../hooks/useResizableSidebar.ts';
 
 export type Side = 'left' | 'right';
 
+const RESIZER_W = 3,
+  RESIZER_HIT_W = 8;
+
 interface SidebarProps {
-  width: number;
-  collapsed: boolean;
+  /** Desktop pane width as a fraction of viewport width. */
+  ratio: number;
   onMouseDownResize: () => void;
   theme: Theme;
-  toggleCollapse: () => void;
   side?: Side;
 }
 
-export function Sidebar({
-  width,
-  collapsed,
-  onMouseDownResize,
-  theme,
-  toggleCollapse,
-  side = 'left',
-}: SidebarProps) {
+/**
+ * Details pane as a modal Drawer (#173 modal variant): while an editor is
+ * open the list behind is scrimmed and inert (MUI Modal → backdrop, focus
+ * trap, `aria-hidden` siblings). Desktop and mobile share this one path;
+ * mobile is full-width with no resize handle.
+ *
+ * @param {SidebarProps} props
+ * @returns {JSX.Element}
+ */
+export function Sidebar({ ratio, onMouseDownResize, theme, side = 'left' }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
-  const { t } = useTranslation();
   const { editingItem } = useEditingItem();
-
-  if (isMobile) {
-    return (
-      <Drawer
-        anchor={side}
-        // Gate `open` on both `!collapsed` AND a present editingItem so
-        // the Drawer doesn't surface a blank pane during the frame
-        // between editingItem clearing and the chrome effect collapsing.
-        open={!collapsed && !!editingItem}
-        onClose={toggleCollapse}
-        variant="temporary"
-        ModalProps={{
-          keepMounted: true,
-        }}
-        slotProps={{
-          paper: {
-            sx: {
-              width: '100%',
-              boxSizing: 'border-box',
-              backgroundColor: theme.palette.background.paper,
-            },
-          },
-        }}
-      >
-        <Toolbar
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <IconButton onClick={toggleCollapse} color="inherit" aria-label={t('sidebar.close')}>
-            {closeIcon}
-          </IconButton>
-        </Toolbar>
-        {editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
-      </Drawer>
-    );
-  }
+  const { requestClose } = useEditorClose();
+  const inner = side === 'right' ? 'left' : 'right';
 
   return (
-    <>
-      <Box
-        className="sidebar-desktop"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          [side]: 0,
-          bottom: 0,
-          width: collapsed ? 0 : width,
-          minWidth: collapsed ? 0 : 100,
-          backgroundColor: theme.palette.background.paper,
-          zIndex: 30,
-          overflow: 'hidden',
-        }}
-      >
-        {!collapsed && editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
-      </Box>
-
-      {!collapsed && (
+    <Drawer
+      anchor={side}
+      // URL selection is the only open-state source: no collapsed-but-selected
+      // state to strand (#179 review).
+      open={!!editingItem}
+      // Backdrop / Escape run the editor's own guarded collapse.
+      onClose={requestClose}
+      variant="temporary"
+      slotProps={{
+        paper: {
+          'data-testid': 'details-drawer',
+          sx: {
+            width: isMobile ? '100%' : `${ratio * 100}vw`,
+            minWidth: isMobile ? undefined : MIN_W,
+            maxWidth: isMobile ? undefined : `${MAX_RATIO * 100}vw`,
+            boxSizing: 'border-box',
+            backgroundColor: theme.palette.background.paper,
+            // Portaled out of the page, so the page's rail vars don't reach
+            // here: pin the EditorRail to the paper's top edge and gutter
+            // the editor past it. The rail is the Drawer's close control.
+            '--app-header-height': '0px',
+            '--sidebar-width': '0px',
+            [side === 'right' ? 'pr' : 'pl']: `${RAIL_W}px`,
+          },
+          // Slot typing rejects `data-*` keys in an object literal.
+        } as object,
+      }}
+    >
+      {!isMobile && (
         <Box
           onMouseDown={onMouseDownResize}
-          className="resizer-desktop"
+          data-testid="details-drawer-resizer"
           sx={{
             position: 'absolute',
             top: 0,
-            [side]: width,
             bottom: 0,
-            width: '3px',
+            [inner]: 0,
+            width: RESIZER_HIT_W,
             cursor: 'ew-resize',
-            backgroundColor: theme.palette.divider,
-            zIndex: 20,
+            zIndex: 1,
+            // Visible hairline on the inner edge; the rest is hit area.
+            [`border${inner === 'left' ? 'Left' : 'Right'}`]: `${RESIZER_W}px solid ${theme.palette.divider}`,
           }}
         />
       )}
-    </>
+      {editingItem && <editingItem.EditorComponent itemId={editingItem.id} />}
+    </Drawer>
   );
 }

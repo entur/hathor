@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
@@ -8,17 +8,8 @@ import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
 
-const DETAILS_PANE_WIDTH_FACTOR = 0.25;
-const DETAILS_PANE_GUTTER_PX = 4;
 const DETAILS_PANE_SIDE: Side = 'right';
-const DETAILS_PANE_MARGIN = DETAILS_PANE_SIDE === 'right' ? 'marginRight' : 'marginLeft';
-const MARGIN_TRANSITION = `${DETAILS_PANE_MARGIN} 0.2s ease`;
 const APP_HEADER_HEIGHT_PX = 64;
-// Matches EditorRail's SEGMENT_SIZE — rail is a 40px-wide fixed-position
-// vertical strip floating over the content's right edge once an editor is
-// open. Published as `--editor-rail-clear` so right-aligned chrome (the
-// add/import actions) can gutter past it via `mr: var(--editor-rail-clear)`.
-const EDITOR_RAIL_WIDTH_PX = 40;
 
 /** Stable no-op so `useUrlEffect` can be invoked unconditionally — keeps hook order intact. */
 const noopUrlEffect = () => {};
@@ -50,16 +41,10 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const theme = useTheme();
 
-  const initWidth = () => Math.round(window.innerWidth * DETAILS_PANE_WIDTH_FACTOR);
-  const {
-    width: sidebarWidth,
-    collapsed: sidebarCollapsed,
-    setIsResizing: setIsSidebarResizing,
-    toggle: toggleSidebar,
-  } = useResizableSidebar(initWidth, true, DETAILS_PANE_SIDE);
+  const { ratio: paneRatio, setIsResizing: setIsSidebarResizing } =
+    useResizableSidebar(DETAILS_PANE_SIDE);
 
   const { editingItem } = useEditingItem();
-  const prevEditingIdRef = useRef<string | null>(null);
 
   const {
     searchResults,
@@ -124,19 +109,6 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const onRowClick = (viewConfig.useRowClick ?? noopRowClick)();
 
-  // Open the sidebar when a new editor is set; collapse it when the editor
-  // is cleared (e.g. the editor's Close button → `setEditingItem(null)`, or
-  // a URL-driven page like `/vehicles?selected=…` dropping its param).
-  useEffect(() => {
-    const prevId = prevEditingIdRef.current;
-    if (editingItem && editingItem.id !== prevId) {
-      if (sidebarCollapsed) toggleSidebar();
-    } else if (!editingItem && prevId !== null) {
-      if (!sidebarCollapsed) toggleSidebar();
-    }
-    prevEditingIdRef.current = editingItem?.id ?? null;
-  }, [editingItem, sidebarCollapsed, toggleSidebar]);
-
   useEffect(() => {
     setPage(0);
   }, [searchQuery, activeSearchContext, selectedItem, setPage, activeFilters]);
@@ -153,17 +125,12 @@ export default function GenericDataViewPage<T, K extends string>({
         display: 'flex',
         height: `calc(100dvh - ${APP_HEADER_HEIGHT_PX}px)`,
         position: 'relative',
-        '--sidebar-width': sidebarCollapsed ? '0px' : `${sidebarWidth}px`,
-        '--app-header-height': `${APP_HEADER_HEIGHT_PX}px`,
-        '--editor-rail-clear': editingItem ? `${EDITOR_RAIL_WIDTH_PX}px` : '0px',
       }}
     >
       <Sidebar
-        width={sidebarWidth}
-        collapsed={sidebarCollapsed}
+        ratio={paneRatio}
         onMouseDownResize={() => setIsSidebarResizing(true)}
         theme={theme}
-        toggleCollapse={toggleSidebar}
         side={DETAILS_PANE_SIDE}
       />
       <Box
@@ -171,10 +138,6 @@ export default function GenericDataViewPage<T, K extends string>({
         sx={{
           flexGrow: 1,
           height: '100%',
-          [DETAILS_PANE_MARGIN]: sidebarCollapsed
-            ? '0px'
-            : `${sidebarWidth + DETAILS_PANE_GUTTER_PX}px`,
-          transition: MARGIN_TRANSITION,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -201,7 +164,6 @@ export default function GenericDataViewPage<T, K extends string>({
           addAction={addAction}
           importAction={importAction}
           urlFilterInfo={urlFilterInfo}
-          sortLocked={!!editingItem}
         />
       </Box>
     </Box>

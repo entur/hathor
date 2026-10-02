@@ -46,9 +46,6 @@ interface DataPageContentProps<T, K extends string> {
   /** "Import" action, right-aligned in the list-head after {@link addAction}. */
   importAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
-  /** Forwarded to {@link DataTableHeader}; when true, every sortable header
-   *  is dimmed, click is suppressed, and hover shows the lock tooltip. */
-  sortLocked?: boolean;
 }
 
 export default function DataPageContent<
@@ -74,7 +71,6 @@ export default function DataPageContent<
   addAction,
   importAction,
   urlFilterInfo,
-  sortLocked,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const resolvedTitle = titleKey ? t(titleKey) : title;
@@ -132,10 +128,6 @@ export default function DataPageContent<
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1,
-                // Gutter past the floating EditorRail when an editor is open
-                // — `--editor-rail-clear` is published by GenericDataViewPage.
-                mr: 'var(--editor-rail-clear, 0px)',
-                transition: 'margin-right 0.2s ease',
               }}
             >
               {addAction}
@@ -153,7 +145,6 @@ export default function DataPageContent<
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
             columns={visibleColumns}
-            sortLocked={sortLocked}
           />
           <TableBody>
             {data.map(item => (
