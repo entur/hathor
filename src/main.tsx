@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.tsx';
 import { fetchConfig } from './config/fetchConfig.ts';
@@ -15,15 +16,18 @@ fetchConfig().then(config => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ConfigContext.Provider value={config}>
-        <AuthProvider>
-          <SessionProvider>
-            <OrganisationsProvider>
-              <CustomizationProvider>
-                <App />
-              </CustomizationProvider>
-            </OrganisationsProvider>
-          </SessionProvider>
-        </AuthProvider>
+        {/* Router sits above AuthProvider so the signin callback can navigate (#31). */}
+        <BrowserRouter>
+          <AuthProvider>
+            <SessionProvider>
+              <OrganisationsProvider>
+                <CustomizationProvider>
+                  <App />
+                </CustomizationProvider>
+              </OrganisationsProvider>
+            </SessionProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ConfigContext.Provider>
     </StrictMode>
   );

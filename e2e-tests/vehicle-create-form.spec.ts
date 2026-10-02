@@ -89,8 +89,11 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
 
       // After save, useSidebarCreateAdvance rewrites ?selected=new → the
       // assigned id, so the sidebar resolves into the just-created row.
-      await expect.poll(() => page.url(), { timeout: 15_000 }).toMatch(/[?&]selected=[^&]+/);
-      expect(page.url()).not.toContain('selected=new');
+      // `(?!new)` — the pre-save URL already carries selected=new, so a bare
+      // `selected=…` match would pass before the save round trip finishes.
+      await expect
+        .poll(() => page.url(), { timeout: 15_000 })
+        .toMatch(/[?&]selected=(?!new(?:&|$))[^&]+/);
       await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
       await expect(page.getByText('Vehicle not found')).toHaveCount(0);
       return;

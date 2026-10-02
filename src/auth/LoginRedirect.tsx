@@ -1,23 +1,20 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './index';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useConfig } from '../contexts/configContext.ts';
+import { useLocation } from 'react-router-dom';
 
 const LoginRedirect = () => {
   const { t } = useTranslation();
-  const { oidcConfig } = useConfig();
   const { isAuthenticated, isLoading, login } = useAuth();
-  const navigate = useNavigate();
-  const returnUrl = useLocation().pathname;
+  const { pathname, search, hash } = useLocation();
+  // Full location, not just the path — `?selected=<id>` deep links must survive login.
+  const returnUrl = pathname + search + hash;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      login(oidcConfig?.redirect_uri || window.location.origin + returnUrl);
-    } else if (isAuthenticated) {
-      navigate(returnUrl);
+      login(returnUrl);
     }
-  }, [isLoading, isAuthenticated, login, navigate, returnUrl, oidcConfig?.redirect_uri]);
+  }, [isLoading, isAuthenticated, login, returnUrl]);
 
   // Same wording as ProtectedRoute's pre-auth gate — one key, both places.
   if (isLoading) return <div>{t('protectedRoute.loadingAuthStatus')}</div>;

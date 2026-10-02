@@ -126,6 +126,13 @@ the permission lookup failed) — a backend issue, not a missing-claim or hathor
 earlier 2026-06-05 note claimed the no-roles token `INTERNAL_ERROR`s — superseded; verify the
 effect, not the claim.)
 
+### 2b. Align the org (before any run)
+
+The same token call lists *which* orgs; the run needs the one that owns data. Count rows per
+authorized org and pin it with `E2E_ORG_ID=<netexId>` — recipe in SKILL.md, "Align org selection
+upfront". `seedAuth` seeds `hathor:currentOrganisationId` (only when unset) and `selectFirstOrg`
+then only waits for the restored org; without the pin it falls back to the first authorized org.
+
 ### 3. Use it in the run
 
 - **Re-seed sessionStorage** (faithful): before each page,
