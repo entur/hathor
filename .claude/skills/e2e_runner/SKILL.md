@@ -74,7 +74,8 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST \
 
 Interpret:
 - **Sobek down** → live mode is impossible; bring it up (`sobek`: `docker compose up` then
-  `mvn -pl sobek-app spring-boot:run`). For the **Autosys import** flow you also need **Shepet** on
+  `SOBEK_SECURITY_ROLE_ASSIGNMENT_EXTRACTOR=baba mvn -pl sobek-app spring-boot:run` — the env var is
+  a TEMP bugfix, snag 5). For the **Autosys import** flow you also need **Shepet** on
   :37998. Both are Java-21 apps with non-obvious snags (JDK-26 default breaks the build, Sobek↔Shepet
   `sobek-common` API drift, Shepet's half-configured OAuth2 `internal` client) — full recipe + fixes
   in `references/bringing-up-backends.md`.
