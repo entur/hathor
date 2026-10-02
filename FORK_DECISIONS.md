@@ -551,3 +551,22 @@ Confirmed against the Sobek source: the backend (`AllPublicTransportModesEnumera
 - **~140 fewer LOC net** (vs ~100 in the earlier subset draft): beyond the casing engine it also deletes `toSobekTransportMode`, `symbolIdFor`, `SPRITE_MODES`, the `KNOWN_/ALL_/NORMALIZED_` sets, and collapses the 15-line `transportModeFilters` array to a one-liner. `transportMode.ts` 141→~56, `transportModeIconHelpers.ts` 46→~8. Partly offset by ~+45 lines of additive sprite-alias markup + 7 new i18n keys per locale (chips now span all 21). Exact figure from the impl `git diff --stat`.
 - Playwright fixtures flip camelCase → UPPER_CASE to mirror the real Sobek wire shape (the normalizer had hidden the mismatch).
 - `WATER` (general water transport) stays drawn; `FERRY` (distinct NeTEx ferry-specific mode) rides `tm-fallback` until it earns a glyph — flagged follow-up, not a `WATER` alias.
+
+## Post-login return path rides in OIDC `state`; router hoisted above `AuthProvider` _(2026-10-02)_
+
+### Context
+
+After login the user always landed on `/` (#31). `LoginRedirect` passed `oidcConfig.redirect_uri` — the app root in every environment config — as the per-request `redirect_uri`, and nothing recorded where the login started. Its fallback (and `SessionContext.relogin`) instead passed the current deep URL *as* `redirect_uri`, which only works if the IdP allow-lists arbitrary callback paths.
+
+### Decision
+
+- **`redirect_uri` is always the configured one.** `login(to?)` (`src/auth/authUtils.ts`) no longer takes a redirect URI; it sends the in-app return path as OIDC `state` (`{ returnTo }`), defaulting to the current `pathname + search + hash`. `oidc-client-ts` stores `state` client-side and hands it back as `user.state` in the signin callback — it never travels in the URL.
+- **`returnTo(state)` validates on the way back** — only a same-origin relative path (`/…`, never `//…` or `/\…`) is honoured, else `/`.
+- **`<BrowserRouter>` moved from `App.tsx` to `main.tsx`, above `AuthProvider`,** so `onSigninCallback` can `navigate(returnTo(user?.state), { replace: true })`. Rejected alternative: keep the nesting and `history.replaceState` + a synthetic `popstate` — smaller diff, but leans on a router implementation detail.
+- **Query and hash are part of the return path.** The sidebar editors are `?selected=<netexId>` deep links, so restoring only `pathname` would reopen the list with the editor closed.
+
+### Consequences
+
+- The callback still lands on `/` first (Home renders for a moment) before the navigate.
+- Unsaved form content is still lost on a session-expiry re-login — the login is a full-page redirect; only the location is restored.
+- e2e can now run a real signin round trip offline: `mockIdp` (`e2e-tests/live-auth-helpers.ts`) fakes discovery / authorize / token, unlike `seedAuth`, which boots already-authenticated and never touches the redirect or callback code.

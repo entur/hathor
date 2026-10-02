@@ -2,7 +2,34 @@ import { useCallback } from 'react';
 import { useAuth as useOidcAuth, type AuthContextProps } from 'react-oidc-context';
 import { useConfig } from '../contexts/configContext.ts';
 
+/** Landing path when no usable return path survives the login round trip. */
+const HOME = '/';
+/** Same-origin relative path: one leading slash, never `//` or `/\` (protocol-relative). */
+const LOCAL_PATH = /^\/(?![/\\])/;
+
 export type AccessToken = string | null;
+
+/** Custom data round-tripped through the OIDC `state` across the login redirect. */
+interface LoginState {
+  returnTo: string;
+}
+
+/** Path + query + hash of the current location. */
+const here = (): string => {
+  const { pathname, search, hash } = window.location;
+  return pathname + search + hash;
+};
+
+/**
+ * Resolve where to land after the OIDC signin callback.
+ *
+ * @param state - `user.state` from the signin callback (set by `login`).
+ * @returns the stored return path when it is a same-origin relative path, else `/`.
+ */
+export function returnTo(state: unknown): string {
+  const to = (state as Partial<LoginState> | null | undefined)?.returnTo;
+  return typeof to === 'string' && LOCAL_PATH.test(to) ? to : HOME;
+}
 
 export function authHeader(token: AccessToken): Record<string, string> {
   return token !== null ? { Authorization: `Bearer ${token}` } : {};
@@ -17,7 +44,8 @@ export interface Auth {
   roleAssignments?: string[] | null;
   getAccessToken: () => Promise<AccessToken>;
   logout: ({ returnTo }: { returnTo?: string }) => Promise<void>;
-  login: (redirectUri?: string) => Promise<void>;
+  /** Start the OIDC login; `to` is the in-app path to land on afterwards (default: current location). */
+  login: (to?: string) => Promise<void>;
 }
 
 export const useAuth = (): Auth => {
@@ -38,9 +66,12 @@ export const useAuth = (): Auth => {
   );
 
   const login = useCallback(
-    (redirectUri?: string) => {
+    (to: string = here()) => {
       if (!oidcAuth) return Promise.resolve();
-      return oidcAuth.signinRedirect({ redirect_uri: redirectUri });
+      // redirect_uri stays the configured (IdP-registered) one; the return
+      // path rides in `state` and is read back by AuthProvider's signin callback.
+      const state: LoginState = { returnTo: to };
+      return oidcAuth.signinRedirect({ state });
     },
     [oidcAuth]
   );
