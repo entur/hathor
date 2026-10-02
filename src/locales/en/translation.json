@@ -88,6 +88,7 @@
 
   "home.eyebrow": "National vehicle registry",
   "home.overview": "Overview",
+  "home.countUnavailable": "Count unavailable",
   "home.stat.vehicleTypes": "Vehicle types",
   "home.stat.vehicles": "Vehicles",
   "home.stat.deckPlans": "Deck plans",
@@ -97,6 +98,7 @@
   "home.createNew.vehicleType": "Vehicle Type",
   "home.createNew.vehicle": "Vehicle",
   "home.createNew.deckPlan": "Deck Plan",
+  "home.bulkImportSvv": "Bulk import from Statens vegvesen",
 
   "map.layers.title": "Map Layers",
   "map.layers.circles": "Circles",

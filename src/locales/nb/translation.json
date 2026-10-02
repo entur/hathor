@@ -87,6 +87,7 @@
 
   "home.eyebrow": "Nasjonalt materiellregister",
   "home.overview": "Oversikt",
+  "home.countUnavailable": "Antall utilgjengelig",
   "home.stat.vehicleTypes": "Kjøretøytyper",
   "home.stat.vehicles": "Kjøretøy",
   "home.stat.deckPlans": "Setekart",
@@ -96,6 +97,7 @@
   "home.createNew.vehicleType": "Kjøretøytype",
   "home.createNew.vehicle": "Kjøretøy",
   "home.createNew.deckPlan": "Setekart",
+  "home.bulkImportSvv": "Masseimport fra Statens vegvesen",
 
   "map.layers.title": "Kartlag",
   "map.layers.circles": "Sirkler",
