@@ -191,9 +191,10 @@ all rows under AtB), so "first available" silently lands on an org with `Total e
 3. **Pin it for the run:** `E2E_ORG_ID=<netexId> npm run e2e:local-backend`. `seedAuth` seeds the
    id into the app's persisted-org key (`hathor:currentOrganisationId`, only when unset, so a spec
    that switches org keeps its choice); the app restores it instead of `organisations[0]`.
-4. **Confirm it took** on the first list page: the banner combobox shows the pinned org and
-   `total-entries[data-count]` is > 0. If the combobox shows another org, something clicked the
-   picker after load.
+4. **A bad pin fails fast.** An id that is stale, misspelled or not authorized for the token is not
+   restored — the app falls back to `organisations[0]` and re-persists *that* id. `selectFirstOrg`
+   asserts the persisted id still equals `E2E_ORG_ID` and fails with "is not one of the token's
+   authorized organisations". Re-run step 1 and re-pin; don't read further into the run.
 
 Unset `E2E_ORG_ID` = old behaviour (first authorized org) — fine only for a single-org account.
 

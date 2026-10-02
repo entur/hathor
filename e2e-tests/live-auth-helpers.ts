@@ -258,7 +258,8 @@ export const mockIdp = async (page: Page): Promise<string> => {
  * for that, and explicitly picks the first option if auto-select hasn't filled
  * the input. No-op in mock — the single synthetic org (seedAuth) auto-selects, so
  * no explicit pick is needed; this readiness wait is only for the live picker.
- * With `E2E_ORG_ID` set it only waits for the pinned org to be restored.
+ * With `E2E_ORG_ID` set it only waits for the pinned org to be restored, and
+ * fails if the app selected a different one (pin not among the authorized orgs).
  */
 export const selectFirstOrg = async (page: Page) => {
   if (!IS_LIVE) return;
@@ -271,6 +272,14 @@ export const selectFirstOrg = async (page: Page) => {
     // Pinned org (seedAuth): the app restores it once the org query resolves —
     // wait for that; clicking the first option here would override the pin.
     await expect(select).not.toHaveValue('', { timeout: ORG_READY_TIMEOUT });
+    // A stale / misspelled / unauthorized pin is not restored: the app falls back
+    // to `organisations[0]` and re-persists THAT id — fail here, not 50 tests later.
+    await expect
+      .poll(() => page.evaluate(key => window.localStorage.getItem(key), ORG_STORAGE_KEY), {
+        message: `E2E_ORG_ID=${LIVE_ORG_ID} is not one of the token's authorized organisations`,
+        timeout: ORG_READY_TIMEOUT,
+      })
+      .toBe(LIVE_ORG_ID);
     return;
   }
   await expect(async () => {
