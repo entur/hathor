@@ -139,6 +139,8 @@ Tests rely on these `data-testid` attributes in the application:
 |-----------|-----------|---------|
 | `auth-not-configured-warning` | `ProtectedRoute` | Warning banner when `oidcConfig` is undefined |
 | `auth-disabled-label` | `HeaderActions` | "Auth off" chip in header |
+| `header-login-button` | `HeaderActions` | Log in button in header (OIDC configured, signed out) |
+| `home-login-button` | `Home` | Log in button on the signed-out dashboard (OIDC configured) |
 
 Tests also check for the `.app-content` CSS class and the "Log in" button text.
 

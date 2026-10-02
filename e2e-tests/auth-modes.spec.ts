@@ -15,13 +15,18 @@ async function openProtectedRoute(page: Page) {
 }
 
 /**
- * Navigate to / and return locators for the header auth UI elements.
+ * Navigate to / and return locators for the header and dashboard auth UI elements.
+ *
+ * Both the header and the signed-out dashboard carry a Log in button, so each
+ * is selected by testid — `getByRole('button', { name: /log in/i })` matches
+ * both and trips strict mode.
  */
 async function openHomePage(page: Page) {
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
   return {
-    loginButton: page.getByRole('button', { name: /log in/i }),
+    loginButton: page.getByTestId('header-login-button'),
+    homeLoginButton: page.getByTestId('home-login-button'),
     authDisabledLabel: page.getByTestId('auth-disabled-label'),
   };
 }
@@ -30,11 +35,11 @@ async function openHomePage(page: Page) {
  * Auth-config UI — the app reflects whether oidcConfig is present, without ever logging in or selecting an org.
  *
  * Workflow (each test serves its own config.json via route interception — no shared disk state, parallel-safe):
- *   1. Auth-off profile: setConfig 'auth-off' (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip and no Log in button; nav rail toggle flips aria-expanded false↔true↔false.
- *   2. Auth-on profile: setConfig 'auth-on' (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows Log in button and hides the "Auth off" chip.
+ *   1. Auth-off profile: setConfig 'auth-off' (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip and no Log in button in header or dashboard; nav rail toggle flips aria-expanded false↔true↔false.
+ *   2. Auth-on profile: setConfig 'auth-on' (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows the header and dashboard Log in buttons and hides the "Auth off" chip.
  * Covers:
- *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip.
- *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button.
+ *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip + no login affordance anywhere.
+ *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button + dashboard Log in button.
  *   - Nav rail collapsed/expanded toggle (localStorage hathor:navRailExpanded cleared first).
  * Modes:
  *   - mode-agnostic: NO E2E_BACKEND branching, NO seedAuth, NO org selection — it deliberately does not authenticate or pick an org, asserting only the pre-login auth-config UI. Runs identically regardless of E2E_BACKEND.
@@ -51,8 +56,9 @@ test.describe('Auth-off profile (oidcConfig undefined)', () => {
   });
 
   test('header shows auth-disabled (no login button)', async ({ page }) => {
-    const { loginButton, authDisabledLabel } = await openHomePage(page);
+    const { loginButton, homeLoginButton, authDisabledLabel } = await openHomePage(page);
     await expect(loginButton).not.toBeVisible();
+    await expect(homeLoginButton).not.toBeVisible();
     await expect(authDisabledLabel).toBeVisible();
     await expect(authDisabledLabel).toContainText('Auth off');
   });
@@ -94,9 +100,10 @@ test.describe('Auth-on profile (oidcConfig defined)', () => {
     }).toPass({ timeout: 10_000 });
   });
 
-  test('header now shows login button', async ({ page }) => {
-    const { loginButton, authDisabledLabel } = await openHomePage(page);
+  test('header and dashboard now show login buttons', async ({ page }) => {
+    const { loginButton, homeLoginButton, authDisabledLabel } = await openHomePage(page);
     await expect(authDisabledLabel).not.toBeVisible();
     await expect(loginButton).toBeVisible();
+    await expect(homeLoginButton).toBeVisible();
   });
 });

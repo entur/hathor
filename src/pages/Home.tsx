@@ -32,8 +32,8 @@ export default function HomePage() {
     error: organisationsError,
     refetch: refetchOrganisations,
   } = useOrganisationsContext();
-  const { isAuthenticated, getAccessToken } = useAuth();
-  const { applicationBaseUrl } = useConfig();
+  const { isAuthenticated, getAccessToken, login } = useAuth();
+  const { applicationBaseUrl, oidcConfig } = useConfig();
   // getAccessToken's identity changes on every OIDC silent renew; read it through a
   // ref so a token refresh doesn't rebuild ctx and re-run every card's count fetch.
   const tokenRef = useRef(getAccessToken);
@@ -98,10 +98,25 @@ export default function HomePage() {
           </Box>
         )}
         {currentOrganisation && <SiteNavCards ctx={ctx} />}
-        {!isAuthenticated && (
-          <Box component="section">
-            <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
-              {t('home.notLoggedIn')}
+        {/* Signed out — only when OIDC is configured; without it login() is a no-op */}
+        {!isAuthenticated && oidcConfig && (
+          <Box
+            component="section"
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}
+          >
+            <Typography variant="body1" color="text.secondary">
+              {t('home.login.body')}
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => void login()}
+              data-testid="home-login-button"
+            >
+              {t('header.actions.login')}
+            </Button>
+            <Typography variant="caption" color="text.secondary">
+              {t('home.login.provider')}
             </Typography>
           </Box>
         )}
