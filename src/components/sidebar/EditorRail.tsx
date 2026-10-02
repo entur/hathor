@@ -24,8 +24,11 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import type { Side } from './Sidebar.tsx';
+import { useLiftEditorClose } from '../../hooks/useLiftEditorClose.ts';
 
-const SEGMENT_SIZE = 40;
+/** Rail width (one segment square). Chrome gutters past it. */
+export const RAIL_W = 40;
+const SEGMENT_SIZE = RAIL_W;
 const SPINNER_SIZE = 18;
 const DIVIDER_OPACITY = 0.35;
 
@@ -101,6 +104,8 @@ export default function EditorRail({
     if (isDirty) setConfirming('collapse');
     else onCollapse();
   };
+  // Chrome close paths (mobile Drawer backdrop / Escape) share this guard.
+  useLiftEditorClose(handleCollapseClick);
 
   const handleCancelClick = () => {
     if (isDirty) setConfirming('cancel');
