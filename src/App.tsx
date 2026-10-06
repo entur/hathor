@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/header/Header.tsx';
 import Menu from './components/Menu.tsx';
 import Home from './pages/Home';
@@ -42,45 +42,40 @@ export default function App() {
   const { theme } = useAppTheme(useCustomFeatures);
 
   return (
-    <BrowserRouter>
-      <SearchProvider>
-        <ThemeProvider theme={theme}>
-          <NavRailProvider>
-            <EditingProvider>
-              <CssBaseline />
-              <Header />
-              <Menu />
-              <Toolbar
-                sx={{
-                  minHeight: { xs: '64px' },
-                }}
-              />
-              <AppShell>
-                <Box className="app-content">
-                  <TransportModeSprite />
-                  <MenuIconSprite />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route
-                      path="/vehicle-types"
-                      element={<ProtectedRoute element={<VehicleTypeView />} />}
-                    />
-                    <Route
-                      path="/vehicles"
-                      element={<ProtectedRoute element={<VehicleView />} />}
-                    />
-                    <Route
-                      path="/deck-plans"
-                      element={<ProtectedRoute element={<DeckPlanView />} />}
-                    />
-                  </Routes>
-                </Box>
-              </AppShell>
-              <SessionExpiredDialog />
-            </EditingProvider>
-          </NavRailProvider>
-        </ThemeProvider>
-      </SearchProvider>
-    </BrowserRouter>
+    <SearchProvider>
+      <ThemeProvider theme={theme}>
+        <NavRailProvider>
+          <EditingProvider>
+            <CssBaseline />
+            <Header />
+            <Menu />
+            <Toolbar
+              sx={{
+                minHeight: { xs: '64px' },
+              }}
+            />
+            <AppShell>
+              <Box className="app-content">
+                <TransportModeSprite />
+                <MenuIconSprite />
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route
+                    path="/vehicle-types"
+                    element={<ProtectedRoute element={<VehicleTypeView />} />}
+                  />
+                  <Route path="/vehicles" element={<ProtectedRoute element={<VehicleView />} />} />
+                  <Route
+                    path="/deck-plans"
+                    element={<ProtectedRoute element={<DeckPlanView />} />}
+                  />
+                </Routes>
+              </Box>
+            </AppShell>
+            <SessionExpiredDialog />
+          </EditingProvider>
+        </NavRailProvider>
+      </ThemeProvider>
+    </SearchProvider>
   );
 }

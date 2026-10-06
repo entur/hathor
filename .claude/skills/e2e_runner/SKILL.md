@@ -45,10 +45,15 @@ at the default worker count. The sequence, per entity:
 1. **Auth status** — confirm logged-in vs logged-out is what this run expects.
 2. **(live only) Login handoff** — open a headed browser, let the human log in, capture the
    JWT *from the browser session*, persist it for the serial run. See "Login handoff" below.
-3. **Org presence** — is an organisation selected? Lists do nothing until one is.
-4. **Select an org** — pick the first available organisation. This is a hard precondition:
-   every list hook early-returns on `!currentOrganisation?.id` (the cause of the
-   "Loading data…" stall). See `references/surfaces-and-testids.md`.
+3. **(live only) Align org selection upfront** — *before* the run, decide which organisation it
+   runs against and pin it with `E2E_ORG_ID`. Don't leave it to "first available": the app
+   auto-selects `organisations[0]`, and if that org owns no rows the whole suite fails on empty
+   lists. See "Align org selection upfront" below.
+4. **Org presence / select** — an organisation must be selected before any list assertion: every
+   list hook early-returns on `!currentOrganisation?.id` (the cause of the "Loading data…" stall).
+   Mocked: `seedAuth` serves one synthetic org that auto-selects. Live: the pinned org is restored
+   by the app; `selectFirstOrg` just waits for it (it only clicks the first option when no pin is
+   set). See `references/surfaces-and-testids.md`.
 5. **Navigate + row count** — go to the entity list, read `total-entries[data-count]`.
    Mocked: assert the exact fixture count. Live: assert a *relative* check (`>= n`, or
    "increased by 1 after create") — never a hardcoded number.
@@ -153,14 +158,54 @@ session token. This is the **proven recipe** (verified end-to-end):
 
 Never paste the JWT into chat or commit it. Keep it in a gitignored file for the run only; short-lived.
 
+## Align org selection upfront (live mode, right after the handoff)
+
+The token decides *which* orgs exist; the data decides which one is worth running against. Settle
+that **once, before the run** — not per spec, and not by trusting the app's default.
+
+Why: with no pin the app selects `organisations[0]` of the authorized list. An account's org list
+changes over time (2026-10-02: Agder, AtB, Ålesund Turvogn Service — Agder first and **empty**,
+all rows under AtB), so "first available" silently lands on an org with `Total entries: 0` and
+~50 tests fail on empty lists while auth, org-select and rendering all look healthy.
+
+1. **List the authorized orgs with their row counts** (every list query requires
+   `filter.dataOwnerRef`; without it Sobek answers `INTERNAL_ERROR`):
+
+   ```bash
+   T=$(jq -r .v.access_token playwright/.auth/oidc-user.json)      # never echo $T
+   gql() { curl -s -X POST http://localhost:37999/services/vehicles/graphql \
+     -H 'Content-Type: application/json' -H "Authorization: Bearer $T" \
+     -d "$(jq -n --arg q "$1" '{query:$q}')"; }
+   gql '{ organisations(filter:{onlyUserAuthorized:true}) { content { netexId name { value } } } }' \
+     | jq -r '.data.organisations.content[] | [.netexId, .name.value] | @tsv' \
+     | while IFS=$'\t' read -r id name; do
+         for e in vehicleTypes vehicles deckPlans; do
+           printf '%s\t%s\t%s\t%s\n' "$id" "$name" "$e" \
+             "$(gql "{ $e(filter:{dataOwnerRef:\"$id\"}) { totalElements } }" | jq ".data.$e.totalElements")"
+         done
+       done
+   ```
+
+2. **Pick the org that owns data in all three lists** (ask the user if more than one qualifies or
+   none does — an empty DB needs seeding/import first, not a run).
+3. **Pin it for the run:** `E2E_ORG_ID=<netexId> npm run e2e:local-backend`. `seedAuth` seeds the
+   id into the app's persisted-org key (`hathor:currentOrganisationId`, only when unset, so a spec
+   that switches org keeps its choice); the app restores it instead of `organisations[0]`.
+4. **A bad pin fails fast.** An id that is stale, misspelled or not authorized for the token is not
+   restored — the app falls back to `organisations[0]` and re-persists *that* id. `selectFirstOrg`
+   asserts the persisted id still equals `E2E_ORG_ID` and fails with "is not one of the token's
+   authorized organisations". Re-run step 1 and re-pin; don't read further into the run.
+
+Unset `E2E_ORG_ID` = old behaviour (first authorized org) — fine only for a single-org account.
+
 ## Running
 
 ```bash
 # mocked (fast, deterministic) — the baseline the live run must match
 npm run e2e
 
-# live backend — sequential, mutates the DB; do the login handoff first
-npm run e2e:local-backend
+# live backend — sequential, mutates the DB; do the login handoff + org alignment first
+E2E_ORG_ID=<netexId> npm run e2e:local-backend
 ```
 
 Scope to one spec while iterating: append the spec name, e.g.
@@ -169,6 +214,8 @@ Scope to one spec while iterating: append the spec name, e.g.
 When a live run fails, first decide *which* layer broke before reading assertions:
 - **login page / 401** → handoff or token problem (above).
 - **"Loading data…" forever** → no org selected (step 4) — the list hook is still early-returning.
+- **lists render but `Total entries: 0` across the board** → wrong org selected, not a broken app:
+  the run landed on an org with no rows. Go back to "Align org selection upfront".
 - **wrong app entirely** → stale `:5000` dev server from another checkout (preflight).
 Only once the app is actually rendering the entity list do per-assertion failures mean anything.
 

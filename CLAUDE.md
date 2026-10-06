@@ -32,6 +32,7 @@ npm run format           # Prettier auto-format
 # E2E tests (Playwright)
 npm run e2e              # Run the suite (mocked GraphQL), both browsers, multi-worker
 npm run e2e:local-backend  # Same specs against a live local Sobek (E2E_BACKEND=true, --workers=1)
+                           # E2E_ORG_ID=<netexId> pins the org when the first authorized one is empty
 ```
 
 Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` on the whole project) followed by `npx lint-staged` (Prettier `--write` + ESLint `--fix` on staged files). The developer uses `prettierd` in nvim for format-on-save, which picks up the repo-root `.prettierrc` automatically.
@@ -85,7 +86,7 @@ When in doubt about whether a single hathor query has drifted, grep the canonica
 
 ### Routing
 
-React Router v6 in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
+React Router v6 — `<BrowserRouter>` in `src/main.tsx` (above `AuthProvider`, so the signin callback can navigate), routes in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
 
 ### Internationalization
 
@@ -106,7 +107,7 @@ End-to-end tests use Playwright (`@playwright/test`) — one flat suite under `e
 ```
 e2e-tests/
 ├── *.spec.ts                     # all specs, flat (auth-modes.spec.ts, vehicle*.spec.ts, …)
-├── live-auth-helpers.ts          # setConfig (config route), seedAuth, org selection
+├── live-auth-helpers.ts          # setConfig (config route), seedAuth, mockIdp (offline signin round trip), org selection
 ├── autosys-helpers.ts            # GraphQL/Autosys intercept helpers
 ├── vehicle-list-helpers.ts       # vehicles() mock builders
 └── fixtures/
@@ -163,7 +164,7 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 | File | Purpose |
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
-| `src/main.tsx` | Entry point, wraps app in context providers |
+| `src/main.tsx` | Entry point, wraps app in `BrowserRouter` + context providers |
 | `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
 | `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
 | `src/components/search/SearchContext.tsx` | Search state management |
@@ -172,6 +173,6 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 | `.github/environments/` | Environment-specific config files |
 | `playwright.config.ts` | Playwright config (testDir, browsers, workers) |
 | `e2e-tests/auth-modes.spec.ts` | Both auth profiles (OIDC on/off) via `setConfig` |
-| `e2e-tests/live-auth-helpers.ts` | `setConfig` (config route), `seedAuth`, org selection |
+| `e2e-tests/live-auth-helpers.ts` | `setConfig` (config route), `seedAuth`, `mockIdp`, org selection |
 | `e2e-tests/fixtures/` | Config fixture files (`config-with-auth` / `config-no-auth`) |
 | `.github/workflows/playwright.yml` | CI workflow: schema · unit · e2e browser matrix |
