@@ -8,11 +8,11 @@
 import { createFormState, type FormState as GenericFormState } from '../../../hooks/useFormState';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
+import type { Vehicle } from '../types/vehicle';
 
-const vehicleForm = createFormState<VehicleEditFormValue, Partial<VehicleGQLShaped>>({
+const vehicleForm = createFormState<VehicleEditFormValue, Partial<Vehicle>>({
   blank: BLANK_FORM,
-  formFromSource: src => (src ? { vehicle: src as VehicleGQLShaped } : BLANK_FORM),
+  formFromSource: src => (src ? { vehicle: src as Vehicle } : BLANK_FORM),
 });
 
 export type FormState = GenericFormState<VehicleEditFormValue>;

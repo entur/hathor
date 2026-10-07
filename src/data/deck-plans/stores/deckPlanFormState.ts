@@ -1,4 +1,4 @@
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { netexName } from '../../netex/multilingualString.ts';
 
 /** Empty draft used before a row resolves, and as the create factory's base. */

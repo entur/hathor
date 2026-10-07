@@ -4,7 +4,7 @@ import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 import { deactivateDeckPlanRequest } from '../../../graphql/vehicles/mutations/deactivateDeckPlan.ts';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 
 interface SaveResult {
   newVersion: number | null;

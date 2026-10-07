@@ -1,7 +1,8 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth';
+import type { MultilingualString } from '../../../data/netex/multilingualString.ts';
 
-const fetchDeckPlansGQL = gql`
+const deckPlansDocument = gql`
   query DeckPlans($page: Int, $size: Int, $filter: DeckPlanFilter) {
     deckPlans(page: $page, size: $size, filter: $filter) {
       content {
@@ -23,14 +24,33 @@ const fetchDeckPlansGQL = gql`
   }
 `;
 
-import type { PageVars } from '../../paginationTypes.ts';
+/** Sobek `DeckPlanFilter` — the `deckPlans(filter:)` argument. */
+export type DeckPlanFilter = {
+  netexIds?: string[];
+  transportModes?: string[];
+  dataOwnerRef: string;
+};
 
-export type DeckPlanVars = PageVars & {
-  filter?: { netexIds?: string[]; transportModes?: string[]; dataOwnerRef: string };
+/** Variables of the `DeckPlans` query. */
+export type DeckPlansQueryVariables = { page?: number; size?: number; filter?: DeckPlanFilter };
+
+/** Result of the `DeckPlans` query: one page of deck plans, as selected above. */
+export type DeckPlansQuery = {
+  deckPlans: {
+    content: {
+      netexId: string;
+      name?: MultilingualString | null;
+      description?: MultilingualString | null;
+      version: number;
+    }[];
+    totalElements: number;
+    page: number;
+    size: number;
+  };
 };
 
 export const fetchDeckPlansRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
-  variables?: DeckPlanVars
-) => request(applicationBaseUrl, fetchDeckPlansGQL, variables, authHeader(token));
+  variables?: DeckPlansQueryVariables
+) => request<DeckPlansQuery>(applicationBaseUrl, deckPlansDocument, variables, authHeader(token));

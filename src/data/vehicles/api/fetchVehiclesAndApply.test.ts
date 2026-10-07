@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fetchVehiclesAndApply } from './fetchVehiclesAndApply';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
+import type { Vehicle } from '../types/vehicle';
 
 const noop = () => {};
 
-const aRow = { id: 'NMR:Vehicle:1' } as unknown as VehicleGQLShaped;
+const aRow = { id: 'NMR:Vehicle:1' } as unknown as Vehicle;
 
 describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
   it('M3: returned promise resolves only after setData has been called', async () => {
@@ -14,8 +14,8 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
     // M4's save→refetch chain couldn't observe fresh rows. This module
     // restores the natural await semantics: the returned promise is the
     // entire orchestration chain.
-    let resolveFetch!: (rows: VehicleGQLShaped[]) => void;
-    const fetchPromise = new Promise<VehicleGQLShaped[]>(r => {
+    let resolveFetch!: (rows: Vehicle[]) => void;
+    const fetchPromise = new Promise<Vehicle[]>(r => {
       resolveFetch = r;
     });
     const setData = vi.fn();

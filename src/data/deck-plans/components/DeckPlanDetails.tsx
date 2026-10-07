@@ -25,7 +25,7 @@ import {
   type FormState,
 } from '../stores/deckPlanFormState.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 
 const RAIL_SIDE = 'right' as const;
 const BLANK_NAME = 'unnamed';

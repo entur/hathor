@@ -1,11 +1,11 @@
 import { useUrlEditorSelection } from '../../../hooks/useUrlEditorSelection.tsx';
 import VehicleDetails from '../components/VehicleDetails.tsx';
 import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle } from '../types/vehicle.ts';
 
 interface UrlSelectionParams {
-  allData: VehicleGQLShaped[] | null;
-  dataForTable: VehicleGQLShaped[];
+  allData: Vehicle[] | null;
+  dataForTable: Vehicle[];
   rowsPerPage: number;
   setPage: (page: number) => void;
   loading: boolean;
@@ -27,7 +27,7 @@ export function useVehicleUrlSelection({
   loading,
   refetch,
 }: UrlSelectionParams): void {
-  useUrlEditorSelection<VehicleGQLShaped>({
+  useUrlEditorSelection<Vehicle>({
     paramKey: VEHICLE_SELECTED_PARAM,
     allData,
     dataForTable,

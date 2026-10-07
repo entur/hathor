@@ -1,4 +1,4 @@
-import type { DeckPlan } from '../types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../../deck-plans/types/deckPlanTypes.ts';
 
 /**
  * Display label for a VehicleType's deck plan in the table column: the deck-plan

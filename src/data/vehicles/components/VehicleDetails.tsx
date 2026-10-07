@@ -7,7 +7,7 @@ import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
 import { FormLayout, MetaRow } from '../../../components/FormLayout.tsx';
 import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
-import { vehicleMode, type VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import { vehicleMode, type Vehicle } from '../types/vehicle.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
@@ -35,7 +35,7 @@ const RAIL_SIDE = 'right' as const;
 
 interface VehicleDetailsProps {
   /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
-  vehicle: VehicleGQLShaped | null;
+  vehicle: Vehicle | null;
   /**
    * List-side refetch fired after a successful save so the row on `/vehicles`
    * reflects the new registrationNumber/name/version before the success
@@ -271,7 +271,7 @@ export default function VehicleDetails({
 }
 
 type FormAction =
-  | { type: 'hydrate'; xmlVehicle: Partial<VehicleGQLShaped> | null | undefined }
+  | { type: 'hydrate'; xmlVehicle: Partial<Vehicle> | null | undefined }
   | { type: 'edit'; form: VehicleEditFormValue };
 
 function formReducer(state: FormState, action: FormAction): FormState {

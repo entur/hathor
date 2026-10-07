@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { useSearch } from '../components/search';
 import type { SearchContextViewType, SearchResultItem } from '../components/search/searchTypes';
-import type { Name } from '../data/vehicle-types/types/vehicleTypeTypes';
+import type { MultilingualString } from '../data/netex/multilingualString';
 
-export function useDataViewSearch<T extends { id: string; name?: Name }>(
+export function useDataViewSearch<T extends { id: string; name?: MultilingualString }>(
   allFetchedItems: T[] | null,
   itemsLoading: boolean
 ) {

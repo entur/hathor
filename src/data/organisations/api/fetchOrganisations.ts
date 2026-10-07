@@ -1,17 +1,14 @@
 import type { AccessToken } from '../../../auth/index.ts';
-import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
-import { fetchOrganisationsRequest } from '../../../graphql/vehicles/queries/fetchOrganisations.ts';
-import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
-import type { Organisation, OrganisationType } from '../types/organisationTypes.ts';
+import {
+  fetchOrganisationsRequest,
+  type OrganisationsQuery,
+} from '../../../graphql/vehicles/queries/fetchOrganisations.ts';
+import type { Organisation } from '../types/organisationTypes.ts';
 
-interface OrganisationWire {
-  netexId: string;
-  name: Name;
-  type: OrganisationType;
-}
-
-const projectOrganisation = (org: OrganisationWire): Organisation => ({
+const projectOrganisation = (
+  org: OrganisationsQuery['organisations']['content'][number]
+): Organisation => ({
   id: org.netexId,
   name: org.name,
   type: org.type,
@@ -21,10 +18,9 @@ export const fetchOrganisations = async (
   applicationBaseUrl: string,
   token: AccessToken
 ): Promise<Organisation[]> => {
-  const raw: { organisations: Page<OrganisationWire> } = await fetchOrganisationsRequest(
-    applicationBaseUrl,
-    token,
-    { filter: { onlyUserAuthorized: true }, size: FETCH_ALL_SIZE }
-  );
+  const raw = await fetchOrganisationsRequest(applicationBaseUrl, token, {
+    filter: { onlyUserAuthorized: true },
+    size: FETCH_ALL_SIZE,
+  });
   return raw.organisations.content.map(projectOrganisation);
 };

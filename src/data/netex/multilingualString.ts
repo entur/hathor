@@ -1,5 +1,5 @@
 /** A NeTEx MultilingualString: a localised `value` with an optional `lang` tag.
- *  The GQL `Name` type is structurally this shape. */
+ *  Sobek's GQL `MultilingualString` is structurally this shape. */
 export type MultilingualString = { value: string; lang?: string };
 
 /**

@@ -4,7 +4,7 @@ import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 import { saveDeckPlanAsNetexToBackend } from '../api/deckPlanDetailsService';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes';
+import type { DeckPlan } from '../types/deckPlanTypes';
 import { createOrUpdateDeckPlanRequest } from '../../../graphql/vehicles/mutations/createOrUpdateDeckPlan';
 import { serializeDeckPlan } from '../api/fetchDeckPlans';
 

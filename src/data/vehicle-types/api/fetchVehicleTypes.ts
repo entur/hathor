@@ -1,54 +1,19 @@
-import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
+import {
+  fetchVehicleTypesRequest,
+  type VehicleTypesQuery,
+} from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 import type {
   VehicleTypeContext,
   VehicleType,
-  Name,
   PassengerCapacity,
   PropulsionType,
   FuelType,
   HybridCategory,
 } from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
-import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
-import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transportMode.ts';
-
-export interface VehicleTypeWire {
-  netexId: string;
-  version: number;
-  name?: Name | null;
-  shortName?: Name | null;
-  description?: Name | null;
-  transportMode?: TransportMode | null;
-  length?: number | null;
-  width?: number | null;
-  height?: number | null;
-  weight?: number | null;
-  lowFloor?: boolean | null;
-  propulsionTypes?: (PropulsionType | null)[] | null;
-  fuelTypes?: (FuelType | null)[] | null;
-  selfPropelled?: boolean | null;
-  euroClass?: string | null;
-  maximumVelocity?: number | null;
-  maximumRange?: number | null;
-  formDragCoefficient?: number | null;
-  rollResistanceCoefficient?: number | null;
-  maximumEngineEffectKW?: number | null;
-  hybridCategory?: HybridCategory | null;
-  passengerCapacity?: PassengerCapacity | null;
-  created?: string | null;
-  changed?: string | null;
-  changedBy?: string | null;
-  deckPlan?: { netexId: string; name?: Name | null; version: number } | null;
-  vehicles?:
-    | {
-        netexId: string;
-        registrationNumber: string;
-        operationalNumber?: string | null;
-        version: number;
-      }[]
-    | null;
-}
+import type { MultilingualString } from '../../netex/multilingualString.ts';
+import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
 const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
@@ -56,7 +21,9 @@ const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
   return out && out.length ? out : undefined;
 };
 
-export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
+export const projectVehicleType = (
+  vt: VehicleTypesQuery['vehicleTypes']['content'][number]
+): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
   name: vt.name ?? undefined,
@@ -96,15 +63,9 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
     : undefined,
 });
 
-export interface DeactivateInput {
-  netexId: string;
-  version: number;
-  deactivateAt: string;
-}
-
 /**
  * Sobek `VehicleTypeInput` — the mutation-accepted shape. Strict subset of the
- * fetched {@link VehicleTypeWire}: no `version`/`created`/`changed`/`changedBy`
+ * fetched `VehicleTypesQuery` row: no `version`/`created`/`changed`/`changedBy`
  * /`vehicles` (all server-managed; Sobek resolves the live version by `netexId`)
  * and it adds `description`. Mirrors `input VehicleTypeInput` in the SDL
  * (`src/graphql/sobek.schema.graphqls`).
@@ -113,9 +74,9 @@ export interface VehicleTypeInput {
   netexId?: string | null;
   /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleTypeInput`. */
   dataOwnerRef: string;
-  name?: Name | null;
-  shortName?: Name | null;
-  description?: Name | null;
+  name?: MultilingualString | null;
+  shortName?: MultilingualString | null;
+  description?: MultilingualString | null;
   euroClass?: string | null;
   propulsionTypes?: (PropulsionType | null)[] | null;
   fuelTypes?: (FuelType | null)[] | null;
@@ -200,10 +161,9 @@ export const fetchVehicleTypes = async (
   dataOwnerRef: string,
   token: AccessToken
 ): Promise<VehicleTypeContext> => {
-  const raw: { vehicleTypes: Page<VehicleTypeWire> } = await fetchVehicleTypesRequest(
-    applicationBaseUrl,
-    token,
-    { size: FETCH_ALL_SIZE, filter: { dataOwnerRef } }
-  );
+  const raw = await fetchVehicleTypesRequest(applicationBaseUrl, token, {
+    size: FETCH_ALL_SIZE,
+    filter: { dataOwnerRef },
+  });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
 };

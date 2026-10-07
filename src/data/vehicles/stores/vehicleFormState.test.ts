@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { edit, hydrate, initialFormState, isDirty, type FormState } from './vehicleFormState';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
+import type { Vehicle } from '../types/vehicle';
 
-const aVehicle: Partial<VehicleGQLShaped> = {
+const aVehicle: Partial<Vehicle> = {
   id: 'NMR:Vehicle:bus-1',
   version: 1,
   registrationNumber: 'BUS-001',

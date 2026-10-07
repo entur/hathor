@@ -2,20 +2,25 @@ import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth';
 import type { VehicleInput } from '../../../data/vehicles/api/fetchVehicles.ts';
 
-const createOrUpdateVehicleMutation = gql`
-  mutation MutateVehicle($input: VehicleInput!) {
+const createOrUpdateVehicleDocument = gql`
+  mutation CreateOrUpdateVehicle($input: VehicleInput!) {
     createOrUpdateVehicle(input: $input)
   }
 `;
+
+/** Mutation response: the persisted Vehicle's NeTEx id (nullable per SDL). */
+export interface CreateOrUpdateVehicleMutation {
+  createOrUpdateVehicle: string | null;
+}
 
 export const createOrUpdateVehicleRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
   vehicleData: VehicleInput
-) =>
-  request<{ createOrUpdateVehicle: string | null }>(
+): Promise<CreateOrUpdateVehicleMutation> =>
+  request<CreateOrUpdateVehicleMutation>(
     applicationBaseUrl,
-    createOrUpdateVehicleMutation,
+    createOrUpdateVehicleDocument,
     { input: vehicleData },
     authHeader(token)
   );

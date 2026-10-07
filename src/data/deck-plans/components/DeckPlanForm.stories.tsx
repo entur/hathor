@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 import DeckPlanForm from './DeckPlanForm.tsx';
 import { mkSampleDeckPlanXml } from '../utils/sampleDeckPlanXml.ts';
 import { findResourceFrame, toArray, xmlParser } from '../../netex/xmlUtils.ts';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import wagon1 from '../../../../story-fixtures/deck-plans/Wagon_1.xml?raw';
 import wagon2 from '../../../../story-fixtures/deck-plans/Wagon_2.xml?raw';
 import wagon3 from '../../../../story-fixtures/deck-plans/Wagon_3.xml?raw';
