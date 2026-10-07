@@ -188,7 +188,6 @@
   "vehicleType.field.maximumEngineEffectKW": "Maks motoreffekt (kW)",
   "vehicleType.field.hybridCategory": "Hybridkategori",
 
-  "vehicleType.actions.importMulti": "Importer",
   "vehicleTypes.actions.new": "Ny kjøretøytype",
 
   "common.none": "Ingen",

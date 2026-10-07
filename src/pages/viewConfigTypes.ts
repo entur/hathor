@@ -140,8 +140,6 @@ export interface PageContentComponentProps<T, K extends string> {
   selectedId?: string | null;
   /** Optional "add new" action rendered right-aligned in the list-head (e.g. a Fab). */
   addAction?: ReactNode;
-  /** Optional "import" action rendered right-aligned in the list-head, after {@link addAction}. */
-  importAction?: ReactNode;
   /** Optional URL filter info for displaying a filter indicator chip. */
   urlFilterInfo?: UrlFilterInfo;
   /**
@@ -191,8 +189,6 @@ export interface ViewConfig<T, K extends string> {
   titleKey?: string;
   /** "Add new" action rendered right-aligned in the list-head (e.g. a Fab). */
   addAction?: ReactNode;
-  /** "Import" action rendered right-aligned in the list-head, after {@link addAction}. */
-  importAction?: ReactNode;
   /**
    * Optional hook fired by {@link GenericDataViewPage} after data is loaded
    * and table-logic has produced `dataForTable`. Lets a page reconcile URL

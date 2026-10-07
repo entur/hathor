@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { Add, LibraryAdd } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { Box, Button, Chip } from '@mui/material';
 import DataPageContent from './DataPageContent';
 import type { ColumnDefinition, Order } from './dataTableTypes';
@@ -52,20 +52,10 @@ const COLUMNS: ColumnDefinition<DemoRow, DemoKey>[] = [
   },
 ];
 
-/** Lightweight stand-ins for the real NewVehicleFab / AutosysImportFloatingMenu — contained Buttons, icon + text, no nav/dialog. */
+/** Lightweight stand-in for the real NewEntityFab — a contained Button, icon + text, no nav. */
 const AddFab = (
   <Button variant="contained" color="primary" startIcon={<Add />} sx={{ textTransform: 'none' }}>
     New vehicle type
-  </Button>
-);
-const ImportFab = (
-  <Button
-    variant="contained"
-    color="primary"
-    startIcon={<LibraryAdd />}
-    sx={{ textTransform: 'none' }}
-  >
-    Import
   </Button>
 );
 
@@ -75,8 +65,6 @@ interface DemoProps {
   title?: string;
   /** Render the right-aligned "add new" slot. */
   showAdd?: boolean;
-  /** Render the right-aligned "import" slot. */
-  showImport?: boolean;
   /** When > 0, shows the url-filter-chip with this count. */
   filterCount?: number;
   /** Render an empty dataset (shows the no-data row). */
@@ -87,7 +75,7 @@ interface DemoProps {
  * Wraps {@link DataPageContent} with mock data and live sort/pagination state
  * so the generic table renders standalone in Storybook.
  */
-function PageContentDemo({ title, showAdd, showImport, filterCount = 0, empty }: DemoProps) {
+function PageContentDemo({ title, showAdd, filterCount = 0, empty }: DemoProps) {
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<DemoKey>('name');
   const [page, setPage] = useState(0);
@@ -141,7 +129,6 @@ function PageContentDemo({ title, showAdd, showImport, filterCount = 0, empty }:
         columns={COLUMNS}
         title={title}
         addAction={showAdd ? AddFab : undefined}
-        importAction={showImport ? ImportFab : undefined}
         urlFilterInfo={
           count > 0
             ? { hasUrlFilters: true, filterCount: count, clearUrlFilters: () => setCount(0) }
@@ -160,7 +147,7 @@ const meta: Meta<typeof PageContentDemo> = {
     docs: {
       description: {
         component:
-          'The shared list-head + data table for every Generic data view page (`/vehicles`, `/vehicle-types`, `/deck-plans`). The list-head (#88) is a single row: breadcrumbs above, then `title` (h5, left) + total-entries count + optional url-filter-chip on the left, with the right-aligned `addAction` / `importAction` slots. Pagination sits alone in the bottom bar. Rendered here via a demo wrapper that supplies mock rows, columns, and live sort/pagination state.',
+          'The shared list-head + data table for every Generic data view page (`/vehicles`, `/vehicle-types`, `/deck-plans`). The list-head (#88) is a single row: breadcrumbs above, then `title` (h5, left) + total-entries count + optional url-filter-chip on the left, with the right-aligned `addAction` slot. Pagination sits alone in the bottom bar. Rendered here via a demo wrapper that supplies mock rows, columns, and live sort/pagination state.',
       },
     },
   },
@@ -172,11 +159,10 @@ const meta: Meta<typeof PageContentDemo> = {
       </MemoryRouter>
     ),
   ],
-  args: { title: 'Vehicle types', showAdd: false, showImport: false, filterCount: 0, empty: false },
+  args: { title: 'Vehicle types', showAdd: false, filterCount: 0, empty: false },
   argTypes: {
     title: { control: 'text' },
     showAdd: { control: 'boolean' },
-    showImport: { control: 'boolean' },
     filterCount: { control: { type: 'number', min: 0, max: 12 } },
     empty: { control: 'boolean' },
   },
@@ -190,12 +176,6 @@ export const Default: Story = {};
 
 /** `/vehicles` head: right-aligned add-new slot. */
 export const WithAddAction: Story = { args: { title: 'Vehicles', showAdd: true } };
-
-/** `/vehicle-types` head: right-aligned import slot. */
-export const WithImportAction: Story = { args: { showImport: true } };
-
-/** Both action slots filled — add then import, right-aligned. */
-export const WithBothActions: Story = { args: { showAdd: true, showImport: true } };
 
 /** Post-import state: the url-filter-chip sits beside the count; its delete clears it. */
 export const WithUrlFilterChip: Story = { args: { filterCount: 2 } };
