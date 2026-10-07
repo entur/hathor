@@ -27,7 +27,7 @@ All three create via the same sidebar flow: a `NewEntityFab` → `/<entity>?sele
 | Entity | Create | Edit | Save mutation | Notes |
 |---|---|---|---|---|
 | **Vehicles** | `create-vehicle-fab` → `/vehicles?selected=new` sidebar | row-click → `?selected=<netexId>` sidebar; `editor-rail-edit` → fields → `editor-rail-save` | `createOrUpdateVehicle` | |
-| **Vehicle-types** | `create-vehicle-type-fab` → `/vehicle-types?selected=new` sidebar; **bulk** also via Autosys import dialog `import-vehicle-multi-button` | `?selected=<netexId>` sidebar; tabs `vtype-tab-*`; `editor-rail-edit/save` | `createOrUpdateVehicleType` (full-document replace) | import is a second create path, not the only one |
+| **Vehicle-types** | `create-vehicle-type-fab` → `/vehicle-types?selected=new` sidebar; **bulk** also via Autosys import dialog, launched from Home (`/`) via `home-bulk-import-svv` | `?selected=<netexId>` sidebar; tabs `vtype-tab-*`; `editor-rail-edit/save` | `createOrUpdateVehicleType` (full-document replace) | import is a second create path, not the only one |
 | **Deck-plans** | `create-deck-plan-fab` → `/deck-plans?selected=new` sidebar | row-click → `?selected=<id>` sidebar (replaced the deprecated `/deck-plans/:id` route, #129) | n/a in specs | |
 
 `/vehicles/new` was retired in PR #121. The canonical "create → edit-verify → edit" maps cleanly to
@@ -51,7 +51,7 @@ Vehicle-types: `vehicle-type-details-title`; tabs `vtype-tab-edit` / `-propulsio
 `-environment` / `-vehicles`; fields `#vtype-name` (required), `#vtype-length`, `#vtype-euro-class`,
 `#vtype-maximumEngineEffectKW`, `#vtype-low-floor`.
 
-Autosys import: `import-vehicle-multi-button`, `multi-import-file-input`, `multi-import-dropzone`,
+Autosys import (launcher on Home `/`, needs a selected org): `home-bulk-import-svv`, `multi-import-file-input`, `multi-import-dropzone`,
 `multi-import-add-input`, `multi-import-add-button`, `multi-import-tags`,
 `column-mapper-reg-number`, `column-mapper-operational-ref`.
 
