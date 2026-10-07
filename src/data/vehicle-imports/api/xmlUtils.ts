@@ -1,6 +1,11 @@
-import type { FramesByQueryRegNumber, ImportEntry, ParsedXml } from './types';
+import type { FramesByQueryRegNumber, ImportEntry, ParsedXml } from '../types/importTypes';
 import { XMLBuilder } from 'fast-xml-parser';
-import { addDataOwnerRefToFrame, findResourceFrame, toArray, xmlParser } from '../netex/xmlUtils';
+import {
+  addDataOwnerRefToFrame,
+  findResourceFrame,
+  toArray,
+  xmlParser,
+} from '../../netex/xmlUtils';
 
 /** Collect and deduplicate entities by @_id from a path like `rf.vehicleTypes.VehicleType`. */
 function uniqueById(frames: ParsedXml[], section: string, element: string): ParsedXml[] {

@@ -12,7 +12,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import type { TableMeta } from '../inputTextAnalyzer';
+import type { TableMeta } from '../utils/inputTextAnalyzer';
 
 const NONE = '__none__';
 const PREVIEW_ROWS = 5;

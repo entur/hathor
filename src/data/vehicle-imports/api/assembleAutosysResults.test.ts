@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { assembleAutosysResults } from '../assembleAutosysResults';
-import type { AutosysFetchResult } from '../assembleAutosysResults';
+import { assembleAutosysResults } from './assembleAutosysResults';
+import type { AutosysFetchResult } from './assembleAutosysResults';
 import { makeXml, makeXmlFlat } from './__fixtures__/makeXml';
 
 describe('assembleAutosysResults', () => {

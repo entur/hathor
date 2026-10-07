@@ -1,4 +1,4 @@
-import type { ImportEntry } from './types';
+import type { ImportEntry } from '../types/importTypes';
 import i18next from 'i18next';
 
 /** Severity level for the status message returned after parsing. */

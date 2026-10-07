@@ -1,9 +1,9 @@
 import i18next from 'i18next';
-import { translateAutosysError } from './autosysErrorTranslator';
-import type { ParsedXml, FramesByQueryRegNumber } from './types';
+import { translateAutosysError } from '../utils/autosysErrorTranslator';
+import type { ParsedXml, FramesByQueryRegNumber } from '../types/importTypes';
 import type { MergedEntities } from './xmlUtils';
 import { mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
-import { findResourceFrame, xmlParser } from '../netex/xmlUtils';
+import { findResourceFrame, xmlParser } from '../../netex/xmlUtils';
 
 /** Result of fetching a single vehicle from the Autosys registry.
  * On success `xml` contains the raw NeTEx XML and `error` is null.

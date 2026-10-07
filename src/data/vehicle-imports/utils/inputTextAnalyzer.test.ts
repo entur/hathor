@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { inputTextAnalyzer } from '../inputTextAnalyzer';
+import { inputTextAnalyzer } from './inputTextAnalyzer';
 
 const multiColCsv = readFileSync(new URL('./__fixtures__/multi-col.csv', import.meta.url), 'utf-8');
 

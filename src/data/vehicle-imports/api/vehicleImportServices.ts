@@ -1,4 +1,4 @@
-import { authHeader, type AccessToken } from '../../auth';
+import { authHeader, type AccessToken } from '../../../auth';
 
 /**
  * Fetch NeTEx XML for a single vehicle from the Autosys registry.
