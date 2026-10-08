@@ -61,8 +61,7 @@ export default function GenericDataViewPage<T, K extends string>({
   const { editingItem } = useEditingItem();
   const prevEditingIdRef = useRef<string | null>(null);
   // The New action would only re-navigate to the URL already active (#173).
-  // `!sidebarCollapsed`: the mobile Drawer's own close leaves the selection set.
-  const creating = editingItem?.id === NEW_SELECTION && !sidebarCollapsed;
+  const creating = editingItem?.id === NEW_SELECTION;
 
   const {
     searchResults,
@@ -166,7 +165,6 @@ export default function GenericDataViewPage<T, K extends string>({
         collapsed={sidebarCollapsed}
         onMouseDownResize={() => setIsSidebarResizing(true)}
         theme={theme}
-        toggleCollapse={toggleSidebar}
         side={DETAILS_PANE_SIDE}
       />
       <Box

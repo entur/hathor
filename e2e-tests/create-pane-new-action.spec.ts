@@ -115,18 +115,47 @@ test.describe('New action vs. the ?selected=new create pane (#173)', () => {
     })
   );
 
-  test('mobile: closing the create Drawer brings the New action back', async ({ page }) => {
+  test('mobile: the Drawer’s own close paths drop ?selected=new, so New works again', async ({
+    page,
+  }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     const fab = page.getByTestId(DECK_PLANS.fab);
+    const rail = page.getByTestId('editor-rail');
 
     await openList(page, DECK_PLANS);
     await fab.click();
-    await expect(page.getByTestId('editor-rail')).toBeVisible();
+    await expect(rail).toBeVisible();
     await expect(fab).toBeHidden();
 
-    // The Drawer's own close only collapses the pane; ?selected=new stays.
+    // Escape → the Drawer's onClose.
     await page.keyboard.press('Escape');
-    await expect(page.getByTestId('editor-rail')).toBeHidden();
+    await expect(page).not.toHaveURL(/selected=/);
+    await expect(rail).toBeHidden();
+
+    // Not a no-op: the URL is free again, so New reopens the pane.
+    await fab.click();
+    await expect(page).toHaveURL(/selected=new/);
+    await expect(rail).toBeVisible();
+
+    // The Drawer toolbar's close button is the other chrome path.
+    await page.getByRole('button', { name: 'close sidebar' }).click();
+    await expect(page).not.toHaveURL(/selected=/);
     await expect(fab).toBeVisible();
+  });
+
+  test('mobile: closing a dirty create Drawer asks before discarding', async ({ page }) => {
+    await page.setViewportSize(MOBILE_VIEWPORT);
+    const discardPrompt = page.getByRole('dialog', { name: 'Discard unsaved changes?' });
+
+    await openList(page, DECK_PLANS);
+    await page.getByTestId(DECK_PLANS.fab).click();
+    await page.locator('#deckPlan-name').fill('Unsaved plan');
+
+    await page.keyboard.press('Escape');
+    await expect(discardPrompt).toBeVisible();
+    await expect(page).toHaveURL(/selected=new/);
+
+    await discardPrompt.getByRole('button', { name: 'Discard' }).click();
+    await expect(page).not.toHaveURL(/selected=/);
   });
 });
