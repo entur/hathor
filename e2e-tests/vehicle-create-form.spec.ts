@@ -34,6 +34,8 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *   - transportType ref round-trips as the option's full netex id
  *   - After a successful create, ?selected=new is rewritten to ?selected=<newId>
  *     and the sidebar resolves into the new row
+ *   - The list-head New action, absent on the ?selected=new deep-link, returns
+ *     once the URL advances (#173)
  *   - An existing non-numeric TransportTypeRef stays selectable via the picker
  *     (orphan-option fallback) AND can be swapped for a known option
  * Modes:
@@ -71,12 +73,15 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
   test('Save disabled until Vehicle Type picked; URL advances to ?selected=<newId>', async ({
     page,
   }) => {
+    const fab = page.getByTestId('create-vehicle-fab');
+
     if (IS_LIVE) {
       const { reg } = await liveCreateOverrides(page);
       await page.goto('/vehicles?selected=new');
       await page.waitForLoadState('networkidle');
 
       const save = page.getByTestId('editor-rail-save');
+      await expect(fab).toBeHidden();
       await page.getByLabel('Registration Number').fill(reg);
       await expect(save).toBeDisabled();
       // Picker is fed by the live `vehicleTypes(` query — pick whatever the
@@ -96,6 +101,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
         .toMatch(/[?&]selected=(?!new(?:&|$))[^&]+/);
       await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
       await expect(page.getByText('Vehicle not found')).toHaveCount(0);
+      await expect(fab).toBeVisible();
       return;
     }
 
@@ -104,6 +110,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await page.waitForLoadState('networkidle');
 
     const save = page.getByTestId('editor-rail-save');
+    await expect(fab).toBeHidden();
 
     await page.getByLabel('Registration Number').fill('NEW-001');
     await expect(save).toBeDisabled();
@@ -116,6 +123,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await expect
       .poll(() => page.url(), { timeout: 10_000 })
       .toContain(`selected=${ENCODED_NEW_ID}`);
+    await expect(fab).toBeVisible();
     const input = capture.input() as { transportType?: { netexId?: string } } | null;
     expect(input?.transportType?.netexId).toBe(EXPECTED_REF);
   });
