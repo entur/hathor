@@ -43,8 +43,6 @@ interface DataPageContentProps<T, K extends string> {
   selectedId?: string | null;
   /** "Add new" action, right-aligned in the list-head. */
   addAction?: ReactNode;
-  /** "Import" action, right-aligned in the list-head after {@link addAction}. */
-  importAction?: ReactNode;
   urlFilterInfo?: UrlFilterInfo;
   /** Forwarded to {@link DataTableHeader}; when true, every sortable header
    *  is dimmed, click is suppressed, and hover shows the lock tooltip. */
@@ -72,13 +70,12 @@ export default function DataPageContent<
   onRowClick,
   selectedId,
   addAction,
-  importAction,
   urlFilterInfo,
   sortLocked,
 }: DataPageContentProps<T, K>) {
   const { t } = useTranslation();
   const resolvedTitle = titleKey ? t(titleKey) : title;
-  const hasActions = Boolean(addAction || importAction);
+  const hasActions = Boolean(addAction);
   const containerRef = useRef<HTMLDivElement>(null);
   const compact = useContainerResponsiveView(containerRef, COMPACT_VIEW_THRESHOLD, loading);
 
@@ -139,7 +136,6 @@ export default function DataPageContent<
               }}
             >
               {addAction}
-              {importAction}
             </Box>
           </>
         )}

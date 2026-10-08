@@ -249,7 +249,8 @@ A spec is **conformant** when:
 `create-vehicle-type-fab`, `create-deck-plan-fab`). The standalone `/vehicles/new` route was
 retired in PR #121. So "create → edit-verify → edit" maps cleanly to every entity through the
 `?selected=new` sidebar. Vehicle-types additionally support **bulk** create via the Autosys import
-dialog (`import-vehicle-multi-button`) — a second path, not the only one. Note backend *persistence*
+dialog, launched from Home (`/`, `home-bulk-import-svv` — rendered only once an organisation is
+selected) — a second path, not the only one. Note backend *persistence*
 of a create can still differ per entity (e.g. a live deck-plan create may not round-trip); verify
 the read-back, don't assume parity from the shared surface.
 

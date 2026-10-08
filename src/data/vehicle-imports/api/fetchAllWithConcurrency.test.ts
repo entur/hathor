@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fetchAllWithConcurrency } from '../fetchAllWithConcurrency';
+import { fetchAllWithConcurrency } from './fetchAllWithConcurrency';
 
 describe('fetchAllWithConcurrency', () => {
   it('returns empty array for empty input', async () => {

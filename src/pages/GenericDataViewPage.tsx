@@ -45,7 +45,6 @@ export default function GenericDataViewPage<T, K extends string>({
     getSortValue,
     filters,
     addAction,
-    importAction,
   } = viewConfig;
 
   const theme = useTheme();
@@ -199,7 +198,6 @@ export default function GenericDataViewPage<T, K extends string>({
           onRowClick={onRowClick}
           selectedId={editingItem?.id ?? null}
           addAction={addAction}
-          importAction={importAction}
           urlFilterInfo={urlFilterInfo}
           sortLocked={!!editingItem}
         />

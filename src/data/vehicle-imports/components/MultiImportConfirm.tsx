@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import type { AutosysAssembledResult } from '../assembleAutosysResults';
+import type { AutosysAssembledResult } from '../api/assembleAutosysResults';
 
 interface MultiImportConfirmProps {
   assembledResult: AutosysAssembledResult;

@@ -2,7 +2,7 @@
  * Generic NeTEx XML helpers — no domain (Vehicle/VehicleModel/import)
  * knowledge. Consumers: `vehicles/xml/*-parser.ts`,
  * `vehicles/xml/parseVehicleImportResponse.ts`,
- * `vehicle-imports/xmlUtils.ts`, `vehicle-imports/types.ts`.
+ * `vehicle-imports/api/xmlUtils.ts`, `vehicle-imports/types/importTypes.ts`.
  */
 import { XMLParser } from 'fast-xml-parser';
 

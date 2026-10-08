@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import i18next from 'i18next';
-import { regNumbersTextTransformer } from '../regNumbersTextTransformer';
+import { regNumbersTextTransformer } from './regNumbersTextTransformer';
 
 // i18next is initialised with the real en/nb bundles by the project's
 // `setupFiles` (`vite.config.ts`), so these tests exercise the shipped plural

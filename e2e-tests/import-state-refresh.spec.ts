@@ -11,7 +11,7 @@ import { IS_LIVE, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers
  *
  * Workflow:
  *   seedAuth → reach the post-import filtered state (/vehicle-types?filter=<typeIds>):
- *     live  — select org, drive the real Autosys import (Submit), which redirects there;
+ *     live  — goto /, select org, drive the real Autosys import (Submit), which redirects there;
  *     mock  — goto that URL directly (exactly what the import's onImportComplete navigate() does).
  *   → confirm the "Filtering on IDs" chip IS shown on /vehicle-types (the filter is genuinely applied)
  *   → for each sibling list (/vehicles, /deck-plans): record the full-reload (F5) count, then
@@ -42,6 +42,9 @@ import { IS_LIVE, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers
 /** A vehicle-type id present in the mock fixture — used to fake the post-import redirect under mock. */
 const MOCK_FILTER_TYPE_ID = 'NMR:VehicleType:1';
 
+/** Home's SVV bulk-import button — the import flow's only entry point. */
+const IMPORT_BTN = 'home-bulk-import-svv';
+
 /** Matches when the page is on exactly `href` (ignoring any query string). A URL predicate avoids
  *  building a RegExp from a string (CodeQL: incomplete regex escaping) and is exact, not substring. */
 const atPath = (href: string) => (url: URL) => url.pathname === href;
@@ -57,11 +60,12 @@ async function railNavigate(page: Page, href: string): Promise<void> {
 }
 
 /**
- * Drive the Autosys multi-import wizard for one reg-nr through a successful Submit (live only).
+ * Drive the Autosys multi-import wizard, launched from Home, for one reg-nr through a successful
+ * Submit (live only).
  * Throws if Submit errors — #141 needs a genuinely NEW import; a duplicate surfaces as a submit error.
  */
 async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
-  await page.getByTestId('import-vehicle-multi-button').click();
+  await page.getByTestId(IMPORT_BTN).click();
   const dialog = page.locator('[role="dialog"]');
   await expect(dialog).toBeVisible();
 
@@ -103,7 +107,7 @@ async function establishFilteredState(page: Page): Promise<string> {
     await page.waitForLoadState('networkidle');
     return page.url();
   }
-  await page.goto('/vehicle-types');
+  await page.goto('/'); // the import launches from Home
   await selectFirstOrg(page);
   await page.waitForLoadState('networkidle');
   await importRegViaAutosys(page, REG_NR); // redirects to /vehicle-types?filter=<ids>

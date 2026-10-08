@@ -189,7 +189,6 @@
   "vehicleType.field.maximumEngineEffectKW": "Max Engine Effect (kW)",
   "vehicleType.field.hybridCategory": "Hybrid Category",
 
-  "vehicleType.actions.importMulti": "Import",
   "vehicleTypes.actions.new": "New Vehicle Type",
 
   "common.none": "None",

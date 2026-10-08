@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { CloudUpload } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { type AnalyzerResult, type TableMeta, inputTextAnalyzer } from '../inputTextAnalyzer';
-import type { RegNumbersStatus } from '../regNumbersTextTransformer';
+import { type AnalyzerResult, type TableMeta, inputTextAnalyzer } from '../utils/inputTextAnalyzer';
+import type { RegNumbersStatus } from '../utils/regNumbersTextTransformer';
 
 interface MultiImportFileInputProps {
   onParsed: (regNumbers: string[], status: RegNumbersStatus) => void;
