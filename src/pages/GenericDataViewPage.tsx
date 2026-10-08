@@ -3,6 +3,7 @@ import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
+import { NEW_SELECTION } from '../hooks/useUrlEditorSelection.tsx';
 import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
@@ -59,6 +60,8 @@ export default function GenericDataViewPage<T, K extends string>({
 
   const { editingItem } = useEditingItem();
   const prevEditingIdRef = useRef<string | null>(null);
+  // The New action would only re-navigate to the URL already active (#173).
+  const creating = editingItem?.id === NEW_SELECTION;
 
   const {
     searchResults,
@@ -162,7 +165,6 @@ export default function GenericDataViewPage<T, K extends string>({
         collapsed={sidebarCollapsed}
         onMouseDownResize={() => setIsSidebarResizing(true)}
         theme={theme}
-        toggleCollapse={toggleSidebar}
         side={DETAILS_PANE_SIDE}
       />
       <Box
@@ -197,7 +199,7 @@ export default function GenericDataViewPage<T, K extends string>({
           handleColumnEvent={viewConfig.handleColumnEvent}
           onRowClick={onRowClick}
           selectedId={editingItem?.id ?? null}
-          addAction={addAction}
+          addAction={creating ? undefined : addAction}
           urlFilterInfo={urlFilterInfo}
           sortLocked={!!editingItem}
         />

@@ -23,6 +23,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { useLiftEditorClose } from '../../hooks/useLiftEditorClose.ts';
 import type { Side } from './Sidebar.tsx';
 
 const SEGMENT_SIZE = 40;
@@ -101,6 +102,8 @@ export default function EditorRail({
     if (isDirty) setConfirming('collapse');
     else onCollapse();
   };
+  // Chrome that dismisses the pane (the mobile Drawer) closes through here too.
+  useLiftEditorClose(handleCollapseClick);
 
   const handleCancelClick = () => {
     if (isDirty) setConfirming('cancel');

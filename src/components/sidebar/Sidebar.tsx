@@ -3,7 +3,7 @@ import type { Theme } from '@mui/material/styles';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useTranslation } from 'react-i18next';
-import { useEditingItem } from '../../contexts/EditingContext.tsx';
+import { useEditingItem, useEditorClose } from '../../contexts/EditingContext.tsx';
 
 export type Side = 'left' | 'right';
 
@@ -12,7 +12,6 @@ interface SidebarProps {
   collapsed: boolean;
   onMouseDownResize: () => void;
   theme: Theme;
-  toggleCollapse: () => void;
   side?: Side;
 }
 
@@ -21,13 +20,15 @@ export function Sidebar({
   collapsed,
   onMouseDownResize,
   theme,
-  toggleCollapse,
   side = 'left',
 }: SidebarProps) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const closeIcon = side === 'left' ? <ChevronLeftIcon /> : <ChevronRightIcon />;
   const { t } = useTranslation();
   const { editingItem } = useEditingItem();
+  // The Drawer's own close paths go through the editor's guarded close —
+  // collapsing the pane alone would leave `?selected=` set (#173).
+  const { requestClose } = useEditorClose();
 
   if (isMobile) {
     return (
@@ -37,7 +38,7 @@ export function Sidebar({
         // the Drawer doesn't surface a blank pane during the frame
         // between editingItem clearing and the chrome effect collapsing.
         open={!collapsed && !!editingItem}
-        onClose={toggleCollapse}
+        onClose={requestClose}
         variant="temporary"
         ModalProps={{
           keepMounted: true,
@@ -59,7 +60,7 @@ export function Sidebar({
             justifyContent: 'flex-end',
           }}
         >
-          <IconButton onClick={toggleCollapse} color="inherit" aria-label={t('sidebar.close')}>
+          <IconButton onClick={requestClose} color="inherit" aria-label={t('sidebar.close')}>
             {closeIcon}
           </IconButton>
         </Toolbar>
