@@ -51,7 +51,7 @@ The core architectural pattern is a reusable data table system:
 
 To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
 
-**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen (FORK_DECISIONS 2026-10-07); the shapes are still hand-written and their drift from the schema is tracked in **#107**.
+**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen; the shapes are still hand-written and their drift from the schema is tracked in **#107**.
 
 ### State Management
 
