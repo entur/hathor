@@ -1,13 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { REG_NR, interceptAutosysQuery, interceptVehicleTypesQuery } from './autosys-helpers';
-import { IS_LIVE, seedAuth } from './live-auth-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
+
+/** Home's SVV bulk-import button — the import flow's only entry point. */
+const IMPORT_BTN = 'home-bulk-import-svv';
 
 /**
- * /vehicle-types Autosys multi-import dialog — drive the multi-vehicle import wizard to its 1/1/1/1 confirm summary.
+ * Home (/) Autosys multi-import dialog — drive the multi-vehicle import wizard to its 1/1/1/1 confirm summary.
  *
  * Workflow:
- *   copy config-no-auth.json → (mock) intercept VehicleTypes + Autosys queries → goto /vehicle-types
- *   → click import-vehicle-multi-button → dialog opens
+ *   copy config-no-auth.json → (mock) intercept VehicleTypes + Autosys queries → goto / (org auto-selected)
+ *   → click home-bulk-import-svv → dialog opens
  *   → Step 0: click "Skip" (no file upload)
  *   → Step 1 (Review): fill multi-import-add-input = REG_NR → click add-button → assert chip in multi-import-tags
  *   → click "Next" (triggers Autosys fetch)
@@ -34,11 +37,12 @@ test.describe('Autosys multi-import dialog', () => {
       await interceptAutosysQuery(page);
     }
 
-    await page.goto('/vehicle-types');
+    await page.goto('/');
+    await selectFirstOrg(page); // the button renders only once an organisation is selected
     await page.waitForLoadState('networkidle');
 
     // Open the multi-import dialog
-    const multiButton = page.getByTestId('import-vehicle-multi-button');
+    const multiButton = page.getByTestId(IMPORT_BTN);
     await expect(multiButton).toBeVisible();
     await multiButton.click();
 

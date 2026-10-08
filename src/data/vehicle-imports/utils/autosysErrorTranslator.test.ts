@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import i18next from 'i18next';
-import { translateAutosysError } from '../autosysErrorTranslator';
+import { translateAutosysError } from './autosysErrorTranslator';
 
 const INCOMPLETE =
   'Cannot invoke "org.entur.autosys.model.KjoretoyData.getKjoretoyId()" because the return value of something is null';

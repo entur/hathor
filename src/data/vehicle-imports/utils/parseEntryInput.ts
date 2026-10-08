@@ -1,4 +1,4 @@
-import type { ImportEntry } from './types';
+import type { ImportEntry } from '../types/importTypes';
 
 /** Parse "AB1234:OP-001" into an ImportEntry. Colon separates reg from ref. */
 export function parseEntryInput(raw: string): ImportEntry | null {

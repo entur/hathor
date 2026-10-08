@@ -293,6 +293,8 @@ The per-row `EditActionCell` → standalone `itemId`-editor convention is retire
 
 ## Relocate Autosys import UI into `data/vehicle-imports/components/` _(2026-05-22)_
 
+> **Superseded in part (2026-10-07)** by _"Home is the sole Autosys import launcher; `importAction` slot removed"_ at the end of this file. The placement stands — `data/vehicle-imports/` still owns its UI. What changed: `VehicleTypeView` no longer imports the launcher (the last Consequences bullet below), and the feature's root-level data-layer files + `__tests__/` are now segmented into `api/` · `types/` · `utils/`.
+
 ### Context
 
 `README.md`'s "Where new files go" rule splits `src/` into vertical feature folders
@@ -570,3 +572,37 @@ After login the user always landed on `/` (#31). `LoginRedirect` passed `oidcCon
 - The callback still lands on `/` first (Home renders for a moment) before the navigate.
 - Unsaved form content is still lost on a session-expiry re-login — the login is a full-page redirect; only the location is restored.
 - e2e can now run a real signin round trip offline: `mockIdp` (`e2e-tests/live-auth-helpers.ts`) fakes discovery / authorize / token, unlike `seedAuth`, which boots already-authenticated and never touches the redirect or callback code.
+
+## Home is the sole Autosys import launcher; `importAction` slot removed _(2026-10-07)_
+
+### Context
+
+The Autosys bulk import had two entry points: the list-head button on `/vehicle-types` (`VehicleTypeView` filling the generic `importAction` slot) and, since #182, the SVV bulk-import button on Home. #90 proposed moving the whole feature to `src/components/import-autosys/` on the premise that it was cross-cutting — consumed by both `vehicles/` and `vehicle-types/`. By the time it was picked up that premise was gone: the `importAsNetexToBackend` consumers it listed no longer existed, and the only code outside the feature touching it was the launcher button, imported by `VehicleTypeView` and `Home`.
+
+### Decision
+
+- **Home is the only launcher.** `VehicleTypeView` no longer renders the import button; `src/pages/Home.tsx` is the feature's single consumer.
+- **`vehicle-imports/` stays a `data/<feature>/` folder.** #90 is closed as not planned — one consumer is not cross-cutting, so the 2026-05-22 placement holds.
+- **The folder follows the 2026-05-28 segmentation:** `api/` (Shepet/Sobek HTTP, concurrency pool, result assembly, NeTEx frame merge) · `components/` · `types/importTypes.ts` · `utils/` (input parsing, error translation). Tests are colocated with their source, as in the sibling features; the root `__tests__/` is gone.
+- **The `importAction` slot is removed** from `ViewConfig`, `GenericDataViewPage` and `DataPageContent` rather than left without a caller. `addAction` is the only list-head action slot.
+- **`AutosysImportFloatingMenu` takes `label` and `testId` as required props.** Its defaults (`vehicleType.actions.importMulti`, `import-vehicle-multi-button`) described the removed `/vehicle-types` placement; the locale key is deleted.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Execute #90 — move to `src/components/import-autosys/`** | `components/` is for shared cross-feature code. With Home as the only consumer the move would file a single-consumer feature in the shared tree. |
+| **Keep both launchers** | Two entry points to one flow, and the `/vehicle-types` one was the only reason for a cross-feature import and a generic slot. |
+| **Keep the `importAction` slot, unused** | Zero runtime cost and a smaller diff against Inanna, but a typed, documented, story-covered slot with no caller reads as a supported extension point. It is three small deletions to restore if an entity ever needs a list-head import. |
+
+### Consequences
+
+- No cross-feature import into `vehicle-imports/` remains; the 2026-05-22 ADR's "deliberate cross-feature import" bullet no longer applies.
+- `GenericDataViewPage` / `DataPageContent` / `viewConfigTypes.ts` diverge from Inanna by one removed prop — expect a small conflict there when pulling upstream changes to the list-head.
+- A completed import still redirects to `/vehicle-types?filter=<ids>`; because it now always starts on Home, the redirect pushes a history entry and Back returns to Home.
+- e2e opens the dialog from `/` via `home-bulk-import-svv` (`autosys-multi-import.spec.ts`, `import-state-refresh.spec.ts`). The button renders only when authenticated with an organisation selected, so those specs wait for org selection first.
+- `vehicle-imports/` is no longer on the 2026-05-28 ADR's "reshaped the next time they're touched" list.
+
+### Out of scope
+
+- Renaming `AutosysImportFloatingMenu` (no longer floating, no longer a menu) or collapsing its remaining look-override props now that there is one caller.

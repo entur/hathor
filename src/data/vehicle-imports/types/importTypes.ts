@@ -1,4 +1,4 @@
-import type { ParsedXml } from '../netex/xmlUtils';
+import type { ParsedXml } from '../../netex/xmlUtils';
 export type { ParsedXml };
 
 // container for RegNo+xml

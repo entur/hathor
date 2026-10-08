@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { deduplicateEntries } from '../regNumbersTextTransformer';
-import type { ImportEntry } from '../types';
+import { deduplicateEntries } from './regNumbersTextTransformer';
+import type { ImportEntry } from '../types/importTypes';
 
 // `buildStatus` resolves through i18next, initialised with the real bundles by
 // the project's `setupFiles` (`vite.config.ts`).

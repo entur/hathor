@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEntryInput } from '../parseEntryInput';
+import { parseEntryInput } from './parseEntryInput';
 
 describe('parseEntryInput', () => {
   it('parses a plain registration number', () => {

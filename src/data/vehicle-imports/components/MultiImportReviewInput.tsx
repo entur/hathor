@@ -7,9 +7,9 @@ import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { parseEntryInput } from '../parseEntryInput';
-import type { RegNumbersStatus } from '../regNumbersTextTransformer';
-import type { ImportEntry } from '../types';
+import { parseEntryInput } from '../utils/parseEntryInput';
+import type { RegNumbersStatus } from '../utils/regNumbersTextTransformer';
+import type { ImportEntry } from '../types/importTypes';
 
 interface MultiImportReviewInputProps {
   entries: ImportEntry[];
