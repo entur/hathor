@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FormLayout } from '../../../components/FormLayout.tsx';
+import { FormStack } from '../../../components/FormLayout.tsx';
 import { FormTextField } from '../../../components/FormFields.tsx';
 import { mergeNameText, netexText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
@@ -100,7 +100,7 @@ export default function DeckPlanForm({
   const setField = (patch: Partial<DeckPlan>) => onChange({ ...value, ...patch });
 
   const fields = (
-    <FormLayout data-testid="deck-plan-tab-edit">
+    <FormStack data-testid="deck-plan-tab-edit">
       <FormTextField
         id="deckPlan-name"
         label={t('deckPlans.field.name')}
@@ -115,7 +115,7 @@ export default function DeckPlanForm({
         onChange={text => setField({ description: mergeNameText(value.description, text) })}
         disabled={ro}
       />
-    </FormLayout>
+    </FormStack>
   );
 
   // Create has no persisted body to show — render the fields bare, no tab strip

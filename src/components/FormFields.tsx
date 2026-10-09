@@ -1,5 +1,8 @@
 import { FormControlLabel, MenuItem, Switch, TextField } from '@mui/material';
-import { FieldRow } from './FormLayout.tsx';
+
+// A native date input always shows its dd.mm.yyyy mask, so the label must stay
+// in the notch or the two overlap.
+const SHRUNK_LABEL = { inputLabel: { shrink: true } };
 
 interface FieldProps {
   /** DOM id of the control — external selectors and the label both target it. */
@@ -27,17 +30,17 @@ interface FormTextFieldProps extends FieldProps {
  */
 export function FormTextField({ id, label, value, onChange, disabled, type }: FormTextFieldProps) {
   return (
-    <FieldRow id={id} label={label}>
-      <TextField
-        id={id}
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        disabled={disabled}
-        size="small"
-        fullWidth
-      />
-    </FieldRow>
+    <TextField
+      id={id}
+      label={label}
+      type={type}
+      slotProps={type === 'date' ? SHRUNK_LABEL : undefined}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+      size="small"
+      fullWidth
+    />
   );
 }
 
@@ -59,17 +62,16 @@ interface FormNumberFieldProps extends FieldProps {
  */
 export function FormNumberField({ id, label, value, onChange, disabled }: FormNumberFieldProps) {
   return (
-    <FieldRow id={id} label={label}>
-      <TextField
-        id={id}
-        type="number"
-        value={value ?? ''}
-        onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-        disabled={disabled}
-        size="small"
-        fullWidth
-      />
-    </FieldRow>
+    <TextField
+      id={id}
+      label={label}
+      type="number"
+      value={value ?? ''}
+      onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+      disabled={disabled}
+      size="small"
+      fullWidth
+    />
   );
 }
 
@@ -104,26 +106,25 @@ export function FormSelectField<T extends string>({
   disabled,
 }: FormSelectFieldProps<T>) {
   return (
-    <FieldRow id={id} label={label}>
-      <TextField
-        id={id}
-        select
-        value={value ?? ''}
-        onChange={e => onChange((e.target.value || undefined) as T | undefined)}
-        disabled={disabled}
-        size="small"
-        fullWidth
-      >
-        <MenuItem value="">
-          <em>{noneLabel}</em>
+    <TextField
+      id={id}
+      label={label}
+      select
+      value={value ?? ''}
+      onChange={e => onChange((e.target.value || undefined) as T | undefined)}
+      disabled={disabled}
+      size="small"
+      fullWidth
+    >
+      <MenuItem value="">
+        <em>{noneLabel}</em>
+      </MenuItem>
+      {options.map(o => (
+        <MenuItem key={o.value} value={o.value}>
+          {o.label}
         </MenuItem>
-        {options.map(o => (
-          <MenuItem key={o.value} value={o.value}>
-            {o.label}
-          </MenuItem>
-        ))}
-      </TextField>
-    </FieldRow>
+      ))}
+    </TextField>
   );
 }
 
@@ -136,7 +137,7 @@ interface FormSwitchFieldProps extends FieldProps {
  * On/off switch for a sidebar form.
  *
  * @param id       DOM id of the switch input.
- * @param label    Field label.
+ * @param label    Label shown beside the switch.
  * @param checked  Current state.
  * @param onChange Fired with the new state on toggle.
  * @param disabled Render the switch read-only.
@@ -144,19 +145,17 @@ interface FormSwitchFieldProps extends FieldProps {
  */
 export function FormSwitchField({ id, label, checked, onChange, disabled }: FormSwitchFieldProps) {
   return (
-    <FieldRow id={id} label={label}>
-      <FormControlLabel
-        control={
-          <Switch
-            id={id}
-            checked={checked}
-            onChange={e => onChange(e.target.checked)}
-            disabled={disabled}
-            size="small"
-          />
-        }
-        label=""
-      />
-    </FieldRow>
+    <FormControlLabel
+      control={
+        <Switch
+          id={id}
+          checked={checked}
+          onChange={e => onChange(e.target.checked)}
+          disabled={disabled}
+          size="small"
+        />
+      }
+      label={label}
+    />
   );
 }

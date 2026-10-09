@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
-import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
+import { FormStack } from '../../../components/FormLayout.tsx';
 import { FormTextField } from '../../../components/FormFields.tsx';
 import { blankToUndefined } from '../../../utils/blankToUndefined.ts';
 import type { Vehicle } from '../types/vehicle.ts';
@@ -56,7 +56,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   }, [vehicleTypes, currentVtId, currentVtName]);
 
   return (
-    <FormLayout>
+    <FormStack>
       <FormTextField
         id="vehicle-name"
         label={t('vehicles.field.name')}
@@ -73,53 +73,50 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         disabled={ro}
       />
 
-      <FieldRow id="vehicle-transport-type" label={t('vehicles.field.transportType')}>
-        <Autocomplete<VTOption, false, true>
-          options={vtOptionsWithOrphan}
-          // VehicleType is required, so the picker is non-clearable; MUI's
-          // type-level `disableClearable` strips null from the value type, but
-          // null is the legitimate initial state on /vehicles/new — MUI tolerates
-          // it at runtime, hence the cast.
-          value={currentVtOption as VTOption}
-          disableClearable
-          loading={vtLoading}
-          disabled={ro}
-          getOptionLabel={o => o.name}
-          isOptionEqualToValue={(a, b) => a.id === b.id}
-          loadingText={t('vehicleTypePicker.loading')}
-          noOptionsText={t('vehicleTypePicker.noOptions')}
-          onChange={(_e, opt) => setV({ transportType: { id: opt.id } })}
-          size="small"
-          fullWidth
-          renderInput={params => (
-            <TextField
-              {...params}
-              // MUI Autocomplete sets `params.inputProps.id` on the inner input;
-              // override there so external selectors (#vehicle-transport-type,
-              // FieldRow's htmlFor) actually land on the focusable combobox.
-              inputProps={{ ...params.inputProps, id: 'vehicle-transport-type' }}
-              size="small"
-              required
-              aria-label={t('vehicles.field.transportType')}
-              error={!ro && !currentVtId}
-              helperText={
-                vtError ? (
-                  <>
-                    {vtError}{' '}
-                    <Link
-                      component="button"
-                      type="button"
-                      onClick={() => void refetchVehicleTypes().catch(() => {})}
-                    >
-                      {t('common.retry')}
-                    </Link>
-                  </>
-                ) : undefined
-              }
-            />
-          )}
-        />
-      </FieldRow>
+      <Autocomplete<VTOption, false, true>
+        // On the Autocomplete, not the TextField: this is the id MUI puts on
+        // the focusable combobox input and points the label at.
+        id="vehicle-transport-type"
+        options={vtOptionsWithOrphan}
+        // VehicleType is required, so the picker is non-clearable; MUI's
+        // type-level `disableClearable` strips null from the value type, but
+        // null is the legitimate initial state on /vehicles/new — MUI tolerates
+        // it at runtime, hence the cast.
+        value={currentVtOption as VTOption}
+        disableClearable
+        loading={vtLoading}
+        disabled={ro}
+        getOptionLabel={o => o.name}
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+        loadingText={t('vehicleTypePicker.loading')}
+        noOptionsText={t('vehicleTypePicker.noOptions')}
+        onChange={(_e, opt) => setV({ transportType: { id: opt.id } })}
+        size="small"
+        fullWidth
+        renderInput={params => (
+          <TextField
+            {...params}
+            size="small"
+            required
+            label={t('vehicles.field.transportType')}
+            error={!ro && !currentVtId}
+            helperText={
+              vtError ? (
+                <>
+                  {vtError}{' '}
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={() => void refetchVehicleTypes().catch(() => {})}
+                  >
+                    {t('common.retry')}
+                  </Link>
+                </>
+              ) : undefined
+            }
+          />
+        )}
+      />
 
       <FormTextField
         id="vehicle-operational-number"
@@ -162,6 +159,6 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         onChange={text => setV({ description: mergeNameText(v.description, text) })}
         disabled={ro}
       />
-    </FormLayout>
+    </FormStack>
   );
 }

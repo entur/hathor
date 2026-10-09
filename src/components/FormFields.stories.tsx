@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mui/material';
-import { FormLayout } from './FormLayout';
+import { FormStack } from './FormLayout';
 import { FormNumberField, FormSelectField, FormSwitchField, FormTextField } from './FormFields';
 
 const NARROW_WIDTH = '20rem';
@@ -36,7 +36,7 @@ function AllFields({ disabled }: { disabled?: boolean }) {
   const [mode, setMode] = useState<Mode | undefined>('bus');
   const [lowFloor, setLowFloor] = useState(true);
   return (
-    <FormLayout>
+    <FormStack>
       <FormTextField id="s-name" label="Name" value={name} onChange={setName} disabled={disabled} />
       <FormTextField
         id="s-built"
@@ -69,7 +69,7 @@ function AllFields({ disabled }: { disabled?: boolean }) {
         onChange={setLowFloor}
         disabled={disabled}
       />
-    </FormLayout>
+    </FormStack>
   );
 }
 
@@ -77,7 +77,7 @@ export const Editable: Story = { render: () => <AllFields /> };
 
 export const ReadOnly: Story = { render: () => <AllFields disabled /> };
 
-/** Below FormLayout's container-query breakpoint. */
+/** A narrow rail: fields keep the full width. */
 export const NarrowContainer: Story = {
   render: () => (
     <Box sx={{ width: NARROW_WIDTH, border: '1px dashed', borderColor: 'divider', p: 2 }}>

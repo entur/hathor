@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Autocomplete, Box, Chip, Divider, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
+import { FormStack } from '../../../components/FormLayout.tsx';
 import {
   FormNumberField,
   FormSelectField,
@@ -120,7 +120,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
       </Tabs>
 
       {tab === 'general' && (
-        <FormLayout data-testid="vtype-tab-general">
+        <FormStack data-testid="vtype-tab-general">
           <FormTextField
             id="vtype-name"
             label={t('vehicleType.field.name')}
@@ -155,37 +155,37 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           {numRow('width', t('vehicleType.field.width'))}
           {numRow('height', t('vehicleType.field.height'))}
           {numRow('weight', t('vehicleType.field.weight'))}
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'propulsion' && (
-        <FormLayout data-testid="vtype-tab-propulsion">
-          <FieldRow id="vtype-propulsion-types" label={t('vehicleType.field.propulsionTypes')}>
-            <Autocomplete<PropulsionType, true>
-              multiple
-              options={[...PROPULSION_TYPES]}
-              value={value.propulsionTypes ?? []}
-              onChange={(_e, v) => setField({ propulsionTypes: v.length ? v : undefined })}
-              disabled={ro}
-              size="small"
-              disableCloseOnSelect
-              renderInput={params => (
-                <TextField {...params} id="vtype-propulsion-types" size="small" />
-              )}
-            />
-          </FieldRow>
-          <FieldRow id="vtype-fuel-types" label={t('vehicleType.field.fuelTypes')}>
-            <Autocomplete<FuelType, true>
-              multiple
-              options={[...FUEL_TYPES]}
-              value={value.fuelTypes ?? []}
-              onChange={(_e, v) => setField({ fuelTypes: v.length ? v : undefined })}
-              disabled={ro}
-              size="small"
-              disableCloseOnSelect
-              renderInput={params => <TextField {...params} id="vtype-fuel-types" size="small" />}
-            />
-          </FieldRow>
+        <FormStack data-testid="vtype-tab-propulsion">
+          <Autocomplete<PropulsionType, true>
+            id="vtype-propulsion-types"
+            multiple
+            options={[...PROPULSION_TYPES]}
+            value={value.propulsionTypes ?? []}
+            onChange={(_e, v) => setField({ propulsionTypes: v.length ? v : undefined })}
+            disabled={ro}
+            size="small"
+            disableCloseOnSelect
+            renderInput={params => (
+              <TextField {...params} label={t('vehicleType.field.propulsionTypes')} size="small" />
+            )}
+          />
+          <Autocomplete<FuelType, true>
+            id="vtype-fuel-types"
+            multiple
+            options={[...FUEL_TYPES]}
+            value={value.fuelTypes ?? []}
+            onChange={(_e, v) => setField({ fuelTypes: v.length ? v : undefined })}
+            disabled={ro}
+            size="small"
+            disableCloseOnSelect
+            renderInput={params => (
+              <TextField {...params} label={t('vehicleType.field.fuelTypes')} size="small" />
+            )}
+          />
           <FormSwitchField
             id="vtype-self-propelled"
             label={t('vehicleType.field.selfPropelled')}
@@ -202,11 +202,11 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           />
           {numRow('maximumVelocity', t('vehicleType.field.maximumVelocity'))}
           {numRow('maximumRange', t('vehicleType.field.maximumRange'))}
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'capacity' && (
-        <FormLayout data-testid="vtype-tab-capacity">
+        <FormStack data-testid="vtype-tab-capacity">
           {capRow('totalCapacity', t('vehicleType.field.totalCapacity'))}
           {capRow('seatingCapacity', t('vehicleType.field.seatingCapacity'))}
           {capRow('standingCapacity', t('vehicleType.field.standingCapacity'))}
@@ -214,11 +214,11 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           {capRow('wheelchairPlaceCapacity', t('vehicleType.field.wheelchairPlaceCapacity'))}
           {capRow('pramPlaceCapacity', t('vehicleType.field.pramPlaceCapacity'))}
           {capRow('bicycleRackCapacity', t('vehicleType.field.bicycleRackCapacity'))}
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'environment' && (
-        <FormLayout data-testid="vtype-tab-environment">
+        <FormStack data-testid="vtype-tab-environment">
           {numRow('formDragCoefficient', t('vehicleType.field.formDragCoefficient'))}
           {numRow('rollResistanceCoefficient', t('vehicleType.field.rollResistanceCoefficient'))}
           {numRow('maximumEngineEffectKW', t('vehicleType.field.maximumEngineEffectKW'))}
@@ -231,7 +231,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             onChange={hybridCategory => setField({ hybridCategory })}
             disabled={ro}
           />
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'vehicles' && (

@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
-import { Box, InputLabel, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 
 const LABEL_COL_MAX = '12rem';
 const STACK_BELOW = '22rem';
 const COL_GAP = 2;
 const ROW_GAP = 1.25;
+// Room for a floating label's notch above each outlined field.
+const STACK_ROW_GAP = 2;
 
 interface FormLayoutProps {
   children: ReactNode;
@@ -62,39 +64,37 @@ export function FormLayout({
   );
 }
 
-interface FieldRowProps {
-  id: string;
-  label: string;
-  alignTop?: boolean;
+interface FormStackProps {
   children: ReactNode;
+  sx?: SxProps<Theme>;
+  'data-testid'?: string;
 }
 
 /**
- * Editable row inside {@link FormLayout}: an `<InputLabel htmlFor>` paired with
- * a control. Uses `display: contents` so both halves become direct grid items
- * of the parent — column alignment is owned by the parent grid, not the row.
+ * Single-column stack for an editable form whose fields carry their own
+ * floating label (see `FormFields.tsx`). Every field spans the full width, so
+ * input width no longer depends on the longest label in the form.
  *
- * @param id       DOM id of the input the label points to (`htmlFor`).
- * @param alignTop Pin the label to the top for multi-line controls.
+ * Sets `containerType: inline-size` on itself, like {@link FormLayout}, so
+ * fields can size against this component's width rather than the viewport's.
+ *
+ * @param sx Forwarded to the outer Box for caller-side spacing/margin.
+ * @returns The stacked form container.
  */
-export function FieldRow({ id, label, alignTop, children }: FieldRowProps) {
+export function FormStack({ children, sx, 'data-testid': testId }: FormStackProps) {
   return (
-    <Box sx={{ display: 'contents' }}>
-      <InputLabel
-        htmlFor={id}
-        sx={{
-          alignSelf: alignTop ? 'start' : 'center',
-          pt: alignTop ? 1 : 0,
-          mb: 0,
-          fontSize: '0.875rem',
-          color: 'text.primary',
-          whiteSpace: 'normal',
-          minWidth: 0,
-        }}
-      >
-        {label}
-      </InputLabel>
-      {children}
+    <Box
+      data-testid={testId}
+      sx={
+        [
+          { containerType: 'inline-size', width: '100%' },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ] as SxProps<Theme>
+      }
+    >
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', rowGap: STACK_ROW_GAP }}>
+        {children}
+      </Box>
     </Box>
   );
 }
@@ -106,7 +106,8 @@ interface MetaRowProps {
 
 /**
  * Read-only row inside {@link FormLayout}: a label `<Typography>` paired with
- * a value node. Mirrors {@link FieldRow}'s `display: contents` pattern.
+ * a value node. Uses `display: contents` so both halves become direct grid
+ * items of the parent — column alignment is owned by the parent grid.
  */
 export function MetaRow({ label, children }: MetaRowProps) {
   return (
