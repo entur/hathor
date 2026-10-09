@@ -169,7 +169,7 @@
   "vehicleType.field.propulsionTypes": "Propulsion Types",
   "vehicleType.field.fuelTypes": "Fuel Types",
   "vehicleType.field.selfPropelled": "Self Propelled",
-  "vehicleType.field.euroClass": "Euro Class",
+  "vehicleType.field.euroClass": "Emission Class",
   "vehicleType.field.maximumVelocity": "Maximum Velocity (km/h)",
   "vehicleType.field.maximumRange": "Maximum Range (km)",
   "vehicleType.field.totalCapacity": "Total Capacity",

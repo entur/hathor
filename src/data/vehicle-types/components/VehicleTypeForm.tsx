@@ -32,6 +32,8 @@ import {
   type FuelType,
   type HybridCategory,
 } from '../types/vehicleTypeTypes.ts';
+import type { CodeValue } from '../../code-values/types/codeValueTypes.ts';
+import { codeValueOpts } from '../../code-values/utils/codeValueOpts.ts';
 
 /** Editor tabs — Edit (identity + dimensions) first, then the field-group tabs. */
 type TabKey = 'general' | 'propulsion' | 'capacity' | 'environment' | 'vehicles';
@@ -40,6 +42,8 @@ interface VehicleTypeFormProps {
   value: VehicleType;
   onChange: (next: VehicleType) => void;
   mode: 'view' | 'edit';
+  /** Sobek's emission-standard code list; the stored value is always offered too. */
+  euroClasses: readonly CodeValue[];
 }
 
 const numVal = (n?: number): number | '' => (n == null ? '' : n);
@@ -53,11 +57,17 @@ const textOr = (s: string): string | undefined => (s === '' ? undefined : s);
  * route). Holds no fetch/save logic so it can back both the sidebar editor and a
  * future `/vehicle-types/new` create flow.
  *
- * @param value    Current VehicleType (gql-shaped).
- * @param onChange Fired with the merged next value on every field edit.
- * @param mode     `'view'` disables all inputs; `'edit'` enables them.
+ * @param value       Current VehicleType (gql-shaped).
+ * @param onChange    Fired with the merged next value on every field edit.
+ * @param mode        `'view'` disables all inputs; `'edit'` enables them.
+ * @param euroClasses Emission-class choices (Sobek `EMISSION_STANDARD` code list).
  */
-export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFormProps) {
+export default function VehicleTypeForm({
+  value,
+  onChange,
+  mode,
+  euroClasses,
+}: VehicleTypeFormProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<TabKey>('general');
   const ro = mode === 'view';
@@ -242,12 +252,25 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           <FieldRow id="vtype-euro-class" label={t('vehicleType.field.euroClass')}>
             <TextField
               id="vtype-euro-class"
+              select
+              // `euroClass` is a free String in Sobek, so `codeValueOpts` keeps
+              // an out-of-list stored value as an option — a full-document save
+              // must not blank it.
               value={value.euroClass ?? ''}
               onChange={e => setField({ euroClass: textOr(e.target.value) })}
               disabled={ro}
               size="small"
               fullWidth
-            />
+            >
+              <MenuItem value="">
+                <em>{t('common.none')}</em>
+              </MenuItem>
+              {codeValueOpts(euroClasses, value.euroClass).map(o => (
+                <MenuItem key={o.value} value={o.value}>
+                  {o.label}
+                </MenuItem>
+              ))}
+            </TextField>
           </FieldRow>
           {numRow('maximumVelocity', t('vehicleType.field.maximumVelocity'))}
           {numRow('maximumRange', t('vehicleType.field.maximumRange'))}
