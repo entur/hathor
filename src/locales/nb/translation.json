@@ -168,7 +168,7 @@
   "vehicleType.field.propulsionTypes": "Fremdriftstyper",
   "vehicleType.field.fuelTypes": "Drivstofftyper",
   "vehicleType.field.selfPropelled": "Selvdreven",
-  "vehicleType.field.euroClass": "Euroklasse",
+  "vehicleType.field.euroClass": "Utslippsklasse",
   "vehicleType.field.maximumVelocity": "Maksimal hastighet (km/t)",
   "vehicleType.field.maximumRange": "Maksimal rekkevidde (km)",
   "vehicleType.field.totalCapacity": "Total kapasitet",
