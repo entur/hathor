@@ -8,34 +8,45 @@ const ID_PILL_WIDTH = 144;
 const ID_PILL_HEIGHT = 24;
 const ANIM = 'wave' as const;
 
-export interface FormLayoutSkeletonSection {
+interface SectionBase {
   /** Number of rows in this section. */
   rowCount: number;
-  /**
-   * Editable fields in a `FormStack` — one full-width block per row, the label
-   * being part of the field. Default is `FormLayout`'s label+value rows.
-   */
-  stacked?: boolean;
-  /** Height of the value-cell rounded block. Defaults to 37 (input height). */
+  /** Height of each row's rounded block. Defaults to 37 (input height). */
   rowHeight?: number;
-  /** Vertical gap between label+value rows. Defaults to FormLayout's `rowGap` default. */
+}
+
+/** Read-only label+value rows, as `FormLayout` lays them out. */
+interface RowsSection extends SectionBase {
+  stacked?: false;
+  /** Vertical gap between rows. Defaults to FormLayout's `rowGap` default. */
   rowGap?: number;
 }
+
+/** Editable fields in a `FormStack` — one full-width block per row, label included. */
+interface StackedSection extends SectionBase {
+  stacked: true;
+}
+
+export type FormLayoutSkeletonSection = RowsSection | StackedSection;
 
 interface FormLayoutSkeletonProps {
   /** Loading text for screen readers — caller-localised. */
   ariaLabel: string;
   /** Render an h6 + id-pill skeleton row at the top, with a divider below. */
   showTitle?: boolean;
-  /** Each section is its own <FormLayout> grid; Dividers auto-rendered between. */
+  /** Each section is its own form container; Dividers auto-rendered between. */
   sections: FormLayoutSkeletonSection[];
 }
 
-function SkeletonRow({ height = INPUT_HEIGHT }: { height?: number }) {
+function SkeletonBlock({ height = INPUT_HEIGHT }: { height?: number }) {
+  return <Skeleton animation={ANIM} variant="rounded" height={height} />;
+}
+
+function SkeletonRow({ height }: { height?: number }) {
   return (
     <Box sx={{ display: 'contents' }}>
       <Skeleton animation={ANIM} variant="text" width="60%" />
-      <Skeleton animation={ANIM} variant="rounded" height={height} />
+      <SkeletonBlock height={height} />
     </Box>
   );
 }
@@ -73,24 +84,18 @@ export default function FormLayoutSkeleton({
       )}
       {sections.map((section, sIdx) => {
         const isLast = sIdx === sections.length - 1;
+        const gapBelow = isLast ? undefined : { mb: 2 };
+        const rows = (Row: typeof SkeletonBlock) =>
+          Array.from({ length: section.rowCount }, (_, rIdx) => (
+            <Row key={rIdx} height={section.rowHeight} />
+          ));
         return (
           <Fragment key={sIdx}>
             {section.stacked ? (
-              <FormStack sx={isLast ? undefined : { mb: 2 }}>
-                {Array.from({ length: section.rowCount }).map((_, rIdx) => (
-                  <Skeleton
-                    key={rIdx}
-                    animation={ANIM}
-                    variant="rounded"
-                    height={section.rowHeight ?? INPUT_HEIGHT}
-                  />
-                ))}
-              </FormStack>
+              <FormStack sx={gapBelow}>{rows(SkeletonBlock)}</FormStack>
             ) : (
-              <FormLayout rowGap={section.rowGap} sx={isLast ? undefined : { mb: 2 }}>
-                {Array.from({ length: section.rowCount }).map((_, rIdx) => (
-                  <SkeletonRow key={rIdx} height={section.rowHeight} />
-                ))}
+              <FormLayout rowGap={section.rowGap} sx={gapBelow}>
+                {rows(SkeletonRow)}
               </FormLayout>
             )}
             {!isLast && <Divider sx={{ mb: 2 }} />}

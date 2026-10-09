@@ -9,6 +9,8 @@ const ROW_GAP = 1.25;
 // Room for a floating label's notch above each outlined field.
 const STACK_ROW_GAP = 2;
 
+const sxList = (sx?: SxProps<Theme>) => (Array.isArray(sx) ? sx : sx ? [sx] : []);
+
 interface FormLayoutProps {
   children: ReactNode;
   rowGap?: number;
@@ -39,12 +41,7 @@ export function FormLayout({
   return (
     <Box
       data-testid={testId}
-      sx={
-        [
-          { containerType: 'inline-size', width: '100%' },
-          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
-        ] as SxProps<Theme>
-      }
+      sx={[{ containerType: 'inline-size', width: '100%' }, ...sxList(sx)] as SxProps<Theme>}
     >
       <Box
         sx={{
@@ -64,11 +61,7 @@ export function FormLayout({
   );
 }
 
-interface FormStackProps {
-  children: ReactNode;
-  sx?: SxProps<Theme>;
-  'data-testid'?: string;
-}
+type FormStackProps = Omit<FormLayoutProps, 'rowGap'>;
 
 /**
  * Single-column stack for an editable form whose fields carry their own
@@ -87,14 +80,18 @@ export function FormStack({ children, sx, 'data-testid': testId }: FormStackProp
       data-testid={testId}
       sx={
         [
-          { containerType: 'inline-size', width: '100%' },
-          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+          {
+            containerType: 'inline-size',
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            rowGap: STACK_ROW_GAP,
+          },
+          ...sxList(sx),
         ] as SxProps<Theme>
       }
     >
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', rowGap: STACK_ROW_GAP }}>
-        {children}
-      </Box>
+      {children}
     </Box>
   );
 }

@@ -1,11 +1,19 @@
-import { FormControlLabel, MenuItem, Switch, TextField } from '@mui/material';
+import type { ReactNode } from 'react';
+import {
+  Autocomplete,
+  FormControlLabel,
+  MenuItem,
+  Switch,
+  TextField,
+  type AutocompleteProps,
+} from '@mui/material';
+import { blankToUndefined } from '../utils/blankToUndefined.ts';
 
 const NUMERIC_WIDTH = '66.667%',
   NUMERIC_FULL_BELOW = '16rem';
 // A number rarely needs the whole rail: two thirds wide, unless the form is so
-// narrow that two thirds would cramp the value.
+// narrow that two thirds would cramp the value (`fullWidth` then applies).
 const NUMERIC_SX = {
-  width: '100%',
   [`@container (min-width: ${NUMERIC_FULL_BELOW})`]: { width: NUMERIC_WIDTH },
 };
 
@@ -13,6 +21,8 @@ const NUMERIC_SX = {
 // mounts empty and hydrates, which would otherwise animate every label on open,
 // and a native date input's dd.mm.yyyy mask would overlap a resting label.
 const SHRUNK_LABEL = { inputLabel: { shrink: true } };
+// What every text-like field in a sidebar form shares.
+const FIELD_BASE = { size: 'small', fullWidth: true, slotProps: SHRUNK_LABEL } as const;
 
 interface FieldProps {
   /** DOM id of the control — external selectors and the label both target it. */
@@ -44,12 +54,10 @@ export function FormTextField({ id, label, value, onChange, disabled, type }: Fo
       id={id}
       label={label}
       type={type}
-      slotProps={SHRUNK_LABEL}
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
-      size="small"
-      fullWidth
+      {...FIELD_BASE}
     />
   );
 }
@@ -77,12 +85,10 @@ export function FormNumberField({ id, label, value, onChange, disabled }: FormNu
       id={id}
       label={label}
       type="number"
-      slotProps={SHRUNK_LABEL}
       value={value ?? ''}
       onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
       disabled={disabled}
-      size="small"
-      fullWidth
+      {...FIELD_BASE}
       sx={NUMERIC_SX}
     />
   );
@@ -123,12 +129,10 @@ export function FormSelectField<T extends string>({
       id={id}
       label={label}
       select
-      slotProps={SHRUNK_LABEL}
       value={value ?? ''}
-      onChange={e => onChange((e.target.value || undefined) as T | undefined)}
+      onChange={e => onChange(blankToUndefined(e.target.value) as T | undefined)}
       disabled={disabled}
-      size="small"
-      fullWidth
+      {...FIELD_BASE}
     >
       <MenuItem value="">
         <em>{noneLabel}</em>
@@ -139,6 +143,62 @@ export function FormSelectField<T extends string>({
         </MenuItem>
       ))}
     </TextField>
+  );
+}
+
+type FormAutocompleteFieldProps<
+  T,
+  Multiple extends boolean,
+  DisableClearable extends boolean,
+> = Omit<
+  AutocompleteProps<T, Multiple, DisableClearable, false>,
+  'id' | 'renderInput' | 'size' | 'fullWidth'
+> &
+  Pick<FieldProps, 'id' | 'label'> & {
+    required?: boolean;
+    error?: boolean;
+    helperText?: ReactNode;
+  };
+
+/**
+ * Searchable single- or multi-choice picker for a sidebar form. Takes MUI
+ * `Autocomplete` props as-is, minus the input rendering, which it owns.
+ *
+ * @param id         DOM id of the combobox input.
+ * @param label      Field label.
+ * @param required   Mark the field as required.
+ * @param error      Render the field in its error state.
+ * @param helperText Text or node shown under the field.
+ * @returns The labelled picker.
+ */
+export function FormAutocompleteField<
+  T,
+  Multiple extends boolean = false,
+  DisableClearable extends boolean = false,
+>({
+  label,
+  required,
+  error,
+  helperText,
+  ...autocompleteProps
+}: FormAutocompleteFieldProps<T, Multiple, DisableClearable>) {
+  return (
+    <Autocomplete<T, Multiple, DisableClearable, false>
+      {...autocompleteProps}
+      size="small"
+      fullWidth
+      renderInput={params => (
+        <TextField
+          {...params}
+          label={label}
+          required={required}
+          error={error}
+          helperText={helperText}
+          // `params.InputLabelProps` carries the label's id/htmlFor wiring.
+          slotProps={{ inputLabel: { ...params.InputLabelProps, ...SHRUNK_LABEL.inputLabel } }}
+        />
+      )}
+    />
   );
 }
 

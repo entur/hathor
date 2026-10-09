@@ -606,3 +606,35 @@ The Autosys bulk import had two entry points: the list-head button on `/vehicle-
 ### Out of scope
 
 - Renaming `AutosysImportFloatingMenu` (no longer floating, no longer a menu) or collapsing its remaining look-override props now that there is one caller.
+
+---
+
+## Sidebar forms: label on the field, single-column stack _(2026-10-09)_
+
+Supersedes "Horizontal form rows via CSS Grid + `<FieldRow>`" (2026-05-15) for **editable** fields. Read-only rows keep that layout.
+
+### Context
+
+The 2026-05-15 grid sizes its label column to content (`fit-content(12rem)`). In the tabbed VehicleType editor each tab is its own grid, so input width changed with the longest label on the tab — reported in the internal user test (18.09.26) as field widths alternating 30% → 60% → 100%. #198.
+
+### Decision
+
+- **Editable fields carry their own label** (MUI `TextField label`), stacked in `FormStack` (`src/components/FormLayout.tsx`). `FieldRow` is removed.
+- **Labels are pinned in the notch** (`shrink`), never resting inside the field: an editor mounts empty and then hydrates, which would animate every label on each row open.
+- **Fields are built from `src/components/FormFields.tsx`** — text, number, select-with-none, switch, autocomplete. The primitives own `size`, width and the label rule; forms pass plain values (#188 item 5).
+- **Number fields are two thirds wide**, full width below a 16rem container. The field queries the nearest inline-size container, which `FormStack` provides.
+- **`FormLayout` + `MetaRow` stay** for read-only label/value rows.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the two-column grid, fix the label column width** | A fixed column either truncates long nb/en labels or wastes the rail on short ones; the rail is ~18rem at its default width. |
+| **Static `<InputLabel>` stacked above the input** | Smallest diff, but taller rows and not what MUI ships; the notch label costs no extra row height. |
+| **Pin labels via theme `defaultProps`** | Would also change the header org picker and the import review input, which are not sidebar forms. |
+
+### Consequences
+
+- Row height goes back up (~40px field + 16px gap) — the vertical space the 2026-05-15 ADR reclaimed is traded for stable widths.
+- An `Autocomplete`'s DOM id goes on the `Autocomplete`, not the inner `TextField`, so the label and the combobox input share it.
+- `FormLayoutSkeleton` sections are either label+value rows or `stacked`.

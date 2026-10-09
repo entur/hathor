@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react';
-import { Autocomplete, Box, Chip, Divider, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Box, Chip, Divider, Tab, Tabs, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FormStack } from '../../../components/FormLayout.tsx';
 import {
+  FormAutocompleteField,
   FormNumberField,
   FormSelectField,
   FormSwitchField,
@@ -28,6 +29,8 @@ import {
   type HybridCategory,
 } from '../types/vehicleTypeTypes.ts';
 
+const HYBRID_CATEGORY_OPTIONS = HYBRID_CATEGORIES.map(c => ({ value: c, label: c }));
+
 /** Editor tabs — Edit (identity + dimensions) first, then the field-group tabs. */
 type TabKey = 'general' | 'propulsion' | 'capacity' | 'environment' | 'vehicles';
 
@@ -38,7 +41,7 @@ interface VehicleTypeFormProps {
 }
 
 /**
- * Reusable, presentational VehicleType editor — a tabbed FormLayout driven by
+ * Reusable, presentational VehicleType editor — a tabbed FormStack driven by
  * `value`/`onChange`/`mode`. Tabs: Edit (identity + dimensions) · Propulsion/perf.
  * · Passenger Capacity · Environment · Vehicles (read-only links to the vehicles
  * route). Holds no fetch/save logic so it can back both the sidebar editor and a
@@ -52,6 +55,10 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
   const { t } = useTranslation();
   const [tab, setTab] = useState<TabKey>('general');
   const ro = mode === 'view';
+  const transportModeOptions = useMemo(
+    () => TRANSPORT_MODES.map(m => ({ value: m, label: t(transportModeLabelKey(m), m) })),
+    [t]
+  );
 
   const setField = (patch: Partial<VehicleType>) => onChange({ ...value, ...patch });
   const setCapacity = (patch: Partial<PassengerCapacity>) => {
@@ -135,10 +142,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             // at projection, so it always matches an option or the blank one
             // — no MUI out-of-range value, no read/write skew.
             value={value.transportMode}
-            options={TRANSPORT_MODES.map(mode => ({
-              value: mode,
-              label: t(transportModeLabelKey(mode), mode),
-            }))}
+            options={transportModeOptions}
             noneLabel={t('common.none')}
             onChange={transportMode => setField({ transportMode })}
             disabled={ro}
@@ -150,7 +154,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             onChange={lowFloor => setField({ lowFloor })}
             disabled={ro}
           />
-          <Divider sx={{ gridColumn: '1 / -1', my: 0.5 }} />
+          <Divider />
           {numRow('length', t('vehicleType.field.length'))}
           {numRow('width', t('vehicleType.field.width'))}
           {numRow('height', t('vehicleType.field.height'))}
@@ -160,41 +164,25 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
 
       {tab === 'propulsion' && (
         <FormStack data-testid="vtype-tab-propulsion">
-          <Autocomplete<PropulsionType, true>
+          <FormAutocompleteField<PropulsionType, true>
             id="vtype-propulsion-types"
+            label={t('vehicleType.field.propulsionTypes')}
             multiple
-            options={[...PROPULSION_TYPES]}
+            options={PROPULSION_TYPES}
             value={value.propulsionTypes ?? []}
             onChange={(_e, v) => setField({ propulsionTypes: v.length ? v : undefined })}
             disabled={ro}
-            size="small"
             disableCloseOnSelect
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={t('vehicleType.field.propulsionTypes')}
-                slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
-                size="small"
-              />
-            )}
           />
-          <Autocomplete<FuelType, true>
+          <FormAutocompleteField<FuelType, true>
             id="vtype-fuel-types"
+            label={t('vehicleType.field.fuelTypes')}
             multiple
-            options={[...FUEL_TYPES]}
+            options={FUEL_TYPES}
             value={value.fuelTypes ?? []}
             onChange={(_e, v) => setField({ fuelTypes: v.length ? v : undefined })}
             disabled={ro}
-            size="small"
             disableCloseOnSelect
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={t('vehicleType.field.fuelTypes')}
-                slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
-                size="small"
-              />
-            )}
           />
           <FormSwitchField
             id="vtype-self-propelled"
@@ -236,7 +224,7 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             id="vtype-hybrid-category"
             label={t('vehicleType.field.hybridCategory')}
             value={value.hybridCategory}
-            options={HYBRID_CATEGORIES.map(c => ({ value: c, label: c }))}
+            options={HYBRID_CATEGORY_OPTIONS}
             noneLabel={t('common.none')}
             onChange={hybridCategory => setField({ hybridCategory })}
             disabled={ro}

@@ -72,7 +72,7 @@ interface DeckPlanFormProps {
 }
 
 /**
- * Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by
+ * Reusable, presentational DeckPlan editor — a tabbed FormStack driven by
  * `value`/`onChange`/`mode`, mirroring the VehicleType editor's shape. Tabs:
  * Edit (name + description, then a horizontal strip of read-only deck
  * renderings) · XML (the read-only NeTEx source). Both panes render from the

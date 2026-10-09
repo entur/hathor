@@ -1,10 +1,10 @@
-import { Autocomplete, Link, TextField } from '@mui/material';
+import { Link } from '@mui/material';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import { FormStack } from '../../../components/FormLayout.tsx';
-import { FormTextField } from '../../../components/FormFields.tsx';
+import { FormAutocompleteField, FormTextField } from '../../../components/FormFields.tsx';
 import { blankToUndefined } from '../../../utils/blankToUndefined.ts';
 import type { Vehicle } from '../types/vehicle.ts';
 
@@ -73,10 +73,9 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         disabled={ro}
       />
 
-      <Autocomplete<VTOption, false, true>
-        // On the Autocomplete, not the TextField: this is the id MUI puts on
-        // the focusable combobox input and points the label at.
+      <FormAutocompleteField<VTOption, false, true>
         id="vehicle-transport-type"
+        label={t('vehicles.field.transportType')}
         options={vtOptionsWithOrphan}
         // VehicleType is required, so the picker is non-clearable; MUI's
         // type-level `disableClearable` strips null from the value type, but
@@ -91,32 +90,22 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         loadingText={t('vehicleTypePicker.loading')}
         noOptionsText={t('vehicleTypePicker.noOptions')}
         onChange={(_e, opt) => setV({ transportType: { id: opt.id } })}
-        size="small"
-        fullWidth
-        renderInput={params => (
-          <TextField
-            {...params}
-            size="small"
-            required
-            label={t('vehicles.field.transportType')}
-            slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
-            error={!ro && !currentVtId}
-            helperText={
-              vtError ? (
-                <>
-                  {vtError}{' '}
-                  <Link
-                    component="button"
-                    type="button"
-                    onClick={() => void refetchVehicleTypes().catch(() => {})}
-                  >
-                    {t('common.retry')}
-                  </Link>
-                </>
-              ) : undefined
-            }
-          />
-        )}
+        required
+        error={!ro && !currentVtId}
+        helperText={
+          vtError ? (
+            <>
+              {vtError}{' '}
+              <Link
+                component="button"
+                type="button"
+                onClick={() => void refetchVehicleTypes().catch(() => {})}
+              >
+                {t('common.retry')}
+              </Link>
+            </>
+          ) : undefined
+        }
       />
 
       <FormTextField
