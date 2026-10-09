@@ -1,20 +1,16 @@
-import { useState, type ReactNode } from 'react';
-import {
-  Autocomplete,
-  Box,
-  Chip,
-  Divider,
-  FormControlLabel,
-  MenuItem,
-  Switch,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Box, Chip, Divider, Tab, Tabs, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
+import { FormStack } from '../../../components/FormLayout.tsx';
+import {
+  FormAutocompleteField,
+  FormNumberField,
+  FormSelectField,
+  FormSwitchField,
+  FormTextField,
+} from '../../../components/FormFields.tsx';
+import { blankToUndefined } from '../../../utils/blankToUndefined.ts';
 import {
   TRANSPORT_MODES,
   transportModeLabelKey,
@@ -33,6 +29,8 @@ import {
   type HybridCategory,
 } from '../types/vehicleTypeTypes.ts';
 
+const HYBRID_CATEGORY_OPTIONS = HYBRID_CATEGORIES.map(c => ({ value: c, label: c }));
+
 /** Editor tabs — Edit (identity + dimensions) first, then the field-group tabs. */
 type TabKey = 'general' | 'propulsion' | 'capacity' | 'environment' | 'vehicles';
 
@@ -42,12 +40,8 @@ interface VehicleTypeFormProps {
   mode: 'view' | 'edit';
 }
 
-const numVal = (n?: number): number | '' => (n == null ? '' : n);
-const numOr = (s: string): number | undefined => (s === '' ? undefined : Number(s));
-const textOr = (s: string): string | undefined => (s === '' ? undefined : s);
-
 /**
- * Reusable, presentational VehicleType editor — a tabbed FormLayout driven by
+ * Reusable, presentational VehicleType editor — a tabbed FormStack driven by
  * `value`/`onChange`/`mode`. Tabs: Edit (identity + dimensions) · Propulsion/perf.
  * · Passenger Capacity · Environment · Vehicles (read-only links to the vehicles
  * route). Holds no fetch/save logic so it can back both the sidebar editor and a
@@ -61,6 +55,10 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
   const { t } = useTranslation();
   const [tab, setTab] = useState<TabKey>('general');
   const ro = mode === 'view';
+  const transportModeOptions = useMemo(
+    () => TRANSPORT_MODES.map(m => ({ value: m, label: t(transportModeLabelKey(m), m) })),
+    [t]
+  );
 
   const setField = (patch: Partial<VehicleType>) => onChange({ ...value, ...patch });
   const setCapacity = (patch: Partial<PassengerCapacity>) => {
@@ -71,34 +69,26 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
     onChange({ ...value, passengerCapacity: hasAny ? merged : undefined });
   };
 
-  /** A read-only-aware number FieldRow bound to a top-level VehicleType key. */
+  /** A read-only-aware number field bound to a top-level VehicleType key. */
   const numRow = (key: keyof VehicleType, label: string): ReactNode => (
-    <FieldRow id={`vtype-${key}`} label={label}>
-      <TextField
-        id={`vtype-${key}`}
-        type="number"
-        value={numVal(value[key] as number | undefined)}
-        onChange={e => setField({ [key]: numOr(e.target.value) })}
-        disabled={ro}
-        size="small"
-        fullWidth
-      />
-    </FieldRow>
+    <FormNumberField
+      id={`vtype-${key}`}
+      label={label}
+      value={value[key] as number | undefined}
+      onChange={n => setField({ [key]: n })}
+      disabled={ro}
+    />
   );
 
-  /** A read-only-aware number FieldRow bound to a passengerCapacity key. */
+  /** A read-only-aware number field bound to a passengerCapacity key. */
   const capRow = (key: keyof PassengerCapacity, label: string): ReactNode => (
-    <FieldRow id={`vtype-cap-${key}`} label={label}>
-      <TextField
-        id={`vtype-cap-${key}`}
-        type="number"
-        value={numVal(value.passengerCapacity?.[key])}
-        onChange={e => setCapacity({ [key]: numOr(e.target.value) })}
-        disabled={ro}
-        size="small"
-        fullWidth
-      />
-    </FieldRow>
+    <FormNumberField
+      id={`vtype-cap-${key}`}
+      label={label}
+      value={value.passengerCapacity?.[key]}
+      onChange={n => setCapacity({ [key]: n })}
+      disabled={ro}
+    />
   );
 
   return (
@@ -137,125 +127,84 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
       </Tabs>
 
       {tab === 'general' && (
-        <FormLayout data-testid="vtype-tab-general">
-          <FieldRow id="vtype-name" label={t('vehicleType.field.name')}>
-            <TextField
-              id="vtype-name"
-              value={value.name?.value ?? ''}
-              onChange={e => setField({ name: mergeNameText(value.name, e.target.value) })}
-              disabled={ro}
-              size="small"
-              fullWidth
-            />
-          </FieldRow>
-          <FieldRow id="vtype-transport-mode" label={t('vehicleType.field.transportMode')}>
-            <TextField
-              id="vtype-transport-mode"
-              select
-              // `transportMode` is normalised to a canonical mode (or undefined)
-              // at projection, so it always matches an option or the blank one
-              // below — no MUI out-of-range value, no read/write skew.
-              value={value.transportMode ?? ''}
-              onChange={e =>
-                setField({
-                  transportMode: (e.target.value || undefined) as TransportMode | undefined,
-                })
-              }
-              disabled={ro}
-              size="small"
-              fullWidth
-            >
-              <MenuItem value="">
-                <em>{t('common.none')}</em>
-              </MenuItem>
-              {TRANSPORT_MODES.map(mode => (
-                <MenuItem key={mode} value={mode}>
-                  {t(transportModeLabelKey(mode), mode)}
-                </MenuItem>
-              ))}
-            </TextField>
-          </FieldRow>
-          <FieldRow id="vtype-low-floor" label={t('vehicleType.field.lowFloor')}>
-            <FormControlLabel
-              control={
-                <Switch
-                  id="vtype-low-floor"
-                  checked={!!value.lowFloor}
-                  onChange={e => setField({ lowFloor: e.target.checked })}
-                  disabled={ro}
-                  size="small"
-                />
-              }
-              label=""
-            />
-          </FieldRow>
-          <Divider sx={{ gridColumn: '1 / -1', my: 0.5 }} />
+        <FormStack data-testid="vtype-tab-general">
+          <FormTextField
+            id="vtype-name"
+            label={t('vehicleType.field.name')}
+            value={value.name?.value ?? ''}
+            onChange={text => setField({ name: mergeNameText(value.name, text) })}
+            disabled={ro}
+          />
+          <FormSelectField<TransportMode>
+            id="vtype-transport-mode"
+            label={t('vehicleType.field.transportMode')}
+            // `transportMode` is normalised to a canonical mode (or undefined)
+            // at projection, so it always matches an option or the blank one
+            // — no MUI out-of-range value, no read/write skew.
+            value={value.transportMode}
+            options={transportModeOptions}
+            noneLabel={t('common.none')}
+            onChange={transportMode => setField({ transportMode })}
+            disabled={ro}
+          />
+          <FormSwitchField
+            id="vtype-low-floor"
+            label={t('vehicleType.field.lowFloor')}
+            checked={!!value.lowFloor}
+            onChange={lowFloor => setField({ lowFloor })}
+            disabled={ro}
+          />
+          <Divider />
           {numRow('length', t('vehicleType.field.length'))}
           {numRow('width', t('vehicleType.field.width'))}
           {numRow('height', t('vehicleType.field.height'))}
           {numRow('weight', t('vehicleType.field.weight'))}
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'propulsion' && (
-        <FormLayout data-testid="vtype-tab-propulsion">
-          <FieldRow id="vtype-propulsion-types" label={t('vehicleType.field.propulsionTypes')}>
-            <Autocomplete<PropulsionType, true>
-              multiple
-              options={[...PROPULSION_TYPES]}
-              value={value.propulsionTypes ?? []}
-              onChange={(_e, v) => setField({ propulsionTypes: v.length ? v : undefined })}
-              disabled={ro}
-              size="small"
-              disableCloseOnSelect
-              renderInput={params => (
-                <TextField {...params} id="vtype-propulsion-types" size="small" />
-              )}
-            />
-          </FieldRow>
-          <FieldRow id="vtype-fuel-types" label={t('vehicleType.field.fuelTypes')}>
-            <Autocomplete<FuelType, true>
-              multiple
-              options={[...FUEL_TYPES]}
-              value={value.fuelTypes ?? []}
-              onChange={(_e, v) => setField({ fuelTypes: v.length ? v : undefined })}
-              disabled={ro}
-              size="small"
-              disableCloseOnSelect
-              renderInput={params => <TextField {...params} id="vtype-fuel-types" size="small" />}
-            />
-          </FieldRow>
-          <FieldRow id="vtype-self-propelled" label={t('vehicleType.field.selfPropelled')}>
-            <FormControlLabel
-              control={
-                <Switch
-                  id="vtype-self-propelled"
-                  checked={!!value.selfPropelled}
-                  onChange={e => setField({ selfPropelled: e.target.checked })}
-                  disabled={ro}
-                  size="small"
-                />
-              }
-              label=""
-            />
-          </FieldRow>
-          <FieldRow id="vtype-euro-class" label={t('vehicleType.field.euroClass')}>
-            <TextField
-              id="vtype-euro-class"
-              value={value.euroClass ?? ''}
-              onChange={e => setField({ euroClass: textOr(e.target.value) })}
-              disabled={ro}
-              size="small"
-              fullWidth
-            />
-          </FieldRow>
+        <FormStack data-testid="vtype-tab-propulsion">
+          <FormAutocompleteField<PropulsionType, true>
+            id="vtype-propulsion-types"
+            label={t('vehicleType.field.propulsionTypes')}
+            multiple
+            options={PROPULSION_TYPES}
+            value={value.propulsionTypes ?? []}
+            onChange={(_e, v) => setField({ propulsionTypes: v.length ? v : undefined })}
+            disabled={ro}
+            disableCloseOnSelect
+          />
+          <FormAutocompleteField<FuelType, true>
+            id="vtype-fuel-types"
+            label={t('vehicleType.field.fuelTypes')}
+            multiple
+            options={FUEL_TYPES}
+            value={value.fuelTypes ?? []}
+            onChange={(_e, v) => setField({ fuelTypes: v.length ? v : undefined })}
+            disabled={ro}
+            disableCloseOnSelect
+          />
+          <FormSwitchField
+            id="vtype-self-propelled"
+            label={t('vehicleType.field.selfPropelled')}
+            checked={!!value.selfPropelled}
+            onChange={selfPropelled => setField({ selfPropelled })}
+            disabled={ro}
+          />
+          <FormTextField
+            id="vtype-euro-class"
+            label={t('vehicleType.field.euroClass')}
+            value={value.euroClass ?? ''}
+            onChange={text => setField({ euroClass: blankToUndefined(text) })}
+            disabled={ro}
+          />
           {numRow('maximumVelocity', t('vehicleType.field.maximumVelocity'))}
           {numRow('maximumRange', t('vehicleType.field.maximumRange'))}
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'capacity' && (
-        <FormLayout data-testid="vtype-tab-capacity">
+        <FormStack data-testid="vtype-tab-capacity">
           {capRow('totalCapacity', t('vehicleType.field.totalCapacity'))}
           {capRow('seatingCapacity', t('vehicleType.field.seatingCapacity'))}
           {capRow('standingCapacity', t('vehicleType.field.standingCapacity'))}
@@ -263,39 +212,24 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
           {capRow('wheelchairPlaceCapacity', t('vehicleType.field.wheelchairPlaceCapacity'))}
           {capRow('pramPlaceCapacity', t('vehicleType.field.pramPlaceCapacity'))}
           {capRow('bicycleRackCapacity', t('vehicleType.field.bicycleRackCapacity'))}
-        </FormLayout>
+        </FormStack>
       )}
 
       {tab === 'environment' && (
-        <FormLayout data-testid="vtype-tab-environment">
+        <FormStack data-testid="vtype-tab-environment">
           {numRow('formDragCoefficient', t('vehicleType.field.formDragCoefficient'))}
           {numRow('rollResistanceCoefficient', t('vehicleType.field.rollResistanceCoefficient'))}
           {numRow('maximumEngineEffectKW', t('vehicleType.field.maximumEngineEffectKW'))}
-          <FieldRow id="vtype-hybrid-category" label={t('vehicleType.field.hybridCategory')}>
-            <TextField
-              id="vtype-hybrid-category"
-              select
-              value={value.hybridCategory ?? ''}
-              onChange={e =>
-                setField({
-                  hybridCategory: (e.target.value || undefined) as HybridCategory | undefined,
-                })
-              }
-              disabled={ro}
-              size="small"
-              fullWidth
-            >
-              <MenuItem value="">
-                <em>{t('common.none')}</em>
-              </MenuItem>
-              {HYBRID_CATEGORIES.map(c => (
-                <MenuItem key={c} value={c}>
-                  {c}
-                </MenuItem>
-              ))}
-            </TextField>
-          </FieldRow>
-        </FormLayout>
+          <FormSelectField<HybridCategory>
+            id="vtype-hybrid-category"
+            label={t('vehicleType.field.hybridCategory')}
+            value={value.hybridCategory}
+            options={HYBRID_CATEGORY_OPTIONS}
+            noneLabel={t('common.none')}
+            onChange={hybridCategory => setField({ hybridCategory })}
+            disabled={ro}
+          />
+        </FormStack>
       )}
 
       {tab === 'vehicles' && (

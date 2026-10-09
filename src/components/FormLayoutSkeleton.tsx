@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { Box, Divider, Skeleton } from '@mui/material';
-import { FormLayout } from './FormLayout.tsx';
+import { FormLayout, FormStack } from './FormLayout.tsx';
 
 const INPUT_HEIGHT = 37;
 const TITLE_HEIGHT = 28;
@@ -8,39 +8,54 @@ const ID_PILL_WIDTH = 144;
 const ID_PILL_HEIGHT = 24;
 const ANIM = 'wave' as const;
 
-export interface FormLayoutSkeletonSection {
-  /** Number of label+value rows in this grid. */
+interface SectionBase {
+  /** Number of rows in this section. */
   rowCount: number;
-  /** Height of the value-cell rounded block. Defaults to 37 (input height). */
+  /** Height of each row's rounded block. Defaults to 37 (input height). */
   rowHeight?: number;
+}
+
+/** Read-only label+value rows, as `FormLayout` lays them out. */
+interface RowsSection extends SectionBase {
+  stacked?: false;
   /** Vertical gap between rows. Defaults to FormLayout's `rowGap` default. */
   rowGap?: number;
 }
+
+/** Editable fields in a `FormStack` — one full-width block per row, label included. */
+interface StackedSection extends SectionBase {
+  stacked: true;
+}
+
+export type FormLayoutSkeletonSection = RowsSection | StackedSection;
 
 interface FormLayoutSkeletonProps {
   /** Loading text for screen readers — caller-localised. */
   ariaLabel: string;
   /** Render an h6 + id-pill skeleton row at the top, with a divider below. */
   showTitle?: boolean;
-  /** Each section is its own <FormLayout> grid; Dividers auto-rendered between. */
+  /** Each section is its own form container; Dividers auto-rendered between. */
   sections: FormLayoutSkeletonSection[];
 }
 
-function SkeletonRow({ height = INPUT_HEIGHT }: { height?: number }) {
+function SkeletonBlock({ height = INPUT_HEIGHT }: { height?: number }) {
+  return <Skeleton animation={ANIM} variant="rounded" height={height} />;
+}
+
+function SkeletonRow({ height }: { height?: number }) {
   return (
     <Box sx={{ display: 'contents' }}>
       <Skeleton animation={ANIM} variant="text" width="60%" />
-      <Skeleton animation={ANIM} variant="rounded" height={height} />
+      <SkeletonBlock height={height} />
     </Box>
   );
 }
 
 /**
- * Wave-animated loading skeleton for any sidebar editor built on the
- * {@link FormLayout} two-column grid. Internally wraps each section in
- * `<FormLayout>` so the skeleton's grid shape (and container-query
- * stacking) tracks the live form automatically — no separate grid
- * template to keep in sync.
+ * Wave-animated loading skeleton for any sidebar editor. Each section is
+ * wrapped in the container the live editor uses — {@link FormLayout} for
+ * read-only label+value rows, {@link FormStack} for editable fields — so the
+ * skeleton's shape tracks the form without a separate template to keep in sync.
  */
 export default function FormLayoutSkeleton({
   ariaLabel,
@@ -69,13 +84,20 @@ export default function FormLayoutSkeleton({
       )}
       {sections.map((section, sIdx) => {
         const isLast = sIdx === sections.length - 1;
+        const gapBelow = isLast ? undefined : { mb: 2 };
+        const rows = (Row: typeof SkeletonBlock) =>
+          Array.from({ length: section.rowCount }, (_, rIdx) => (
+            <Row key={rIdx} height={section.rowHeight} />
+          ));
         return (
           <Fragment key={sIdx}>
-            <FormLayout rowGap={section.rowGap} sx={isLast ? undefined : { mb: 2 }}>
-              {Array.from({ length: section.rowCount }).map((_, rIdx) => (
-                <SkeletonRow key={rIdx} height={section.rowHeight} />
-              ))}
-            </FormLayout>
+            {section.stacked ? (
+              <FormStack sx={gapBelow}>{rows(SkeletonBlock)}</FormStack>
+            ) : (
+              <FormLayout rowGap={section.rowGap} sx={gapBelow}>
+                {rows(SkeletonRow)}
+              </FormLayout>
+            )}
             {!isLast && <Divider sx={{ mb: 2 }} />}
           </Fragment>
         );
