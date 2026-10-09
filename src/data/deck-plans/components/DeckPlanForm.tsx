@@ -9,11 +9,11 @@ import {
   Tab,
   Tabs,
   TextareaAutosize,
-  TextField,
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
+import { FormLayout } from '../../../components/FormLayout.tsx';
+import { FormTextField } from '../../../components/FormFields.tsx';
 import { mergeNameText, netexText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { useDeckRenderer } from '../hooks/useDeckRenderer.ts';
@@ -101,28 +101,20 @@ export default function DeckPlanForm({
 
   const fields = (
     <FormLayout data-testid="deck-plan-tab-edit">
-      <FieldRow id="deckPlan-name" label={t('deckPlans.field.name')}>
-        <TextField
-          id="deckPlan-name"
-          value={value.name?.value ?? ''}
-          onChange={e => setField({ name: mergeNameText(value.name, e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
-      <FieldRow id="deckPlan-description" label={t('deckPlans.field.description')}>
-        <TextField
-          id="deckPlan-description"
-          value={value.description?.value ?? ''}
-          onChange={e =>
-            setField({ description: mergeNameText(value.description, e.target.value) })
-          }
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="deckPlan-name"
+        label={t('deckPlans.field.name')}
+        value={value.name?.value ?? ''}
+        onChange={text => setField({ name: mergeNameText(value.name, text) })}
+        disabled={ro}
+      />
+      <FormTextField
+        id="deckPlan-description"
+        label={t('deckPlans.field.description')}
+        value={value.description?.value ?? ''}
+        onChange={text => setField({ description: mergeNameText(value.description, text) })}
+        disabled={ro}
+      />
     </FormLayout>
   );
 

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
+import { FormTextField } from '../../../components/FormFields.tsx';
+import { blankToUndefined } from '../../../utils/blankToUndefined.ts';
 import type { Vehicle } from '../types/vehicle.ts';
 
 type VTOption = { id: string; name: string };
@@ -17,8 +19,6 @@ interface VehicleEditFormProps {
   onChange: (next: VehicleEditFormValue) => void;
   mode: 'view' | 'edit';
 }
-
-const orUndef = (s: string): string | undefined => (s.length === 0 ? undefined : s);
 
 export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFormProps) {
   const { t } = useTranslation();
@@ -57,27 +57,21 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
 
   return (
     <FormLayout>
-      <FieldRow id="vehicle-name" label={t('vehicles.field.name')}>
-        <TextField
-          id="vehicle-name"
-          value={v.name?.value ?? ''}
-          onChange={e => setV({ name: mergeNameText(v.name, e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-name"
+        label={t('vehicles.field.name')}
+        value={v.name?.value ?? ''}
+        onChange={text => setV({ name: mergeNameText(v.name, text) })}
+        disabled={ro}
+      />
 
-      <FieldRow id="vehicle-registration-number" label={t('vehicles.field.registrationNumber')}>
-        <TextField
-          id="vehicle-registration-number"
-          value={v.registrationNumber}
-          onChange={e => setV({ registrationNumber: orUndef(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-registration-number"
+        label={t('vehicles.field.registrationNumber')}
+        value={v.registrationNumber ?? ''}
+        onChange={text => setV({ registrationNumber: blankToUndefined(text) })}
+        disabled={ro}
+      />
 
       <FieldRow id="vehicle-transport-type" label={t('vehicles.field.transportType')}>
         <Autocomplete<VTOption, false, true>
@@ -127,62 +121,47 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
         />
       </FieldRow>
 
-      <FieldRow id="vehicle-operational-number" label={t('vehicles.field.operationalNumber')}>
-        <TextField
-          id="vehicle-operational-number"
-          value={v.operationalNumber ?? ''}
-          onChange={e => setV({ operationalNumber: orUndef(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-operational-number"
+        label={t('vehicles.field.operationalNumber')}
+        value={v.operationalNumber ?? ''}
+        onChange={text => setV({ operationalNumber: blankToUndefined(text) })}
+        disabled={ro}
+      />
 
-      <FieldRow id="vehicle-chassis-number" label={t('vehicles.field.chassisNumber')}>
-        <TextField
-          id="vehicle-chassis-number"
-          value={v.chassisNumber ?? ''}
-          onChange={e => setV({ chassisNumber: orUndef(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-chassis-number"
+        label={t('vehicles.field.chassisNumber')}
+        value={v.chassisNumber ?? ''}
+        onChange={text => setV({ chassisNumber: blankToUndefined(text) })}
+        disabled={ro}
+      />
 
-      <FieldRow id="vehicle-build-date" label={t('vehicles.field.buildDate')}>
-        <TextField
-          id="vehicle-build-date"
-          type="date"
-          value={(v.buildDate ?? '').slice(0, 10)}
-          onChange={e => setV({ buildDate: orUndef(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-build-date"
+        label={t('vehicles.field.buildDate')}
+        type="date"
+        value={(v.buildDate ?? '').slice(0, 10)}
+        onChange={text => setV({ buildDate: blankToUndefined(text) })}
+        disabled={ro}
+      />
 
-      <FieldRow id="vehicle-registration-date" label={t('vehicles.field.registrationDate')}>
-        <TextField
-          id="vehicle-registration-date"
-          type="date"
-          value={(v.registrationDate ?? '').slice(0, 10)}
-          onChange={e => setV({ registrationDate: orUndef(e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-registration-date"
+        label={t('vehicles.field.registrationDate')}
+        type="date"
+        value={(v.registrationDate ?? '').slice(0, 10)}
+        onChange={text => setV({ registrationDate: blankToUndefined(text) })}
+        disabled={ro}
+      />
 
-      <FieldRow id="vehicle-description" label={t('vehicles.field.description')}>
-        <TextField
-          id="vehicle-description"
-          value={v.description?.value ?? ''}
-          onChange={e => setV({ description: mergeNameText(v.description, e.target.value) })}
-          disabled={ro}
-          size="small"
-          fullWidth
-        />
-      </FieldRow>
+      <FormTextField
+        id="vehicle-description"
+        label={t('vehicles.field.description')}
+        value={v.description?.value ?? ''}
+        onChange={text => setV({ description: mergeNameText(v.description, text) })}
+        disabled={ro}
+      />
     </FormLayout>
   );
 }
