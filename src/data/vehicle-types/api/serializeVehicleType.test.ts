@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  serializeVehicleType,
-  projectVehicleType,
-  type VehicleTypeWire,
-} from './fetchVehicleTypes.ts';
+import { serializeVehicleType, projectVehicleType } from './fetchVehicleTypes.ts';
+import type { VehicleTypesQuery } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 
 /** Owning-organisation ref threaded into every serialize call (required input field). */
@@ -90,7 +87,7 @@ describe('serializeVehicleType', () => {
   });
 
   it('round-trips netexId through project∘serialize', () => {
-    const wire: VehicleTypeWire = {
+    const wire: VehicleTypesQuery['vehicleTypes']['content'][number] = {
       netexId: 'NMR:VehicleType:rail',
       version: 1,
       name: { value: 'Rail Type' },
@@ -114,7 +111,7 @@ describe('serializeVehicleType', () => {
         version: 1,
         name: { value: 'Has description' },
         description: { value: 'Long-form description' },
-      } as VehicleTypeWire;
+      } as VehicleTypesQuery['vehicleTypes']['content'][number];
       const input = serializeVehicleType(projectVehicleType(wire), OWNER);
       expect(input.description).toEqual({ value: 'Long-form description' });
     });
@@ -123,7 +120,7 @@ describe('serializeVehicleType', () => {
       // Sobek's TransportMode enum has modes hathor does not chip-filter
       // (FERRY, INTERCITY_RAIL, URBAN_RAIL, SELF_DRIVE, …). Editing such a VT
       // must not reclassify it.
-      const wire: VehicleTypeWire = {
+      const wire: VehicleTypesQuery['vehicleTypes']['content'][number] = {
         netexId: 'NMR:VehicleType:ferry',
         version: 1,
         name: { value: 'Ferry Type' },

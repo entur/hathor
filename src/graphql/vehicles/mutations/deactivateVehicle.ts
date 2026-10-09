@@ -1,8 +1,8 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth/index.ts';
-import type { DeactivateInput } from '../../../data/vehicle-types/api/fetchVehicleTypes.ts';
+import type { DeactivateInput } from './deactivateInput.ts';
 
-const deactivateVehicleMutation = gql`
+const deactivateVehicleDocument = gql`
   mutation DeactivateVehicle($input: DeactivateInput!) {
     deactivateVehicle(input: $input) {
       netexId
@@ -12,7 +12,7 @@ const deactivateVehicleMutation = gql`
 `;
 
 /** Mutation response: the persisted Vehicle's NeTEx id + version (nullable per SDL). */
-export interface DeactivateVehicleResponse {
+export interface DeactivateVehicleMutation {
   deactivateVehicle: {
     netexId: string;
     version: number;
@@ -23,10 +23,10 @@ export const deactivateVehicleRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
   vehicleData: DeactivateInput
-): Promise<DeactivateVehicleResponse> =>
-  request<DeactivateVehicleResponse>(
+): Promise<DeactivateVehicleMutation> =>
+  request<DeactivateVehicleMutation>(
     applicationBaseUrl,
-    deactivateVehicleMutation,
+    deactivateVehicleDocument,
     { input: vehicleData },
     authHeader(token)
   );

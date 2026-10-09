@@ -1,23 +1,6 @@
+import type { DeckPlan } from '../../deck-plans/types/deckPlanTypes.ts';
+import type { MultilingualString } from '../../netex/multilingualString.ts';
 import type { TransportMode } from '../../netex/transportMode.ts';
-
-export type Name = {
-  value: string;
-  lang?: string;
-};
-
-export type DeckPlan = {
-  id: string;
-  version?: number;
-  name?: Name;
-  description?: Name;
-};
-
-export type Vehicle = {
-  id: string;
-  registrationNumber: string;
-  operationalNumber?: string;
-  version: number;
-};
 
 /** Sobek `PropulsionType` enum (wire form is SCREAMING_SNAKE). */
 export const PROPULSION_TYPES = [
@@ -72,9 +55,9 @@ export type PassengerCapacity = {
 export type VehicleType = {
   id: string;
   version: number;
-  name?: Name;
-  shortName?: Name;
-  description?: Name;
+  name?: MultilingualString;
+  shortName?: MultilingualString;
+  description?: MultilingualString;
   transportMode?: TransportMode;
   deckPlan?: DeckPlan;
   length?: number;
@@ -98,7 +81,12 @@ export type VehicleType = {
   created?: string;
   changed?: string;
   changedBy?: string;
-  vehicles?: Vehicle[];
+  vehicles?: {
+    id: string;
+    registrationNumber: string;
+    operationalNumber?: string;
+    version: number;
+  }[];
 };
 
 export type VehicleTypeContext = {

@@ -1,4 +1,4 @@
-import type { Name } from '../../vehicle-types/types/vehicleTypeTypes';
+import type { MultilingualString } from '../../netex/multilingualString';
 
 export const ORGANISATION_TYPES = ['AUTHORITY', 'OPERATOR', 'OTHER'] as const;
 
@@ -6,7 +6,7 @@ export type OrganisationType = (typeof ORGANISATION_TYPES)[number];
 
 export type Organisation = {
   id: string;
-  name: Name;
+  name: MultilingualString;
   type: OrganisationType;
 };
 

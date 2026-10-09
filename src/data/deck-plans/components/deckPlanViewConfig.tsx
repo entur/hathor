@@ -7,7 +7,7 @@ import DataPageContent from '../../../components/data/DataPageContent.tsx';
 import NetexId from '../../netex/NetexId.tsx';
 import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
 import type { FilterDefinition } from '../../../components/search/searchTypes.ts';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { getDeckPlanSortValue } from '../utils/deckPlanSortValue.ts';
 import { useDeckPlanUrlSelection } from '../hooks/useDeckPlanUrlSelection.tsx';
 import { deckPlanSelectedHref } from '../utils/deckPlanUrlParams.ts';

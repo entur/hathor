@@ -15,7 +15,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
 import { mergeNameText, netexText } from '../../netex/multilingualString.ts';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { useDeckRenderer } from '../hooks/useDeckRenderer.ts';
 import DeckRendering from './DeckRendering.tsx';
 

@@ -1,17 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle } from '../types/vehicle.ts';
 import { fetchVehicle } from '../api/fetchVehicles.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 
 /**
- * Fetch and parse a single VehicleGQLShaped from Sobek's GraphQL endpoint.
+ * Fetch and parse a single Vehicle from Sobek's GraphQL endpoint.
  * Mirrors `useVehicleType`'s lifecycle. Returns `data: null` when the
- * response carries no VehicleGQLShaped (unknown id surfaced as an `error`).
+ * response carries no Vehicle (unknown id surfaced as an `error`).
  */
 export function useVehicle(id: string | undefined) {
-  const [data, setData] = useState<Partial<VehicleGQLShaped> | null>(null);
+  const [data, setData] = useState<Partial<Vehicle> | null>(null);
   const [loading, setLoading] = useState(!!id);
   const [error, setError] = useState<string | null>(null);
   const { applicationBaseUrl } = useConfig();

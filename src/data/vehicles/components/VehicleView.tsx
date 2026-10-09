@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { vehicleViewConfig } from './vehicleViewConfig.tsx';
 import GenericDataViewPage from '../../../pages/GenericDataViewPage.tsx';
 import NewEntityFab from '../../../components/NewEntityFab.tsx';
-import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle, VehicleColumnKey } from '../types/vehicle.ts';
 
 /**
  * `/vehicles` route entry point. URL-filter affordances will arrive with
@@ -11,7 +11,7 @@ import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShap
 export default function VehicleView() {
   const { t } = useTranslation();
   return (
-    <GenericDataViewPage<VehicleGQLShaped, VehicleColumnKey>
+    <GenericDataViewPage<Vehicle, VehicleColumnKey>
       viewConfig={{
         ...vehicleViewConfig,
         addAction: (

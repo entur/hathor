@@ -1,4 +1,4 @@
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import type { OrderBy } from '../hooks/useDeckPlans.ts';
 import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
 

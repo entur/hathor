@@ -1,8 +1,9 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth/index.ts';
-import type { PageVars } from '../../paginationTypes.ts';
+import type { MultilingualString } from '../../../data/netex/multilingualString.ts';
+import type { OrganisationType } from '../../../data/organisations/types/organisationTypes.ts';
 
-const fetchOrganisationsGQL = gql`
+const organisationsDocument = gql`
   query Organisations($page: Int, $size: Int, $filter: OrganisationsFilter) {
     organisations(page: $page, size: $size, filter: $filter) {
       content {
@@ -19,14 +20,34 @@ const fetchOrganisationsGQL = gql`
   }
 `;
 
-export type OrganisationVars = PageVars & {
-  filter?: {
-    onlyUserAuthorized?: boolean;
+/** Sobek `OrganisationsFilter` — the `organisations(filter:)` argument. */
+export type OrganisationsFilter = { onlyUserAuthorized?: boolean };
+
+/** Variables of the `Organisations` query. */
+export type OrganisationsQueryVariables = {
+  page?: number;
+  size?: number;
+  filter?: OrganisationsFilter;
+};
+
+/** Result of the `Organisations` query: one page of organisations, as selected above. */
+export type OrganisationsQuery = {
+  organisations: {
+    content: { netexId: string; name: MultilingualString; type: OrganisationType }[];
+    totalElements: number;
+    page: number;
+    size: number;
   };
 };
 
 export const fetchOrganisationsRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
-  variables?: OrganisationVars
-) => request(applicationBaseUrl, fetchOrganisationsGQL, variables, authHeader(token));
+  variables?: OrganisationsQueryVariables
+) =>
+  request<OrganisationsQuery>(
+    applicationBaseUrl,
+    organisationsDocument,
+    variables,
+    authHeader(token)
+  );

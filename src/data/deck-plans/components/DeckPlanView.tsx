@@ -1,6 +1,6 @@
 import { deckPlanViewConfig } from './deckPlanViewConfig.tsx';
 import GenericDataViewPage from '../../../pages/GenericDataViewPage.tsx';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { useUrlFilters } from '../../../hooks/useUrlFilters.ts';
 import type { OrderBy } from '../hooks/useDeckPlans.ts';
 import NewEntityFab from '../../../components/NewEntityFab.tsx';

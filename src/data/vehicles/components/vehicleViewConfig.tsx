@@ -11,13 +11,9 @@ import { useVehicleUrlSelection } from '../hooks/useVehicleUrlSelection.tsx';
 import { vehicleSelectedHref } from '../utils/vehicleUrlParams.ts';
 import { transportModeFilters } from '../../netex/transportMode.ts';
 import type { ColumnDefinition } from '../../../components/data/dataTableTypes.ts';
-import {
-  vehicleMode,
-  type VehicleGQLShaped,
-  type VehicleColumnKey,
-} from '../types/vehicleGqlShaped.ts';
+import { vehicleMode, type Vehicle, type VehicleColumnKey } from '../types/vehicle.ts';
 
-const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
+const vehicleColumns: ColumnDefinition<Vehicle, VehicleColumnKey>[] = [
   {
     id: 'name',
     headerLabel: 'vehicles.field.name',
@@ -73,11 +69,11 @@ const vehicleColumns: ColumnDefinition<VehicleGQLShaped, VehicleColumnKey>[] = [
   },
 ];
 
-const getVehicleFilterKey = (item: VehicleGQLShaped): string => vehicleMode(item);
+const getVehicleFilterKey = (item: Vehicle): string => vehicleMode(item);
 
 const useVehicleRowClick = () => {
   const navigate = useNavigate();
-  return (item: VehicleGQLShaped) => navigate(vehicleSelectedHref(item.id));
+  return (item: Vehicle) => navigate(vehicleSelectedHref(item.id));
 };
 
 export const vehicleViewConfig = {
@@ -88,7 +84,7 @@ export const vehicleViewConfig = {
   columns: vehicleColumns,
   getFilterKey: getVehicleFilterKey,
   getSortValue: getVehicleSortValue,
-  filters: (items: VehicleGQLShaped[]) => transportModeFilters(items.map(vehicleMode)),
+  filters: (items: Vehicle[]) => transportModeFilters(items.map(vehicleMode)),
   titleKey: 'vehicles.title',
   useUrlEffect: useVehicleUrlSelection,
   useRowClick: useVehicleRowClick,

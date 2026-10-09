@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import { FormLayout, FieldRow } from '../../../components/FormLayout.tsx';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle } from '../types/vehicle.ts';
 
 type VTOption = { id: string; name: string };
 
 export interface VehicleEditFormValue {
-  vehicle: VehicleGQLShaped;
+  vehicle: Vehicle;
 }
 
 interface VehicleEditFormProps {
@@ -24,8 +24,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
   const { t } = useTranslation();
   const v = value.vehicle;
   const ro = mode === 'view';
-  const setV = (patch: Partial<VehicleGQLShaped>) =>
-    onChange({ ...value, vehicle: { ...v, ...patch } });
+  const setV = (patch: Partial<Vehicle>) => onChange({ ...value, vehicle: { ...v, ...patch } });
 
   const {
     allData: vehicleTypes,

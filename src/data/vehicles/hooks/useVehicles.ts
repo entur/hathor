@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
-import type { VehicleGQLShaped, VehicleColumnKey } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle, VehicleColumnKey } from '../types/vehicle.ts';
 import { fetchVehiclesAndApply } from '../api/fetchVehiclesAndApply.ts';
 import { compareVehicles } from '../utils/vehicleSortValue.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
@@ -13,7 +13,7 @@ import { useOrganisationsContext } from '../../../contexts/useOrganisationsConte
  * `applicationBaseUrl` change.
  */
 export function useVehicles() {
-  const [data, setData] = useState<VehicleGQLShaped[]>([]);
+  const [data, setData] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

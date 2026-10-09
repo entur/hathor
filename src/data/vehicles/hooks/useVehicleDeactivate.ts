@@ -4,7 +4,7 @@ import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 import { deactivateVehicleRequest } from '../../../graphql/vehicles/mutations/deactivateVehicle.ts';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle } from '../types/vehicle.ts';
 
 interface SaveResult {
   newVersion: number | null;
@@ -12,7 +12,7 @@ interface SaveResult {
 }
 
 interface UseVehicleDeactivateResult {
-  deactivate: (form: VehicleGQLShaped) => Promise<SaveResult>;
+  deactivate: (form: Vehicle) => Promise<SaveResult>;
   saving: boolean;
   error: string | null;
   clearError: () => void;
@@ -32,7 +32,7 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
   const [error, setError] = useState<string | null>(null);
 
   const deactivate = useCallback(
-    async (form: VehicleGQLShaped): Promise<SaveResult> => {
+    async (form: Vehicle): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
         const message = t('error.noBaseUrl');
         setError(message);

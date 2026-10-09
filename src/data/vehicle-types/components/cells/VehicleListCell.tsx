@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Box, Chip, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { vehicleSelectedHref } from '../../../vehicles/utils/vehicleUrlParams.ts';
-import type { Vehicle } from '../../types/vehicleTypeTypes.ts';
+import type { VehicleType } from '../../types/vehicleTypeTypes.ts';
 
 const MAX_VISIBLE = 5;
 
 interface VehicleListCellProps {
-  vehicles: Vehicle[];
+  vehicles: NonNullable<VehicleType['vehicles']>;
 }
 
 export default function VehicleListCell({ vehicles }: VehicleListCellProps) {

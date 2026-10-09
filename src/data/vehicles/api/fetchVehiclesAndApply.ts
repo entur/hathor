@@ -7,20 +7,20 @@
  */
 import type { AccessToken } from '../../../auth';
 import { graphqlErrMsg } from '../../graphqlErrMsg';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
+import type { Vehicle } from '../types/vehicle';
 import { fetchVehicles } from './fetchVehicles';
 
 export interface FetchVehiclesAndApplyDeps {
   applicationBaseUrl: string;
   getAccessToken: () => Promise<AccessToken>;
-  setData: (rows: VehicleGQLShaped[]) => void;
+  setData: (rows: Vehicle[]) => void;
   setError: (msg: string | null) => void;
   /** Test seam. Defaults to the production `fetchVehicles`. */
   fetchVehiclesImpl?: (
     baseUrl: string,
     dataOwnerRef: string,
     token: AccessToken
-  ) => Promise<VehicleGQLShaped[]>;
+  ) => Promise<Vehicle[]>;
   dataOwnerRef: string;
 }
 
