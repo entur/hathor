@@ -2,6 +2,20 @@ import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
+// Sidebar width that puts the form's container under the 16rem numeric breakpoint.
+const NARROW_SIDEBAR_PX = 220;
+
+/** Width of `#vtype-length` (number) over `#vtype-name` (text) in the open sidebar. */
+async function numberToTextRatio(page: import('@playwright/test').Page): Promise<number> {
+  const fieldWidth = async (inputId: string) =>
+    (await page.locator('.MuiTextField-root', { has: page.locator(inputId) }).boundingBox())!.width;
+  const [numberWidth, textWidth] = await Promise.all([
+    fieldWidth('#vtype-length'),
+    fieldWidth('#vtype-name'),
+  ]);
+  return numberWidth / textWidth;
+}
+
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
   await page.goto('/vehicle-types');
@@ -25,7 +39,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
  * Covers:
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
- *     number fields render at 2/3 of a text field's width (#198); vehicle chip routes to
+ *     number fields render at 2/3 of a text field's width, and at full width once the
+ *     sidebar is dragged under the 16rem container breakpoint (#198); vehicle chip routes to
  *     /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
@@ -83,11 +98,20 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
   test('number fields are two thirds as wide as text fields', async ({ page }) => {
     // Data-agnostic layout check (#198) — runs against the first row in both modes.
     await openFirstVtype(page);
-    const fieldWidth = async (inputId: string) =>
-      (await page.locator('.MuiTextField-root', { has: page.locator(inputId) }).boundingBox())!
-        .width;
-    const ratio = (await fieldWidth('#vtype-length')) / (await fieldWidth('#vtype-name'));
-    expect(ratio).toBeCloseTo(2 / 3, 2);
+    expect(await numberToTextRatio(page)).toBeCloseTo(2 / 3, 2);
+  });
+
+  test('number fields go full width once the sidebar is dragged narrow', async ({ page }) => {
+    // The other branch of the same container query (#198): below 16rem the
+    // two-thirds rule is off and a number field fills the row like a text field.
+    await openFirstVtype(page);
+    const handle = (await page.locator('.resizer-desktop').boundingBox())!;
+    const y = handle.y + handle.height / 2;
+    await page.mouse.move(handle.x + handle.width / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(page.viewportSize()!.width - NARROW_SIDEBAR_PX, y, { steps: 5 });
+    await page.mouse.up();
+    await expect.poll(() => numberToTextRatio(page)).toBeCloseTo(1, 2);
   });
 
   test('tabs group the fields; Edit holds name + dimensions, others are reachable', async ({
