@@ -158,7 +158,7 @@
   "vehicleType.tab.capacity": "Passasjerkapasitet",
   "vehicleType.tab.environment": "Miljø",
   "vehicleType.tab.vehicles": "Kjøretøy",
-  "vehicleType.noVehicles": "Ingen kjøretøy",
+  "vehicleType.noVehicles": "Ingen kjøretøy tilknyttet ennå",
   "vehicleType.field.id": "ID",
   "vehicleType.field.name": "Navn",
   "vehicleType.field.transportMode": "Transportmodus",

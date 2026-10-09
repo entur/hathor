@@ -159,7 +159,7 @@
   "vehicleType.tab.capacity": "Passenger Capacity",
   "vehicleType.tab.environment": "Environment",
   "vehicleType.tab.vehicles": "Vehicles",
-  "vehicleType.noVehicles": "No vehicles",
+  "vehicleType.noVehicles": "No vehicles linked yet",
   "vehicleType.field.id": "ID",
   "vehicleType.field.name": "Name",
   "vehicleType.field.transportMode": "Transport Mode",
