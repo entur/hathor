@@ -1,7 +1,17 @@
 import { FormControlLabel, MenuItem, Switch, TextField } from '@mui/material';
 
-// A native date input always shows its dd.mm.yyyy mask, so the label must stay
-// in the notch or the two overlap.
+const NUMERIC_WIDTH = '66.667%',
+  NUMERIC_FULL_BELOW = '16rem';
+// A number rarely needs the whole rail: two thirds wide, unless the form is so
+// narrow that two thirds would cramp the value.
+const NUMERIC_SX = {
+  width: '100%',
+  [`@container (min-width: ${NUMERIC_FULL_BELOW})`]: { width: NUMERIC_WIDTH },
+};
+
+// Labels stay in the notch above the field, never resting inside it: an editor
+// mounts empty and hydrates, which would otherwise animate every label on open,
+// and a native date input's dd.mm.yyyy mask would overlap a resting label.
 const SHRUNK_LABEL = { inputLabel: { shrink: true } };
 
 interface FieldProps {
@@ -34,7 +44,7 @@ export function FormTextField({ id, label, value, onChange, disabled, type }: Fo
       id={id}
       label={label}
       type={type}
-      slotProps={type === 'date' ? SHRUNK_LABEL : undefined}
+      slotProps={SHRUNK_LABEL}
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
@@ -51,7 +61,8 @@ interface FormNumberFieldProps extends FieldProps {
 
 /**
  * Numeric field for a sidebar form. An empty input is reported as `undefined`,
- * never `0` or `NaN`.
+ * never `0` or `NaN`. Two thirds wide inside a `FormStack` with room, full
+ * width in a narrow one.
  *
  * @param id       DOM id of the input.
  * @param label    Field label.
@@ -66,11 +77,13 @@ export function FormNumberField({ id, label, value, onChange, disabled }: FormNu
       id={id}
       label={label}
       type="number"
+      slotProps={SHRUNK_LABEL}
       value={value ?? ''}
       onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
       disabled={disabled}
       size="small"
       fullWidth
+      sx={NUMERIC_SX}
     />
   );
 }
@@ -110,6 +123,7 @@ export function FormSelectField<T extends string>({
       id={id}
       label={label}
       select
+      slotProps={SHRUNK_LABEL}
       value={value ?? ''}
       onChange={e => onChange((e.target.value || undefined) as T | undefined)}
       disabled={disabled}

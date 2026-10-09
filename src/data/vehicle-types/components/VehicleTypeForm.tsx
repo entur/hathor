@@ -170,7 +170,12 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             size="small"
             disableCloseOnSelect
             renderInput={params => (
-              <TextField {...params} label={t('vehicleType.field.propulsionTypes')} size="small" />
+              <TextField
+                {...params}
+                label={t('vehicleType.field.propulsionTypes')}
+                slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
+                size="small"
+              />
             )}
           />
           <Autocomplete<FuelType, true>
@@ -183,7 +188,12 @@ export default function VehicleTypeForm({ value, onChange, mode }: VehicleTypeFo
             size="small"
             disableCloseOnSelect
             renderInput={params => (
-              <TextField {...params} label={t('vehicleType.field.fuelTypes')} size="small" />
+              <TextField
+                {...params}
+                label={t('vehicleType.field.fuelTypes')}
+                slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
+                size="small"
+              />
             )}
           />
           <FormSwitchField

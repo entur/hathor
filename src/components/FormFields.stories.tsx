@@ -4,7 +4,8 @@ import { Box } from '@mui/material';
 import { FormStack } from './FormLayout';
 import { FormNumberField, FormSelectField, FormSwitchField, FormTextField } from './FormFields';
 
-const NARROW_WIDTH = '20rem';
+// Inner width lands under FormNumberField's 16rem breakpoint.
+const NARROW_WIDTH = '16rem';
 const MODES = [
   { value: 'bus', label: 'Bus' },
   { value: 'rail', label: 'Rail' },
@@ -77,7 +78,7 @@ export const Editable: Story = { render: () => <AllFields /> };
 
 export const ReadOnly: Story = { render: () => <AllFields disabled /> };
 
-/** A narrow rail: fields keep the full width. */
+/** Below the container breakpoint the number field goes full width too. */
 export const NarrowContainer: Story = {
   render: () => (
     <Box sx={{ width: NARROW_WIDTH, border: '1px dashed', borderColor: 'divider', p: 2 }}>

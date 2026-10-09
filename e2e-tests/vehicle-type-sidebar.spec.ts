@@ -25,7 +25,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
  * Covers:
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
- *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
+ *     number fields render at 2/3 of a text field's width (#198); vehicle chip routes to
+ *     /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
@@ -77,6 +78,16 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page).toHaveURL(/selected=NMR%3AVehicleType%3A1/);
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha');
     await expect(page.getByTestId('vtype-tab-general')).toBeVisible();
+  });
+
+  test('number fields are two thirds as wide as text fields', async ({ page }) => {
+    // Data-agnostic layout check (#198) — runs against the first row in both modes.
+    await openFirstVtype(page);
+    const fieldWidth = async (inputId: string) =>
+      (await page.locator('.MuiTextField-root', { has: page.locator(inputId) }).boundingBox())!
+        .width;
+    const ratio = (await fieldWidth('#vtype-length')) / (await fieldWidth('#vtype-name'));
+    expect(ratio).toBeCloseTo(2 / 3, 2);
   });
 
   test('tabs group the fields; Edit holds name + dimensions, others are reachable', async ({

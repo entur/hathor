@@ -99,6 +99,7 @@ export default function VehicleEditForm({ value, onChange, mode }: VehicleEditFo
             size="small"
             required
             label={t('vehicles.field.transportType')}
+            slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
             error={!ro && !currentVtId}
             helperText={
               vtError ? (
