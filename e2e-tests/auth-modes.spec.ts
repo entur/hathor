@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { interceptVehicleTypesQuery } from './autosys-helpers';
-import { mockIdp, mockOrgs, setConfig } from './live-auth-helpers';
+import { mockIdp, mockAppLookups, setConfig } from './live-auth-helpers';
 
 /** Deep link a signed-out user opens; fixture id from vehicle-types-mock.json. */
 const DEEP_LINK = '/vehicle-types?selected=NMR:VehicleType:1';
@@ -49,7 +49,7 @@ async function openHomePage(page: Page) {
  *   - Nav rail collapsed/expanded toggle (localStorage hathor:navRailExpanded cleared first).
  * Modes:
  *   - mode-agnostic: NO E2E_BACKEND branching, NO seedAuth — profiles 1-2 deliberately do not authenticate or pick an org, asserting only the pre-login auth-config UI. Runs identically regardless of E2E_BACKEND.
- *   - workflow 3 is always mocked (mockIdp + mockOrgs + interceptVehicleTypesQuery): it signs in through the app's own redirect/callback code against a fake IdP, so no live backend or captured JWT is involved.
+ *   - workflow 3 is always mocked (mockIdp + mockAppLookups + interceptVehicleTypesQuery): it signs in through the app's own redirect/callback code against a fake IdP, so no live backend or captured JWT is involved.
  */
 
 // ── Auth-off scenario ────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ test.describe('Auth-on profile (oidcConfig defined)', () => {
 
   test('login returns to the originating deep link, not home (#31)', async ({ page }) => {
     const tokenUrl = await mockIdp(page);
-    await mockOrgs(page);
+    await mockAppLookups(page);
     await interceptVehicleTypesQuery(page);
 
     // The URL equals DEEP_LINK before the redirect too — the token exchange

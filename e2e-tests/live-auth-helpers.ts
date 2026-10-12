@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page, type Route } from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -101,6 +101,14 @@ const MOCK_ORGANISATIONS = {
   },
 };
 
+/** Sobek's seeded code lists by `valueType` (V13__AddCodeValues.sql): value `Euro1`, label `Euro 1`. */
+const MOCK_CODE_LISTS: Record<string, { label: string; value: string }[]> = {
+  EMISSION_STANDARD: [1, 2, 3, 4, 5, 6, 7].map(n => ({ label: `Euro ${n}`, value: `Euro${n}` })),
+};
+
+const fulfillJson = (route: Route, body: unknown) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+
 /**
  * Load the JWT captured by the login handoff (`playwright/.auth/capture.mjs`).
  * Throws with a runnable hint if absent OR expired — fail fast with the right
@@ -159,25 +167,26 @@ export const seedAuth = async (context: BrowserContext) => {
     }
     return;
   }
-  await mockOrgs(context);
+  await mockAppLookups(context);
 };
 
 /**
- * Mock: claim only the `organisations` query; each spec's page-level list
- * interceptors run first and handle their own queries (they must `fallback()`
- * non-matches so the org query reaches this route).
+ * Mock: claim only the app-wide lookups — the `organisations` query and the
+ * `codeValues` code lists; each spec's page-level list interceptors run first
+ * and handle their own queries (they must `fallback()` non-matches so these
+ * reach this route).
  *
  * @param router Playwright `Page` or `BrowserContext`.
  */
-export const mockOrgs = (router: Page | BrowserContext) =>
+export const mockAppLookups = (router: Page | BrowserContext) =>
   router.route('**/graphql', async route => {
-    const query: string = route.request().postDataJSON()?.query ?? '';
+    const post = route.request().postDataJSON();
+    const query: string = post?.query ?? '';
     if (query.includes('organisations')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(MOCK_ORGANISATIONS),
-      });
+      await fulfillJson(route, MOCK_ORGANISATIONS);
+    } else if (query.includes('codeValues(')) {
+      const content = MOCK_CODE_LISTS[post?.variables?.filter?.valueType] ?? [];
+      await fulfillJson(route, { data: { codeValues: { content } } });
     } else {
       await route.fallback();
     }
