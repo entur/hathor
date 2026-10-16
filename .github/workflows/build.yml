@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.bump-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,27 +41,16 @@ jobs:
       - run: npm run check
       - name: Unit tests with coverage
         run: npm run test:coverage
-      # - name: SonarQube Scan
-      #   uses: sonarsource/sonarqube-scan-action@v5.3.2
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.ENTUR_SONAR_PASSWORD }}
-      #     SONAR_HOST_URL: https://sonarcloud.io
-      #   with:
-      #     args: >
-      #       -Dsonar.organization=enturas-github
-      #       -Dsonar.projectKey=entur_hathor
-      #       -Dsonar.sources=src
-      #       -Dsonar.tests=src
-      #       -Dsonar.test.inclusions=src/**/*.spec.ts,src/**/*.spec.tsx,src/**/*.test.ts,src/**/*.test.tsx,src/**/*.spec.js,src/**/*.spec.jsx,src/**/*.test.js,src/**/*.test.jsx
-      #       -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-      #       -Dsonar.testExecutionReportPaths=test-report.xml
       - name: Bump version
+        id: bump-version
         run: |
           npm version minor
-          echo "VERSION=$(npm pkg get version | tr -d \")" >> $GITHUB_ENV
+          VERSION=$(npm pkg get version | tr -d \")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
       - run: npm run build
         env:
-          REACT_APP_VERSION: ${{ env.VERSION }}
+          REACT_APP_VERSION: ${{ steps.bump-version.outputs.version }}
       - name: Archive production artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -68,3 +59,10 @@ jobs:
             build
       - name: Push version update to GitHub
         run: git push && git push --tags
+  trigger-deployment:
+    needs: build
+    uses: ./.github/workflows/trigger-deployment.yml
+    with:
+      version: ${{ needs.build.outputs.version }}
+    secrets:
+      deployment_token: ${{ secrets.HATHOR_DEPLOYMENT_CONFIG_TOKEN }}
