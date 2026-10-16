@@ -1,0 +1,27 @@
+name: Trigger Hathor Deployment
+
+on:
+    workflow_call:
+        inputs:
+            version:
+                required: true
+                type: string
+                description: 'Version to deploy'
+        secrets:
+            deployment_token:
+                required: true
+                description: 'GitHub token for triggering deployment'
+
+jobs:
+    trigger-deployment:
+        runs-on: ubuntu-latest
+        if: github.repository_owner == 'entur'
+        steps:
+            - name: Trigger deployment via repository dispatch
+              env:
+                  GH_TOKEN: ${{ secrets.deployment_token }}
+                  VERSION: ${{ inputs.version }}
+              run: |
+                  gh api repos/entur/hathor-deployment-config/dispatches \
+                    -f event_type=deploy \
+                    -f "client_payload[version]=$VERSION"
