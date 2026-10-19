@@ -58,7 +58,7 @@ should not pull in Redux, Apollo, react-intl or SCSS unless the task is explicit
 | Component files | `Foo/index.tsx` folders, default exports common | flat `Foo.tsx` |
 | Icons | `@mui/icons-material` components | `<img>` via `getIconUrl` (`src/utils/iconLoaderUtils.ts`) + some MUI icons |
 | Theme access | `useTheme()` | `useTheme()` / `src/hooks/useAppTheme.ts` |
-| Customisation | `src/ext/<extPath>/` via `@entur/react-component-toggle` + `sandboxFeatures` | `CustomizationContext`, `src/static/customIcons/` |
+| Customisation | `src/ext/<extPath>/` via `@entur/react-component-toggle` + `sandboxFeatures` | `CustomizationContext`, `src/static/customIcons/`; no flag mechanism yet — see `feature-flags.md` |
 | API mocking in e2e | MSW, `VITE_ENABLE_MOCKS=true npm start` | Playwright route interception |
 | Prettier | config in `package.json`, `prettier-plugin-organize-imports` | repo-root `.prettierrc` |
 
@@ -91,6 +91,7 @@ Both use plural kebab-case segments.
 | Theme | compiled TS under `src/ext/<extPath>/CustomTheme/` | `.github/environments/theme-<env>.json`, loaded at runtime |
 | Auth bypass | `disableAuthentication: true` | omit `oidcConfig` |
 | Interface | `src/config/config.ts` | `src/contexts/configContext.ts` |
+| Feature flags | top-level `enableX` booleans + `sandboxFeatures` (lazy `src/ext/` code) | none yet — `feature-flags.md` |
 
 ## Commands and ports
 
