@@ -16,6 +16,9 @@ const CONFIG_FIXTURE = {
 } as const;
 export type ConfigProfile = keyof typeof CONFIG_FIXTURE;
 
+/** Top-level `config.json` keys a spec overrides on top of a profile's fixture. */
+export type ConfigOverrides = Record<string, unknown>;
+
 /** Fixture bodies read once at module init — workers reuse them. */
 const CONFIG_BODY: Record<ConfigProfile, string> = {
   'auth-on': fs.readFileSync(path.join(fixturesDir, CONFIG_FIXTURE['auth-on']), 'utf8'),
@@ -32,11 +35,21 @@ const CONFIG_BODY: Record<ConfigProfile, string> = {
  *
  * @param router Playwright `Page` or `BrowserContext`.
  * @param profile 'auth-on' (OIDC) or 'auth-off' (no oidcConfig).
+ * @param overrides Top-level keys merged over the profile's fixture, e.g.
+ *   `{ sandboxFeatures: { DeckPlans: false } }` to turn a feature flag off.
  */
-export const setConfig = (router: Page | BrowserContext, profile: ConfigProfile) =>
-  router.route('**/config.json', route =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: CONFIG_BODY[profile] })
+export const setConfig = (
+  router: Page | BrowserContext,
+  profile: ConfigProfile,
+  overrides?: ConfigOverrides
+) => {
+  const body = overrides
+    ? JSON.stringify({ ...JSON.parse(CONFIG_BODY[profile]), ...overrides })
+    : CONFIG_BODY[profile];
+  return router.route('**/config.json', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body })
   );
+};
 
 /** Timeout (ms) for the org picker to render + auto-select after login. */
 const ORG_READY_TIMEOUT = 20000;
@@ -144,10 +157,11 @@ export const loadOidcUser = (): OidcUser => {
  *
  * Also serves the oidc-enabled `config.json` (`setConfig 'auth-on'`) in BOTH
  * modes — the app needs it to authenticate and render the org picker — so
- * callers no longer touch `public/config.json` on disk.
+ * callers no longer touch `public/config.json` on disk. `configOverrides` are
+ * merged over that config (see {@link setConfig}).
  */
-export const seedAuth = async (context: BrowserContext) => {
-  await setConfig(context, 'auth-on');
+export const seedAuth = async (context: BrowserContext, configOverrides?: ConfigOverrides) => {
+  await setConfig(context, 'auth-on', configOverrides);
   const { k, v } = IS_LIVE ? loadOidcUser() : MOCK_OIDC;
   await context.addInitScript(([key, val]) => window.sessionStorage.setItem(key, val), [
     k,
