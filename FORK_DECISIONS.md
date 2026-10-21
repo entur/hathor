@@ -606,3 +606,40 @@ The Autosys bulk import had two entry points: the list-head button on `/vehicle-
 ### Out of scope
 
 - Renaming `AutosysImportFloatingMenu` (no longer floating, no longer a menu) or collapsing its remaining look-override props now that there is one caller.
+
+## Feature flags follow enki: `sandboxFeatures` per feature, `enable*` per reference _(2026-10-21)_
+
+### Context
+
+Deck plans are not ready for every environment, but their route, nav item, Home cards and the references to them elsewhere (vehicle-type column, multi-import count) were always on (#202). Each environment's `config.json` lives in `hathor-deployment-config`; only dev and localhost are in this repo (`.github/environments/`). enki and abzu already gate per-installation features from `config.json`.
+
+### Decision
+
+- **Two flag kinds, as in enki.** `sandboxFeatures.<Feature>` (PascalCase, `SandboxFeatures` in `src/contexts/configContext.ts`) switches a whole feature. Top-level `enable*` booleans show or hide UI that belongs to another feature's screen.
+- **Two flags for deck plans.** `sandboxFeatures.DeckPlans` covers the `/deck-plans` route, nav item, Home cards, grid, details and renderer. `enableDeckPlanRefs` covers the vehicle-type deck-plan column and the multi-import deck-plan count. They are independent: an environment can show references to deck plans without the deck-plan screens.
+- **A missing key is off.** Each environment opts in; `isFeatureOn(config, flag)` (`src/config/featureFlags.ts`) is the single reader. dev and localhost set both flags `true`.
+- **Unknown keys fail CI.** A misspelt key reads as missing, i.e. off, with no error. `CONFIG_KEYS` / `SANDBOX_FEATURE_KEYS` are full records of the interfaces, so `tsc` fails when a key is added without listing it; `src/config/configKeys.test.ts` rejects any `config-*.json` in `.github/environments/` or `e2e-tests/fixtures/` with an unlisted key or a non-boolean flag.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **One flag for everything deck-plan** | References in the vehicle-type list and import are useful before the deck-plan screens are; one switch forces both on or both off. |
+| **Missing means on** | A new environment would show unfinished features until someone remembers to turn them off. |
+| **Build-time flags (`import.meta.env` / `define`)** | One image is deployed to every environment with its own `config.json`; a build-time flag needs a build per environment. |
+
+### Consequences
+
+- Deck plans and their references disappear in every `hathor-deployment-config` environment until that repo sets the flags; a PR there follows this one.
+- Deck-plan code still ships in the main chunk when the flag is off. Size at ed3c6b1 (0.109.0), from source maps:
+
+| Part | Size |
+|---|---|
+| `src/data/deck-plans/**` in the main chunk | 16.0 kB min (components 8.5, hooks 3.7, utils 2.4, api 1.0) |
+| Main chunk total | 1,098.68 kB min / 336.78 kB gz |
+| `netex-deckplan-editor` web component | 154.57 kB min / 48.36 kB gz, own chunk, loaded on first deck render (`loadDeckRenderer.ts`) |
+| `sample-deck-plan.xml` | ~20 kB, fetched at runtime (`loadGhostDeckPlan.ts`) |
+
+### Out of scope
+
+- Loading the deck-plan code lazily behind `sandboxFeatures.DeckPlans` (enki loads `sandboxFeatures` from `src/ext/<Feature>/`). If hathor does not adopt that, `DeckPlans` moves to a top-level `enableDeckPlans`, since in enki and abzu a `sandboxFeatures` key implies lazy code.

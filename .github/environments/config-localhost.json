@@ -13,5 +13,9 @@
     },
     "redirect_uri": "http://localhost:5000"
   },
-  "themeFilePath": "/theme-dev.json"
+  "themeFilePath": "/theme-dev.json",
+  "sandboxFeatures": {
+    "DeckPlans": true
+  },
+  "enableDeckPlanRefs": true
 }

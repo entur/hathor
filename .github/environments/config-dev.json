@@ -13,5 +13,9 @@
     },
     "redirect_uri": "https://materiellregister.dev.entur.no/"
   },
-  "themeFilePath": "/theme.json"
+  "themeFilePath": "/theme.json",
+  "sandboxFeatures": {
+    "DeckPlans": true
+  },
+  "enableDeckPlanRefs": true
 }
