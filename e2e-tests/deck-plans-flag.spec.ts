@@ -14,7 +14,8 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  * Covers:
  *   - DeckPlans on: nav-rail item and Home cards link to /deck-plans
  *   - DeckPlans off: no link into /deck-plans anywhere; a direct visit redirects to /
- *   - enableDeckPlanRefs on / off: vehicle-type list shows / hides the Deck Plan column
+ *   - enableDeckPlanRefs on / off: vehicle-type list shows / hides the Deck Plan column;
+ *     off leaves the /deck-plans nav item in place
  *   - (the multi-import deck-plan count is covered in autosys-multi-import.spec.ts)
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `vehicleTypes`; orgs come from seedAuth's lookups
@@ -28,6 +29,13 @@ const DECK_PLAN_COLUMN = 'Deck Plan';
 
 /** Any link into /deck-plans: the nav-rail item and Home's browse card and create action. */
 const deckPlanLinks = (page: Page) => page.locator('a[href^="/deck-plans"]');
+
+/** The nav-rail item for /deck-plans. */
+const navDeckPlanLink = (page: Page) =>
+  page.getByTestId('nav-rail').locator('a[href="/deck-plans"]');
+
+/** The vehicle-type list's Deck Plan column header. */
+const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DECK_PLAN_COLUMN });
 
 /** Home with an organisation selected — the org-gated `/vehicles` links mark the nav and cards as rendered. */
 const openHome = async (page: Page) => {
@@ -49,7 +57,7 @@ test.describe('sandboxFeatures.DeckPlans', () => {
   test('on: nav rail and Home link to /deck-plans', async ({ context, page }) => {
     await seedAuth(context);
     await openHome(page);
-    await expect(page.getByTestId('nav-rail').locator('a[href="/deck-plans"]')).toBeVisible();
+    await expect(navDeckPlanLink(page)).toBeVisible();
     await expect(page.locator('.app-content a[href^="/deck-plans"]').first()).toBeVisible();
   });
 
@@ -70,18 +78,14 @@ test.describe('enableDeckPlanRefs', () => {
   test('on: vehicle-type list shows the Deck Plan column', async ({ context, page }) => {
     await seedAuth(context);
     await openVehicleTypes(page);
-    await expect(page.getByRole('columnheader', { name: DECK_PLAN_COLUMN })).toBeVisible();
+    await expect(deckPlanColumn(page)).toBeVisible();
   });
 
-  test('off: vehicle-type list hides the Deck Plan column', async ({ context, page }) => {
+  // The nav rail renders on every page, so the DeckPlans-still-on check rides along.
+  test('off: Deck Plan column hidden, /deck-plans still linked', async ({ context, page }) => {
     await seedAuth(context, REFS_OFF);
     await openVehicleTypes(page);
-    await expect(page.getByRole('columnheader', { name: DECK_PLAN_COLUMN })).toHaveCount(0);
-  });
-
-  test('off leaves DeckPlans on: /deck-plans still linked', async ({ context, page }) => {
-    await seedAuth(context, REFS_OFF);
-    await openHome(page);
-    await expect(page.getByTestId('nav-rail').locator('a[href="/deck-plans"]')).toBeVisible();
+    await expect(deckPlanColumn(page)).toHaveCount(0);
+    await expect(navDeckPlanLink(page)).toBeVisible();
   });
 });

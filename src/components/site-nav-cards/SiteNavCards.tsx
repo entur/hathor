@@ -5,8 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../icons/MenuIcon.tsx';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
-import { useConfig } from '../../contexts/configContext.ts';
-import { isFeatureOn } from '../../config/featureFlags.ts';
+import { useIsFeatureOn } from '../../config/featureFlags.ts';
 
 /**
  * SiteNavCards — the Home dashboard's per-type navigation cards. Two layouts:
@@ -268,8 +267,8 @@ export default function SiteNavCards({
   variant = 'combo',
   ...p
 }: ComboProps & { variant?: 'combo' | 'rows' }) {
-  const config = useConfig();
-  const types = (p.types ?? TYPES).filter(x => isFeatureOn(config, x.flag));
+  const isFeatureOn = useIsFeatureOn();
+  const types = (p.types ?? TYPES).filter(x => isFeatureOn(x.flag));
   if (variant === 'combo') return <ComboStrip {...p} types={types} />;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>

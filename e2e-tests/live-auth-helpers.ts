@@ -43,9 +43,7 @@ export const setConfig = (
   profile: ConfigProfile,
   overrides?: ConfigOverrides
 ) => {
-  const body = overrides
-    ? JSON.stringify({ ...JSON.parse(CONFIG_BODY[profile]), ...overrides })
-    : CONFIG_BODY[profile];
+  const body = JSON.stringify({ ...JSON.parse(CONFIG_BODY[profile]), ...overrides });
   return router.route('**/config.json', route =>
     route.fulfill({ status: 200, contentType: 'application/json', body })
   );

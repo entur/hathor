@@ -13,6 +13,9 @@ const configFiles = CONFIG_DIRS.flatMap(dir =>
     .map(f => join(dir, f))
 );
 
+/** `[file, parsed config]` pairs, read once for every test below. */
+const configs = configFiles.map(f => [f, JSON.parse(readFileSync(join(ROOT, f), 'utf8'))]);
+
 const unknownKeys = (obj: object, known: object) =>
   Object.keys(obj).filter(k => !Object.hasOwn(known, k));
 
@@ -23,14 +26,12 @@ describe('config-*.json keys', () => {
     CONFIG_DIRS.forEach(dir => expect(configFiles.some(f => f.startsWith(dir))).toBe(true));
   });
 
-  it.each(configFiles)('%s has only known keys', file => {
-    const config = JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
+  it.each(configs)('%s has only known keys', (_, config) => {
     expect(unknownKeys(config, CONFIG_KEYS)).toEqual([]);
     expect(unknownKeys(config.sandboxFeatures ?? {}, SANDBOX_FEATURE_KEYS)).toEqual([]);
   });
 
-  it.each(configFiles)('%s sets flags as booleans', file => {
-    const config = JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
+  it.each(configs)('%s sets flags as booleans', (_, config) => {
     const flags = [
       ...Object.values(config.sandboxFeatures ?? {}),
       ...Object.entries(config)

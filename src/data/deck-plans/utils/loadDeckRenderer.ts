@@ -23,8 +23,8 @@ let pending: Promise<DeckRendererModule> | null = null;
  *
  * The specifier is a literal so Vite code-splits it: Vue is bundled into that
  * entry, and keeping it in its own chunk means only `/deck-plans` pays for it:
- * 154.6 kB min / 48.4 kB gz (`vite build` at ed3c6b1, 0.109.0). Registering the element is an import side effect, guarded upstream by
- * `customElements.get`.
+ * 154.6 kB min / 48.4 kB gz (`vite build` at ed3c6b1, 0.109.0). Registering the
+ * element is an import side effect, guarded upstream by `customElements.get`.
  *
  * `parseNeTEx` is re-exported from the same bundle deliberately — the `Deck`
  * instances it returns are matched against that bundle's classes with

@@ -1,4 +1,4 @@
-import type { Config, SandboxFeatures } from '../contexts/configContext.ts';
+import { useConfig, type Config, type SandboxFeatures } from '../contexts/configContext.ts';
 
 /** A top-level `enable*` boolean in `Config`. */
 type EnableFlag = Extract<keyof Config, `enable${string}`>;
@@ -19,3 +19,13 @@ const isEnableFlag = (flag: FeatureFlag): flag is EnableFlag => flag.startsWith(
 export const isFeatureOn = (config: Config, flag?: FeatureFlag): boolean =>
   flag === undefined ||
   (isEnableFlag(flag) ? config[flag] : config.sandboxFeatures?.[flag]) === true;
+
+/**
+ * {@link isFeatureOn} bound to the runtime config, for components that gate UI.
+ *
+ * @returns {(flag?: FeatureFlag) => boolean} Whether `flag` is on (omitted → on).
+ */
+export const useIsFeatureOn = (): ((flag?: FeatureFlag) => boolean) => {
+  const config = useConfig();
+  return flag => isFeatureOn(config, flag);
+};

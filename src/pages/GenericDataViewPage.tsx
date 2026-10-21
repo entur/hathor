@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
@@ -8,8 +8,6 @@ import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';
 import type { ViewConfig, UrlFilterInfo } from './viewConfigTypes.ts';
-import { useConfig } from '../contexts/configContext.ts';
-import { isFeatureOn } from '../config/featureFlags.ts';
 
 const DETAILS_PANE_WIDTH_FACTOR = 0.25;
 const DETAILS_PANE_GUTTER_PX = 4;
@@ -51,12 +49,6 @@ export default function GenericDataViewPage<T, K extends string>({
   } = viewConfig;
 
   const theme = useTheme();
-  const config = useConfig();
-  // Columns whose feature flag is off are dropped once here, for every view.
-  const visibleColumns = useMemo(
-    () => columns.filter(c => isFeatureOn(config, c.flag)),
-    [columns, config]
-  );
 
   const initWidth = () => Math.round(window.innerWidth * DETAILS_PANE_WIDTH_FACTOR);
   const {
@@ -201,7 +193,7 @@ export default function GenericDataViewPage<T, K extends string>({
           rowsPerPage={rowsPerPage}
           setPage={setPage}
           setRowsPerPage={setRowsPerPage}
-          columns={visibleColumns}
+          columns={columns}
           title={viewConfig.title}
           titleKey={viewConfig.titleKey}
           handleColumnEvent={viewConfig.handleColumnEvent}

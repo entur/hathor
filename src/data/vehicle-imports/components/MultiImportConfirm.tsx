@@ -3,8 +3,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { AutosysAssembledResult } from '../api/assembleAutosysResults';
-import { useConfig } from '../../../contexts/configContext.ts';
-import { isFeatureOn } from '../../../config/featureFlags.ts';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
 
 interface MultiImportConfirmProps {
   assembledResult: AutosysAssembledResult;
@@ -16,7 +15,7 @@ export default function MultiImportConfirm({
   submitError,
 }: MultiImportConfirmProps) {
   const { t } = useTranslation();
-  const showDeckPlans = isFeatureOn(useConfig(), 'enableDeckPlanRefs');
+  const showDeckPlans = useIsFeatureOn()('enableDeckPlanRefs');
 
   return (
     <>

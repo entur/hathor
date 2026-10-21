@@ -18,8 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
 import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
-import { useConfig } from '../contexts/configContext.ts';
-import { isFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
+import { useIsFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
 
 const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
@@ -28,13 +27,15 @@ const MOBILE_DRAWER_W = 280;
 // new entries (see feedback_i18n_reuse_keys memory).
 // iconKey values map to `#menu-<iconKey>` sprite symbols (see MenuIconSprite).
 // flag hides the item unless that feature flag is on in config.json.
-const menuItems: {
+type MenuItem = {
   textKey: string;
   path: string;
   iconKey: MenuIconName;
   requiresOrg: boolean;
   flag?: FeatureFlag;
-}[] = [
+};
+
+const menuItems: MenuItem[] = [
   { textKey: 'home', path: '/', iconKey: 'home', requiresOrg: false },
   {
     textKey: 'home.features.vehicletypes.headline',
@@ -131,8 +132,8 @@ export default function Menu() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { expanded, toggleExpanded, mobileOpen, closeMobile } = useNavRail();
   const { currentOrganisation } = useOrganisationsContext();
-  const config = useConfig();
-  const items = menuItems.filter(item => isFeatureOn(config, item.flag));
+  const isFeatureOn = useIsFeatureOn();
+  const items = menuItems.filter(item => isFeatureOn(item.flag));
 
   // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
   // Mobile open state is session-only (mobileOpen), NOT the persisted
