@@ -2,8 +2,8 @@
 
 How Entur's two sibling frontends switch features on and off from runtime config, and what that
 means for hathor. Read this before adding any flag, toggle or per-installation customisation to
-hathor's `config.json`, because hathor has no mechanism yet. Its `src/contexts/configContext.ts`
-holds no flags, and neither `FORK_DECISIONS.md` nor `OPEN_QUESTIONS.md` mentions one.
+hathor's `config.json`. Hathor's own rule is already decided (FORK_DECISIONS 2026-10-21, #204):
+every flag lives in `sandboxFeatures`, one flag per feature — see "Hathor today" below.
 
 Verified against enki `0.710.0` (`3f8d31cb`; `src/config/` and `src/ext/` unchanged at `145536b5`)
 and abzu `1.660.0` (`1dae3802`). Re-check before relying on a detail.
@@ -67,6 +67,11 @@ with "bad substitution".
   enki also passes `manualChunks` to group code into `vendor` and `index`. Adopting the runtime
   library without the plugin gives you lazy imports, but not a guaranteed one-chunk-per-feature
   split.
+  - Measured (Vite 8 / rolldown 1.0.3): the plugin's `manualChunks` pulls shared vendor code into
+    `component-<F>` and the entry then `modulepreload`s it — abzu `1dae3802` downloads 943.8 kB gz
+    at boot with the plugin vs 872.4 kB without. Without it, the template-literal `import()` in
+    `importFn` already yields one lazy chunk per `src/ext/` folder. rolldown also marks
+    `manualChunks` deprecated. For hathor: runtime library yes, plugin no.
 - **`useToggledImport<T>(feature, fallback)`** is the non-component form, for importing a value
   such as a theme (enki `src/EnkiThemeProvider.tsx:8`).
 - **`extPath`** names a company folder under `src/ext/` (`Fintraffic`, `Entur`). The app loads
@@ -97,14 +102,22 @@ enki has `const isMapEnabled = sandboxFeatures?.JourneyPatternStopPointMap`
 
 | Need | Take from | Hathor shape |
 | --- | --- | --- |
-| Hide or show a route, field or control per environment | enki's top-level flags | optional `enableX?: boolean` (JSDoc'd) on the config type in `src/contexts/configContext.ts`, set in `.github/environments/config-<env>.json`, read with `?? false`. No library needed |
-| Feature left out of the download when off, or a per-installation slot | the shared `@entur/react-component-toggle` setup | a flag map (enki's `sandboxFeatures` name) plus a `src/ext/<Feature>/index.ts` folder, with both toggle packages and the plugin set up in `vite.config.ts`. Or skip the library and use `React.lazy` behind a boolean. Either one is a design call and needs an ADR in `FORK_DECISIONS.md` |
+| Hide or show a route, field or control per environment | enki's `sandboxFeatures` name — **not** its top-level `enableX` | a key on `SandboxFeatures` (`src/contexts/configContext.ts`), set in `.github/environments/config-<env>.json`, read with `useIsFeatureOn()` (`src/config/featureFlags.ts`). List entries (menu items, Home `SiteType`s, table columns) take `flag?` instead of an inline check. References to a feature on other screens share its flag |
+| Feature left out of the download when off, or a per-installation slot | the shared `@entur/react-component-toggle` setup | the same `sandboxFeatures` key plus a `src/ext/<Feature>/index.ts` folder and the runtime library; skip the rollup plugin (measured above). Needs an ADR in `FORK_DECISIONS.md` |
 | Migrate a whole UI step by step | abzu `uiMode` | a three-way config setting, not a boolean. It matches hathor's rule that a togglable affordance is `'show' \| 'hide' \| 'onHover'`-style tri-state |
 | Per-deployment theme | abzu `themeConfigs` | already what hathor does: `theme-<env>.json` → `src/theme/createThemeFromConfig.ts`. Don't port enki's TS theme |
 | Tests | enki passes a config with the flag set (`ServiceJourneyEditor.test.tsx:87`) | vitest renders with a config-context value; e2e serves a fixture through `setConfig` in `e2e-tests/live-auth-helpers.ts` |
 
-**Recommendation:** use enki's split. Plain booleans stay at the top level, and the flag map holds
-only lazy-loaded code, so a flag's location tells you whether turning it off removes a chunk.
-abzu's single map is simpler, but its `ModernUI` leftover shows how a mixed, unchecked map drifts.
-If hathor adds a flag map, check the environment JSONs against the type: either a type test that
-imports each `config-*.json`, or a guard in `fetchConfig` that warns on unknown keys.
+## Hathor today
+
+Decided in review of #203 and recorded in `FORK_DECISIONS.md` (2026-10-21):
+
+- **One place:** `sandboxFeatures` carries every flag, lazy or not — closer to abzu's single map
+  than to enki's split. No top-level `enableX` booleans; two ways to read a flag was rejected.
+- **One flag per feature:** `sandboxFeatures.DeckPlans` gates the deck-plan screens *and* the
+  references to them elsewhere (vehicle-type column, import count). A separate "refs" flag was
+  rejected: referencing something you can neither register nor see is not useful.
+- **Missing = off;** each environment opts in. Environment configs live in
+  `entur/hathor-deployment-config`; only dev and localhost are in this repo.
+- **Keep it small:** no config-key registry or unit tests for flag reading; e2e
+  (`e2e-tests/deck-plans-flag.spec.ts`, `seedAuth(context, overrides)`) covers on/off.

@@ -103,16 +103,17 @@ are in **`references/map.md`**. Read it when the quick map doesn't cover the pat
 
 ## Feature flags in config
 
-Hathor has no feature-flag mechanism yet. Enki and abzu (`../abzu`, Entur's stop-place frontend)
-both have one, built on `bootstrap.json` and `@entur/react-component-toggle`, but they split it
-differently:
+Hathor keeps every flag in `sandboxFeatures`, one flag per feature, read with `useIsFeatureOn()`
+(FORK_DECISIONS 2026-10-21) — don't add top-level `enableX` booleans. Enki and abzu (`../abzu`,
+Entur's stop-place frontend) build theirs on `bootstrap.json` and `@entur/react-component-toggle`,
+and split it differently:
 - **enki:** plain `enableX` booleans at the top level, and `sandboxFeatures` only for lazy-loaded
   `src/ext/` code.
 - **abzu:** one mixed `featureFlags` map, plus a three-way `uiMode` setting and runtime JSON themes.
 
 Before adding a flag, toggle or per-installation slot to hathor's config, read
 **`references/feature-flags.md`**. It covers both setups with file:line refs, where they differ,
-what each need maps to in hathor, and a recommendation.
+what each need maps to in hathor, and hathor's decided rules.
 
 ## Aligning a piece of UI
 
