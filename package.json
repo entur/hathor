@@ -4,9 +4,9 @@
   "version": "0.109.0",
   "type": "module",
   "scripts": {
-    "predev": "run-p --race copy:theme copy:config",
+    "predev": "run-p copy:theme copy:config",
     "dev": "vite",
-    "prelocal": "run-p --race copy:theme copy:config-local",
+    "prelocal": "run-p copy:theme copy:config-local",
     "local": "vite",
     "build": "tsc -b && vite build",
     "gen:arch": "node scripts/gen-arch-metafile.mjs",

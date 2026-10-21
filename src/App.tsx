@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/header/Header.tsx';
 import Menu from './components/Menu.tsx';
 import Home from './pages/Home';
@@ -21,6 +21,7 @@ import DeckPlanView from './data/deck-plans/components/DeckPlanView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
+import { useIsFeatureOn } from './config/featureFlags.ts';
 import './theme/transportModeTokens.css';
 
 function AppShell({ children }: { children: ReactNode }) {
@@ -40,6 +41,7 @@ export default function App() {
   const { useCustomFeatures } = useCustomization();
 
   const { theme } = useAppTheme(useCustomFeatures);
+  const isFeatureOn = useIsFeatureOn();
 
   return (
     <SearchProvider>
@@ -67,7 +69,13 @@ export default function App() {
                   <Route path="/vehicles" element={<ProtectedRoute element={<VehicleView />} />} />
                   <Route
                     path="/deck-plans"
-                    element={<ProtectedRoute element={<DeckPlanView />} />}
+                    element={
+                      isFeatureOn('DeckPlans') ? (
+                        <ProtectedRoute element={<DeckPlanView />} />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
                   />
                 </Routes>
               </Box>

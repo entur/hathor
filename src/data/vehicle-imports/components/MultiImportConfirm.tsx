@@ -3,6 +3,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { AutosysAssembledResult } from '../api/assembleAutosysResults';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
 
 interface MultiImportConfirmProps {
   assembledResult: AutosysAssembledResult;
@@ -14,6 +15,7 @@ export default function MultiImportConfirm({
   submitError,
 }: MultiImportConfirmProps) {
   const { t } = useTranslation();
+  const showDeckPlans = useIsFeatureOn()('DeckPlans');
 
   return (
     <>
@@ -40,8 +42,12 @@ export default function MultiImportConfirm({
         <Typography color="text.secondary">{t('import.multi.vehicleTypes')}</Typography>
         <Typography>{assembledResult.summary.vehicleTypeIds.size}</Typography>
 
-        <Typography color="text.secondary">{t('import.multi.deckPlans')}</Typography>
-        <Typography>{assembledResult.summary.deckPlanIds.size}</Typography>
+        {showDeckPlans && (
+          <>
+            <Typography color="text.secondary">{t('import.multi.deckPlans')}</Typography>
+            <Typography>{assembledResult.summary.deckPlanIds.size}</Typography>
+          </>
+        )}
 
         <Typography color="text.secondary">{t('import.multi.vehicleModels')}</Typography>
         <Typography>{assembledResult.summary.vehicleModelIds.size}</Typography>
