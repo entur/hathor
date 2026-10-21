@@ -5,5 +5,9 @@
   "applicationEnv": "test",
   "claimsNamespace": "https://ror.entur.io/role_assignments",
   "preferredNameNamespace": "https://ror.entur.io/preferred_name",
-  "themeFilePath": "/theme-dev.json"
+  "themeFilePath": "/theme-dev.json",
+  "sandboxFeatures": {
+    "DeckPlans": true
+  },
+  "enableDeckPlanRefs": true
 }
