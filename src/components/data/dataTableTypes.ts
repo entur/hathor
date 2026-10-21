@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { SxProps, Theme } from '@mui/material';
+import type { FeatureFlag } from '../../config/featureFlags.ts';
 
 interface ColumnDefinitionBase<T> {
   headerLabel: string;
@@ -7,6 +8,8 @@ interface ColumnDefinitionBase<T> {
   align?: 'left' | 'center' | 'right';
   display?: 'always' | 'desktop-only';
   sx?: SxProps<Theme>;
+  /** Hides the column unless this feature flag is on in config.json. */
+  flag?: FeatureFlag;
 }
 
 interface SortableColumn<T, K extends string> extends ColumnDefinitionBase<T> {
