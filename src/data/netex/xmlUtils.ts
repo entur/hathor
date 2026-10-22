@@ -26,8 +26,12 @@ export function addDataOwnerRefToFrame(
   resourceFrame: ParsedXml,
   dataOwnerRef: string
 ) {
-  const frameDefaults = baseFrame.FrameDefaults ?? (baseFrame.FrameDefaults = {});
-  frameDefaults.DefaultResponsibilitySetRef = { '@_ref': 'NMR:ResponsibilitySet:1' };
+  const frameDefaults = { ...(baseFrame.FrameDefaults ?? {}) };
+  delete frameDefaults.DefaultResponsibilitySetRef;
+  baseFrame.FrameDefaults = {
+    DefaultResponsibilitySetRef: { '@_ref': 'NMR:ResponsibilitySet:1' },
+    ...frameDefaults,
+  };
 
   const ResponsibilityRoleAssignment = {
     '@_id': `NMR:ResponsibilityRoleAssignment:1`,
@@ -42,9 +46,13 @@ export function addDataOwnerRefToFrame(
     roles: { ResponsibilityRoleAssignment },
   };
 
+  const frameProperties = { ...resourceFrame };
+  delete frameProperties.responsibilitySets;
+  for (const key of Object.keys(resourceFrame)) delete resourceFrame[key];
   resourceFrame.responsibilitySets = {
     ResponsibilitySet: responsibilitySet,
   };
+  Object.assign(resourceFrame, frameProperties);
 }
 
 /**

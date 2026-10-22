@@ -57,9 +57,22 @@ export function mergeResourceFrames(
     for (const [regNumber, rf] of Object.entries(framesByReg)) {
       const opRef = opRefs.get(regNumber);
       if (!opRef) continue;
-      for (const v of toArray(rf.vehicles?.Vehicle)) {
-        const existing = merged.vehicles.find(mv => mv['@_id'] === v['@_id']);
-        if (existing) existing.OperationalNumber = opRef;
+      for (const vehicle of toArray(rf.vehicles?.Vehicle)) {
+        const existingIndex = merged.vehicles.findIndex(
+          existing => existing['@_id'] === vehicle['@_id']
+        );
+        if (existingIndex === -1) continue;
+
+        const vehicleEntries = Object.entries(merged.vehicles[existingIndex]).filter(
+          ([key]) => key !== 'OperationalNumber'
+        );
+        const registrationDateIndex = vehicleEntries.findIndex(
+          ([key]) => key === 'RegistrationDate'
+        );
+        const insertIndex =
+          registrationDateIndex === -1 ? vehicleEntries.length : registrationDateIndex + 1;
+        vehicleEntries.splice(insertIndex, 0, ['OperationalNumber', opRef]);
+        merged.vehicles[existingIndex] = Object.fromEntries(vehicleEntries);
       }
     }
   }

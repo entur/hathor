@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
 import type { ImportEntry, FramesByQueryRegNumber } from '../types/importTypes';
-import { findResourceFrame, toArray } from '../../netex/xmlUtils';
+import { addDataOwnerRefToFrame, findResourceFrame, toArray } from '../../netex/xmlUtils';
 import { mergeResourceFrames } from './xmlUtils';
 import { makeXml } from './__fixtures__/makeXml';
 
@@ -32,6 +32,9 @@ describe('mergeResourceFrames', () => {
 
   it('injects OperationalNumber for vehicles with matching entries', () => {
     const frames = framesByReg('AB1234', 'CD5678');
+    for (const frame of Object.values(frames)) {
+      frame.vehicles.Vehicle.RegistrationDate = '2020-01-01';
+    }
     const entries: ImportEntry[] = [
       { queryRegNumber: 'AB1234', operationalRef: 'OP-001' },
       { queryRegNumber: 'CD5678', operationalRef: 'OP-002' },
@@ -42,6 +45,12 @@ describe('mergeResourceFrames', () => {
     expect(merged.vehicles).toHaveLength(2);
     expect(merged.vehicles[0].OperationalNumber).toBe('OP-001');
     expect(merged.vehicles[1].OperationalNumber).toBe('OP-002');
+    expect(Object.keys(merged.vehicles[0])).toEqual([
+      'RegistrationNumber',
+      '@_id',
+      'RegistrationDate',
+      'OperationalNumber',
+    ]);
   });
 
   it('leaves vehicles untouched when entry has no operationalRef', () => {
@@ -86,5 +95,17 @@ describe('toArray', () => {
 
   it('returns empty array for null', () => {
     expect(toArray(null)).toEqual([]);
+  });
+});
+
+describe('addDataOwnerRefToFrame', () => {
+  it('adds responsibilitySets first and preserves existing frame properties', () => {
+    const resourceFrame = { vehicles: { Vehicle: [] }, '@_id': 'NMR:ResourceFrame:1' };
+
+    addDataOwnerRefToFrame({}, resourceFrame, 'NMR:Organisation:1');
+
+    expect(Object.keys(resourceFrame)).toEqual(['responsibilitySets', 'vehicles', '@_id']);
+    expect(resourceFrame['@_id']).toBe('NMR:ResourceFrame:1');
+    expect(resourceFrame.vehicles).toEqual({ Vehicle: [] });
   });
 });
