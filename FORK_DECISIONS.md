@@ -619,6 +619,7 @@ Deck plans are not ready for every environment, but their route, nav item, Home 
 - **One flag per feature.** `sandboxFeatures.DeckPlans` covers the `/deck-plans` route, nav item and Home cards, and the deck-plan references on other screens: the vehicle-type deck-plan column and the multi-import deck-plan count.
 - **A missing key is off.** Each environment opts in; dev and localhost set `DeckPlans: true`.
 - **Lists declare their gate.** Menu items, Home `SiteType`s and table columns take an optional `flag`; the component that renders the list drops entries whose flag is off.
+- **An endpoint gates its own feature.** A feature that needs a config URL is on when that URL is set, with no `sandboxFeatures` key: the SVV bulk import on Home hides when `applicationGetAutosysUrl` is `''`, `null` or missing.
 
 ### Alternatives considered
 
