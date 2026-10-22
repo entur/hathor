@@ -19,6 +19,7 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  *   - Three-step wizard navigation (Skip → add reg-nr → Next → Confirm).
  *   - Aggregated import summary parsed from a single REG_NR fixture (1/1/1/1).
  *   - sandboxFeatures.DeckPlans off (#202): the confirm summary drops the Deck plans row.
+ *   - sandboxFeatures.AutosysImport off (#202): Home has no import button.
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts the VehicleTypes + Autosys GraphQL queries with fixtures; full dialog flow runs offline.
  *   - live (E2E_BACKEND=true): fetches real Autosys data via shepet on :37998 (no query intercepts).
@@ -96,10 +97,19 @@ test.describe('Autosys multi-import dialog', () => {
   });
 
   test('DeckPlans off: confirm has no Deck plans row', async ({ context, page }) => {
-    await seedAuth(context, { sandboxFeatures: { DeckPlans: false } });
+    await seedAuth(context, { sandboxFeatures: { DeckPlans: false, AutosysImport: true } });
     const contentText = await openConfirm(page);
 
     expect(contentText).toMatch(/Vehicle types\s*1/);
     expect(contentText).not.toMatch(/Deck plans/);
+  });
+
+  test('AutosysImport off: no import button', async ({ context, page }) => {
+    await seedAuth(context, { sandboxFeatures: { DeckPlans: true, AutosysImport: false } });
+    await page.goto('/');
+    await selectFirstOrg(page);
+    // the org-gated cards mark Home as rendered, so the count below isn't vacuous
+    await expect(page.locator('.app-content a[href="/vehicles"]')).toBeVisible();
+    await expect(page.getByTestId(IMPORT_BTN)).toHaveCount(0);
   });
 });

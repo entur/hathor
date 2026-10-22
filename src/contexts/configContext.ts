@@ -11,6 +11,8 @@ export interface SandboxFeatures {
    * plus the deck-plan column on /vehicle-types and the multi-import deck-plan count.
    */
   DeckPlans?: boolean;
+  /** The SVV (Autosys) bulk import on Home. */
+  AutosysImport?: boolean;
 }
 
 export interface Config {

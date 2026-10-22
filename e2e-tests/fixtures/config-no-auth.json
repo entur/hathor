@@ -7,6 +7,7 @@
   "preferredNameNamespace": "https://ror.entur.io/preferred_name",
   "themeFilePath": "/theme-dev.json",
   "sandboxFeatures": {
-    "DeckPlans": true
+    "DeckPlans": true,
+    "AutosysImport": true
   }
 }
