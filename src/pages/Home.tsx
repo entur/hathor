@@ -33,7 +33,7 @@ export default function HomePage() {
     refetch: refetchOrganisations,
   } = useOrganisationsContext();
   const { isAuthenticated, getAccessToken, login } = useAuth();
-  const { applicationBaseUrl, oidcConfig } = useConfig();
+  const { applicationBaseUrl, applicationGetAutosysUrl, oidcConfig } = useConfig();
   // getAccessToken's identity changes on every OIDC silent renew; read it through a
   // ref so a token refresh doesn't rebuild ctx and re-run every card's count fetch.
   const tokenRef = useRef(getAccessToken);
@@ -79,7 +79,8 @@ export default function HomePage() {
           </Typography>
         </Box>
 
-        {isAuthenticated && currentOrganisation && (
+        {/* SVV import needs the Autosys endpoint; '' / null / missing hides it */}
+        {isAuthenticated && currentOrganisation && applicationGetAutosysUrl?.trim() && (
           <Box sx={{ mb: 3 }}>
             <AutosysImportFloatingMenu
               variant="outlined"
