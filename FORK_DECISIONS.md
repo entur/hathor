@@ -619,6 +619,7 @@ Deck plans are not ready for every environment, but their route, nav item, Home 
 - **One flag per feature.** `sandboxFeatures.DeckPlans` covers the `/deck-plans` route, nav item and Home cards, and the deck-plan references on other screens: the vehicle-type deck-plan column and the multi-import deck-plan count.
 - **A missing key is off.** Each environment opts in; dev and localhost set `DeckPlans: true`.
 - **Lists declare their gate.** Menu items, Home `SiteType`s and table columns take an optional `flag`; the component that renders the list drops entries whose flag is off.
+- **A config URL is not a flag.** `sandboxFeatures.AutosysImport` gates the SVV bulk import on Home; `applicationGetAutosysUrl` only says where Autosys lives.
 
 ### Alternatives considered
 
@@ -627,6 +628,7 @@ Deck plans are not ready for every environment, but their route, nav item, Home 
 | **Separate flag for references (`enableDeckPlanRefs`)** | Referencing something you can neither register nor see is not useful, and two independent flags add states nobody needs (PR #203 review). |
 | **Top-level `enable*` booleans beside `sandboxFeatures`** | Two ways to read a flag in one project; `sandboxFeatures` can carry every flag. |
 | **Missing means on** | A new environment would show unfinished features until someone remembers to turn them off. |
+| **A set URL turns its feature on (`applicationGetAutosysUrl` present → SVV import shown)** | One key doing two jobs: an endpoint can't be validated as required while its absence also means "off", and turning a feature off means deleting the URL (#202). |
 | **Build-time flags (`import.meta.env` / `define`)** | One image is deployed to every environment with its own `config.json`; a build-time flag needs a build per environment. |
 
 ### Consequences
