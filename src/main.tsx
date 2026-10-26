@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.tsx';
+import { applyFavicon } from './config/applyFavicon.ts';
 import { fetchConfig } from './config/fetchConfig.ts';
 import { ConfigContext } from './contexts/configContext.ts';
 import { AuthProvider } from './auth';
@@ -13,6 +14,7 @@ import './i18n';
 import { SessionProvider } from './contexts/SessionContext.tsx';
 
 fetchConfig().then(config => {
+  applyFavicon(config.faviconPath);
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ConfigContext.Provider value={config}>

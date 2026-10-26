@@ -14,6 +14,7 @@
     "redirect_uri": "https://materiellregister.dev.entur.no/"
   },
   "themeFilePath": "/theme.json",
+  "faviconPath": "/assets/M-favicon.svg",
   "sandboxFeatures": {
     "DeckPlans": true,
     "AutosysImport": true

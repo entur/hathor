@@ -24,6 +24,8 @@ export interface Config {
   claimsNamespace?: string;
   oidcConfig?: OidcClientSettings;
   themeFilePath?: string;
+  /** Per-environment favicon, e.g. `/assets/M-favicon-prod.svg`; unset keeps index.html's. */
+  faviconPath?: string;
   sandboxFeatures?: SandboxFeatures;
 }
 
