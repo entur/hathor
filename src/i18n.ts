@@ -33,7 +33,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    // Browsers send `no`/`nn` as often as `nb`; route them to the Bokmål bundle.
+    fallbackLng: { no: ['nb'], nn: ['nb'], default: ['en'] },
     debug: false,
     interpolation: {
       escapeValue: false,
