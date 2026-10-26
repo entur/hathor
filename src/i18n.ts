@@ -42,24 +42,27 @@ i18n
   });
 
 /**
- * Mirror the active language onto `<html lang>`.
+ * Mirror the active language onto `<html lang>` and `<title>`.
  *
- * `index.html` ships a static `lang="en"` that nothing updated, so a user on
- * Norwegian was served Norwegian text inside an element still claiming to be
- * English — screen readers pick the wrong pronunciation and CSS `:lang()`
- * never matches. The `document` guard keeps this import safe for the
- * node-environment unit tests.
+ * `index.html` ships a static `lang="en"` and title as pre-JS defaults, so a
+ * user on Norwegian was served Norwegian text inside an element still claiming
+ * to be English — screen readers pick the wrong pronunciation and CSS
+ * `:lang()` never matches — and the tab title never followed the language.
+ * The `document` guard keeps this import safe for the node-environment unit
+ * tests.
  *
  * @param {string} lng - Language code to publish, e.g. `'nb'`.
  */
-const syncDocLang = (lng: string) => {
-  if (typeof document !== 'undefined') document.documentElement.lang = lng;
+const syncDoc = (lng: string) => {
+  if (typeof document === 'undefined') return;
+  document.documentElement.lang = lng;
+  document.title = i18n.t('app.title', { lng });
 };
 
-syncDocLang(i18n.resolvedLanguage ?? 'en');
-i18n.on('languageChanged', syncDocLang);
+syncDoc(i18n.resolvedLanguage ?? 'en');
+i18n.on('languageChanged', syncDoc);
 // The i18next singleton outlives this module under HMR, so drop the listener
 // when the module is replaced — otherwise dev accumulates one per reload.
-import.meta.hot?.dispose(() => i18n.off('languageChanged', syncDocLang));
+import.meta.hot?.dispose(() => i18n.off('languageChanged', syncDoc));
 
 export default i18n;
