@@ -14,6 +14,7 @@
     "redirect_uri": "http://localhost:5000"
   },
   "themeFilePath": "/theme-dev.json",
+  "faviconPath": "/assets/M-favicon.svg",
   "sandboxFeatures": {
     "DeckPlans": true,
     "AutosysImport": true
