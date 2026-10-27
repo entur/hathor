@@ -8,7 +8,7 @@ import type { ImportEntry } from '../types/importTypes';
  * A plate that fails still yields a 200; its error sits in the ResourceFrame's
  * `keyList` (see `assembleAutosysResults`).
  *
- * @param {string} officialMotorVehicleRegistryProxy - Bulk endpoint URL from config.
+ * @param {string} motorVehicleRegistryProxy - Bulk endpoint URL from config.
  * @param {string} dataOwnerRef - NeTEx id of the organisation that will own the import.
  * @param {ImportEntry[]} entries - Plates to fetch, with optional operational numbers.
  * @param {AccessToken} token - Bearer token.
@@ -16,12 +16,12 @@ import type { ImportEntry } from '../types/importTypes';
  * @throws {Error} With the response body (or statusText) on a non-OK response.
  */
 export const fetchVehiclesFromAutosys = async (
-  officialMotorVehicleRegistryProxy: string,
+  motorVehicleRegistryProxy: string,
   dataOwnerRef: string,
   entries: ImportEntry[],
   token: AccessToken
 ): Promise<string> => {
-  const url = new URL(officialMotorVehicleRegistryProxy);
+  const url = new URL(motorVehicleRegistryProxy);
   url.searchParams.set('dataOwner', dataOwnerRef);
   const body = entries.map(({ queryRegNumber, operationalRef }) => ({
     registrationNumber: queryRegNumber,

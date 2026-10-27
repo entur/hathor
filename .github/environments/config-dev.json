@@ -1,6 +1,6 @@
 {
   "applicationBaseUrl": "https://api.dev.entur.io/vehicles/v1/graphql",
-  "officialMotorVehicleRegistryProxy": "https://api.dev.entur.io/shepet/v1/autosys/vehicles",
+  "motorVehicleRegistryProxy": "https://api.dev.entur.io/shepet/v1/autosys/vehicles",
   "applicationImportBaseUrl": "https://api.dev.entur.io/vehicles/v1/netex",
   "applicationEnv": "development",
   "claimsNamespace": "https://ror.entur.io/role_assignments",

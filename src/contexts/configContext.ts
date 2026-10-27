@@ -22,7 +22,7 @@ export interface Config {
    * Shepet's bulk endpoint (`POST …/autosys/vehicles`): takes the plates as JSON and returns one
    * NeTEx `PublicationDelivery` for all of them (entur/shepet#39).
    */
-  officialMotorVehicleRegistryProxy?: string;
+  motorVehicleRegistryProxy?: string;
   applicationEnv?: string;
   preferredNameNamespace?: string;
   claimsNamespace?: string;

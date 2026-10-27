@@ -2,7 +2,7 @@
 
 Live mode needs **Sobek** for GraphQL/CRUD. The **Autosys import** flow additionally needs
 **Shepet** on :37998 (hathor's import dialog POSTs every plate at once to
-`…/services/autosys/vehicles?dataOwner=…` — config key `officialMotorVehicleRegistryProxy`, #214).
+`…/services/autosys/vehicles?dataOwner=…` — config key `motorVehicleRegistryProxy`, #214).
 That bulk endpoint needs Shepet with entur/shepet#39 (`feature/bulk-get` until merged). PostGIS (:37433, Sobek's DB) comes up via `docker compose up` in `sobek/`.
 
 Both are **Java 21** Spring Boot apps. Build under JDK 21, run in the background, then confirm a

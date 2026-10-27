@@ -35,7 +35,7 @@ interface MultiImportProps {
 
 export default function MultiImport({ onClose, onImportComplete }: MultiImportProps) {
   const { t } = useTranslation();
-  const { officialMotorVehicleRegistryProxy, applicationImportBaseUrl } = useConfig();
+  const { motorVehicleRegistryProxy, applicationImportBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -126,7 +126,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     try {
       const token = await getAccessToken();
       const xml = await fetchVehiclesFromAutosys(
-        officialMotorVehicleRegistryProxy || '',
+        motorVehicleRegistryProxy || '',
         currentOrganisation.id,
         entries,
         token
