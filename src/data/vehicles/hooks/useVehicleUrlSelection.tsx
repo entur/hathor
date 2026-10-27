@@ -16,8 +16,9 @@ interface UrlSelectionParams {
 /**
  * Vehicle-specific binding for the generic
  * {@link useUrlEditorSelection} hook: param key `selected`, row id is
- * `v.id` (already the full NeTEx id), editor is `<VehicleDetails>` with
- * the list refetch wired to `onSaved`.
+ * `v.id` (already the full NeTEx id), editor is `<VehicleDetails>` — given
+ * only the id, it loads its own record — with the list refetch wired to
+ * `onSaved`.
  */
 export function useVehicleUrlSelection({
   allData,
@@ -35,7 +36,6 @@ export function useVehicleUrlSelection({
     setPage,
     loading,
     getId: v => v.id ?? '',
-    getEmptyRow: () => ({ id: '' }), // "new" selection factory
-    renderEditor: (row, mode) => <VehicleDetails vehicle={row} onSaved={refetch} mode={mode} />,
+    renderEditor: (id, mode) => <VehicleDetails id={id} onSaved={refetch} mode={mode} />,
   });
 }

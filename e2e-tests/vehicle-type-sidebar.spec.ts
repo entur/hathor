@@ -17,22 +17,24 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *
  * Workflow (describe 1 — deep-link sidebar):
  *   /vehicle-types → row click writes ?selected=<vtId> → tabbed VehicleTypeForm
- *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the resolved row →
+ *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from Sobek's by-id record →
  *   navigate tabs → editor-rail collapse drops ?selected= and hides the sidebar.
  * Workflow (describe 2 — sidebar save):
  *   ?selected=<vtId> → editor-rail Edit → edit name → editor-rail Save fires
  *   createOrUpdateVehicleType (full-document serialize) → success snackbar →
- *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
+ *   by-id re-fetch re-hydrates the record + list refetch → back to read-only view
+ *   (re-baselined).
  * Covers:
- *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
+ *   - describe 1: row click writes ?selected=; an id Sobek does not know opens the not-found
+ *     body; tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form;
  *     emission class is a dropdown of Sobek's EMISSION_STANDARD code values, fetched once
  *     per session, that keeps an out-of-list stored value (#194)
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
- *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
- *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
+ *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
+ *     warning, not a bare success (the re-fetch must reject, not resolve early).
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -43,7 +45,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *       Type Alpha (NMR:VehicleType:1, bus) · Type Beta (…:2, rail, name lang 'nb') · Type Gamma (…:3, lowFloor null)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select (AtB); describe 1 runs the
  *     structural tests (row click → ?selected=, tab navigation, collapse) against the org's
- *     real first row (data-agnostic). Describe 2 is entirely skip-live (the real live vtype save
+ *     real first row (data-agnostic), and the not-found test against an id no org has.
+ *     Describe 2 is entirely skip-live (the real live vtype save
  *     round-trip lives in vehicle-type-save-live.spec.ts).
  *   - skip-live:
  *       describe 1: 'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
@@ -143,6 +146,19 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page).not.toHaveURL(/vehicle-types/);
   });
 
+  // #217: the editor reads Sobek by id, so an id Sobek does not know lands on
+  // the not-found body — never a stuck skeleton, never the list's first row.
+  test('opening an id not in Sobek shows not-found', async ({ page }) => {
+    const unknownId = 'NMR:VehicleType:does-not-exist';
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(unknownId)}`);
+    await selectFirstOrg(page);
+
+    await expect(page.getByText('Vehicle type not found')).toBeVisible();
+    await expect(page.locator('.sidebar-desktop').getByText(unknownId)).toBeVisible();
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveCount(0);
+    await expect(page.locator('#vtype-name')).toHaveCount(0);
+  });
+
   test('collapse rail drops ?selected= and hides the sidebar', async ({ page }) => {
     if (IS_LIVE) {
       await openFirstVtype(page);
@@ -223,7 +239,7 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
  * hathor#109/#15 — VehicleType sidebar SAVE now fires the
  * `createOrUpdateVehicleType` mutation (not a mock). The editor serialises the
  * full document (`serializeVehicleType`) so Sobek's full-document-replace does
- * not null untouched fields; on success the list refetch re-resolves the row
+ * not null untouched fields; on success the by-id re-fetch re-hydrates the record
  * and re-hydrates the form (advancing the dirty baseline).
  *
  * Mock-only here: behavioural flow over a stateful fixture (success snackbar,
@@ -315,12 +331,11 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     expect(lastInput()?.name).toEqual({ value: 'Type Beta X', lang: 'nb' });
   });
 
-  // The mutation commits but the post-save list refresh 500s. The user must not
-  // get a bare "saved" success over a stale table — the refresh failure should be
-  // surfaced (handleSave awaits onSaved and catches → stale-list warning). This
-  // works because useVehicleTypes.doFetch returns its fetch chain, so the awaited
-  // onSaved() rejects on a failed refresh instead of resolving early (#117 fix).
-  test('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
+  // The mutation commits but the post-save by-id re-fetch 500s. The user must
+  // not get a bare "saved" success over a stale form — the refresh failure is
+  // surfaced (handleSave awaits record.refetch(), which rejects on failure, and
+  // catches → stale warning).
+  test('a failed post-save re-fetch surfaces a stale warning, not a bare success', async ({
     page,
   }) => {
     await interceptVehicleTypesWithSave(page, { failRefetch: true });

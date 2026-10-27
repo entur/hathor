@@ -1,23 +1,26 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import NetexId from '../../netex/NetexId.tsx';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
 import { FormLayout, MetaRow } from '../../../components/FormLayout.tsx';
 import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
 import { vehicleMode, type Vehicle } from '../types/vehicle.ts';
+import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
+import { fetchVehicleById } from '../api/fetchVehicles.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
-import { useVehicle } from '../hooks/useVehicle.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
+import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
+import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
 import { commitSave } from '../../../utils/commitSave.ts';
 import {
   edit,
@@ -34,8 +37,8 @@ const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
 
 interface VehicleDetailsProps {
-  /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
-  vehicle: Vehicle | null;
+  /** Vehicle netexId to load, or `NEW_SELECTION` for the create pane. */
+  id: string;
   /**
    * List-side refetch fired after a successful save so the row on `/vehicles`
    * reflects the new registrationNumber/name/version before the success
@@ -45,13 +48,20 @@ interface VehicleDetailsProps {
   mode?: 'view' | 'edit';
 }
 
-export default function VehicleDetails({
-  vehicle,
-  onSaved,
-  mode: initialMode,
-}: VehicleDetailsProps) {
+/**
+ * Sidebar editor for a Vehicle, opened via `/vehicles?selected=<id>`. Loads
+ * its record from Sobek by id ({@link useEntityRecord}) — on open and again
+ * after a save — and stays mounted across `?selected=` changes, resetting
+ * itself whenever the id moves.
+ *
+ * @param {string} id Vehicle netexId, or `NEW_SELECTION` for the create pane.
+ * @param {() => Promise<void>} [onSaved] Optional list refetch run after a successful save.
+ * @param {'view' | 'edit'} [mode] Initial mode.
+ * @returns {JSX.Element} The editor, its loading skeleton, or the not-found body.
+ */
+export default function VehicleDetails({ id, onSaved, mode: initialMode }: VehicleDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const isCreate = id === NEW_SELECTION;
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = formState;
@@ -62,17 +72,26 @@ export default function VehicleDetails({
   const { deactivate } = useVehicleDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
 
-  const {
-    data: xmlVehicle,
-    loading: xmlLoading,
-    error: xmlError,
-    refetch: refetchXml,
-  } = useVehicle(vehicle?.id);
+  const record = useEntityRecord(isCreate ? null : id, fetchVehicleById);
 
+  // The editor outlives `?selected=` changes: reset per id. A create advancing
+  // to its new id keeps the success snackbar it just raised.
+  const prevIdRef = useRef(id);
   useEffect(() => {
-    dispatch({ type: 'hydrate', xmlVehicle });
+    const prevId = prevIdRef.current;
+    if (prevId === id) return;
+    prevIdRef.current = id;
+    setMode(initialMode ?? 'view');
+    if (prevId !== NEW_SELECTION) setSavedAt(null);
+    setCommitError(null);
     setDeactivatedOK(false);
-  }, [xmlVehicle]);
+    if (id === NEW_SELECTION) dispatch({ type: 'hydrate', xmlVehicle: null });
+  }, [id, initialMode]);
+
+  // Baseline = Sobek's record, on open and after every post-save re-fetch.
+  useEffect(() => {
+    if (record.data) dispatch({ type: 'hydrate', xmlVehicle: record.data });
+  }, [record.data]);
 
   const isDirty = isFormDirty(formState);
   useDirtyFormBlock(isDirty);
@@ -111,28 +130,36 @@ export default function VehicleDetails({
         return;
       }
       // Re-baseline the form with the assigned id so isDirty=false immediately,
-      // bridging until the URL advance below re-resolves the row from the list.
+      // bridging until the URL advance below fetches the created record.
       dispatch({
         type: 'hydrate',
         xmlVehicle: { ...form.vehicle, id: result.newId, version: 1 },
       });
-      // useVehicle('') short-circuited; advance ?selected=new → ?selected=<newId>
-      // so useUrlEditorSelection re-resolves into the just-created row and the
-      // single-vehicle fetch lands the real version.
+      // Advance ?selected=new → ?selected=<newId>; the by-id fetch then lands
+      // the real version.
       advanceCreated(result.newId);
     } else {
       // Existing row — re-pull the persisted vehicle so the `hydrate` effect
       // advances the dirty baseline (and picks up the bumped version). Without
       // this the form stays dirty after save and `>>` wrongly raises the
-      // discard dialog.
-      await refetchXml();
+      // discard dialog. The write is real even if the re-pull fails.
+      try {
+        await record.refetch();
+      } catch (err) {
+        setMode('view');
+        setCommitError(graphqlErrMsg(err));
+        return;
+      }
     }
     setSavedAt(Date.now());
     setMode('view');
   };
 
-  if (!vehicle) {
-    const requestedId = searchParams.get(VEHICLE_SELECTED_PARAM);
+  // Until Sobek's record lands, a form that already holds this id (the
+  // post-create bridge) stays up; otherwise skeleton, or not-found.
+  const hasRecord = isCreate || record.data !== null || (form.vehicle.id ?? '') === id;
+
+  if (!hasRecord && (record.notFound || record.error)) {
     return (
       <>
         <Box sx={{ p: 2 }}>
@@ -143,18 +170,16 @@ export default function VehicleDetails({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             {t('vehicles.notFound')}
           </Typography>
-          {requestedId && (
-            <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-              {requestedId}
-            </Typography>
-          )}
+          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+            {id}
+          </Typography>
         </Box>
         <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
       </>
     );
   }
 
-  if (xmlLoading) {
+  if (!hasRecord) {
     return (
       <>
         <VehicleDetailsSkeleton />
@@ -164,7 +189,8 @@ export default function VehicleDetails({
   }
 
   const trimmedName = form.vehicle.name?.value?.trim();
-  const tmode = vehicleMode(vehicle);
+  const parentType = record.data?.transportType;
+  const tmode = record.data ? vehicleMode(record.data) : UNKNOWN_TRANSPORT_MODE;
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -209,10 +235,8 @@ export default function VehicleDetails({
       <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
         <MetaRow label={t('vehicles.field.parentVehicleType')}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-            <span>{vehicle.transportType?.name?.value ?? '—'}</span>
-            {xmlVehicle?.transportType?.id && (
-              <NetexId id={xmlVehicle.transportType.id} copy="only" size="medium" />
-            )}
+            <span>{parentType?.name?.value ?? '—'}</span>
+            {parentType?.id && <NetexId id={parentType.id} copy="only" size="medium" />}
           </Stack>
         </MetaRow>
         <MetaRow label={t('vehicles.field.parentTransportMode')}>
@@ -221,13 +245,7 @@ export default function VehicleDetails({
       </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
-      {xmlError ? (
-        <Typography variant="body2" color="error" sx={{ py: 2 }}>
-          {xmlError}
-        </Typography>
-      ) : (
-        <VehicleEditForm value={form} onChange={setForm} mode={mode} />
-      )}
+      <VehicleEditForm value={form} onChange={setForm} mode={mode} />
 
       <SaveErrorSnackbar error={error} onClose={clearError} />
       <SaveErrorSnackbar
@@ -255,7 +273,7 @@ export default function VehicleDetails({
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', xmlVehicle });
+          dispatch({ type: 'hydrate', xmlVehicle: record.data });
           setMode('view');
         }}
         onSave={handleSave}

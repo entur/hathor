@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import type { Page } from '@playwright/test';
+import { byNetexIds } from './autosys-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -232,6 +233,7 @@ const DEFAULT_VEHICLE_TYPES: VehicleTypeRow[] = [
  *
  * Fields the projection layer doesn't see (deckPlan, vehicles, the env extras,
  * etc.) are returned as null — the picker only reads name.value + netexId.
+ * A `filter.netexIds` query (by-id fetch) gets only the matching rows.
  */
 export const interceptVehicleTypesQuery = (
   page: Page,
@@ -273,19 +275,20 @@ export const interceptVehicleTypesQuery = (
       deckPlan: null,
       vehicles: null,
     }));
+    const body = {
+      data: {
+        vehicleTypes: {
+          content,
+          totalElements: content.length,
+          page: 0,
+          size: content.length,
+        },
+      },
+    };
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({
-        data: {
-          vehicleTypes: {
-            content,
-            totalElements: content.length,
-            page: 0,
-            size: content.length,
-          },
-        },
-      }),
+      body: JSON.stringify(byNetexIds(body, 'vehicleTypes', postData?.variables?.filter?.netexIds)),
     });
   });
 

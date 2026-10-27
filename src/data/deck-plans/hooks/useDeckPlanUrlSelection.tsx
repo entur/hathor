@@ -16,8 +16,8 @@ interface UrlSelectionParams {
 /**
  * DeckPlan binding for the generic {@link useUrlEditorSelection} hook:
  * param key `selected`, id is the full NeTEx id, editor is
- * `<DeckPlanDetails>`. `getEmptyRow` powers the create flow when
- * `?selected=new` is opened from the New Deck Plan action.
+ * `<DeckPlanDetails>` — given only the id (`NEW_SELECTION` for the New
+ * Deck Plan action), it loads its own record.
  */
 export function useDeckPlanUrlSelection({
   allData,
@@ -35,7 +35,6 @@ export function useDeckPlanUrlSelection({
     setPage,
     loading,
     getId: dp => dp.id,
-    getEmptyRow: () => ({ id: '' }),
-    renderEditor: (row, mode) => <DeckPlanDetails deckPlan={row} onSaved={refetch} mode={mode} />,
+    renderEditor: (id, mode) => <DeckPlanDetails id={id} onSaved={refetch} mode={mode} />,
   });
 }

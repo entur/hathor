@@ -24,8 +24,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
  *   - save is gated until the XML body has loaded (an edit patches it)
  *   - a failed post-save list refresh warns but still re-baselines the form
- *   - cancelling a second edit restores the saved baseline, not the stale
- *     `deckPlan` prop useUrlEditorSelection never re-commits
+ *   - cancelling a second edit restores the saved baseline (the re-fetched
+ *     record), not the pre-save row
  *   - the stored `lang` on <Name> survives a save round-trip
  *   - a failed post-save body refetch blocks a second save on the stale document
  *   - Retry re-runs the deck parse, not just the body fetch, so a transient
@@ -39,7 +39,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *     in src/data/deck-plans/utils/deckRenderingStyles.test.ts
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `DeckPlans` GraphQL with the 10-row
- *     fixture, plus fulfill-routes on `/deckplans/<id>` for the XML body —
+ *     fixture (narrowed to `filter.netexIds` for the editor's by-id fetch; after
+ *     a save, that fetch reflects the posted name), plus fulfill-routes on `/deckplans/<id>` for the XML body —
  *     `deck-plan-xml-mock.xml` (empty `<decks/>`, the SAMPLE case) or
  *     `deck-plan-xml-with-decks-mock.xml` (two decks, 4 + 2 seats)
  *   - skip-live: mutates a shared deck plan; live coverage needs its own fixture id
@@ -219,16 +220,20 @@ test.describe('/deck-plans — sidebar editor', () => {
   test('a failed post-save list refresh warns but still re-baselines the form', async ({
     page,
   }) => {
-    // The import POST commits, then the list refetch 500s. The warning is
-    // correct, but the write landed — collapsing must not offer to discard
-    // changes that are already persisted.
+    // The import POST commits, then the list refetch 500s (the editor's by-id
+    // re-fetch still answers). The warning is correct, but the write landed —
+    // collapsing must not offer to discard changes that are already persisted.
     // Registered BEFORE the 500-override: Playwright runs route handlers LIFO,
     // so the override below gets first look and falls back to this one.
     await interceptDeckPlansQuery(page);
     const { saved } = await interceptDeckPlanSave(page, xml());
     await page.route('**/graphql', async route => {
-      const body = route.request().postDataJSON() as { query?: string };
-      if (body?.query?.includes('deckPlans') && saved()) {
+      const body = route.request().postDataJSON() as {
+        query?: string;
+        variables?: { filter?: { netexIds?: string[] } };
+      };
+      const listQuery = !body?.variables?.filter?.netexIds;
+      if (body?.query?.includes('deckPlans') && listQuery && saved()) {
         return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
       }
       return route.fallback();
@@ -261,9 +266,8 @@ test.describe('/deck-plans — sidebar editor', () => {
     await page.getByTestId('editor-rail-save').click();
     await expect(page.getByTestId('deck-plan-details-title')).toHaveText('Plan Alpha renamed');
 
-    // useUrlEditorSelection does not re-commit the editor for an unchanged id,
-    // so the `deckPlan` prop still holds the pre-save row. Cancel must restore
-    // the last saved baseline, not that stale prop.
+    // The table row still holds the pre-save values. Cancel must restore the
+    // last saved baseline — the record re-fetched after the save.
     await page.getByTestId('editor-rail-edit').click();
     await page.getByTestId('editor-rail-cancel').click();
 

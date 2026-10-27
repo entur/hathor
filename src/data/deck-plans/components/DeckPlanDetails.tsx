@@ -1,16 +1,19 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import NetexId from '../../netex/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
+import FormLayoutSkeleton from '../../../components/FormLayoutSkeleton.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
+import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
+import { fetchDeckPlanById } from '../api/fetchDeckPlans.ts';
 import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
 import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { useDeckPlanDeactivate } from '../hooks/useDeckPlanDeactivate.ts';
@@ -29,10 +32,13 @@ import type { DeckPlan } from '../types/deckPlanTypes.ts';
 
 const RAIL_SIDE = 'right' as const;
 const BLANK_NAME = 'unnamed';
+const SKELETON_ROWS = 2;
+/** Create pane's starting form. */
+const EMPTY_DECK_PLAN: DeckPlan = { id: '' };
 
 interface DeckPlanDetailsProps {
-  /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
-  deckPlan: DeckPlan | null;
+  /** DeckPlan netexId to load, or `NEW_SELECTION` for the create pane. */
+  id: string;
   /** List-side refetch fired after a successful save (table freshness). */
   onSaved?: () => Promise<void>;
   /** Initial mode ('view' or 'edit'). */
@@ -57,10 +63,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
 /**
  * Editable sidebar for a DeckPlan, opened via `/deck-plans?selected=<id>`.
- * Renders the {@link DeckPlanForm} tab pair — Identity (name + description,
- * editable) and XML (the read-only NeTEx body, fetched separately because the
- * list query carries only id+name) — inside an {@link EditorRail} view↔edit
- * harness.
+ * Loads name + description from Sobek by id ({@link useEntityRecord}) and
+ * renders the {@link DeckPlanForm} tab pair — Identity (name + description,
+ * editable) and XML (the read-only NeTEx body, fetched separately by
+ * {@link useDeckPlanXml}) — inside an {@link EditorRail} view↔edit harness.
+ * Stays mounted across `?selected=` changes, resetting itself whenever the
+ * id moves.
  *
  * Save takes one of two paths. A create fires the `createOrUpdateDeckPlan`
  * mutation, which mints the new NeTEx id the sidebar then advances to. An edit
@@ -68,40 +76,46 @@ function formReducer(state: FormState, action: FormAction): FormState {
  * the whole body to the import endpoint — the only write path that preserves
  * deck geometry, which `DeckPlanInput` cannot carry.
  *
- * @param deckPlan Resolved row, or `null` for a not-found deep link.
- * @param onSaved Optional list refetch run after a successful save.
- * @param mode Optional initial mode ('view' or 'edit').
+ * @param {string} id DeckPlan netexId, or `NEW_SELECTION` for the create pane.
+ * @param {() => Promise<void>} [onSaved] Optional list refetch run after a successful save.
+ * @param {'view' | 'edit'} [mode] Optional initial mode.
+ * @returns {JSX.Element} The editor, its loading skeleton, or the not-found body.
  */
-export default function DeckPlanDetails({
-  deckPlan,
-  onSaved,
-  mode: initialMode,
-}: DeckPlanDetailsProps) {
+export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: DeckPlanDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
+  const isCreate = id === NEW_SELECTION;
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? (isCreate ? 'edit' : 'view'));
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = state;
 
-  const isCreate = !!deckPlan && !deckPlan.id;
-  const id = isCreate ? null : (deckPlan?.id ?? null);
-  const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(id);
+  const record = useEntityRecord(isCreate ? null : id, fetchDeckPlanById);
+  const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(isCreate ? null : id);
   const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
   const { deactivate } = useDeckPlanDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
 
-  // Re-baseline whenever a different row (or the create factory) resolves.
+  // The editor outlives `?selected=` changes: reset per id. A create advancing
+  // to its new id keeps the success snackbar it just raised.
+  const prevIdRef = useRef(id);
+  useEffect(() => {
+    const prevId = prevIdRef.current;
+    if (prevId === id) return;
+    prevIdRef.current = id;
+    setMode(initialMode ?? (id === NEW_SELECTION ? 'edit' : 'view'));
+    if (prevId !== NEW_SELECTION) setSavedAt(null);
+    setRefreshError(null);
+    setDeactivatedOK(false);
+    if (id === NEW_SELECTION) dispatch({ type: 'hydrate', dp: EMPTY_DECK_PLAN });
+  }, [id, initialMode]);
+
+  // Baseline = Sobek's record, on open and after every post-save re-fetch.
   // hydrate() trims: Sobek re-pads <Text> on serialize, so an untrimmed
   // baseline would read as dirty the moment the editor opens (sobek#180).
   useEffect(() => {
-    dispatch({ type: 'hydrate', dp: deckPlan });
-    setMode(initialMode ?? (deckPlan && !deckPlan.id ? 'edit' : 'view'));
-    setSavedAt(null);
-    setRefreshError(null);
-    setDeactivatedOK(false);
-  }, [initialMode, deckPlan]);
+    if (record.data) dispatch({ type: 'hydrate', dp: record.data });
+  }, [record.data]);
 
   const isDirty = isFormDirty(state);
   useDirtyFormBlock(isDirty);
@@ -111,8 +125,8 @@ export default function DeckPlanDetails({
   const advanceCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
 
   const handleDeactivate = async () => {
-    if (!deckPlan) return;
-    const result = await deactivate(deckPlan);
+    if (!record.data) return;
+    const result = await deactivate(record.data);
     if (result.error) {
       setRefreshError(result.error);
       return;
@@ -149,9 +163,8 @@ export default function DeckPlanDetails({
       dispatch({ type: 'hydrate', dp: { ...form, id: result.newId } });
       try {
         await onSaved?.();
-        // Advance `?selected=new` → `?selected=<newId>` only after the list
-        // refetch has landed, so useUrlEditorSelection re-resolves into the
-        // fresh row (not a transient "not found" between save and refetch).
+        // Advance `?selected=new` → `?selected=<newId>`; the editor then
+        // fetches the created record by id.
         advanceCreated(result.newId);
         setSavedAt(Date.now()); // success only once the list is fresh
       } catch {
@@ -162,7 +175,7 @@ export default function DeckPlanDetails({
 
     // Edit — patch the identity fields into the fetched document so the deck
     // body survives the round-trip, then POST the whole thing.
-    if (!deckPlan?.id) return;
+    if (isCreate) return;
     // The body the hook holds is the last one that arrived, not necessarily the
     // current one: a post-save refetch that failed leaves the pre-save document
     // there, and POSTing it back would resurrect what the save replaced. The
@@ -174,7 +187,7 @@ export default function DeckPlanDetails({
     }
     let patched: string;
     try {
-      patched = patchDeckPlanXml(xml, deckPlan.id, form.name, form.description);
+      patched = patchDeckPlanXml(xml, id, form.name, form.description);
     } catch (e) {
       setRefreshError(e instanceof Error ? e.message : String(e));
       return;
@@ -183,12 +196,14 @@ export default function DeckPlanDetails({
     if (result.error) return;
 
     setMode('view');
-    // Re-baseline on the write, for the same reason as the create branch above.
-    dispatch({ type: 'hydrate', dp: { ...deckPlan, ...form } });
+    // Re-baseline on the write, for the same reason as the create branch above
+    // — a bridge until the re-fetched record re-hydrates it.
+    dispatch({ type: 'hydrate', dp: { ...form, id } });
     // Re-pull the persisted body so the XML tab stops showing the pre-save
     // document. Fire-and-forget: `refetch` bumps a tick, it returns no promise.
     refetch();
     try {
+      await record.refetch();
       await onSaved?.();
       setSavedAt(Date.now());
     } catch {
@@ -196,8 +211,11 @@ export default function DeckPlanDetails({
     }
   };
 
-  if (!deckPlan) {
-    const requestedId = searchParams.get(DECK_PLAN_SELECTED_PARAM);
+  // Until Sobek's record lands, a form that already holds this id (the
+  // post-create bridge) stays up; otherwise skeleton, or not-found.
+  const hasRecord = isCreate || record.data !== null || form.id === id;
+
+  if (!hasRecord && (record.notFound || record.error)) {
     return (
       <>
         <Box sx={{ p: 2 }}>
@@ -208,19 +226,30 @@ export default function DeckPlanDetails({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             {t('deckPlans.notFound')}
           </Typography>
-          {requestedId && (
-            <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-              {requestedId}
-            </Typography>
-          )}
+          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+            {id}
+          </Typography>
         </Box>
         <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
       </>
     );
   }
 
+  if (!hasRecord) {
+    return (
+      <>
+        <FormLayoutSkeleton
+          ariaLabel={t('data.loading')}
+          showTitle
+          sections={[{ rowCount: SKELETON_ROWS }]}
+        />
+        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
+      </>
+    );
+  }
+
   // The title mirrors the typed name so it updates as the user edits — in
-  // create mode the persisted `deckPlan.name` is the blank factory until save.
+  // create mode there is no persisted name until save.
   const name = form.name?.value?.trim();
 
   return (
@@ -251,8 +280,8 @@ export default function DeckPlanDetails({
             </>
           )}
         </Typography>
-        {deckPlan.id && (
-          <NetexId id={deckPlan.id} copy="onHover" size="small" sx={{ justifySelf: 'start' }} />
+        {form.id && (
+          <NetexId id={form.id} copy="onHover" size="small" sx={{ justifySelf: 'start' }} />
         )}
       </FormLayout>
       <Divider sx={{ mb: 2 }} />
@@ -296,8 +325,8 @@ export default function DeckPlanDetails({
         deactivateConfirmMessage={t('deckPlan.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
-          // Baseline, not the `deckPlan` prop: a save re-baselines here but
-          // never re-commits the editor, so the prop is stale from then on.
+          // Baseline = the re-fetched record, or the submitted values if that
+          // re-fetch failed.
           dispatch({ type: 'restore' });
           setMode('view');
         }}

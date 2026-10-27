@@ -39,10 +39,8 @@ export const edit = (state: FormState, form: DeckPlan): FormState => ({ ...state
 /**
  * Drop an in-progress edit, restoring the last baselined values.
  *
- * Distinct from re-hydrating off the `deckPlan` prop: after an in-place save
- * `useUrlEditorSelection` does not re-commit the editor (the id is unchanged),
- * so that prop still holds the pre-save row. Cancelling onto it would show —
- * and re-baseline against — values that are no longer what is stored.
+ * The baseline is the re-fetched record after a save, or the submitted values
+ * when that re-fetch failed — never the pre-save row.
  */
 export const restore = (state: FormState): FormState => ({ ...state, form: state.baseline });
 
