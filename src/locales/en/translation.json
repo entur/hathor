@@ -306,7 +306,6 @@
   "import.multi.duplicatesRemoved_one": "{{count}} duplicate removed",
   "import.multi.duplicatesRemoved_other": "{{count}} duplicates removed",
   "import.multi.noResourceFrame": "No ResourceFrame found in response",
-  "import.multi.xmlParseFailed": "Failed to parse XML",
 
   "autosys.errResp.incomplete.autosys.data": "Incomplete vehicle data in Autosys",
   "autosys.errResp.badFormat.or.unknown": "Invalid format or unknown registration number",

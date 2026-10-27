@@ -305,7 +305,6 @@
   "import.multi.duplicatesRemoved_one": "{{count}} duplikat fjernet",
   "import.multi.duplicatesRemoved_other": "{{count}} duplikater fjernet",
   "import.multi.noResourceFrame": "Fant ingen ResourceFrame i svaret",
-  "import.multi.xmlParseFailed": "Klarte ikke å tolke XML",
 
   "autosys.errResp.incomplete.autosys.data": "Ufullstendig kjøretøydata i Autosys",
   "autosys.errResp.badFormat.or.unknown": "Ugyldig format eller ukjent registreringsnummer",

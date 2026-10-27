@@ -1,3 +1,7 @@
+/** Verbatim from shepet's bulk `fetchError-message-<i>` for an unknown or malformed plate. */
+export const NO_AUTOSYS_DATA =
+  'Cannot invoke "org.entur.shepet.model.GetKjoretoyResponse.getKjoretoydataListe()" because "autosysData" is null';
+
 interface BulkVehicle {
   reg: string;
   vehicleTypeId?: string;
@@ -11,10 +15,16 @@ interface MakeBulkXmlOptions {
   errors?: { reg: string; message: string }[];
 }
 
-const uniq = (ids: (string | undefined)[]) => [...new Set(ids.filter(Boolean))] as string[];
-
 const keyValue = (key: string, value: string) =>
   `<KeyValue><Key>${key}</Key><Value>${value}</Value></KeyValue>`;
+
+/** `<wrapper>` holding one rendered child per item, or nothing for no items. */
+const section = <T>(wrapper: string, items: T[], render: (item: T, i: number) => string) =>
+  items.length ? `<${wrapper}>${items.map(render).join('')}</${wrapper}>` : '';
+
+/** One empty `<element id>` per distinct id. */
+const refs = (wrapper: string, element: string, ids: (string | undefined)[]) =>
+  section(wrapper, [...new Set(ids.filter(Boolean))], id => `<${element} version="1" id="${id}"/>`);
 
 /**
  * Shepet's bulk `PublicationDelivery` (entur/shepet#39): one flat ResourceFrame,
@@ -29,38 +39,28 @@ export function makeBulkXml({
     vehicleModelId: 'NMR:VehicleModel:1',
     ...v,
   }));
-  const keyList = errors.length
-    ? `<keyList>${errors
-        .map(
-          (e, i) =>
-            keyValue(`fetchError-registrationNumber-${i}`, e.reg) +
-            keyValue(`fetchError-message-${i}`, e.message)
-        )
-        .join('')}</keyList>`
-    : '';
-  const section = (wrapper: string, element: string, ids: string[]) =>
-    ids.length
-      ? `<${wrapper}>${ids.map(id => `<${element} version="1" id="${id}"/>`).join('')}</${wrapper}>`
-      : '';
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <PublicationDelivery xmlns="http://www.netex.org.uk/netex">
   <dataObjects>
     <ResourceFrame version="1" id="NMR:ResourceFrame:1">
-      ${keyList}
-      ${section('vehicleTypes', 'VehicleType', uniq(vs.map(v => v.vehicleTypeId)))}
-      ${section('deckPlans', 'DeckPlan', uniq(vs.map(v => v.deckPlanId)))}
-      ${section('vehicleModels', 'VehicleModel', uniq(vs.map(v => v.vehicleModelId)))}
-      ${
-        vs.length
-          ? `<vehicles>${vs
-              .map(
-                v =>
-                  `<Vehicle version="1" id="AUTOSYS:Vehicle:${v.reg}"><RegistrationNumber>${v.reg}</RegistrationNumber></Vehicle>`
-              )
-              .join('')}</vehicles>`
-          : ''
-      }
+      ${section('keyList', errors, (e, i) => keyValue(`fetchError-registrationNumber-${i}`, e.reg) + keyValue(`fetchError-message-${i}`, e.message))}
+      ${refs(
+        'vehicleTypes',
+        'VehicleType',
+        vs.map(v => v.vehicleTypeId)
+      )}
+      ${refs(
+        'deckPlans',
+        'DeckPlan',
+        vs.map(v => v.deckPlanId)
+      )}
+      ${refs(
+        'vehicleModels',
+        'VehicleModel',
+        vs.map(v => v.vehicleModelId)
+      )}
+      ${section('vehicles', vs, v => `<Vehicle version="1" id="AUTOSYS:Vehicle:${v.reg}"><RegistrationNumber>${v.reg}</RegistrationNumber></Vehicle>`)}
     </ResourceFrame>
   </dataObjects>
 </PublicationDelivery>`;

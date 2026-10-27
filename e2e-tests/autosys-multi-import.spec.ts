@@ -1,9 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import { REG_NR, interceptAutosysQuery, interceptVehicleTypesQuery } from './autosys-helpers';
+import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 /** A plate Autosys has no data for: shepet reports it per plate, inside a 200. */
 const UNKNOWN_REG_NR = 'XX0000000';
-import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 /** Home's SVV bulk-import button — the import flow's only entry point. */
 const IMPORT_BTN = 'home-bulk-import-svv';
@@ -22,6 +22,7 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  *   - Three-step wizard navigation (Skip → add reg-nr → Next → Confirm).
  *   - Summary parsed from shepet's bulk response for REG_NR (1/1/0/1 — shepet emits no DeckPlans).
  *   - A plate Autosys does not know: shepet's per-plate KeyList error → "1 of 2" + a translated error row (#214).
+ *   - (mock only) The whole bulk request fails: one error on Review, no advance to Confirm (#214).
  *   - sandboxFeatures.DeckPlans off (#202): the confirm summary drops the Deck plans row.
  *   - sandboxFeatures.AutosysImport off (#202): Home has no import button.
  * Modes:
@@ -31,12 +32,13 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  *     the 1/1/0/1 summary is plate-dependent under live.
  */
 /**
- * Drive the wizard from Home to its Confirm step for {@link REG_NR}.
+ * Drive the wizard from Home to its Review step with `regNrs` added, ready for "Next".
  *
  * @param page The test page, already seeded via `seedAuth`.
- * @returns The dialog content's text once the success summary shows.
+ * @param regNrs Plates to add.
+ * @returns The dialog locator.
  */
-const openConfirm = async (page: Page, regNrs: string[] = [REG_NR]): Promise<string> => {
+const openReview = async (page: Page, regNrs: string[]) => {
   if (!IS_LIVE) {
     await interceptVehicleTypesQuery(page);
     await interceptAutosysQuery(page);
@@ -68,6 +70,18 @@ const openConfirm = async (page: Page, regNrs: string[] = [REG_NR]): Promise<str
     await addButton.click();
     await expect(tags.getByText(reg)).toBeVisible();
   }
+  return dialog;
+};
+
+/**
+ * Drive the wizard from Home to its Confirm step.
+ *
+ * @param page The test page, already seeded via `seedAuth`.
+ * @param regNrs Plates to import; defaults to {@link REG_NR}.
+ * @returns The dialog content's text once the summary shows.
+ */
+const openConfirm = async (page: Page, regNrs: string[] = [REG_NR]): Promise<string> => {
+  const dialog = await openReview(page, regNrs);
 
   // Click Next to trigger fetch
   const fetchNext = dialog.getByRole('button', { name: /next/i });
@@ -106,6 +120,21 @@ test.describe('Autosys multi-import dialog', () => {
     expect(contentText).toContain(
       `${UNKNOWN_REG_NR}: Invalid format or unknown registration number`
     );
+  });
+
+  test('whole bulk request fails: one error, stays on Review', async ({ context, page }) => {
+    test.skip(IS_LIVE, 'needs a shepet failure only a mock can force');
+    await seedAuth(context);
+    const dialog = await openReview(page, [REG_NR]);
+    // registered last, so it wins over the fixture route from openReview
+    await page.route('**/autosys/vehicles?**', route =>
+      route.fulfill({ status: 502, contentType: 'text/plain', body: 'shepet unavailable' })
+    );
+
+    await dialog.getByRole('button', { name: /next/i }).click();
+
+    await expect(dialog.locator('.MuiAlert-standardError')).toHaveText('shepet unavailable');
+    await expect(page.getByTestId('multi-import-tags')).toBeVisible();
   });
 
   test('DeckPlans off: confirm has no Deck plans row', async ({ context, page }) => {

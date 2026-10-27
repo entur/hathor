@@ -21,14 +21,10 @@ const ERROR_PATTERNS: ErrorPattern[] = [
     defaultMessage: 'Incomplete vehicle data in Autosys',
   },
   {
-    pattern: /400 Bad Request: "\{"feilmelding":"UGYLDIG_FORMAT_UNR_ELLER_KJENNEMERKE"\}"/,
-    key: 'autosys.errResp.badFormat.or.unknown',
-    defaultMessage: 'Invalid format or unknown registration number',
-  },
-  {
-    // shepet's bulk endpoint (entur/shepet#39): Autosys had no data for the plate,
-    // whether it is malformed or simply unknown
-    pattern: /GetKjoretoyResponse\.getKjoretoydataListe\(\)" because "autosysData" is null/,
+    // second alternative: shepet's bulk endpoint (entur/shepet#39) when Autosys had
+    // no data for the plate, whether it is malformed or simply unknown
+    pattern:
+      /400 Bad Request: "\{"feilmelding":"UGYLDIG_FORMAT_UNR_ELLER_KJENNEMERKE"\}"|GetKjoretoyResponse\.getKjoretoydataListe\(\)" because "autosysData" is null/,
     key: 'autosys.errResp.badFormat.or.unknown',
     defaultMessage: 'Invalid format or unknown registration number',
   },

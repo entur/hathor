@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { assembleAutosysResults, failedAutosysResult } from './assembleAutosysResults';
+import { assembleAutosysResults } from './assembleAutosysResults';
 import type { ImportEntry } from '../types/importTypes';
-import { makeBulkXml } from './__fixtures__/makeXml';
+import { NO_AUTOSYS_DATA, makeBulkXml } from './__fixtures__/makeXml';
 
 const entries = (...regs: string[]): ImportEntry[] =>
   regs.map(queryRegNumber => ({ queryRegNumber }));
-
-/** Verbatim from shepet's bulk response for an unknown plate. */
-const NO_AUTOSYS_DATA =
-  'Cannot invoke "org.entur.shepet.model.GetKjoretoyResponse.getKjoretoydataListe()" because "autosysData" is null';
 
 describe('assembleAutosysResults', () => {
   it('summarises a single vehicle and passes the XML through as payload', () => {
@@ -80,28 +76,13 @@ describe('assembleAutosysResults', () => {
     expect(postPayload).toBeUndefined();
   });
 
-  it('fails every plate when the response has no ResourceFrame', () => {
+  // A response without a ResourceFrame means the whole request failed, not one plate.
+  it('throws when the response has no ResourceFrame', () => {
     const badXml = `<?xml version="1.0"?><PublicationDelivery><dataObjects></dataObjects></PublicationDelivery>`;
 
-    const { summary, postPayload } = assembleAutosysResults(badXml, entries('AB1234', 'CD5678'));
-
-    expect(summary.successCount).toBe(0);
-    expect(summary.errors).toEqual([
-      { queryRegNumber: 'AB1234', message: 'No ResourceFrame found in response' },
-      { queryRegNumber: 'CD5678', message: 'No ResourceFrame found in response' },
-    ]);
-    expect(postPayload).toBeUndefined();
-  });
-
-  it('fails every plate when the response is not XML', () => {
-    const { summary, postPayload } = assembleAutosysResults(
-      'not xml at all <<<>>>',
-      entries('AB1234')
+    expect(() => assembleAutosysResults(badXml, entries('AB1234'))).toThrow(
+      'No ResourceFrame found in response'
     );
-
-    expect(summary.errors).toHaveLength(1);
-    expect(summary.errors[0].queryRegNumber).toBe('AB1234');
-    expect(postPayload).toBeUndefined();
   });
 
   // The payload goes to Sobek as shepet sent it — never re-serialised, so `0080` stays `0080`.
@@ -111,18 +92,5 @@ describe('assembleAutosysResults', () => {
     const { postPayload } = assembleAutosysResults(xml, entries('0080'));
 
     expect(postPayload).toContain('<RegistrationNumber>0080</RegistrationNumber>');
-  });
-});
-
-describe('failedAutosysResult', () => {
-  it('gives each requested plate the same error and no payload', () => {
-    const { summary, postPayload } = failedAutosysResult(entries('A', 'B'), 'boom');
-
-    expect(summary.errors).toEqual([
-      { queryRegNumber: 'A', message: 'boom' },
-      { queryRegNumber: 'B', message: 'boom' },
-    ]);
-    expect(summary.successCount).toBe(0);
-    expect(postPayload).toBeUndefined();
   });
 });

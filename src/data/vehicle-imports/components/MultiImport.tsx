@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -10,12 +11,7 @@ import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
-import {
-  type AutosysAssembledResult,
-  assembleAutosysResults,
-  failedAutosysResult,
-} from '../api/assembleAutosysResults';
-import { translateAutosysError } from '../utils/autosysErrorTranslator';
+import { type AutosysAssembledResult, assembleAutosysResults } from '../api/assembleAutosysResults';
 import type { TableMeta } from '../utils/inputTextAnalyzer';
 import { type RegNumbersStatus, deduplicateEntries } from '../utils/regNumbersTextTransformer';
 import type { ImportEntry } from '../types/importTypes';
@@ -126,8 +122,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       return;
     }
     setFetching(true);
-
-    let assembled: AutosysAssembledResult;
+    setSubmitError(null);
     try {
       const token = await getAccessToken();
       const xml = await fetchVehiclesFromAutosys(
@@ -136,16 +131,14 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
         entries,
         token
       );
-      assembled = assembleAutosysResults(xml, entries);
+      setAssembledResult(assembleAutosysResults(xml, entries));
+      setActiveStep(prev => prev + 1); // advance to Confirm
     } catch (e) {
-      assembled = failedAutosysResult(
-        entries,
-        e instanceof Error ? translateAutosysError(e.message) : t('import.multi.importFailed')
-      );
+      // the whole request failed — stay on Review with one error
+      setSubmitError(e instanceof Error ? e.message : t('import.multi.importFailed'));
+    } finally {
+      setFetching(false);
     }
-    setAssembledResult(assembled);
-    setFetching(false);
-    setActiveStep(prev => prev + 1); // advance to Confirm
   };
 
   const startSubmit = async () => {
@@ -153,7 +146,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const xml = assembledResult?.postPayload;
+      const xml = assembledResult.postPayload;
       const token = await getAccessToken();
       const responseXml = await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
       if (onImportComplete) {
@@ -191,6 +184,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     if (current === 'Confirm') {
       setAssembledResult(null);
     }
+    setSubmitError(null);
     setActiveStep(s => s - 1);
   };
 
@@ -202,8 +196,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     fetching ||
     submitting ||
     (currentStepName === 'Review' && entries.length === 0) ||
-    (currentStepName === 'Confirm' &&
-      (!assembledResult || assembledResult.summary.successCount === 0));
+    (currentStepName === 'Confirm' && !assembledResult?.postPayload);
 
   const nextLabel = (() => {
     switch (currentStepName) {
@@ -246,13 +239,20 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
             <MultiImportColumnMapper tableMeta={tableMeta} onConfirm={handleColumnMappingChange} />
           )}
           {currentStepName === 'Review' && (
-            <MultiImportReviewInput
-              entries={entries}
-              status={status}
-              fetching={fetching}
-              onDeleteEntry={handleDeleteEntry}
-              onAddEntry={handleAddEntry}
-            />
+            <>
+              <MultiImportReviewInput
+                entries={entries}
+                status={status}
+                fetching={fetching}
+                onDeleteEntry={handleDeleteEntry}
+                onAddEntry={handleAddEntry}
+              />
+              {submitError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {submitError}
+                </Alert>
+              )}
+            </>
           )}
           {currentStepName === 'Confirm' && assembledResult && (
             <MultiImportConfirm assembledResult={assembledResult} submitError={submitError} />

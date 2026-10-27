@@ -33,11 +33,10 @@ export const fetchVehiclesFromAutosys = async (
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(body || `Error fetching vehicle data: ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(errorBody || `Error fetching vehicle data: ${response.statusText}`);
   }
-  const data = await response.text();
-  return data;
+  return response.text();
 };
 
 /**

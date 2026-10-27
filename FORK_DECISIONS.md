@@ -658,7 +658,7 @@ The SVV (Autosys) multi-import sent one `GET` per plate to shepet and built the 
 
 - **One `POST` per import**, at config key `officialMotorVehicleRegistryProxy` (the full bulk endpoint URL). `applicationGetAutosysUrl` is gone.
 - **Shepet's XML goes to Sobek as returned.** Hathor parses it only to count entities for the confirm step (`assembleAutosysResults.ts`). Verified live: Sobek accepts it, including the `fetchError-*` KeyList.
-- **Per-plate failures come from shepet's KeyList** (`fetchError-registrationNumber-<i>` / `fetchError-message-<i>`) and still go through `translateAutosysError`. If the whole request fails, every plate gets that one error (`failedAutosysResult`).
+- **Per-plate failures come from shepet's KeyList** (`fetchError-registrationNumber-<i>` / `fetchError-message-<i>`) and still go through `translateAutosysError`. If the whole request fails, the wizard stays on Review and shows that one error.
 - **The fetch progress bar is indeterminate**, because there is one request and so no per-plate progress.
 
 ### Alternatives considered
