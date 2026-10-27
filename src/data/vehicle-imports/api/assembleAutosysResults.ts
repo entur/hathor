@@ -1,8 +1,13 @@
 import i18next from 'i18next';
 import { translateAutosysError } from '../utils/autosysErrorTranslator';
 import type { ImportEntry } from '../types/importTypes';
-import { type ParsedXml, findResourceFrame, toArray, xmlParser } from '../../netex/xmlUtils';
-import { entityIds } from './xmlUtils';
+import {
+  type ParsedXml,
+  entityIds,
+  findResourceFrame,
+  toArray,
+  xmlParser,
+} from '../../netex/xmlUtils';
 
 /** Shepet's per-plate failure keys: `fetchError-registrationNumber-<i>` / `fetchError-message-<i>`. */
 const FETCH_ERROR_REG = 'fetchError-registrationNumber-';

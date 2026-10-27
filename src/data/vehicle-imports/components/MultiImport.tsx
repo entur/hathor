@@ -16,7 +16,7 @@ import type { TableMeta } from '../utils/inputTextAnalyzer';
 import { type RegNumbersStatus, deduplicateEntries } from '../utils/regNumbersTextTransformer';
 import type { ImportEntry } from '../types/importTypes';
 import { fetchVehiclesFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
-import { extractVehicleTypeIds } from '../api/xmlUtils';
+import { extractVehicleTypeIds } from '../api/parseImportResponse';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractVehicleTypeIds } from './xmlUtils';
+import { extractVehicleTypeIds } from './parseImportResponse';
 import { makeBulkXml } from './__fixtures__/makeXml';
 
 describe('extractVehicleTypeIds', () => {
