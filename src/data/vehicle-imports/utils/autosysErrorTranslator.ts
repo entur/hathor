@@ -25,6 +25,13 @@ const ERROR_PATTERNS: ErrorPattern[] = [
     key: 'autosys.errResp.badFormat.or.unknown',
     defaultMessage: 'Invalid format or unknown registration number',
   },
+  {
+    // shepet's bulk endpoint (entur/shepet#39): Autosys had no data for the plate,
+    // whether it is malformed or simply unknown
+    pattern: /GetKjoretoyResponse\.getKjoretoydataListe\(\)" because "autosysData" is null/,
+    key: 'autosys.errResp.badFormat.or.unknown',
+    defaultMessage: 'Invalid format or unknown registration number',
+  },
 ];
 
 /**

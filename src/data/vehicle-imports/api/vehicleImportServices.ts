@@ -1,18 +1,36 @@
 import { authHeader, type AccessToken } from '../../../auth';
+import type { ImportEntry } from '../types/importTypes';
 
 /**
- * Fetch NeTEx XML for a single vehicle from the Autosys registry.
- * Throws with the response body (or statusText) on non-OK responses so that
- * downstream error translation can match known backend error patterns.
+ * Fetch NeTEx XML for many vehicles in one request to shepet's bulk endpoint.
+ * Shepet owns the document: it dedupes entities, sets `OperationalNumber` from
+ * the input and stamps `dataOwnerRef` as the frame's owning ResponsibilitySet.
+ * A plate that fails still yields a 200; its error sits in the ResourceFrame's
+ * `keyList` (see `assembleAutosysResults`).
+ *
+ * @param {string} officialMotorVehicleRegistryProxy - Bulk endpoint URL from config.
+ * @param {string} dataOwnerRef - NeTEx id of the organisation that will own the import.
+ * @param {ImportEntry[]} entries - Plates to fetch, with optional operational numbers.
+ * @param {AccessToken} token - Bearer token.
+ * @returns {Promise<string>} The `PublicationDelivery` XML.
+ * @throws {Error} With the response body (or statusText) on a non-OK response.
  */
-export const fetchVehicleFromAutosys = async (
-  applicationGetAutosysUrl: string,
-  registrationNumber: string,
+export const fetchVehiclesFromAutosys = async (
+  officialMotorVehicleRegistryProxy: string,
+  dataOwnerRef: string,
+  entries: ImportEntry[],
   token: AccessToken
 ): Promise<string> => {
-  const response = await fetch(`${applicationGetAutosysUrl}${registrationNumber}`, {
-    method: 'GET',
-    headers: authHeader(token),
+  const url = new URL(officialMotorVehicleRegistryProxy);
+  url.searchParams.set('dataOwner', dataOwnerRef);
+  const body = entries.map(({ queryRegNumber, operationalRef }) => ({
+    registrationNumber: queryRegNumber,
+    ...(operationalRef && { operationalNumber: operationalRef }),
+  }));
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader(token) },
+    body: JSON.stringify(body),
   });
   if (!response.ok) {
     const body = await response.text();

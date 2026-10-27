@@ -10,20 +10,22 @@ import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
-import { type AutosysAssembledResult, assembleAutosysResults } from '../api/assembleAutosysResults';
-import { fetchAllWithConcurrency } from '../api/fetchAllWithConcurrency';
+import {
+  type AutosysAssembledResult,
+  assembleAutosysResults,
+  failedAutosysResult,
+} from '../api/assembleAutosysResults';
+import { translateAutosysError } from '../utils/autosysErrorTranslator';
 import type { TableMeta } from '../utils/inputTextAnalyzer';
 import { type RegNumbersStatus, deduplicateEntries } from '../utils/regNumbersTextTransformer';
 import type { ImportEntry } from '../types/importTypes';
-import { fetchVehicleFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
-import { extractVehicleTypeIds, mergeResourceFrames } from '../api/xmlUtils';
+import { fetchVehiclesFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
+import { extractVehicleTypeIds } from '../api/xmlUtils';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
-
-const CONCURRENCY_LIMIT = 5;
 
 /** Steps when a CSV table is detected (includes column mapping) */
 const TABLE_STEPS = ['Upload file', 'Map columns', 'Review', 'Confirm'] as const;
@@ -37,7 +39,7 @@ interface MultiImportProps {
 
 export default function MultiImport({ onClose, onImportComplete }: MultiImportProps) {
   const { t } = useTranslation();
-  const { applicationGetAutosysUrl, applicationImportBaseUrl } = useConfig();
+  const { officialMotorVehicleRegistryProxy, applicationImportBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -47,7 +49,6 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   const columnMappingRef = useRef<ColumnMapping | null>(null);
 
   const [fetching, setFetching] = useState(false);
-  const [fetchProgress, setFetchProgress] = useState({ completed: 0, total: 0 });
   const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -124,21 +125,24 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       setSubmitError(t('import.multi.noOrganisation'));
       return;
     }
-    const regNumbers = entries.map(e => e.queryRegNumber);
     setFetching(true);
-    setFetchProgress({ completed: 0, total: regNumbers.length });
 
-    const token = await getAccessToken();
-    const results = await fetchAllWithConcurrency(
-      regNumbers,
-      rn => fetchVehicleFromAutosys(applicationGetAutosysUrl || '', rn, token),
-      CONCURRENCY_LIMIT,
-      completed => setFetchProgress({ completed, total: regNumbers.length })
-    );
-
-    const assembled = assembleAutosysResults(currentOrganisation.id, results, frames =>
-      mergeResourceFrames(frames, entries)
-    );
+    let assembled: AutosysAssembledResult;
+    try {
+      const token = await getAccessToken();
+      const xml = await fetchVehiclesFromAutosys(
+        officialMotorVehicleRegistryProxy || '',
+        currentOrganisation.id,
+        entries,
+        token
+      );
+      assembled = assembleAutosysResults(xml, entries);
+    } catch (e) {
+      assembled = failedAutosysResult(
+        entries,
+        e instanceof Error ? translateAutosysError(e.message) : t('import.multi.importFailed')
+      );
+    }
     setAssembledResult(assembled);
     setFetching(false);
     setActiveStep(prev => prev + 1); // advance to Confirm
@@ -246,7 +250,6 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
               entries={entries}
               status={status}
               fetching={fetching}
-              fetchProgress={fetchProgress}
               onDeleteEntry={handleDeleteEntry}
               onAddEntry={handleAddEntry}
             />

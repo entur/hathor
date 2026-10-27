@@ -204,15 +204,33 @@ export const REG_NR = process.env.E2E_AUTOSYS_REG_NR || 'A-1';
 /** Fixture file for the Autosys response, keyed by registration number. */
 const autosysFixturePath = path.join(fixturesDir, `autosys-response-${REG_NR}.xml`);
 
+/** Shepet's `fetchError-message-<i>` for a plate Autosys has no data for (entur/shepet#39). */
+export const NO_AUTOSYS_DATA =
+  'Cannot invoke "org.entur.shepet.model.GetKjoretoyResponse.getKjoretoydataListe()" because "autosysData" is null';
+
 /**
- * Intercept the Autosys GET request and always serve from the static fixture.
+ * Intercept shepet's bulk `POST …/autosys/vehicles` and serve the static {@link REG_NR}
+ * fixture. Like shepet, every other requested plate comes back as an indexed
+ * `fetchError-*` KeyValue pair on the ResourceFrame, still with a 200.
  * The fixture uses "?" for transient values (frame ids, timestamps) that
  * change on every backend response — tests must not assert on those fields.
  */
 export async function interceptAutosysQuery(page: import('@playwright/test').Page) {
-  await page.route('**/autosys?registrationNumber=**', async route => {
+  await page.route('**/autosys/vehicles?**', async route => {
     if (fs.existsSync(autosysFixturePath)) {
-      const body = fs.readFileSync(autosysFixturePath, 'utf-8');
+      const requested: { registrationNumber: string }[] = route.request().postDataJSON() ?? [];
+      const keyValues = requested
+        .map(r => r.registrationNumber)
+        .filter(reg => reg !== REG_NR)
+        .map(
+          (reg, i) =>
+            `<KeyValue><Key>fetchError-registrationNumber-${i}</Key><Value>${reg}</Value></KeyValue>` +
+            `<KeyValue><Key>fetchError-message-${i}</Key><Value>${NO_AUTOSYS_DATA}</Value></KeyValue>`
+        )
+        .join('');
+      const body = fs
+        .readFileSync(autosysFixturePath, 'utf-8')
+        .replace(/(<ResourceFrame[^>]*>)/, keyValues ? `$1<keyList>${keyValues}</keyList>` : '$1');
       await route.fulfill({
         status: 200,
         contentType: 'application/xml',
