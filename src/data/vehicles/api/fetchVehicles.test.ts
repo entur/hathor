@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchVehicles } from './fetchVehicles.ts';
+import { fetchVehicles, fetchVehicleById } from './fetchVehicles.ts';
 import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 
 vi.mock('../../../graphql/vehicles/queries/fetchVehicles.ts', () => ({
@@ -143,5 +143,37 @@ describe('fetchVehicles', () => {
       await fetchVehicles('http://x', 'NOG:Authority:1', null);
       expect(warnSpy).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('fetchVehicleById', () => {
+  const ctx = { applicationBaseUrl: 'http://x', dataOwnerRef: 'NMR', token: null };
+  const row = { netexId: 'NMR:Vehicle:1', version: 2, registrationNumber: 'AB12345' };
+  beforeEach(() => {
+    mockedRequest.mockReset();
+  });
+
+  it('sends netexIds + dataOwnerRef', async () => {
+    mockedRequest.mockResolvedValue(mkPage([row]));
+    await fetchVehicleById('NMR:Vehicle:1', ctx);
+    expect(mockedRequest).toHaveBeenCalledWith(
+      'http://x',
+      null,
+      expect.objectContaining({ filter: { netexIds: ['NMR:Vehicle:1'], dataOwnerRef: 'NMR' } })
+    );
+  });
+
+  it('projects the first row', async () => {
+    mockedRequest.mockResolvedValue(mkPage([row]));
+    expect(await fetchVehicleById('NMR:Vehicle:1', ctx)).toMatchObject({
+      id: 'NMR:Vehicle:1',
+      version: 2,
+      registrationNumber: 'AB12345',
+    });
+  });
+
+  it('returns null on empty content', async () => {
+    mockedRequest.mockResolvedValue(mkPage([]));
+    expect(await fetchVehicleById('NMR:Vehicle:9', ctx)).toBeNull();
   });
 });

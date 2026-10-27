@@ -1,6 +1,7 @@
 import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
+import type { FetchById } from '../../../hooks/useEntityRecord.ts';
 import type { Vehicle } from '../types/vehicle.ts';
 import type { AccessToken } from '../../../auth';
 import type { MultilingualString } from '../../netex/multilingualString.ts';
@@ -114,3 +115,15 @@ export async function fetchVehicle(
       : undefined,
   }));
 }
+
+/**
+ * Fetch one Vehicle by NeTEx id, fresh from Sobek.
+ *
+ * @param id Full NeTEx id (`Codespace:Vehicle:Number`).
+ * @param ctx Base URL, owning organisation and bearer token.
+ * @returns The projected vehicle, or `null` when Sobek has no such record.
+ */
+export const fetchVehicleById: FetchById<Vehicle> = async (
+  id,
+  { applicationBaseUrl, dataOwnerRef, token }
+) => (await fetchVehicle(id, applicationBaseUrl, dataOwnerRef, token))[0] ?? null;
