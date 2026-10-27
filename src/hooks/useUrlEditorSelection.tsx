@@ -21,7 +21,8 @@ interface UrlEditorSelectionParams<T> {
   /**
    * Render the editor for the selected id. `id` is the param value —
    * `NEW_SELECTION` for the create pane (mode `'edit'` then). The editor
-   * loads its own record; the list row is never handed over.
+   * loads its own record; the list row is never handed over. The rendered
+   * editor stays mounted across id changes and must reset itself.
    */
   renderEditor: (id: string, mode: 'edit' | 'view') => ReactNode;
 }
@@ -31,8 +32,9 @@ interface UrlEditorSelectionParams<T> {
  * and pagination. Generic over the row type so any sidebar-edit consumer
  * can adopt deep-link selection.
  *
- * **Id-only.** The editor commits as soon as the param is set — it does
- * not wait for the list, and it is never given a row: it fetches its own
+ * **Id-only.** The editor commits to `EditingContext` immediately; the page
+ * decides when the sidebar renders (`GenericDataViewPage` shows `LoadingPage`
+ * during the first list load). It is never given a row: it fetches its own
  * record by id.
  *
  * **One editor per selection session.** A single `EditorComponent` is

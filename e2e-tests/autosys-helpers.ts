@@ -26,10 +26,10 @@ type PageBody = { data: Record<string, { content: Row[]; totalElements: number }
  * (an unknown id ⇒ empty `content`). Without it, a by-id fetch — which takes
  * `content[0]` — would silently open the list's first row.
  *
- * @param body Full page response for the unfiltered list.
- * @param field The connection field (e.g. `vehicleTypes`, `deckPlans`).
- * @param netexIds `variables.filter.netexIds`, or `undefined` for a list query.
- * @returns `body` narrowed to the requested ids, or `body` itself when unfiltered.
+ * @param {unknown} body Full page response for the unfiltered list.
+ * @param {string} field The connection field (e.g. `vehicleTypes`, `deckPlans`).
+ * @param {string[]} [netexIds] `variables.filter.netexIds`, or `undefined` for a list query.
+ * @returns {unknown} `body` narrowed to the requested ids, or `body` itself when unfiltered.
  */
 export const byNetexIds = (body: unknown, field: string, netexIds?: string[]): unknown => {
   if (!netexIds) return body;

@@ -174,10 +174,10 @@ export const vehicleRow = (id: string, over: Partial<VehicleRow> = {}): VehicleR
  * Intercept the single-vehicle GraphQL fetch — a `vehicles(...)` query carrying
  * a `filter.netexIds` — and answer it from `resolve(id)`. This is the GraphQL
  * replacement for the retired NeTEx-XML single-vehicle GET: production
- * `useVehicle` now reads `fetchVehicle` → `vehicles(filter:{netexIds:[id]})`.
+ * `useEntityRecord` now reads `fetchVehicleById` → `vehicles(filter:{netexIds:[id]})`.
  *
  * `resolve` returns the row to serve, or `null` to model "not found" (empty
- * `content`, which surfaces as `useVehicle`'s not-found error). Unfiltered
+ * `content`, which surfaces as `useEntityRecord`'s not-found error). Unfiltered
  * list queries and the save mutation fall through to their own handlers.
  *
  * Register AFTER the list interceptor so it is checked first and only claims

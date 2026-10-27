@@ -24,7 +24,13 @@ export interface DeckPlanInput {
   description?: MultilingualString | null;
 }
 
-export const projectDeckPlan = (dp: DeckPlansQuery['deckPlans']['content'][number]): DeckPlan => ({
+/**
+ * Project a GraphQL deck-plan row onto the domain `DeckPlan`.
+ *
+ * @param {DeckPlansQuery['deckPlans']['content'][number]} dp Row as selected by the deck-plans query.
+ * @returns {DeckPlan} The domain deck plan.
+ */
+const projectDeckPlan = (dp: DeckPlansQuery['deckPlans']['content'][number]): DeckPlan => ({
   id: dp.netexId,
   name: dp.name ?? undefined,
   description: dp.description ?? undefined,
@@ -61,8 +67,8 @@ export const fetchDeckPlans = async (
 /**
  * Fetch one DeckPlan by NeTEx id, fresh from Sobek.
  *
- * @param id Full NeTEx id (`Codespace:DeckPlan:Number`).
- * @param ctx Base URL, owning organisation and bearer token.
+ * @param {string} id Full NeTEx id (`Codespace:DeckPlan:Number`).
+ * @param {RecordFetchCtx} ctx Base URL, owning organisation and bearer token.
  * @returns The projected deck plan, or `null` when Sobek has no such record.
  */
 export const fetchDeckPlanById: FetchById<DeckPlan> = async (

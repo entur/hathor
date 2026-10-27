@@ -119,8 +119,8 @@ export async function fetchVehicle(
 /**
  * Fetch one Vehicle by NeTEx id, fresh from Sobek.
  *
- * @param id Full NeTEx id (`Codespace:Vehicle:Number`).
- * @param ctx Base URL, owning organisation and bearer token.
+ * @param {string} id Full NeTEx id (`Codespace:Vehicle:Number`).
+ * @param {RecordFetchCtx} ctx Base URL, owning organisation and bearer token.
  * @returns The projected vehicle, or `null` when Sobek has no such record.
  */
 export const fetchVehicleById: FetchById<Vehicle> = async (

@@ -183,7 +183,6 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
 
     // Edit — patch the identity fields into the fetched document so the deck
     // body survives the round-trip, then POST the whole thing.
-    if (isCreate) return;
     // The body the hook holds is the last one that arrived, not necessarily the
     // current one: a post-save refetch that failed leaves the pre-save document
     // there, and POSTing it back would resurrect what the save replaced. The

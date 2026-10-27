@@ -672,20 +672,21 @@ Sobek's `createOrUpdate*` mutations return only the id (`String`), so a save can
 - **After a save the baseline is the re-fetched record.** The submitted values may bridge the gap until it lands, so the form does not read as dirty in between; Cancel restores the last baseline.
 - **Deactivate is the exception: no re-fetch.** Hathor deactivates at "now" and Sobek's queries return only currently-valid versions, so the record is gone the moment the mutation commits. The editor shows the deactivated success read-only, fires `onWritten({ type: 'deactivated', id, record: null })`, and closes (`onClose`) when that snackbar is dismissed.
 - **The host keeps its table fresh from the editor's `onWritten`.** After a committed write (save, create, deactivate) and the record re-fetch, the editor fires `onWritten({ type, id, record | null })`. A host with a table under the form either patches the row from `record` or reloads the list (`record` is `null` when the re-fetch failed); a table-less host passes nothing. The editor never calls into a table; the `onSaved` / `refetch` wiring from `use*UrlSelection` into `*Details` goes away.
+- **One stable editor per selection session.** `editingItem.id` follows `?selected=` without remounting the editor, so the editor must reset itself (mode, snackbars, warning, form) on an id change. The one exception is the create-advance (`new` → `<newId>`), which keeps the form and the success snackbar.
 - **A table's refresh failure is the table's to show** (#229), not the editor's.
 
 ### Alternatives considered
 
 | Option | Why rejected |
 |---|---|
-| **Hydrate from the table row (VehicleType, DeckPlan today)** | Shows list data, not stored data; needs the commit guard; the editor cannot exist without a table. |
+| **Hydrate from the table row (VehicleType, DeckPlan before #217)** | Shows list data, not stored data; needs the commit guard; the editor cannot exist without a table. |
 | **Baseline from the mutation response** | Not available — `createOrUpdate*` returns only the id. Worth revisiting if Sobek returns the entity; it would remove the re-fetch. |
-| **Editor drives the table's refetch (`onSaved`, today)** | Couples each editor to one list and makes success wait on the list. |
+| **Editor drives the table's refetch (`onSaved`, before #217)** | Couples each editor to one list and makes success wait on the list. |
 | **App-level write events (context or emitter), tables subscribe by entity kind** | Only useful while a table and a form are mounted together, which only the sidebar host does; no editor writes one kind while another kind's table is on screen. A grid is driven through the host's `apiRef` anyway. |
 
 ### Consequences
 
-- VehicleType gets a per-id hook again; `fetchVehicleTypeRequest` (`src/graphql/vehicles/queries/fetchVehicleType.ts`) is still on `main`, unused. DeckPlan gets a per-id GraphQL fetch beside `useDeckPlanXml`.
+- VehicleType and DeckPlan get by-id fetchers (`fetchVehicleTypeById` on the existing `fetchVehicleTypeRequest`; `fetchDeckPlanById`) on the shared `useEntityRecord`.
 - One extra round-trip per editor open and per save.
 - The commit guard in `useUrlEditorSelection` loses its reason to exist.
 - Editors become placeable without a table — a prerequisite for replacing `GenericDataViewPage`.
