@@ -102,6 +102,33 @@ describe('useEntityRecord', () => {
       await expect(result.current.refetch()).rejects.toThrow('x');
     });
     expect(result.current.error).toBe('x');
+    expect(result.current.data).toEqual({ v: 1 });
+  });
+
+  it('clears data when the id changes before the new record lands', async () => {
+    const fetchById = vi
+      .fn()
+      .mockResolvedValueOnce({ id: 'A' })
+      .mockReturnValueOnce(new Promise(() => {}));
+    const { result, rerender } = renderHook(({ id }) => useEntityRecord(id, fetchById), {
+      initialProps: { id: 'A' },
+    });
+    await waitFor(() => expect(result.current.data).toEqual({ id: 'A' }));
+    rerender({ id: 'B' });
+    expect(result.current.data).toBeNull();
+    expect(result.current.notFound).toBe(false);
+    expect(result.current.loading).toBe(true);
+  });
+
+  it('reports loading on the first render after the id changes', async () => {
+    const fetchById = vi.fn().mockResolvedValue(null);
+    const { result, rerender } = renderHook(({ id }) => useEntityRecord(id, fetchById), {
+      initialProps: { id: 'A' },
+    });
+    await waitFor(() => expect(result.current.notFound).toBe(true));
+    rerender({ id: 'B' });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.notFound).toBe(false);
   });
 
   it('ignores a stale response after the id changed', async () => {

@@ -26,6 +26,21 @@ export interface EntityRecord<R> {
   refetch: () => Promise<R | null>;
 }
 
+interface RecState<R> {
+  key: string | null;
+  data: R | null;
+  notFound: boolean;
+  error: string | null;
+  loading: boolean;
+}
+const EMPTY_REC: RecState<unknown> = {
+  key: null,
+  data: null,
+  notFound: false,
+  error: null,
+  loading: false,
+};
+
 /**
  * Fetch one entity by id from Sobek. Skips the fetch for a null id or the
  * `NEW_SELECTION` sentinel, re-fetches when the id or organisation changes,
@@ -42,10 +57,8 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   const dataOwnerRef = currentOrganisation?.id;
   const active = !!id && id !== NEW_SELECTION && !!applicationBaseUrl && !!dataOwnerRef;
 
-  const [data, setData] = useState<R | null>(null);
-  const [loading, setLoading] = useState(active);
-  const [error, setError] = useState<string | null>(null);
-  const [notFound, setNotFound] = useState(false);
+  const key = active ? `${dataOwnerRef}|${id}` : null;
+  const [rec, setRec] = useState<RecState<R>>(EMPTY_REC as RecState<R>);
 
   const fetchRef = useRef(fetchById);
   const tokenRef = useRef(getAccessToken);
@@ -57,25 +70,29 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
 
   const run = useCallback(async (): Promise<R | null> => {
     if (!active) return null;
+    const k = `${dataOwnerRef}|${id}`;
     const ticket = ++latest.current;
-    setLoading(true);
-    setError(null);
+    setRec(prev =>
+      prev.key === k
+        ? { ...prev, loading: true, error: null }
+        : { key: k, data: null, notFound: false, error: null, loading: true }
+    );
     try {
       const token = await tokenRef.current();
       const record = await fetchRef.current(id, { applicationBaseUrl, dataOwnerRef, token });
-      if (ticket === latest.current) {
-        setData(record);
-        setNotFound(record === null);
-        setLoading(false);
-      }
+      if (ticket === latest.current)
+        setRec({ key: k, data: record, notFound: record === null, error: null, loading: false });
       return record;
     } catch (err: unknown) {
-      if (ticket === latest.current) {
-        setData(null);
-        setNotFound(false);
-        setError(graphqlErrMsg(err));
-        setLoading(false);
-      }
+      if (ticket === latest.current)
+        // A failed refetch of the same key keeps the last good record.
+        setRec(prev => ({
+          key: k,
+          data: prev.key === k ? prev.data : null,
+          notFound: prev.key === k ? prev.notFound : false,
+          error: graphqlErrMsg(err),
+          loading: false,
+        }));
       throw err;
     }
   }, [active, id, applicationBaseUrl, dataOwnerRef]);
@@ -83,14 +100,17 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   useEffect(() => {
     if (!active) {
       latest.current++;
-      setData(null);
-      setNotFound(false);
-      setError(null);
-      setLoading(false);
       return;
     }
     run().catch(() => {});
   }, [active, run]);
+
+  // State belonging to another key is never exposed; loading is true from the first render of a new key.
+  const fresh = key !== null && rec.key === key;
+  const data = fresh ? rec.data : null;
+  const notFound = fresh ? rec.notFound : false;
+  const error = fresh ? rec.error : null;
+  const loading = key !== null && (!fresh || rec.loading);
 
   return { data, loading, error, notFound, refetch: run };
 }
