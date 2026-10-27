@@ -94,24 +94,30 @@ export default function VehicleTypeDetails({
 
   const record = useEntityRecord(isCreate ? null : id, fetchVehicleTypeById);
 
-  // The editor outlives `?selected=` changes: reset per id, so a prior save
-  // snackbar / stale-list warning never bleeds into the next row. A create
-  // advancing to its new id keeps the success snackbar it just raised.
+  // The editor outlives `?selected=` changes: reset per id. Only a create
+  // advancing to its new id (`bridgeId`) keeps its form and success snackbar;
+  // any other move drops the previous id's form, so neither its unsaved
+  // edits nor its dirty flag outlive it.
+  const [bridgeId, setBridgeId] = useState<string | null>(null);
   const prevIdRef = useRef(id);
   useEffect(() => {
     const prevId = prevIdRef.current;
     if (prevId === id) return;
     prevIdRef.current = id;
     setMode(initialMode ?? 'view');
-    if (prevId !== NEW_SELECTION) setSavedAt(null);
     setRefreshError(null);
     setDeactivatedOK(false);
-    if (id === NEW_SELECTION) dispatch({ type: 'hydrate', row: EMPTY_VTYPE });
-  }, [id, initialMode]);
+    if (prevId === NEW_SELECTION && id === bridgeId) return;
+    setSavedAt(null);
+    setBridgeId(null);
+    dispatch({ type: 'hydrate', row: EMPTY_VTYPE });
+  }, [id, initialMode, bridgeId]);
 
   // Baseline = Sobek's record, on open and after every post-save re-fetch.
   useEffect(() => {
-    if (record.data) dispatch({ type: 'hydrate', row: record.data });
+    if (!record.data) return;
+    dispatch({ type: 'hydrate', row: record.data });
+    setBridgeId(null);
   }, [record.data]);
 
   const isDirty =
@@ -171,7 +177,10 @@ export default function VehicleTypeDetails({
       await onSaved?.();
       // Advance `?selected=new` → `?selected=<newId>`; the editor then
       // fetches the created record by id.
-      if (wasCreate) advanceCreated(result.newId);
+      if (wasCreate) {
+        setBridgeId(result.newId);
+        advanceCreated(result.newId);
+      }
       setSavedAt(Date.now()); // success only once the list is fresh
     } catch {
       // Save is real, but the record or list couldn't refresh — warn instead
@@ -180,9 +189,9 @@ export default function VehicleTypeDetails({
     }
   };
 
-  // Until Sobek's record lands, a form that already holds this id (the
-  // post-create bridge) stays up; otherwise skeleton, or not-found.
-  const hasRecord = isCreate || record.data !== null || state.form.id === id;
+  // Until Sobek's record lands, the post-create bridge form stays up;
+  // otherwise skeleton, or not-found.
+  const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
   if (!hasRecord && (record.notFound || record.error)) {
     return (

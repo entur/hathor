@@ -96,25 +96,32 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const { deactivate } = useDeckPlanDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
 
-  // The editor outlives `?selected=` changes: reset per id. A create advancing
-  // to its new id keeps the success snackbar it just raised.
+  // The editor outlives `?selected=` changes: reset per id. Only a create
+  // advancing to its new id (`bridgeId`) keeps its form and success snackbar;
+  // any other move drops the previous id's form, so neither its unsaved
+  // edits nor its dirty flag outlive it.
+  const [bridgeId, setBridgeId] = useState<string | null>(null);
   const prevIdRef = useRef(id);
   useEffect(() => {
     const prevId = prevIdRef.current;
     if (prevId === id) return;
     prevIdRef.current = id;
     setMode(initialMode ?? (id === NEW_SELECTION ? 'edit' : 'view'));
-    if (prevId !== NEW_SELECTION) setSavedAt(null);
     setRefreshError(null);
     setDeactivatedOK(false);
-    if (id === NEW_SELECTION) dispatch({ type: 'hydrate', dp: EMPTY_DECK_PLAN });
-  }, [id, initialMode]);
+    if (prevId === NEW_SELECTION && id === bridgeId) return;
+    setSavedAt(null);
+    setBridgeId(null);
+    dispatch({ type: 'hydrate', dp: EMPTY_DECK_PLAN });
+  }, [id, initialMode, bridgeId]);
 
   // Baseline = Sobek's record, on open and after every post-save re-fetch.
   // hydrate() trims: Sobek re-pads <Text> on serialize, so an untrimmed
   // baseline would read as dirty the moment the editor opens (sobek#180).
   useEffect(() => {
-    if (record.data) dispatch({ type: 'hydrate', dp: record.data });
+    if (!record.data) return;
+    dispatch({ type: 'hydrate', dp: record.data });
+    setBridgeId(null);
   }, [record.data]);
 
   const isDirty = isFormDirty(state);
@@ -165,6 +172,7 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
         await onSaved?.();
         // Advance `?selected=new` → `?selected=<newId>`; the editor then
         // fetches the created record by id.
+        setBridgeId(result.newId);
         advanceCreated(result.newId);
         setSavedAt(Date.now()); // success only once the list is fresh
       } catch {
@@ -211,9 +219,9 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     }
   };
 
-  // Until Sobek's record lands, a form that already holds this id (the
-  // post-create bridge) stays up; otherwise skeleton, or not-found.
-  const hasRecord = isCreate || record.data !== null || form.id === id;
+  // Until Sobek's record lands, the post-create bridge form stays up;
+  // otherwise skeleton, or not-found.
+  const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
   if (!hasRecord && (record.notFound || record.error)) {
     return (

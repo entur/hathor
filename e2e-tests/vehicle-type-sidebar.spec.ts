@@ -26,7 +26,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   (re-baselined).
  * Covers:
  *   - describe 1: row click writes ?selected=; an id Sobek does not know opens the not-found
- *     body; tabs group fields + are reachable; in-row
+ *     body; leaving a dirty edit resets the form (dirty guard off, no stale edits on return);
+ *     tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form;
  *     emission class is a dropdown of Sobek's EMISSION_STANDARD code values, fetched once
@@ -49,7 +50,9 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     Describe 2 is entirely skip-live (the real live vtype save
  *     round-trip lives in vehicle-type-save-live.spec.ts).
  *   - skip-live:
- *       describe 1: 'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
+ *       describe 1: 'switching away from a dirty edit resets the form' — holds a mocked by-id
+ *         re-fetch to observe the gap;
+ *       'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
  *         vehicle chip target (AA-101 → NMR:Vehicle:101) absent live;
  *       'toggling a null-baseline Low Floor switch on then off should not dirty the form' —
  *         needs a null-lowFloor-baseline row (fixture Gamma) not reproducible live
@@ -157,6 +160,51 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page.locator('.sidebar-desktop').getByText(unknownId)).toBeVisible();
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveCount(0);
     await expect(page.locator('#vtype-name')).toHaveCount(0);
+  });
+
+  // #217: the editor stays mounted across `?selected=` changes, so it must drop
+  // the previous id's form itself. Leaving a dirty edit for a not-found id must
+  // disarm the dirty guard, and coming back must show the stored record — never
+  // the unsaved edits — while it re-fetches. History back/forward is in-app
+  // navigation, so the same editor instance sees every id change.
+  test('switching away from a dirty edit resets the form', async ({ page }) => {
+    test.skip(IS_LIVE, 'mock-only — holds the by-id re-fetch to observe the gap');
+    const unknownId = 'NMR:VehicleType:does-not-exist';
+    const alphaId = 'NMR:VehicleType:1';
+    let holdAlpha = false;
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    await page.route('**/graphql', async route => {
+      const ids: string[] | undefined = route.request().postDataJSON()?.variables?.filter?.netexIds;
+      if (holdAlpha && ids?.includes(alphaId)) await gate;
+      await route.fallback();
+    });
+    const beforeUnloadArmed = () =>
+      page.evaluate(() => {
+        const e = new Event('beforeunload', { cancelable: true });
+        window.dispatchEvent(e);
+        return e.defaultPrevented;
+      });
+
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(unknownId)}`);
+    await expect(page.getByText('Vehicle type not found')).toBeVisible();
+    await page.locator('table tr', { hasText: 'Type Alpha' }).click();
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Unsaved edit');
+    expect(await beforeUnloadArmed()).toBe(true);
+
+    // (a) dirty A → not-found id: not-found body, dirty guard disarmed.
+    await page.goBack();
+    await expect(page.getByText('Vehicle type not found')).toBeVisible();
+    expect(await beforeUnloadArmed()).toBe(false);
+
+    // (b) back to A: the skeleton covers the re-fetch, then the stored name.
+    holdAlpha = true;
+    await page.goForward();
+    await expect(page.getByRole('status', { name: 'Loading data...' })).toBeVisible();
+    await expect(page.locator('#vtype-name')).toHaveCount(0);
+    release();
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Alpha');
   });
 
   test('collapse rail drops ?selected= and hides the sidebar', async ({ page }) => {

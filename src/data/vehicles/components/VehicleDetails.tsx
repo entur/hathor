@@ -74,23 +74,30 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
 
   const record = useEntityRecord(isCreate ? null : id, fetchVehicleById);
 
-  // The editor outlives `?selected=` changes: reset per id. A create advancing
-  // to its new id keeps the success snackbar it just raised.
+  // The editor outlives `?selected=` changes: reset per id. Only a create
+  // advancing to its new id (`bridgeId`) keeps its form and success snackbar;
+  // any other move drops the previous id's form, so neither its unsaved
+  // edits nor its dirty flag outlive it.
+  const [bridgeId, setBridgeId] = useState<string | null>(null);
   const prevIdRef = useRef(id);
   useEffect(() => {
     const prevId = prevIdRef.current;
     if (prevId === id) return;
     prevIdRef.current = id;
     setMode(initialMode ?? 'view');
-    if (prevId !== NEW_SELECTION) setSavedAt(null);
     setCommitError(null);
     setDeactivatedOK(false);
-    if (id === NEW_SELECTION) dispatch({ type: 'hydrate', xmlVehicle: null });
-  }, [id, initialMode]);
+    if (prevId === NEW_SELECTION && id === bridgeId) return;
+    setSavedAt(null);
+    setBridgeId(null);
+    dispatch({ type: 'hydrate', xmlVehicle: null });
+  }, [id, initialMode, bridgeId]);
 
   // Baseline = Sobek's record, on open and after every post-save re-fetch.
   useEffect(() => {
-    if (record.data) dispatch({ type: 'hydrate', xmlVehicle: record.data });
+    if (!record.data) return;
+    dispatch({ type: 'hydrate', xmlVehicle: record.data });
+    setBridgeId(null);
   }, [record.data]);
 
   const isDirty = isFormDirty(formState);
@@ -137,6 +144,7 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
       });
       // Advance ?selected=new → ?selected=<newId>; the by-id fetch then lands
       // the real version.
+      setBridgeId(result.newId);
       advanceCreated(result.newId);
     } else {
       // Existing row — re-pull the persisted vehicle so the `hydrate` effect
@@ -155,9 +163,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     setMode('view');
   };
 
-  // Until Sobek's record lands, a form that already holds this id (the
-  // post-create bridge) stays up; otherwise skeleton, or not-found.
-  const hasRecord = isCreate || record.data !== null || (form.vehicle.id ?? '') === id;
+  // Until Sobek's record lands, the post-create bridge form stays up;
+  // otherwise skeleton, or not-found.
+  const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
   if (!hasRecord && (record.notFound || record.error)) {
     return (
