@@ -8,13 +8,12 @@ const entries = (...regs: string[]): ImportEntry[] =>
 
 describe('assembleAutosysResults', () => {
   it('summarises a single vehicle and passes the XML through as payload', () => {
-    const xml = makeBulkXml({ vehicles: [{ reg: 'AB1234', deckPlanId: 'NMR:DeckPlan:1' }] });
+    const xml = makeBulkXml({ vehicles: [{ reg: 'AB1234' }] });
 
     const { summary, postPayload } = assembleAutosysResults(xml, entries('AB1234'));
 
     expect(summary.vehicleCount).toBe(1);
     expect([...summary.vehicleTypeIds]).toEqual(['NMR:VehicleType:1']);
-    expect([...summary.deckPlanIds]).toEqual(['NMR:DeckPlan:1']);
     expect([...summary.vehicleModelIds]).toEqual(['NMR:VehicleModel:1']);
     expect(summary.errors).toEqual([]);
     expect(summary.successCount).toBe(1);
@@ -35,7 +34,6 @@ describe('assembleAutosysResults', () => {
     expect(summary.vehicleCount).toBe(3);
     expect(summary.vehicleTypeIds.size).toBe(2);
     expect(summary.vehicleModelIds.size).toBe(2);
-    expect(summary.deckPlanIds.size).toBe(0);
     expect(summary.successCount).toBe(3);
   });
 

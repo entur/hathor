@@ -287,7 +287,6 @@
   "import.multi.summaryFetched": "Hentet {{success}} av {{total}} kjøretøy",
   "import.multi.vehicles": "Kjøretøy",
   "import.multi.vehicleTypes": "Kjøretøytyper",
-  "import.multi.deckPlans": "Setekart",
   "import.multi.vehicleModels": "Kjøretøymodeller",
   "import.multi.errorCount": "{{count}} feilet",
   "import.multi.back": "Tilbake",

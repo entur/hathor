@@ -19,7 +19,6 @@ const FETCH_ERROR_MSG = 'fetchError-message-';
 export interface AutosysAssembledSummary {
   vehicleCount: number;
   vehicleTypeIds: Set<string>;
-  deckPlanIds: Set<string>;
   vehicleModelIds: Set<string>;
   successCount: number;
   errors: { queryRegNumber: string; message: string }[];
@@ -74,7 +73,6 @@ export function assembleAutosysResults(
     summary: {
       vehicleCount,
       vehicleTypeIds: entityIds(rf, 'vehicleTypes', 'VehicleType'),
-      deckPlanIds: entityIds(rf, 'deckPlans', 'DeckPlan'),
       vehicleModelIds: entityIds(rf, 'vehicleModels', 'VehicleModel'),
       successCount: Math.max(entries.length - errors.length, 0),
       errors,

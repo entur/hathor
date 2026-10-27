@@ -6,7 +6,6 @@ interface BulkVehicle {
   reg: string;
   vehicleTypeId?: string;
   vehicleModelId?: string;
-  deckPlanId?: string;
 }
 
 interface MakeBulkXmlOptions {
@@ -49,11 +48,6 @@ export function makeBulkXml({
         'vehicleTypes',
         'VehicleType',
         vs.map(v => v.vehicleTypeId)
-      )}
-      ${refs(
-        'deckPlans',
-        'DeckPlan',
-        vs.map(v => v.deckPlanId)
       )}
       ${refs(
         'vehicleModels',

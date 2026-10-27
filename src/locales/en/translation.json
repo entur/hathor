@@ -288,7 +288,6 @@
   "import.multi.summaryFetched": "Fetched {{success}} of {{total}} vehicles",
   "import.multi.vehicles": "Vehicles",
   "import.multi.vehicleTypes": "Vehicle types",
-  "import.multi.deckPlans": "Deck plans",
   "import.multi.vehicleModels": "Vehicle models",
   "import.multi.errorCount": "{{count}} failed",
   "import.multi.back": "Back",

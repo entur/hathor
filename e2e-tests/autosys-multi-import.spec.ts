@@ -9,7 +9,7 @@ const UNKNOWN_REG_NR = 'XX0000000';
 const IMPORT_BTN = 'home-bulk-import-svv';
 
 /**
- * Home (/) Autosys multi-import dialog — drive the multi-vehicle import wizard to its 1/1/0/1 confirm summary.
+ * Home (/) Autosys multi-import dialog — drive the multi-vehicle import wizard to its 1/1/1 confirm summary.
  *
  * Workflow:
  *   copy config-no-auth.json → (mock) intercept VehicleTypes + Autosys queries → goto / (org auto-selected)
@@ -17,19 +17,18 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  *   → Step 0: click "Skip" (no file upload)
  *   → Step 1 (Review): fill multi-import-add-input = REG_NR → click add-button → assert chip in multi-import-tags
  *   → click "Next" (triggers one bulk POST to shepet's …/autosys/vehicles)
- *   → Step 2 (Confirm): wait for success Alert → assert "1 of 1" and counts Vehicles 1 / Vehicle types 1 / Deck plans 0 / Vehicle models 1
+ *   → Step 2 (Confirm): wait for success Alert → assert "1 of 1" and counts Vehicles 1 / Vehicle types 1 / Vehicle models 1
  * Covers:
  *   - Three-step wizard navigation (Skip → add reg-nr → Next → Confirm).
- *   - Summary parsed from shepet's bulk response for REG_NR (1/1/0/1 — shepet emits no DeckPlans).
+ *   - Summary parsed from shepet's bulk response for REG_NR (1/1/1).
  *   - A plate Autosys does not know: shepet's per-plate KeyList error → "1 of 2" + a translated error row (#214).
  *   - (mock only) The whole bulk request fails: one error on Review, no advance to Confirm (#214).
- *   - sandboxFeatures.DeckPlans off (#202): the confirm summary drops the Deck plans row.
  *   - sandboxFeatures.AutosysImport off (#202): Home has no import button.
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts the VehicleTypes query + the shepet bulk POST with fixtures; full dialog flow runs offline.
  *   - live (E2E_BACKEND=true): fetches real Autosys data via shepet on :37998 (no query intercepts).
  *     Needs a real plate — set E2E_AUTOSYS_REG_NR (the fixture "A-1" is not a real Autosys plate);
- *     the 1/1/0/1 summary is plate-dependent under live.
+ *     the 1/1/1 summary is plate-dependent under live.
  */
 /**
  * Drive the wizard from Home to its Review step with `regNrs` added, ready for "Next".
@@ -100,14 +99,13 @@ test.describe('Autosys multi-import dialog', () => {
   // Autosys fixture; live fetches real Autosys via shepet. The shepet-not-running guard
   // was a temporary skip and has been removed.
 
-  test(`skip upload, add "${REG_NR}", confirm shows 1/1/0/1`, async ({ context, page }) => {
+  test(`skip upload, add "${REG_NR}", confirm shows 1/1/1`, async ({ context, page }) => {
     await seedAuth(context);
     const contentText = await openConfirm(page);
 
     // Verify each label is followed by its count in the text content
     expect(contentText).toMatch(/Vehicles\s*1/);
     expect(contentText).toMatch(/Vehicle types\s*1/);
-    expect(contentText).toMatch(/Deck plans\s*0/); // shepet emits no DeckPlans
     expect(contentText).toMatch(/Vehicle models\s*1/);
   });
 
@@ -135,14 +133,6 @@ test.describe('Autosys multi-import dialog', () => {
 
     await expect(dialog.locator('.MuiAlert-standardError')).toHaveText('shepet unavailable');
     await expect(page.getByTestId('multi-import-tags')).toBeVisible();
-  });
-
-  test('DeckPlans off: confirm has no Deck plans row', async ({ context, page }) => {
-    await seedAuth(context, { sandboxFeatures: { DeckPlans: false, AutosysImport: true } });
-    const contentText = await openConfirm(page);
-
-    expect(contentText).toMatch(/Vehicle types\s*1/);
-    expect(contentText).not.toMatch(/Deck plans/);
   });
 
   test('AutosysImport off: no import button', async ({ context, page }) => {
