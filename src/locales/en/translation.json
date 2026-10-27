@@ -306,7 +306,7 @@
   "import.multi.duplicatesRemoved_other": "{{count}} duplicates removed",
   "import.multi.noResourceFrame": "No ResourceFrame found in response",
 
-  "autosys.errResp.incomplete.autosys.data": "Incomplete vehicle data in Autosys",
+  "autosys.errResp.upstream": "Autosys lookup failed",
   "autosys.errResp.badFormat.or.unknown": "Invalid format or unknown registration number",
 
   "error.notAuthenticated": "Not authenticated — please log in to access this data",

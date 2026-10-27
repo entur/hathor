@@ -1,6 +1,6 @@
-/** Verbatim from shepet's bulk `fetchError-message-<i>` for an unknown or malformed plate. */
-export const NO_AUTOSYS_DATA =
-  'Cannot invoke "org.entur.shepet.model.GetKjoretoyResponse.getKjoretoydataListe()" because "autosysData" is null';
+/** Shepet's bulk `fetchError-message-<i>` codes (`FetchVehicleErrorCode`, entur/shepet#39). */
+export const NOT_FOUND = 'NOT_FOUND',
+  UPSTREAM_ERROR = 'UPSTREAM_ERROR';
 
 interface BulkVehicle {
   reg: string;

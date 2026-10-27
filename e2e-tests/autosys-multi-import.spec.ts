@@ -21,7 +21,7 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  * Covers:
  *   - Three-step wizard navigation (Skip → add reg-nr → Next → Confirm).
  *   - Summary parsed from shepet's bulk response for REG_NR (1/1/1).
- *   - A plate Autosys does not know: shepet's per-plate KeyList error → "1 of 2" + a translated error row (#214).
+ *   - A plate Autosys does not know: shepet's per-plate KeyList error code → "1 of 2" + a translated error row (#214).
  *   - (mock only) The whole bulk request fails: one error on Review, no advance to Confirm (#214).
  *   - sandboxFeatures.AutosysImport off (#202): Home has no import button.
  * Modes:
@@ -29,6 +29,8 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  *   - live (E2E_BACKEND=true): fetches real Autosys data via shepet on :37998 (no query intercepts).
  *     Needs a real plate — set E2E_AUTOSYS_REG_NR (the fixture "A-1" is not a real Autosys plate);
  *     the 1/1/1 summary is plate-dependent under live.
+ *     The unknown-plate test is fixme under live until shepet maps a plate Autosys has no
+ *     data for to NOT_FOUND (entur/shepet#39); mock serves NOT_FOUND.
  */
 /**
  * Drive the wizard from Home to its Review step with `regNrs` added, ready for "Next".
@@ -110,6 +112,10 @@ test.describe('Autosys multi-import dialog', () => {
   });
 
   test(`unknown plate "${UNKNOWN_REG_NR}" is reported per plate`, async ({ context, page }) => {
+    test.fixme(
+      IS_LIVE,
+      'shepet reports unknown plates as UPSTREAM_ERROR, not NOT_FOUND — https://github.com/entur/shepet/pull/39#discussion_r4389992039'
+    );
     await seedAuth(context);
     const contentText = await openConfirm(page, [REG_NR, UNKNOWN_REG_NR]);
 

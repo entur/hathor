@@ -204,9 +204,8 @@ export const REG_NR = process.env.E2E_AUTOSYS_REG_NR || 'A-1';
 /** Fixture file for the Autosys response, keyed by registration number. */
 const autosysFixturePath = path.join(fixturesDir, `autosys-response-${REG_NR}.xml`);
 
-/** Shepet's `fetchError-message-<i>` for a plate Autosys has no data for (entur/shepet#39). */
-export const NO_AUTOSYS_DATA =
-  'Cannot invoke "org.entur.shepet.model.GetKjoretoyResponse.getKjoretoydataListe()" because "autosysData" is null';
+/** Shepet's `fetchError-message-<i>` code for a plate Autosys has no data for (entur/shepet#39). */
+const NOT_FOUND = 'NOT_FOUND';
 
 /**
  * Intercept shepet's bulk `POST …/autosys/vehicles` and serve the static {@link REG_NR}
@@ -225,7 +224,7 @@ export async function interceptAutosysQuery(page: import('@playwright/test').Pag
         .map(
           (reg, i) =>
             `<KeyValue><Key>fetchError-registrationNumber-${i}</Key><Value>${reg}</Value></KeyValue>` +
-            `<KeyValue><Key>fetchError-message-${i}</Key><Value>${NO_AUTOSYS_DATA}</Value></KeyValue>`
+            `<KeyValue><Key>fetchError-message-${i}</Key><Value>${NOT_FOUND}</Value></KeyValue>`
         )
         .join('');
       const body = fs

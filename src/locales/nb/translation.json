@@ -305,7 +305,7 @@
   "import.multi.duplicatesRemoved_other": "{{count}} duplikater fjernet",
   "import.multi.noResourceFrame": "Fant ingen ResourceFrame i svaret",
 
-  "autosys.errResp.incomplete.autosys.data": "Ufullstendig kjøretøydata i Autosys",
+  "autosys.errResp.upstream": "Oppslag i Autosys feilet",
   "autosys.errResp.badFormat.or.unknown": "Ugyldig format eller ukjent registreringsnummer",
 
   "error.notAuthenticated": "Ikke autentisert — logg inn for å få tilgang til disse dataene",

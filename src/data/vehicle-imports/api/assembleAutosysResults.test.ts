@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { assembleAutosysResults } from './assembleAutosysResults';
 import type { ImportEntry } from '../types/importTypes';
-import { NO_AUTOSYS_DATA, makeBulkXml } from './__fixtures__/makeXml';
+import { NOT_FOUND, UPSTREAM_ERROR, makeBulkXml } from './__fixtures__/makeXml';
 
 const entries = (...regs: string[]): ImportEntry[] =>
   regs.map(queryRegNumber => ({ queryRegNumber }));
@@ -41,8 +41,8 @@ describe('assembleAutosysResults', () => {
     const xml = makeBulkXml({
       vehicles: [{ reg: 'AB1234' }],
       errors: [
-        { reg: 'XX0000000', message: NO_AUTOSYS_DATA },
-        { reg: 'FAIL2', message: 'Network error' },
+        { reg: 'XX0000000', message: NOT_FOUND },
+        { reg: 'FAIL2', message: UPSTREAM_ERROR },
       ],
     });
 
@@ -54,7 +54,7 @@ describe('assembleAutosysResults', () => {
     expect(summary.vehicleCount).toBe(1);
     expect(summary.errors).toEqual([
       { queryRegNumber: 'XX0000000', message: 'Invalid format or unknown registration number' },
-      { queryRegNumber: 'FAIL2', message: 'Network error' },
+      { queryRegNumber: 'FAIL2', message: 'Autosys lookup failed' },
     ]);
     expect(summary.successCount).toBe(1);
     expect(postPayload).toBe(xml);
@@ -63,7 +63,7 @@ describe('assembleAutosysResults', () => {
   it('has no payload when every plate failed', () => {
     const xml = makeBulkXml({
       vehicles: [],
-      errors: [{ reg: 'XX0000000', message: NO_AUTOSYS_DATA }],
+      errors: [{ reg: 'XX0000000', message: NOT_FOUND }],
     });
 
     const { summary, postPayload } = assembleAutosysResults(xml, entries('XX0000000'));
