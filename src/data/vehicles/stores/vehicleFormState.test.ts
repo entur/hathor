@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { edit, hydrate, initialFormState, isDirty, type FormState } from './vehicleFormState';
+import {
+  edit,
+  hydrate,
+  initialFormState,
+  isDirty,
+  restore,
+  type FormState,
+} from './vehicleFormState';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import type { Vehicle } from '../types/vehicle';
@@ -68,5 +75,19 @@ describe('vehicleFormState — dirty tracking through load/edit/cancel cycles', 
     const cleared = hydrate(loaded, undefined);
     expect(cleared.form).toEqual(BLANK_FORM);
     expect(isDirty(cleared)).toBe(false);
+  });
+
+  it('restore drops the edit back to the last hydrated value, not a blank form', () => {
+    // #217: after a create whose read-back failed, the bridged form (with the
+    // assigned id) is the baseline; Cancel must keep it.
+    const bridged = hydrate(initialFormState, aVehicle);
+    const edited = editFor(bridged, v => ({
+      ...v,
+      vehicle: { ...v.vehicle, registrationNumber: 'BUS-NEW' },
+    }));
+    const cancelled = restore(edited);
+    expect(cancelled.form.vehicle.id).toBe('NMR:Vehicle:bus-1');
+    expect(cancelled.form).toEqual(bridged.form);
+    expect(isDirty(cancelled)).toBe(false);
   });
 });

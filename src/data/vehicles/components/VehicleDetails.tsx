@@ -29,6 +29,7 @@ import {
   initialFormState,
   isDirty as isFormDirty,
   canSubmit,
+  restore,
   type FormState,
 } from '../stores/vehicleFormState.ts';
 import type { VehicleEditFormValue } from './VehicleEditForm.tsx';
@@ -329,7 +330,10 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', xmlVehicle: record.data });
+          // Revert to the last committed baseline: the fetched record, or the
+          // bridged create form (with its new id) if the read-back failed —
+          // never a blank form, whose next Save would create a duplicate.
+          dispatch({ type: 'restore' });
           setMode('view');
         }}
         onSave={handleSave}
@@ -346,8 +350,16 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
 
 type FormAction =
   | { type: 'hydrate'; xmlVehicle: Partial<Vehicle> | null | undefined }
-  | { type: 'edit'; form: VehicleEditFormValue };
+  | { type: 'edit'; form: VehicleEditFormValue }
+  | { type: 'restore' };
 
 function formReducer(state: FormState, action: FormAction): FormState {
-  return action.type === 'hydrate' ? hydrate(state, action.xmlVehicle) : edit(state, action.form);
+  switch (action.type) {
+    case 'hydrate':
+      return hydrate(state, action.xmlVehicle);
+    case 'edit':
+      return edit(state, action.form);
+    case 'restore':
+      return restore(state);
+  }
 }
