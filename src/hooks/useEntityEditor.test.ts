@@ -93,6 +93,16 @@ describe('useEntityEditor', () => {
     expect(h.result.current.mode).toBe('view');
   });
 
+  it('selectionKey follows the org + id', () => {
+    const h = setup();
+    const keyA = h.result.current.selectionKey;
+    h.rerender({ id: B, record: fakeRecord({ data: recB }) });
+    const keyB = h.result.current.selectionKey;
+    mocks.org = { id: 'ORG:2' };
+    h.rerender({});
+    expect(new Set([keyA, keyB, h.result.current.selectionKey]).size).toBe(3);
+  });
+
   it('Q1/Q2 save (existing id): save → view + clean → refetch → savedOpen → onWritten', async () => {
     const fresh: Rec = { id: A, name: 'stored' };
     const refetch = deferred<Rec | null>();

@@ -21,7 +21,8 @@ interface SidebarEditorRailProps<F> {
  * for the page chrome. Until there is a record to show (first load, load
  * error, not-found) it is the bare collapse rail — the hook already withholds
  * Edit and Save then (and Deactivate has no target); this also keeps Cancel off
- * a body with no form.
+ * a body with no form. The rail remounts per selection (`api.selectionKey`),
+ * so no dialog carries over to another record.
  *
  * @param {SidebarEditorRailProps<F>} props - `api`, `onCollapse` and the deactivate dialog copy.
  * @returns {JSX.Element} The right-side editor rail.
@@ -34,10 +35,14 @@ export default function SidebarEditorRail<F>({
   const { t } = useTranslation();
   useLiftEditorDirty(api.isDirty);
 
-  if (!api.hasRecord) return <EditorRail onCollapse={onCollapse} side={RAIL_SIDE} />;
+  // Keyed on the selection so a confirmation opened for one record (Deactivate,
+  // Discard) closes when the selection moves instead of acting on the next one.
+  if (!api.hasRecord)
+    return <EditorRail key={api.selectionKey} onCollapse={onCollapse} side={RAIL_SIDE} />;
 
   return (
     <EditorRail
+      key={api.selectionKey}
       side={RAIL_SIDE}
       onCollapse={onCollapse}
       mode={api.mode}

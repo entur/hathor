@@ -67,6 +67,11 @@ export interface EntityEditorApi<F> {
   setForm: (form: F) => void;
   /** Whether there is a form to show: creating, `record.data` present, or the post-create bridge holds this id. */
   hasRecord: boolean;
+  /**
+   * Identity of the current selection (org + id). Hosts key per-selection UI
+   * state on it — e.g. an open confirmation dialog must not outlive its record.
+   */
+  selectionKey: string;
   mode: 'view' | 'edit';
   /** `undefined` while unavailable: no record, refreshing, loading, deactivated or already editing. */
   enterEdit?: () => void;
@@ -338,6 +343,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
   return {
     form: state.form,
     hasRecord,
+    selectionKey: selection.key,
     setForm: useCallback((form: F) => dispatch({ type: 'edit', form }), []),
     mode,
     enterEdit: editAvailable ? () => setMode('edit') : undefined,
