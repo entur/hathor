@@ -24,8 +24,8 @@ import { IS_LIVE, seedAuth, selectFirstOrg, rowCount } from './live-auth-helpers
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts the three list queries; reaches the filtered state by URL. Self-contained.
  *   - live (E2E_BACKEND=true): real import via Shepet/Sobek — needs both backends, a FRESH plate
- *     (E2E_AUTOSYS_REG_NR, e.g. a row from fixtures/some-busses.csv) and the local Shepet
- *     responsibilitySet temp-fix (Shepet HEAD omits the responsibilitySets Sobek import requires).
+ *     (E2E_AUTOSYS_REG_NR, e.g. a row from fixtures/some-busses.csv) and a Shepet with the bulk
+ *     endpoint (entur/shepet#39), which emits the responsibilitySets Sobek import requires.
  *   - regression guard: runs in the mock CI suite and passes with the #141 fix in place; reverting
  *     the fix in src/components/search/SearchContext.tsx turns it red again. (Live needs both backends + a fresh plate.)
  *

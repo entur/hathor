@@ -647,3 +647,28 @@ Deck plans are not ready for every environment, but their route, nav item, Home 
 ### Out of scope
 
 - Loading the deck-plan code lazily behind `sandboxFeatures.DeckPlans`, as enki does for its `sandboxFeatures` from `src/ext/<Feature>/`.
+
+## SVV import: one bulk request to shepet, its XML posted to Sobek untouched _(2026-10-27)_
+
+### Context
+
+The SVV (Autosys) multi-import sent one `GET` per plate to shepet and built the Sobek document in the browser: it merged the ResourceFrames, deduplicated entities, injected `OperationalNumber` and added the owning ResponsibilitySet (#214). entur/shepet#39 moves that work into shepet behind `POST …/autosys/vehicles?dataOwner=`. Against that shepet, the client-side assembly put `DefaultResponsibilitySetRef` after shepet's `DefaultLocale`, so Sobek refused the import with an XSD order error (500).
+
+### Decision
+
+- **One `POST` per import**, at config key `motorVehicleRegistryProxy` (the full bulk endpoint URL). `applicationGetAutosysUrl` is gone.
+- **Shepet's XML goes to Sobek as returned.** Hathor parses it only to count entities for the confirm step (`assembleAutosysResults.ts`). Verified live: Sobek accepts it, including the `fetchError-*` KeyList.
+- **Per-plate failures come from shepet's KeyList** (`fetchError-registrationNumber-<i>` / `fetchError-message-<i>`) and still go through `translateAutosysError`. If the whole request fails, the wizard stays on Review and shows that one error.
+- **The fetch progress bar is indeterminate**, because there is one request and so no per-plate progress.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the per-plate path behind a feature flag** | It no longer works against shepet#39 (see Context), and a flag would keep two document builders alive. |
+| **Chunk large imports client-side** | Shepet has no cap yet. Revisit if a real import hits a gateway timeout. |
+
+### Consequences
+
+- An environment needs a shepet with #39 deployed before its import works.
+- Shepet sends no DeckPlans, so the confirm step's deck-plan count is 0.

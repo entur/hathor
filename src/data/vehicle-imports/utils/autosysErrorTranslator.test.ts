@@ -1,13 +1,14 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import i18next from 'i18next';
 import { translateAutosysError } from './autosysErrorTranslator';
-
-const INCOMPLETE =
-  'Cannot invoke "org.entur.autosys.model.KjoretoyData.getKjoretoyId()" because the return value of something is null';
-const BAD_FORMAT = '400 Bad Request: "{"feilmelding":"UGYLDIG_FORMAT_UNR_ELLER_KJENNEMERKE"}"';
+import {
+  INVALID_REGISTRATION_NUMBER,
+  NOT_FOUND,
+  UPSTREAM_ERROR,
+} from '../api/__fixtures__/makeXml';
 
 /**
- * The bug the nb case guards: every pattern carried a `key` that the lookup
+ * The bug the nb case guards: every entry carried a `key` that the lookup
  * never used, so the English `defaultMessage` was returned verbatim in every
  * language. Asserting against `nb` is the only way to see the difference —
  * an `en` assertion passes either way.
@@ -17,21 +18,25 @@ describe('translateAutosysError', () => {
     await i18next.changeLanguage('en');
   });
 
-  it('resolves each pattern key against the en bundle', () => {
-    expect(translateAutosysError(INCOMPLETE)).toBe('Incomplete vehicle data in Autosys');
-    expect(translateAutosysError(BAD_FORMAT)).toBe('Invalid format or unknown registration number');
+  it('resolves each shepet error code against the en bundle', () => {
+    expect(translateAutosysError(NOT_FOUND)).toBe('Unknown registration number');
+    expect(translateAutosysError(INVALID_REGISTRATION_NUMBER)).toBe(
+      'Invalid registration number format'
+    );
+    expect(translateAutosysError(UPSTREAM_ERROR)).toBe('Autosys lookup failed');
   });
 
-  it('resolves the same keys against the nb bundle', async () => {
+  it('resolves the same codes against the nb bundle', async () => {
     await i18next.changeLanguage('nb');
 
-    expect(translateAutosysError(INCOMPLETE)).toBe('Ufullstendig kjøretøydata i Autosys');
-    expect(translateAutosysError(BAD_FORMAT)).toBe(
-      'Ugyldig format eller ukjent registreringsnummer'
+    expect(translateAutosysError(NOT_FOUND)).toBe('Ukjent registreringsnummer');
+    expect(translateAutosysError(INVALID_REGISTRATION_NUMBER)).toBe(
+      'Ugyldig format på registreringsnummer'
     );
+    expect(translateAutosysError(UPSTREAM_ERROR)).toBe('Oppslag i Autosys feilet');
   });
 
-  it('returns the raw message when no pattern matches', () => {
+  it('returns the raw value when the code is unknown', () => {
     const raw = 'Some other unexpected error';
     expect(translateAutosysError(raw)).toBe(raw);
   });

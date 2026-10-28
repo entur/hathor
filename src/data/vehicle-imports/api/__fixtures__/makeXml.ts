@@ -1,95 +1,62 @@
-interface MakeXmlOptions {
-  vehicleReg?: string;
-  vehicleId?: string;
+/** Shepet's bulk `fetchError-message-<i>` codes (`FetchVehicleErrorCode`, entur/shepet#39). */
+export const NOT_FOUND = 'NOT_FOUND',
+  UPSTREAM_ERROR = 'UPSTREAM_ERROR',
+  INVALID_REGISTRATION_NUMBER = 'INVALID_REGISTRATION_NUMBER';
+
+interface BulkVehicle {
+  reg: string;
   vehicleTypeId?: string;
-  deckPlanId?: string;
   vehicleModelId?: string;
-  includeVehicleModel?: boolean;
 }
 
-/** ResourceFrame as direct child of dataObjects (no CompositeFrame wrapper). */
-export function makeXmlFlat({
-  vehicleReg = 'AB1234',
-  vehicleId = 'NMR:Vehicle:1',
-  vehicleTypeId = 'NMR:VehicleType:1',
-  deckPlanId = 'NMR:DeckPlan:1',
-  vehicleModelId = 'NMR:VehicleModel:1',
-  includeVehicleModel = true,
-}: MakeXmlOptions = {}): string {
-  const vehicleModelBlock = includeVehicleModel
-    ? `<vehicleModels><VehicleModel id="${vehicleModelId}"><Name>Model X</Name></VehicleModel></vehicleModels>`
-    : '';
+interface MakeBulkXmlOptions {
+  vehicles?: BulkVehicle[];
+  /** Failed plates, serialised the way shepet does: indexed `fetchError-*` KeyValues. */
+  errors?: { reg: string; message: string }[];
+}
+
+const keyValue = (key: string, value: string) =>
+  `<KeyValue><Key>${key}</Key><Value>${value}</Value></KeyValue>`;
+
+/** `<wrapper>` holding one rendered child per item, or nothing for no items. */
+const section = <T>(wrapper: string, items: T[], render: (item: T, i: number) => string) =>
+  items.length ? `<${wrapper}>${items.map(render).join('')}</${wrapper}>` : '';
+
+/** One empty `<element id>` per distinct id. */
+const refs = (wrapper: string, element: string, ids: (string | undefined)[]) =>
+  section(wrapper, [...new Set(ids.filter(Boolean))], id => `<${element} version="1" id="${id}"/>`);
+
+/**
+ * Shepet's bulk `PublicationDelivery` (entur/shepet#39): one flat ResourceFrame,
+ * entities already deduplicated, per-plate failures in the frame's `keyList`.
+ */
+export function makeBulkXml({
+  vehicles = [{ reg: 'AB1234' }],
+  errors = [],
+}: MakeBulkXmlOptions = {}): string {
+  const vs = vehicles.map(v => ({
+    vehicleTypeId: 'NMR:VehicleType:1',
+    vehicleModelId: 'NMR:VehicleModel:1',
+    ...v,
+  }));
+
   return `<?xml version="1.0" encoding="UTF-8"?>
-<PublicationDelivery>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
   <dataObjects>
-    <ResourceFrame id="NMR:ResourceFrame:1">
-      <vehicleTypes>
-        <VehicleType id="${vehicleTypeId}">
-          <Name>Bus Type A</Name>
-        </VehicleType>
-      </vehicleTypes>
-      <deckPlans>
-        <DeckPlan id="${deckPlanId}">
-          <Name>Standard Layout</Name>
-        </DeckPlan>
-      </deckPlans>
-      ${vehicleModelBlock}
-      <vehicles>
-        <Vehicle id="${vehicleId}">
-          <RegistrationNumber>${vehicleReg}</RegistrationNumber>
-        </Vehicle>
-      </vehicles>
+    <ResourceFrame version="1" id="NMR:ResourceFrame:1">
+      ${section('keyList', errors, (e, i) => keyValue(`fetchError-registrationNumber-${i}`, e.reg) + keyValue(`fetchError-message-${i}`, e.message))}
+      ${refs(
+        'vehicleTypes',
+        'VehicleType',
+        vs.map(v => v.vehicleTypeId)
+      )}
+      ${refs(
+        'vehicleModels',
+        'VehicleModel',
+        vs.map(v => v.vehicleModelId)
+      )}
+      ${section('vehicles', vs, v => `<Vehicle version="1" id="AUTOSYS:Vehicle:${v.reg}"><RegistrationNumber>${v.reg}</RegistrationNumber></Vehicle>`)}
     </ResourceFrame>
   </dataObjects>
 </PublicationDelivery>`;
-}
-
-export function makeXml({
-  vehicleReg = 'AB1234',
-  vehicleId = 'NMR:Vehicle:1',
-  vehicleTypeId = 'NMR:VehicleType:1',
-  deckPlanId = 'NMR:DeckPlan:1',
-  vehicleModelId = 'NMR:VehicleModel:1',
-  includeVehicleModel = true,
-}: MakeXmlOptions = {}): string {
-  const vehicleModelBlock = includeVehicleModel
-    ? `<vehicleModels><VehicleModel id="${vehicleModelId}"><Name>Model X</Name></VehicleModel></vehicleModels>`
-    : '';
-  const rcFrame = (entBlocks: string) => `<?xml version="1.0" encoding="UTF-8"?>
-<PublicationDelivery>
-  <dataObjects>
-    <CompositeFrame>
-      <frames>
-        <ResourceFrame id="NMR:ResourceFrame:1">
-          ${entBlocks}
-        </ResourceFrame>
-      </frames>
-    </CompositeFrame>
-  </dataObjects>
-</PublicationDelivery>`;
-
-  return rcFrame(`<vehicleTypes>
-            <VehicleType id="${vehicleTypeId}">
-              <Name>Bus Type A</Name>
-              <Length>12</Length>
-              <Width>2.5</Width>
-              <Height>3.2</Height>
-              <PassengerCapacity>
-                <SeatingCapacity>45</SeatingCapacity>
-                <StandingCapacity>30</StandingCapacity>
-              </PassengerCapacity>
-            </VehicleType>
-          </vehicleTypes>
-          <deckPlans>
-            <DeckPlan id="${deckPlanId}">
-              <Name>Standard Layout</Name>
-            </DeckPlan>
-          </deckPlans>
-          ${vehicleModelBlock}
-          <vehicles>
-            <Vehicle id="${vehicleId}">
-              <RegistrationNumber>${vehicleReg}</RegistrationNumber>
-            </Vehicle>
-          </vehicles>
-        `);
 }
