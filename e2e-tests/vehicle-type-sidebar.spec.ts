@@ -106,7 +106,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
  *     resuming after the selection moved to another row leaves that row alone (values, no
  *     success snackbar, URL) yet still refreshes the list; Edit is withheld while the post-save re-fetch is pending;
- *     an organisation round trip during that re-fetch leaves Edit available on return.
+ *     an organisation round trip during that re-fetch leaves Edit available on return; a save
+ *     failing after the selection moved shows no save error on the new row.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -571,5 +572,46 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha X');
     await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+  });
+
+  // #217: the save hook publishes a failure the moment its request rejects,
+  // before the guarded continuation resumes. A save for A failing after the
+  // user moved to B must not surface on B.
+  test('a save failing after the selection moved shows no error on the new row', async ({
+    page,
+  }) => {
+    await interceptVehicleTypesWithSave(page, { saveError: 'boom' });
+    let release!: () => void;
+    let arrive!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    const reached = new Promise<void>(r => (arrive = r));
+    await page.route('**/graphql', async route => {
+      if (route.request().postData()?.includes('createOrUpdateVehicleType')) {
+        arrive();
+        await gate;
+      }
+      await route.fallback();
+    });
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await reached;
+
+    await page.locator('table tr', { hasText: 'Type Beta' }).click();
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
+
+    const failed = page.waitForResponse(
+      r => !!r.request().postData()?.includes('createOrUpdateVehicleType')
+    );
+    release();
+    await failed;
+    await page.waitForTimeout(SETTLE_MS);
+
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Beta');
+    // One-shot: `toHaveCount(0)` would retry until a wrong snackbar auto-hid.
+    expect(await page.getByText('boom').count()).toBe(0);
   });
 });

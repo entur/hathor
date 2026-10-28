@@ -89,8 +89,10 @@ export default function VehicleTypeDetails({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
-  const { save, saving, error, clearError } = useVehicleTypeSave();
-  const { deactivate } = useVehicleTypeDeactivate();
+  const { save, saving, clearError: clearSaveError } = useVehicleTypeSave();
+  const { deactivate, clearError: clearDeactivateError } = useVehicleTypeDeactivate();
+  // The current selection's save failure — set from the guarded result only.
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
   // A committed write's continuation (list refresh, record re-fetch,
   // create-advance) is running; Edit is withheld until it ends.
@@ -115,6 +117,10 @@ export default function VehicleTypeDetails({
     setRefreshError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
+    // The write hooks keep their own error across selections.
+    setSaveError(null);
+    clearSaveError();
+    clearDeactivateError();
     if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -162,11 +168,15 @@ export default function VehicleTypeDetails({
   const handleSave = async () => {
     const isCurrent = captureSelection();
     setRefreshError(null);
+    setSaveError(null);
     // `save` resolves to `{ error }` and never throws — so a save failure flows
     // through the save-error snackbar; the refreshes below report through
     // `succeeds` instead of throwing.
     const result = await save(state.form);
-    if (result.error) return;
+    if (result.error) {
+      if (isCurrent()) setSaveError(result.error);
+      return;
+    }
 
     const wasCreate = state.form.id === '';
     const hydrateRow = { ...state.form };
@@ -305,7 +315,9 @@ export default function VehicleTypeDetails({
         />
       </Stack>
 
-      <SaveErrorSnackbar error={error} onClose={clearError} />
+      {/* The guarded result, not the hook's raw `error`: a late failure for
+          the previous selection must not surface here. */}
+      <SaveErrorSnackbar error={saveError} onClose={() => setSaveError(null)} />
       <SaveErrorSnackbar
         error={refreshError}
         severity="warning"

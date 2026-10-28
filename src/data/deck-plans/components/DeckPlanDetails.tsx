@@ -95,8 +95,10 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
 
   const record = useEntityRecord(isCreate ? null : id, fetchDeckPlanById);
   const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(isCreate ? null : id);
-  const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
-  const { deactivate } = useDeckPlanDeactivate();
+  const { save, saveGQL, saving, clearError: clearSaveError } = useDeckPlanSave();
+  const { deactivate, clearError: clearDeactivateError } = useDeckPlanDeactivate();
+  // The current selection's save failure — set from the guarded result only.
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
   // A committed write's continuation (list refresh, record re-fetch,
   // create-advance) is running; Edit is withheld until it ends.
@@ -117,6 +119,10 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     setRefreshError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
+    // The write hooks keep their own error across selections.
+    setSaveError(null);
+    clearSaveError();
+    clearDeactivateError();
     if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -164,9 +170,13 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const handleSave = async () => {
     const isCurrent = captureSelection();
     setRefreshError(null);
+    setSaveError(null);
     if (isCreate) {
       const result = await saveGQL(form);
-      if (result.error) return;
+      if (result.error) {
+        if (isCurrent()) setSaveError(result.error);
+        return;
+      }
 
       // Blank id factory → a create. A successful save with no `newId` is a
       // Sobek invariant break: surfaced as a snackbar so the user can refresh.
@@ -220,7 +230,10 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       return;
     }
     const result = await save(patched);
-    if (result.error) return;
+    if (result.error) {
+      if (isCurrent()) setSaveError(result.error);
+      return;
+    }
 
     if (isCurrent()) {
       setMode('view');
@@ -343,7 +356,9 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
         />
       </Stack>
 
-      <SaveErrorSnackbar error={error} onClose={clearError} />
+      {/* The guarded result, not the hook's raw `error`: a late failure for
+          the previous selection must not surface here. */}
+      <SaveErrorSnackbar error={saveError} onClose={() => setSaveError(null)} />
       <SaveErrorSnackbar
         error={refreshError}
         severity="warning"

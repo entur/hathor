@@ -71,8 +71,10 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
-  const { save, saving, error, clearError } = useVehiclePairSave();
-  const { deactivate } = useVehicleDeactivate();
+  const { save, saving, clearError: clearSaveError } = useVehiclePairSave();
+  const { deactivate, clearError: clearDeactivateError } = useVehicleDeactivate();
+  // The current selection's save failure — set from the guarded result only.
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
   // A committed write's continuation (list refresh, record re-fetch,
   // create-advance) is running; Edit is withheld until it ends.
@@ -95,6 +97,10 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     setCommitError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
+    // The write hooks keep their own error across selections.
+    setSaveError(null);
+    clearSaveError();
+    clearDeactivateError();
     if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -138,8 +144,12 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     const isCurrent = captureSelection();
     const wasCreate = (form.vehicle.id ?? '') === '';
     const submitted = form.vehicle;
+    setSaveError(null);
     const result = await save(form);
-    if (result.error) return;
+    if (result.error) {
+      if (isCurrent()) setSaveError(result.error);
+      return;
+    }
     const { newId } = result;
 
     // Sobek's mutation must mint a newId on create; null here = invariant
@@ -296,7 +306,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
 
       <VehicleEditForm value={form} onChange={setForm} mode={mode} />
 
-      <SaveErrorSnackbar error={error} onClose={clearError} />
+      {/* The guarded result, not the hook's raw `error`: a late failure for
+          the previous selection must not surface here. */}
+      <SaveErrorSnackbar error={saveError} onClose={() => setSaveError(null)} />
       <SaveErrorSnackbar
         error={commitError}
         severity="warning"
