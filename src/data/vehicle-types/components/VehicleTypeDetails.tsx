@@ -74,7 +74,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
  * @param {string} id VehicleType netexId, or `NEW_SELECTION` for the create pane.
  * @param {() => Promise<void>} [onSaved] Optional list refetch run after a successful save.
  * @param {'view' | 'edit'} [mode] Optional initial mode.
- * @returns {JSX.Element} The editor, its loading skeleton, or the not-found body.
+ * @returns {JSX.Element} The editor, its loading skeleton, or the load-error / not-found body.
  */
 export default function VehicleTypeDetails({
   id,
@@ -199,7 +199,7 @@ export default function VehicleTypeDetails({
   };
 
   // Until Sobek's record lands, the post-create bridge form stays up;
-  // otherwise skeleton, or not-found.
+  // otherwise skeleton, the load error, or not-found.
   const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
   if (!hasRecord && (record.notFound || record.error)) {
@@ -210,9 +210,16 @@ export default function VehicleTypeDetails({
             {t('vehicleType.detailsTitle')}
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {t('vehicleType.notFound')}
-          </Typography>
+          {/* A failed request is not a missing record: show why it failed. */}
+          {record.error ? (
+            <Typography variant="body2" color="error" sx={{ mb: 1 }}>
+              {record.error}
+            </Typography>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {t('vehicleType.notFound')}
+            </Typography>
+          )}
           <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
             {id}
           </Typography>

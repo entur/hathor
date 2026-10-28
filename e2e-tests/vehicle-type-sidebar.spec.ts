@@ -60,7 +60,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   (re-baselined).
  * Covers:
  *   - describe 1: row click writes ?selected=; an id Sobek does not know opens the not-found
- *     body; leaving a dirty edit resets the form (dirty guard off, no stale edits on return);
+ *     body; a failed by-id fetch shows its error, not not-found; leaving a dirty edit resets
+ *     the form (dirty guard off, no stale edits on return);
  *     tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form;
@@ -88,6 +89,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   - skip-live:
  *       describe 1: 'switching away from a dirty edit resets the form' — holds a mocked by-id
  *         re-fetch to observe the gap;
+ *       'a failed by-id fetch shows the error, not not-found' — injects a by-id 500;
  *       'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
  *         vehicle chip target (AA-101 → NMR:Vehicle:101) absent live;
  *       'toggling a null-baseline Low Floor switch on then off should not dirty the form' —
@@ -196,6 +198,26 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page.locator('.sidebar-desktop').getByText(unknownId)).toBeVisible();
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveCount(0);
     await expect(page.locator('#vtype-name')).toHaveCount(0);
+  });
+
+  // #217: a by-id request that fails (network/auth/GraphQL) is not a missing
+  // record — the editor shows the error, and keeps the rail to collapse it.
+  test('a failed by-id fetch shows the error, not not-found', async ({ page }) => {
+    test.skip(IS_LIVE, 'mock-only — injects a by-id 500');
+    await page.route('**/graphql', async route => {
+      if (!byIdOf(route.request())) return route.fallback();
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ errors: [{ message: 'by-id lookup failed' }] }),
+      });
+    });
+
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+
+    await expect(page.locator('.sidebar-desktop').getByText('by-id lookup failed')).toBeVisible();
+    await expect(page.getByText('Vehicle type not found')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-collapse')).toBeVisible();
   });
 
   // #217: the editor stays mounted across `?selected=` changes, so it must drop
