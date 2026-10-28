@@ -375,6 +375,33 @@ describe('useEntityEditor', () => {
     expect(setup({ deactivate: undefined }).result.current.deactivate).toBeUndefined();
   });
 
+  it('deactivate is withheld while editing, saving or refreshing', async () => {
+    const pending = deferred<{ error: null }>();
+    const refetch = deferred<Rec | null>();
+    const record = fakeRecord({ data: recA, refetch: vi.fn(() => refetch.promise) });
+    const h = setup({ record, save: vi.fn(() => pending.promise) });
+    expect(h.result.current.deactivate).toBeDefined();
+
+    await editTo(h, 'typed');
+    expect(h.result.current.mode).toBe('edit');
+    expect(h.result.current.deactivate).toBeUndefined();
+
+    await act(async () => {
+      void h.result.current.save();
+    });
+    expect(h.result.current.saving).toBe(true);
+    expect(h.result.current.deactivate).toBeUndefined();
+
+    await act(async () => pending.resolve({ error: null }));
+    // Saved, back in view, re-fetching the record.
+    expect(h.result.current.mode).toBe('view');
+    expect(h.result.current.saving).toBe(false);
+    expect(h.result.current.deactivate).toBeUndefined();
+
+    await act(async () => refetch.resolve({ id: A, name: 'typed' }));
+    expect(h.result.current.deactivate).toBeDefined();
+  });
+
   it('a Q9 deactivated state resets on an id change', async () => {
     const h = setup();
     await act(() => h.result.current.deactivate!());
@@ -494,6 +521,24 @@ describe('useEntityEditor', () => {
       h.unmount();
       await act(async () => pending.resolve({ newId: NEW_ID }));
       expect(h.spies.onCreated).not.toHaveBeenCalled();
+      expect(h.spies.onWritten).toHaveBeenCalledExactlyOnceWith({
+        type: 'created',
+        id: NEW_ID,
+        record: null,
+      });
+    });
+
+    it('unmount after the create-advance, before the record lands: onWritten(created, null) once', async () => {
+      const h = setup({
+        id: NEW_SELECTION,
+        record: fakeRecord(),
+        save: vi.fn(async () => ({ newId: NEW_ID })),
+      });
+      await act(() => h.result.current.save());
+      expect(h.spies.onCreated).toHaveBeenCalledExactlyOnceWith(NEW_ID);
+      h.rerender({ id: NEW_ID, record: fakeRecord({ loading: true }) });
+      expect(h.spies.onWritten).not.toHaveBeenCalled();
+      h.unmount();
       expect(h.spies.onWritten).toHaveBeenCalledExactlyOnceWith({
         type: 'created',
         id: NEW_ID,
