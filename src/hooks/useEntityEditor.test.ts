@@ -424,6 +424,52 @@ describe('useEntityEditor', () => {
     expect(h.result.current.deactivate).toBeDefined();
   });
 
+  describe('deactivate is withheld while the record is stale', () => {
+    it('after a failed post-save reload', async () => {
+      const record = fakeRecord({
+        data: recA,
+        refetch: vi.fn(async () => Promise.reject(new Error('500'))),
+      });
+      const h = setup({ record, save: vi.fn(async () => ({})) });
+      await editTo(h, 'typed');
+      await act(() => h.result.current.save());
+      expect(h.result.current.warning).toBe(STALE);
+      expect(h.result.current.mode).toBe('view');
+      expect(h.result.current.deactivate).toBeUndefined();
+    });
+
+    it('after a post-save reload that resolves null', async () => {
+      const record = fakeRecord({ data: recA, refetch: vi.fn(async () => null) });
+      const h = setup({ record, save: vi.fn(async () => ({})) });
+      await editTo(h, 'typed');
+      await act(() => h.result.current.save());
+      expect(h.result.current.warning).toBe(STALE);
+      expect(h.result.current.deactivate).toBeUndefined();
+    });
+
+    it('is available again once a later record.data hydrates', async () => {
+      const record = fakeRecord({ data: recA, refetch: vi.fn(async () => null) });
+      const h = setup({ record, save: vi.fn(async () => ({})) });
+      await editTo(h, 'typed');
+      await act(() => h.result.current.save());
+      expect(h.result.current.deactivate).toBeUndefined();
+
+      h.rerender({ record: fakeRecord({ data: { id: A, name: 'typed' } }) });
+      expect(h.result.current.deactivate).toBeDefined();
+    });
+
+    it('is available again after a selection change', async () => {
+      const record = fakeRecord({ data: recA, refetch: vi.fn(async () => null) });
+      const h = setup({ record, save: vi.fn(async () => ({})) });
+      await editTo(h, 'typed');
+      await act(() => h.result.current.save());
+      expect(h.result.current.deactivate).toBeUndefined();
+
+      h.rerender({ id: B, record: fakeRecord({ data: recB }) });
+      expect(h.result.current.deactivate).toBeDefined();
+    });
+  });
+
   it('a Q9 deactivated state resets on an id change', async () => {
     const h = setup();
     await act(() => h.result.current.deactivate!());
