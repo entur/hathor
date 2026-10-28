@@ -229,6 +229,54 @@ describe('useEntityEditor', () => {
     });
   });
 
+  it('a reload that resolves null (record gone) is a failed reload: stale warning, onWritten(null)', async () => {
+    const record = fakeRecord({ data: recA, refetch: vi.fn(async () => null) });
+    const h = setup({ record, save: vi.fn(async () => ({})) });
+    await editTo(h, 'typed');
+    await act(() => h.result.current.save());
+    expect(h.result.current.warning).toBe(STALE);
+    expect(h.result.current.savedOpen).toBe(false);
+    expect(h.result.current.isDirty).toBe(false);
+    expect(h.result.current.mode).toBe('view');
+    expect(h.spies.onWritten).toHaveBeenCalledExactlyOnceWith({
+      type: 'saved',
+      id: A,
+      record: null,
+    });
+  });
+
+  describe('hasRecord', () => {
+    it('is true when creating', () => {
+      expect(setup({ id: NEW_SELECTION, record: fakeRecord() }).result.current.hasRecord).toBe(
+        true
+      );
+    });
+
+    it('is true during the post-create bridge before the record lands', async () => {
+      const h = setup({
+        id: NEW_SELECTION,
+        record: fakeRecord(),
+        save: vi.fn(async () => ({ newId: NEW_ID })),
+      });
+      await act(() => h.result.current.save());
+      h.rerender({ id: NEW_ID, record: fakeRecord({ loading: true }) });
+      expect(h.result.current.hasRecord).toBe(true);
+      h.rerender({ record: fakeRecord({ error: 'load failed' }) });
+      expect(h.result.current.hasRecord).toBe(true);
+    });
+
+    it('is false on a loading, not-found or failed first load of an existing id', () => {
+      const h = setup({ record: fakeRecord({ loading: true }) });
+      expect(h.result.current.hasRecord).toBe(false);
+      h.rerender({ record: fakeRecord({ notFound: true }) });
+      expect(h.result.current.hasRecord).toBe(false);
+      h.rerender({ record: fakeRecord({ error: 'load failed' }) });
+      expect(h.result.current.hasRecord).toBe(false);
+      h.rerender({ record: fakeRecord({ data: recA }) });
+      expect(h.result.current.hasRecord).toBe(true);
+    });
+  });
+
   it('Q3 cancel restores the last baseline — after a save, the saved values', async () => {
     const fresh: Rec = { id: A, name: 'saved' };
     const record = fakeRecord({ data: recA, refetch: vi.fn(async () => fresh) });

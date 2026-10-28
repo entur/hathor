@@ -32,9 +32,17 @@ export interface EntityEditorOptions<R, F> {
   toForm: (record: R | null) => F;
   /** Canonicalise a form before the dirty compare. Treated as fixed. */
   normalise?: (form: F) => F;
-  /** Mode on open and after every selection change (default `'view'`). */
+  /**
+   * Mode on open and after every selection change (default `'view'`); re-read
+   * at each reset. A host whose create opens in edit passes
+   * `id === NEW_SELECTION ? 'edit' : mode`.
+   */
   initialMode?: 'view' | 'edit';
-  /** Stamp a created id onto the submitted form (the post-create bridge); default: unchanged. */
+  /**
+   * Stamp a created id onto the submitted form (the post-create bridge, which
+   * Cancel restores until the record lands). Required for any form whose id is
+   * not a top-level `id` (e.g. `{ vehicle: { id } }`); default: the form unchanged.
+   */
   withNewId?: (form: F, newId: string) => F;
   /** The feature's write; resolves `{ error }` on failure and `{ newId }` on a create. */
   save: (form: F) => Promise<WriteResult>;
@@ -54,6 +62,8 @@ export interface EntityEditorOptions<R, F> {
 export interface EntityEditorApi<F> {
   form: F;
   setForm: (form: F) => void;
+  /** Whether there is a form to show: creating, `record.data` present, or the post-create bridge holds this id. */
+  hasRecord: boolean;
   mode: 'view' | 'edit';
   /** `undefined` while unavailable: refreshing, loading, deactivated or already editing. */
   enterEdit?: () => void;
@@ -248,17 +258,15 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     dispatch({ type: 'commit', form: submitted });
     setMode('view');
     setRefreshing(true);
-    const outcome = await record.refetch().then(
-      fresh => ({ ok: true, fresh }),
-      () => ({ ok: false, fresh: null })
-    );
+    // A reload that resolves nothing (the record is gone) is a failed reload.
+    const fresh = await record.refetch().catch(() => null);
     const current = isCurrent();
     if (current) {
       setRefreshing(false);
-      if (outcome.ok) setSavedOpen(true);
+      if (fresh !== null) setSavedOpen(true);
       else setWarning(t(STALE_KEY));
     }
-    report(onWrittenRef.current, { type: 'saved', id, record: current ? outcome.fresh : null });
+    report(onWrittenRef.current, { type: 'saved', id, record: current ? fresh : null });
   };
 
   const save = async (): Promise<void> => {
@@ -301,6 +309,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
 
   return {
     form: state.form,
+    hasRecord: id === NEW_SELECTION || record.data !== null || bridgeId === id,
     setForm: useCallback((form: F) => dispatch({ type: 'edit', form }), []),
     mode,
     enterEdit: editAvailable ? () => setMode('edit') : undefined,
