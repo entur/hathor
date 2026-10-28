@@ -73,10 +73,13 @@ export interface EntityEditorApi<F> {
    */
   selectionKey: string;
   mode: 'view' | 'edit';
-  /** `undefined` while unavailable: no record, refreshing, loading, deactivated or already editing. */
+  /**
+   * `undefined` while unavailable: no record, a create still advancing to its
+   * new id, refreshing, loading, deactivated or already editing.
+   */
   enterEdit?: () => void;
   cancel: () => void;
-  /** A no-op while `!hasRecord`. */
+  /** A no-op while `!hasRecord` or while a create is advancing to its new id. */
   save: () => Promise<void>;
   saving: boolean;
   isDirty: boolean;
@@ -294,9 +297,12 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
   // Creating, Sobek's record, or the post-create bridge holding this id. Without
   // one the form is `toForm(null)`: editing or saving it would mint a stray record.
   const hasRecord = id === NEW_SELECTION || record.data !== null || bridgeId === id;
+  // A create committed but `id` has not reached its new id yet: still the
+  // create pane underneath, so an edit begun here is reset by the advance.
+  const advancing = bridgeId !== null && bridgeId !== id;
 
   const save = async (): Promise<void> => {
-    if (!hasRecord) return;
+    if (!hasRecord || advancing) return;
     const isCurrent = captureSelection();
     const submitted = state.form;
     setSaveError(null);
@@ -338,7 +344,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
         };
 
   const editAvailable =
-    hasRecord && !refreshing && !record.loading && !deactivated && mode !== 'edit';
+    hasRecord && !advancing && !refreshing && !record.loading && !deactivated && mode !== 'edit';
 
   return {
     form: state.form,

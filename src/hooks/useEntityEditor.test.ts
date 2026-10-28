@@ -220,6 +220,23 @@ describe('useEntityEditor', () => {
     expect(h.spies.onWritten).toHaveBeenCalledTimes(1);
   });
 
+  it('Edit and Save are withheld between a committed create and its advance', async () => {
+    const save = vi.fn(async () => ({ newId: NEW_ID }));
+    const h = setup({ id: NEW_SELECTION, record: fakeRecord(), initialMode: 'edit', save });
+    act(() => h.result.current.setForm({ id: '', name: 'n' }));
+    await act(() => h.result.current.save());
+
+    // `onCreated` ran but the host has not re-rendered with the new id yet.
+    expect(h.result.current.mode).toBe('view');
+    expect(h.result.current.enterEdit).toBeUndefined();
+    await act(() => h.result.current.save());
+    expect(save).toHaveBeenCalledTimes(1);
+
+    // Advanced, and the first load failed: the bridge holds the id, Edit is back.
+    h.rerender({ id: NEW_ID, record: fakeRecord({ error: 'boom' }), initialMode: 'view' });
+    expect(h.result.current.enterEdit).toBeDefined();
+  });
+
   it('record reload fails after save → stale warning, no success, clean, view, onWritten(null)', async () => {
     const record = fakeRecord({
       data: recA,
