@@ -6,6 +6,7 @@ import type { Vehicle, VehicleColumnKey } from '../types/vehicle.ts';
 import { fetchVehiclesAndApply } from '../api/fetchVehiclesAndApply.ts';
 import { compareVehicles } from '../utils/vehicleSortValue.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
+import { useLatestRequest } from '../../../hooks/useLatestRequest.ts';
 
 /**
  * Data hook for the `/vehicles` list. Mirrors `useVehicleTypes` — single fetch
@@ -26,27 +27,32 @@ export function useVehicles() {
   const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
   const { currentOrganisation } = useOrganisationsContext();
+  const beginRequest = useLatestRequest();
 
   // This doFetch shape (gate → fetch chain → translate error → setLoading)
   // is duplicated in `useVehicleTypes` and `useDeckPlans` — here it's
   // delegated to `fetchVehiclesAndApply` (setter-injection variant, no
   // rethrow). The duplication and variant drift is tracked for lift in
-  // hathor#119 — keep variants in sync until then.
+  // hathor#230 — keep variants in sync until then.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
+    // Refetches overlap (one per write, never awaited): only the newest
+    // request's response may touch state, so an older one landing last
+    // cannot bring back a row a later write changed or deactivated.
+    const isLatest = beginRequest();
     setLoading(true);
     try {
       await fetchVehiclesAndApply({
         applicationBaseUrl,
         getAccessToken,
-        setData,
-        setError,
+        setData: rows => isLatest() && setData(rows),
+        setError: msg => isLatest() && setError(msg),
         dataOwnerRef: currentOrganisation?.id || '',
       });
     } finally {
-      setLoading(false);
+      if (isLatest()) setLoading(false);
     }
-  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
+  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id, beginRequest]);
 
   useEffect(() => {
     doFetch();

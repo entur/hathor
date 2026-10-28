@@ -8,6 +8,7 @@ import { compareVehicleTypes } from '../utils/vehicleTypeSortValue.ts';
 import type { Order } from '../../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
+import { useLatestRequest } from '../../../hooks/useLatestRequest.ts';
 
 export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 
@@ -28,12 +29,17 @@ export function useVehicleTypes() {
 
   // Track filter param to trigger refetch when it changes (e.g., after import)
   const filterParam = searchParams.get('filter');
+  const beginRequest = useLatestRequest();
 
   // This doFetch shape (gate → fetch chain → setLoading) is still duplicated
   // in `useDeckPlans` and `useVehicles`; the error translation it used to
-  // inline now lives in `graphqlErrMsg`. Remaining lift tracked in hathor#119.
+  // inline now lives in `graphqlErrMsg`. Remaining lift tracked in hathor#230.
   const doFetch = useCallback(async () => {
     if (!applicationBaseUrl || !currentOrganisation?.id) return;
+    // Refetches overlap (one per write, never awaited): only the newest
+    // request's response may touch state, so an older one landing last
+    // cannot bring back a row a later write changed or deactivated.
+    const isLatest = beginRequest();
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
@@ -41,16 +47,18 @@ export function useVehicleTypes() {
     // failed); the editor fires it from `onWritten` without awaiting it.
     return fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token)
       .then((ctx: VehicleTypeContext) => {
-        setData(ctx.vehicleTypes);
+        if (isLatest()) setData(ctx.vehicleTypes);
       })
       .catch((err: unknown) => {
-        setError(graphqlErrMsg(err));
+        if (isLatest()) setError(graphqlErrMsg(err));
         // Re-throw so `refetch()` honestly rejects on failure (e.g. a failed
         // post-save refresh) instead of resolving and masking the error.
         throw err;
       })
-      .finally(() => setLoading(false));
-  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
+      .finally(() => {
+        if (isLatest()) setLoading(false);
+      });
+  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id, beginRequest]);
 
   // Refetch when applicationBaseUrl changes or when filter param changes (after
   // import). Fire-and-forget: the error is already in state, so swallow the
