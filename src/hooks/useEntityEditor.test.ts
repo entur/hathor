@@ -277,6 +277,28 @@ describe('useEntityEditor', () => {
     });
   });
 
+  describe('without a record, Edit and Save are withheld', () => {
+    it('not-found → enterEdit undefined', () => {
+      const h = setup({ record: fakeRecord({ notFound: true }) });
+      expect(h.result.current.hasRecord).toBe(false);
+      expect(h.result.current.enterEdit).toBeUndefined();
+    });
+
+    it('load error → enterEdit undefined', () => {
+      const h = setup({ record: fakeRecord({ error: 'boom' }) });
+      expect(h.result.current.hasRecord).toBe(false);
+      expect(h.result.current.enterEdit).toBeUndefined();
+    });
+
+    it('save while !hasRecord (even opened in edit) does not call the feature save', async () => {
+      const h = setup({ record: fakeRecord({ notFound: true }), initialMode: 'edit' });
+      await act(() => h.result.current.save());
+      expect(h.spies.save).not.toHaveBeenCalled();
+      expect(h.result.current.saving).toBe(false);
+      expect(h.spies.onWritten).not.toHaveBeenCalled();
+    });
+  });
+
   it('Q3 cancel restores the last baseline — after a save, the saved values', async () => {
     const fresh: Rec = { id: A, name: 'saved' };
     const record = fakeRecord({ data: recA, refetch: vi.fn(async () => fresh) });
