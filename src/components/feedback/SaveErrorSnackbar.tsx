@@ -3,8 +3,8 @@ import { Alert, Snackbar } from '@mui/material';
 interface SaveErrorSnackbarProps {
   error: string | null;
   onClose: () => void;
-  /** Alert severity — `'warning'` for partial success (e.g. saved but the list
-   * could not refresh), so it isn't mistaken for a hard save failure. */
+  /** Alert severity — `'warning'` for partial success (e.g. saved but the
+   * record could not reload), so it isn't mistaken for a hard save failure. */
   severity?: 'error' | 'warning';
 }
 

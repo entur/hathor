@@ -23,7 +23,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *     patched document (preserves deck geometry DeckPlanInput cannot carry)
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
  *   - save is gated until the XML body has loaded (an edit patches it)
- *   - a failed post-save list refresh warns but still re-baselines the form
+ *   - a failed post-save record reload shows the stale-record warning, not a
+ *     success, with the form clean in view mode (nothing to discard on close)
  *   - cancelling a second edit restores the saved baseline (the re-fetched
  *     record), not the pre-save row
  *   - the stored `lang` on <Name> survives a save round-trip
@@ -219,14 +220,12 @@ test.describe('/deck-plans — sidebar editor', () => {
     await expect(page.getByTestId('editor-rail-save')).toBeEnabled();
   });
 
-  test('a failed post-save list refresh warns but still re-baselines the form', async ({
-    page,
-  }) => {
-    // The import POST commits, then the list refetch 500s (the editor's by-id
-    // re-fetch still answers). The warning is correct, but the write landed —
-    // collapsing must not offer to discard changes that are already persisted.
+  // #217: the import POST commits but the post-save record reload (the by-id
+  // fetch) 500s. The save is real, so the form commits (clean, view mode) —
+  // but the user gets the stale-record warning, not a bare "saved" success.
+  test('a failed post-save record reload warns, form clean, view mode', async ({ page }) => {
     // Registered BEFORE the 500-override: Playwright runs route handlers LIFO,
-    // so the override below gets first look and falls back to this one.
+    // so the override below gets first look and falls back to these.
     await interceptDeckPlansQuery(page);
     const { saved } = await interceptDeckPlanSave(page, xml());
     await page.route('**/graphql', async route => {
@@ -234,8 +233,8 @@ test.describe('/deck-plans — sidebar editor', () => {
         query?: string;
         variables?: { filter?: { netexIds?: string[] } };
       };
-      const listQuery = !body?.variables?.filter?.netexIds;
-      if (body?.query?.includes('deckPlans') && listQuery && saved()) {
+      const byIdQuery = !!body?.variables?.filter?.netexIds;
+      if (body?.query?.includes('deckPlans') && byIdQuery && saved()) {
         return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
       }
       return route.fallback();
@@ -245,12 +244,18 @@ test.describe('/deck-plans — sidebar editor', () => {
     );
 
     await page.goto('/deck-plans?selected=NMR:DeckPlan:5');
-    await expect(page.getByTestId('deck-plan-xml-textarea')).toHaveCount(0);
     await page.getByTestId('editor-rail-edit').click();
-    await page.locator('#deckPlan-name').fill('Renamed then refresh fails');
+    await page.locator('#deckPlan-name').fill('Renamed then reload fails');
     await page.getByTestId('editor-rail-save').click();
 
-    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+    await expect(page.getByText(/record could not reload/i)).toBeVisible();
+    // One-shot: the warning has landed, so a success would be up by now.
+    expect(await page.getByText('Deck plan saved').count()).toBe(0);
+    // The saved form stays up, clean, in view mode: no Save, Edit offered.
+    await expect(page.locator('#deckPlan-name')).toHaveValue('Renamed then reload fails');
+    await expect(page.locator('#deckPlan-name')).toBeDisabled();
+    await expect(page.getByTestId('editor-rail-save')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
 
     await page.getByTestId('editor-rail-collapse').click();
     await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
