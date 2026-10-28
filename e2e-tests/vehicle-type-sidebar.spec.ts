@@ -2,6 +2,40 @@ import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
+const ALPHA_ID = 'NMR:VehicleType:1';
+/** Grace for a resumed save continuation to (wrongly) act after its response lands. */
+const SETTLE_MS = 500;
+
+/** `variables.filter.netexIds` of a GraphQL request — set only on a by-id fetch. */
+const byIdOf = (req: import('@playwright/test').Request): string[] | undefined =>
+  req.postDataJSON()?.variables?.filter?.netexIds;
+
+/**
+ * Hold the post-save by-id re-fetch of `id` (the first by-id fetch after a
+ * `createOrUpdateVehicleType`) until `release()`. Register after
+ * `interceptVehicleTypesWithSave` so it runs first and falls back to it.
+ *
+ * @param {Page} page Playwright Page.
+ * @param {string} id NeTEx id whose post-save fetch to hold.
+ * @returns {{ reached: Promise<void>, release: () => void }} `reached` resolves once the held request arrives.
+ */
+async function holdPostSaveFetch(page: import('@playwright/test').Page, id: string) {
+  let saved = false;
+  let release!: () => void;
+  let arrive!: () => void;
+  const gate = new Promise<void>(r => (release = r));
+  const reached = new Promise<void>(r => (arrive = r));
+  await page.route('**/graphql', async route => {
+    if (route.request().postData()?.includes('createOrUpdateVehicleType')) saved = true;
+    else if (saved && byIdOf(route.request())?.includes(id)) {
+      arrive();
+      await gate;
+    }
+    await route.fallback();
+  });
+  return { reached, release };
+}
+
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
   await page.goto('/vehicle-types');
@@ -35,7 +69,9 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
- *     warning, not a bare success (the re-fetch must reject, not resolve early).
+ *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
+ *     resuming after the selection moved to another row leaves that row alone (values, no
+ *     success snackbar, URL).
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -396,5 +432,35 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     await expect(page.getByText(/list could not refresh/i)).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
+
+  // #217: the editor outlives `?selected=` changes, so a save for A that
+  // resumes after the user opened B must not touch B — no success snackbar,
+  // no re-hydrate with A, no URL advance.
+  test('a save resuming after the selection moved leaves the new row alone', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    const held = await holdPostSaveFetch(page, ALPHA_ID);
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await page.locator('table tr', { hasText: 'Type Beta' }).click();
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
+
+    const resumed = page.waitForResponse(r => !!byIdOf(r.request())?.includes(ALPHA_ID));
+    held.release();
+    await resumed;
+    await page.waitForTimeout(SETTLE_MS);
+
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Beta');
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
+    // One-shot count, not `toHaveCount(0)`: that retries, and would pass once
+    // a wrongly shown snackbar auto-hides.
+    expect(await page.getByText('Vehicle type saved').count()).toBe(0);
+    await expect(page).toHaveURL(/selected=NMR%3AVehicleType%3A2/);
   });
 });

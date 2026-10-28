@@ -12,6 +12,7 @@ import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { fetchVehicleTypeById } from '../api/fetchVehicleTypes.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
@@ -129,8 +130,13 @@ export default function VehicleTypeDetails({
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
 
+  // Every write continuation bails once the selection moved (see useSelectionGuard).
+  const captureSelection = useSelectionGuard(id);
+
   const handleDeactivate = async () => {
+    const isCurrent = captureSelection();
     const result = await deactivate(state.form);
+    if (!isCurrent()) return;
     if (result.error) {
       setRefreshError(result.error);
       return;
@@ -139,21 +145,22 @@ export default function VehicleTypeDetails({
     try {
       setDeactivatedOK(true);
       await onSaved?.();
-      setRefreshError(null);
+      if (isCurrent()) setRefreshError(null);
     } catch {
-      setRefreshError(t('vehicleType.deactivateStaleList'));
+      if (isCurrent()) setRefreshError(t('vehicleType.deactivateStaleList'));
     }
   };
 
   // Fire the mutation, bridge the baseline from the submitted form, then
   // re-fetch the record (the real baseline) and refresh the list (`onSaved`).
   const handleSave = async () => {
+    const isCurrent = captureSelection();
     setRefreshError(null);
     // `save` resolves to `{ error }` and never throws — so a save failure flows
     // through the save-error snackbar, and the try below is scoped to ONLY the
     // post-save refreshes (record re-fetch, `onSaved`).
     const result = await save(state.form);
-    if (result.error) return;
+    if (!isCurrent() || result.error) return;
 
     const wasCreate = state.form.id === '';
     const hydrateRow = { ...state.form };
@@ -174,7 +181,9 @@ export default function VehicleTypeDetails({
     setMode('view');
     try {
       if (!wasCreate) await record.refetch();
+      if (!isCurrent()) return;
       await onSaved?.();
+      if (!isCurrent()) return;
       // Advance `?selected=new` → `?selected=<newId>`; the editor then
       // fetches the created record by id.
       if (wasCreate) {
@@ -185,7 +194,7 @@ export default function VehicleTypeDetails({
     } catch {
       // Save is real, but the record or list couldn't refresh — warn instead
       // of a clean success over stale data.
-      setRefreshError(t('vehicleType.saveStaleList'));
+      if (isCurrent()) setRefreshError(t('vehicleType.saveStaleList'));
     }
   };
 

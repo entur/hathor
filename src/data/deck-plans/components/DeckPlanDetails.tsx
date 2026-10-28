@@ -12,6 +12,7 @@ import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { fetchDeckPlanById } from '../api/fetchDeckPlans.ts';
 import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
@@ -131,9 +132,14 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
 
+  // Every write continuation bails once the selection moved (see useSelectionGuard).
+  const captureSelection = useSelectionGuard(id);
+
   const handleDeactivate = async () => {
     if (!record.data) return;
+    const isCurrent = captureSelection();
     const result = await deactivate(record.data);
+    if (!isCurrent()) return;
     if (result.error) {
       setRefreshError(result.error);
       return;
@@ -142,19 +148,20 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     try {
       setDeactivatedOK(true);
       await onSaved?.();
-      setRefreshError(null);
+      if (isCurrent()) setRefreshError(null);
     } catch {
-      setRefreshError(t('deckPlan.deactivateStaleList'));
+      if (isCurrent()) setRefreshError(t('deckPlan.deactivateStaleList'));
     }
   };
 
   const staleList = () => setRefreshError(t('deckPlans.saveStaleList'));
 
   const handleSave = async () => {
+    const isCurrent = captureSelection();
     setRefreshError(null);
     if (isCreate) {
       const result = await saveGQL(form);
-      if (result.error) return;
+      if (!isCurrent() || result.error) return;
 
       // Blank id factory → a create. A successful save with no `newId` is a
       // Sobek invariant break: surfaced as a snackbar so the user can refresh.
@@ -170,13 +177,14 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       dispatch({ type: 'hydrate', dp: { ...form, id: result.newId } });
       try {
         await onSaved?.();
+        if (!isCurrent()) return;
         // Advance `?selected=new` → `?selected=<newId>`; the editor then
         // fetches the created record by id.
         setBridgeId(result.newId);
         advanceCreated(result.newId);
         setSavedAt(Date.now()); // success only once the list is fresh
       } catch {
-        staleList();
+        if (isCurrent()) staleList();
       }
       return;
     }
@@ -200,7 +208,7 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       return;
     }
     const result = await save(patched);
-    if (result.error) return;
+    if (!isCurrent() || result.error) return;
 
     setMode('view');
     // Re-baseline on the write, for the same reason as the create branch above
@@ -211,10 +219,12 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     refetch();
     try {
       await record.refetch();
+      if (!isCurrent()) return;
       await onSaved?.();
+      if (!isCurrent()) return;
       setSavedAt(Date.now());
     } catch {
-      staleList();
+      if (isCurrent()) staleList();
     }
   };
 

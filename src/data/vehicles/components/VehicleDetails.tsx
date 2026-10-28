@@ -19,9 +19,9 @@ import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
-import { commitSave } from '../../../utils/commitSave.ts';
 import {
   edit,
   hydrate,
@@ -107,8 +107,13 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const closeSlider = useCloseSliderParam(VEHICLE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_SELECTED_PARAM);
 
+  // Every write continuation bails once the selection moved (see useSelectionGuard).
+  const captureSelection = useSelectionGuard(id);
+
   const handleDeactivate = async () => {
+    const isCurrent = captureSelection();
     const result = await deactivate(form.vehicle);
+    if (!isCurrent()) return;
     if (result.error) {
       setCommitError(result.error);
       return;
@@ -117,35 +122,43 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     try {
       setDeactivatedOK(true);
       await onSaved?.();
-      setCommitError(null);
+      if (isCurrent()) setCommitError(null);
     } catch {
-      setCommitError(t('vehicle.deactivateStaleList'));
+      if (isCurrent()) setCommitError(t('vehicle.deactivateStaleList'));
     }
   };
 
   const handleSave = async () => {
+    const isCurrent = captureSelection();
     const wasCreate = (form.vehicle.id ?? '') === '';
-    const result = await commitSave(save, form, onSaved);
-    if (result.error) return;
+    const submitted = form.vehicle;
+    const result = await save(form);
+    if (!isCurrent() || result.error) return;
+    const { newId } = result;
 
-    if (wasCreate) {
-      // Sobek's mutation must mint a newId on create; null here = invariant
-      // break. Re-baselining with id='' would let the next Edit→Save fire
-      // CREATE again and mint a duplicate.
-      if (!result.newId) {
-        setCommitError(t('common.saveNoIdReturned'));
-        return;
-      }
-      // Re-baseline the form with the assigned id so isDirty=false immediately,
-      // bridging until the URL advance below fetches the created record.
-      dispatch({
-        type: 'hydrate',
-        xmlVehicle: { ...form.vehicle, id: result.newId, version: 1 },
-      });
+    // Sobek's mutation must mint a newId on create; null here = invariant
+    // break. Re-baselining with id='' would let the next Edit→Save fire
+    // CREATE again and mint a duplicate.
+    if (wasCreate && !newId) {
+      setCommitError(t('common.saveNoIdReturned'));
+      return;
+    }
+    // Save committed: leave edit mode before the refreshes below, so nothing
+    // typed meanwhile is lost to the re-hydrate. A create re-baselines with
+    // the assigned id now (isDirty=false), bridging until the URL advance
+    // below fetches the created record.
+    setMode('view');
+    if (wasCreate && newId)
+      dispatch({ type: 'hydrate', xmlVehicle: { ...submitted, id: newId, version: 1 } });
+    // List refresh first, so the row is fresh when the success shows.
+    await onSaved?.();
+    if (!isCurrent()) return;
+
+    if (wasCreate && newId) {
       // Advance ?selected=new → ?selected=<newId>; the by-id fetch then lands
       // the real version.
-      setBridgeId(result.newId);
-      advanceCreated(result.newId);
+      setBridgeId(newId);
+      advanceCreated(newId);
     } else {
       // Existing row — re-pull the persisted vehicle so the `hydrate` effect
       // advances the dirty baseline (and picks up the bumped version). Without
@@ -154,13 +167,12 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
       try {
         await record.refetch();
       } catch (err) {
-        setMode('view');
-        setCommitError(graphqlErrMsg(err));
+        if (isCurrent()) setCommitError(graphqlErrMsg(err));
         return;
       }
+      if (!isCurrent()) return;
     }
     setSavedAt(Date.now());
-    setMode('view');
   };
 
   // Until Sobek's record lands, the post-create bridge form stays up;
