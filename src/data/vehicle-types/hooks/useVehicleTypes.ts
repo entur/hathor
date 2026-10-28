@@ -37,9 +37,8 @@ export function useVehicleTypes() {
     setLoading(true);
     setError(null);
     const token = await getAccessToken();
-    // Return the chain so callers (`refetch` as `onSaved`) can await a fully
-    // applied refresh — the post-save re-baseline depends on `setData` having
-    // run before the success signal fires.
+    // Return the chain so `refetch` settles once the refresh has applied (or
+    // failed); the editor fires it from `onWritten` without awaiting it.
     return fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
@@ -55,7 +54,7 @@ export function useVehicleTypes() {
 
   // Refetch when applicationBaseUrl changes or when filter param changes (after
   // import). Fire-and-forget: the error is already in state, so swallow the
-  // rejection here (only awaiting callers like the post-save refresh care).
+  // rejection here.
   useEffect(() => {
     void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
