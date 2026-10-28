@@ -15,7 +15,8 @@ export type IsCurrentSelection = () => boolean;
  *
  * The selection is the id plus the current organisation. Any change — even a
  * round trip back to the same id, which resets the editor — invalidates every
- * earlier capture.
+ * earlier capture, and so does unmounting the editor (the pane closed): a
+ * continuation must not advance the URL of a row opened afterwards.
  *
  * @param {string} id - The editor's current `?selected=` id (incl. `NEW_SELECTION`).
  * @returns {() => IsCurrentSelection} `capture`: call at write start; its result
@@ -26,11 +27,15 @@ export function useSelectionGuard(id: string): () => IsCurrentSelection {
   const orgId = currentOrganisation?.id ?? null;
   const generation = useRef(0);
 
-  // Layout effect: bumped before any passive effect or resumed continuation
-  // can observe the new selection.
-  useLayoutEffect(() => {
-    generation.current += 1;
-  }, [id, orgId]);
+  // Bumped in the layout-effect cleanup — on every id/org change and on
+  // unmount — so it lands before any passive effect or resumed continuation
+  // can observe the new selection (or the closed pane).
+  useLayoutEffect(
+    () => () => {
+      generation.current += 1;
+    },
+    [id, orgId]
+  );
 
   return useCallback(() => {
     const started = generation.current;

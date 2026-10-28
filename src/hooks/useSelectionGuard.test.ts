@@ -48,6 +48,13 @@ describe('useSelectionGuard', () => {
     expect(isCurrent()).toBe(false);
   });
 
+  it('goes stale when the editor unmounts (the pane closed)', () => {
+    const { result, unmount } = renderGuard('A');
+    const isCurrent = result.current();
+    unmount();
+    expect(isCurrent()).toBe(false);
+  });
+
   it('returns a stable capture function', () => {
     const { result, rerender } = renderGuard('A');
     const capture = result.current;
