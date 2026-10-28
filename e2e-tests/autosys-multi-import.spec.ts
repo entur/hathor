@@ -29,8 +29,8 @@ const IMPORT_BTN = 'home-bulk-import-svv';
  *   - live (E2E_BACKEND=true): fetches real Autosys data via shepet on :37998 (no query intercepts).
  *     Needs a real plate — set E2E_AUTOSYS_REG_NR (the fixture "A-1" is not a real Autosys plate);
  *     the 1/1/1 summary is plate-dependent under live.
- *     The unknown-plate test is fixme under live until shepet maps a plate Autosys has no
- *     data for to NOT_FOUND (entur/shepet#39); mock serves NOT_FOUND.
+ *     The unknown-plate test needs shepet at entur/shepet@8a14bad or later, which reports a
+ *     plate Autosys has no data for as NOT_FOUND (entur/shepet#39); mock serves NOT_FOUND.
  */
 /**
  * Drive the wizard from Home to its Review step with `regNrs` added, ready for "Next".
@@ -112,18 +112,12 @@ test.describe('Autosys multi-import dialog', () => {
   });
 
   test(`unknown plate "${UNKNOWN_REG_NR}" is reported per plate`, async ({ context, page }) => {
-    test.fixme(
-      IS_LIVE,
-      'shepet reports unknown plates as UPSTREAM_ERROR, not NOT_FOUND — https://github.com/entur/shepet/pull/39#discussion_r4389992039'
-    );
     await seedAuth(context);
     const contentText = await openConfirm(page, [REG_NR, UNKNOWN_REG_NR]);
 
     expect(contentText).toMatch(/Vehicles\s*1/);
     expect(contentText).toContain('1 failed');
-    expect(contentText).toContain(
-      `${UNKNOWN_REG_NR}: Invalid format or unknown registration number`
-    );
+    expect(contentText).toContain(`${UNKNOWN_REG_NR}: Unknown registration number`);
   });
 
   test('whole bulk request fails: one error, stays on Review', async ({ context, page }) => {

@@ -306,7 +306,8 @@
   "import.multi.noResourceFrame": "Fant ingen ResourceFrame i svaret",
 
   "autosys.errResp.upstream": "Oppslag i Autosys feilet",
-  "autosys.errResp.badFormat.or.unknown": "Ugyldig format eller ukjent registreringsnummer",
+  "autosys.errResp.notFound": "Ukjent registreringsnummer",
+  "autosys.errResp.invalidFormat": "Ugyldig format på registreringsnummer",
 
   "error.notAuthenticated": "Ikke autentisert — logg inn for å få tilgang til disse dataene",
   "error.accessDenied": "Ingen tilgang — du har ikke tillatelse til å se disse dataene",

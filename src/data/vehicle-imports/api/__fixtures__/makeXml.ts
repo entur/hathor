@@ -1,6 +1,7 @@
 /** Shepet's bulk `fetchError-message-<i>` codes (`FetchVehicleErrorCode`, entur/shepet#39). */
 export const NOT_FOUND = 'NOT_FOUND',
-  UPSTREAM_ERROR = 'UPSTREAM_ERROR';
+  UPSTREAM_ERROR = 'UPSTREAM_ERROR',
+  INVALID_REGISTRATION_NUMBER = 'INVALID_REGISTRATION_NUMBER';
 
 interface BulkVehicle {
   reg: string;

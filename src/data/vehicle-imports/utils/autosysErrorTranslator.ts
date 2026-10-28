@@ -8,8 +8,12 @@ import i18next from 'i18next';
 /** i18n key + English fallback per shepet error code. */
 const ERROR_CODES: Record<string, { key: string; defaultMessage: string }> = {
   NOT_FOUND: {
-    key: 'autosys.errResp.badFormat.or.unknown',
-    defaultMessage: 'Invalid format or unknown registration number',
+    key: 'autosys.errResp.notFound',
+    defaultMessage: 'Unknown registration number',
+  },
+  INVALID_REGISTRATION_NUMBER: {
+    key: 'autosys.errResp.invalidFormat',
+    defaultMessage: 'Invalid registration number format',
   },
   UPSTREAM_ERROR: {
     key: 'autosys.errResp.upstream',

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { assembleAutosysResults } from './assembleAutosysResults';
 import type { ImportEntry } from '../types/importTypes';
-import { NOT_FOUND, UPSTREAM_ERROR, makeBulkXml } from './__fixtures__/makeXml';
+import {
+  INVALID_REGISTRATION_NUMBER,
+  NOT_FOUND,
+  UPSTREAM_ERROR,
+  makeBulkXml,
+} from './__fixtures__/makeXml';
 
 const entries = (...regs: string[]): ImportEntry[] =>
   regs.map(queryRegNumber => ({ queryRegNumber }));
@@ -43,18 +48,20 @@ describe('assembleAutosysResults', () => {
       errors: [
         { reg: 'XX0000000', message: NOT_FOUND },
         { reg: 'FAIL2', message: UPSTREAM_ERROR },
+        { reg: 'Ø', message: INVALID_REGISTRATION_NUMBER },
       ],
     });
 
     const { summary, postPayload } = assembleAutosysResults(
       xml,
-      entries('AB1234', 'XX0000000', 'FAIL2')
+      entries('AB1234', 'XX0000000', 'FAIL2', 'Ø')
     );
 
     expect(summary.vehicleCount).toBe(1);
     expect(summary.errors).toEqual([
-      { queryRegNumber: 'XX0000000', message: 'Invalid format or unknown registration number' },
+      { queryRegNumber: 'XX0000000', message: 'Unknown registration number' },
       { queryRegNumber: 'FAIL2', message: 'Autosys lookup failed' },
+      { queryRegNumber: 'Ø', message: 'Invalid registration number format' },
     ]);
     expect(summary.successCount).toBe(1);
     expect(postPayload).toBe(xml);

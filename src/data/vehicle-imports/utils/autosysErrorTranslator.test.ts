@@ -1,7 +1,11 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import i18next from 'i18next';
 import { translateAutosysError } from './autosysErrorTranslator';
-import { NOT_FOUND, UPSTREAM_ERROR } from '../api/__fixtures__/makeXml';
+import {
+  INVALID_REGISTRATION_NUMBER,
+  NOT_FOUND,
+  UPSTREAM_ERROR,
+} from '../api/__fixtures__/makeXml';
 
 /**
  * The bug the nb case guards: every entry carried a `key` that the lookup
@@ -15,15 +19,19 @@ describe('translateAutosysError', () => {
   });
 
   it('resolves each shepet error code against the en bundle', () => {
-    expect(translateAutosysError(NOT_FOUND)).toBe('Invalid format or unknown registration number');
+    expect(translateAutosysError(NOT_FOUND)).toBe('Unknown registration number');
+    expect(translateAutosysError(INVALID_REGISTRATION_NUMBER)).toBe(
+      'Invalid registration number format'
+    );
     expect(translateAutosysError(UPSTREAM_ERROR)).toBe('Autosys lookup failed');
   });
 
   it('resolves the same codes against the nb bundle', async () => {
     await i18next.changeLanguage('nb');
 
-    expect(translateAutosysError(NOT_FOUND)).toBe(
-      'Ugyldig format eller ukjent registreringsnummer'
+    expect(translateAutosysError(NOT_FOUND)).toBe('Ukjent registreringsnummer');
+    expect(translateAutosysError(INVALID_REGISTRATION_NUMBER)).toBe(
+      'Ugyldig format på registreringsnummer'
     );
     expect(translateAutosysError(UPSTREAM_ERROR)).toBe('Oppslag i Autosys feilet');
   });

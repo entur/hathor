@@ -307,7 +307,8 @@
   "import.multi.noResourceFrame": "No ResourceFrame found in response",
 
   "autosys.errResp.upstream": "Autosys lookup failed",
-  "autosys.errResp.badFormat.or.unknown": "Invalid format or unknown registration number",
+  "autosys.errResp.notFound": "Unknown registration number",
+  "autosys.errResp.invalidFormat": "Invalid registration number format",
 
   "error.notAuthenticated": "Not authenticated — please log in to access this data",
   "error.accessDenied": "Access denied — you do not have permission to view this data",
