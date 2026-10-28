@@ -12,6 +12,8 @@ export interface FormStateActions<T, S> {
   hydrate: (state: FormState<T>, src: S | null | undefined) => FormState<T>;
   edit: (state: FormState<T>, form: T) => FormState<T>;
   restore: (state: FormState<T>) => FormState<T>;
+  /** Adopt `form` as both the current value and the new baseline (clean). */
+  commit: (state: FormState<T>, form: T) => FormState<T>;
   isDirty: (state: FormState<T>) => boolean;
 }
 
@@ -20,6 +22,8 @@ export interface CreateFormStateOpts<T, S> {
   blank: T;
   /** Map a freshly-fetched source object (e.g. parsed XML) into a form value. */
   formFromSource: (src: S | null | undefined) => T;
+  /** Canonicalise a form before the dirty compare (applied to both sides), e.g. `false` flag → absent. */
+  normalise?: (form: T) => T;
 }
 
 /**
@@ -39,8 +43,18 @@ export interface CreateFormStateOpts<T, S> {
 export function createFormState<T, S>({
   blank,
   formFromSource,
+  normalise = f => f,
 }: CreateFormStateOpts<T, S>): FormStateActions<T, S> {
-  const keyOf = (v: T): string => JSON.stringify(v);
+  const cache = new WeakMap<object, string>();
+  /** Normalised dirty key; memoised per object identity so repeat calls skip stringify. */
+  const keyOf = (v: T): string => {
+    if (typeof v !== 'object' || v === null) return JSON.stringify(normalise(v));
+    const hit = cache.get(v);
+    if (hit !== undefined) return hit;
+    const key = JSON.stringify(normalise(v));
+    cache.set(v, key);
+    return key;
+  };
   return {
     initial: { form: blank, baseline: blank, hydratedKey: keyOf(blank) },
     hydrate(_state, src) {
@@ -52,6 +66,9 @@ export function createFormState<T, S>({
     },
     restore(state) {
       return { ...state, form: state.baseline };
+    },
+    commit(_state, form) {
+      return { form, baseline: form, hydratedKey: keyOf(form) };
     },
     isDirty(state) {
       return keyOf(state.form) !== state.hydratedKey;
