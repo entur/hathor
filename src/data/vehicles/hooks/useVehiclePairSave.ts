@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
@@ -16,14 +16,12 @@ interface SaveResult {
 
 interface UseVehiclePairSaveResult {
   save: (form: VehicleEditFormValue) => Promise<SaveResult>;
-  saving: boolean;
 }
 
 export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
-  const [saving, setSaving] = useState(false);
   const { currentOrganisation } = useOrganisationsContext();
 
   const save = useCallback(
@@ -36,7 +34,6 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         const message = t('vehicles.save.noOrganisation');
         return { newId: null, error: message };
       }
-      setSaving(true);
       try {
         const wireVehicle = {
           dataOwnerRef: currentOrganisation.id,
@@ -66,12 +63,10 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         return { newId: null, error: message };
-      } finally {
-        setSaving(false);
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { save, saving };
+  return { save };
 }

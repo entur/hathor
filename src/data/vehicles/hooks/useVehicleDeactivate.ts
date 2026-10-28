@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
@@ -13,20 +13,18 @@ interface SaveResult {
 
 interface UseVehicleDeactivateResult {
   deactivate: (form: Vehicle) => Promise<SaveResult>;
-  saving: boolean;
 }
 
 /**
  * Deactivate a Vehicle via the `deactivateVehicle` GraphQL mutation.
  *
- * @returns `deactivate` (→ `{ newVersion, error }`) and `saving`.
+ * @returns `deactivate` (→ `{ newVersion, error }`).
  */
 export function useVehicleDeactivate(): UseVehicleDeactivateResult {
   const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
-  const [saving, setSaving] = useState(false);
 
   const deactivate = useCallback(
     async (form: Vehicle): Promise<SaveResult> => {
@@ -38,7 +36,6 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
         const message = t('vehicles.deactivate.noOrganisation');
         return { newVersion: null, error: message };
       }
-      setSaving(true);
       try {
         const token = await getAccessToken();
         const body = await deactivateVehicleRequest(applicationBaseUrl, token, {
@@ -50,12 +47,10 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         return { newVersion: null, error: message };
-      } finally {
-        setSaving(false);
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { deactivate, saving };
+  return { deactivate };
 }
