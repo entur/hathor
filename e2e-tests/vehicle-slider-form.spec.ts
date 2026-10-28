@@ -178,7 +178,7 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
     );
 
     await page.goto(SELECTED);
-    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vehicle-name').fill('Oslo Tram 4 — renamed');
