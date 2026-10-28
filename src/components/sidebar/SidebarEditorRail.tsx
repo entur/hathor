@@ -19,7 +19,9 @@ interface SidebarEditorRailProps<F> {
  * Cancel, Save and Deactivate come from `api` (each hidden while the api
  * withholds it), and the editor's dirty signal is lifted onto EditingContext
  * for the page chrome. Until there is a record to show (first load, load
- * error, not-found) it is the bare collapse rail.
+ * error, not-found) it is the bare collapse rail — the hook already withholds
+ * Edit and Save then (and Deactivate has no target); this also keeps Cancel off
+ * a body with no form.
  *
  * @param {SidebarEditorRailProps<F>} props - `api`, `onCollapse` and the deactivate dialog copy.
  * @returns {JSX.Element} The right-side editor rail.

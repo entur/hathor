@@ -65,9 +65,10 @@ export interface EntityEditorApi<F> {
   /** Whether there is a form to show: creating, `record.data` present, or the post-create bridge holds this id. */
   hasRecord: boolean;
   mode: 'view' | 'edit';
-  /** `undefined` while unavailable: refreshing, loading, deactivated or already editing. */
+  /** `undefined` while unavailable: no record, refreshing, loading, deactivated or already editing. */
   enterEdit?: () => void;
   cancel: () => void;
+  /** A no-op while `!hasRecord`. */
   save: () => Promise<void>;
   saving: boolean;
   isDirty: boolean;
@@ -269,7 +270,12 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     report(onWrittenRef.current, { type: 'saved', id, record: current ? fresh : null });
   };
 
+  // Creating, Sobek's record, or the post-create bridge holding this id. Without
+  // one the form is `toForm(null)`: editing or saving it would mint a stray record.
+  const hasRecord = id === NEW_SELECTION || record.data !== null || bridgeId === id;
+
   const save = async (): Promise<void> => {
+    if (!hasRecord) return;
     const isCurrent = captureSelection();
     const submitted = state.form;
     setSaveError(null);
@@ -309,11 +315,12 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
           report(onWrittenRef.current, { type: 'deactivated', id, record: null });
         };
 
-  const editAvailable = !refreshing && !record.loading && !deactivated && mode !== 'edit';
+  const editAvailable =
+    hasRecord && !refreshing && !record.loading && !deactivated && mode !== 'edit';
 
   return {
     form: state.form,
-    hasRecord: id === NEW_SELECTION || record.data !== null || bridgeId === id,
+    hasRecord,
     setForm: useCallback((form: F) => dispatch({ type: 'edit', form }), []),
     mode,
     enterEdit: editAvailable ? () => setMode('edit') : undefined,
