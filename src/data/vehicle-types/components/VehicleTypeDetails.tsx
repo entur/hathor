@@ -306,7 +306,9 @@ export default function VehicleTypeDetails({
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => !deactivatedOK && setMode('edit')}
+        // No Edit while the record (re-)loads: its hydrate would wipe what
+        // the user types — e.g. during the post-save re-fetch.
+        onEnterEdit={record.loading ? undefined : () => !deactivatedOK && setMode('edit')}
         onDeactivate={handleDeactivate}
         deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicleType.deactivateConfirmMessage')}

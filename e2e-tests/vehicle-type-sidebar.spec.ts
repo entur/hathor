@@ -11,8 +11,8 @@ const byIdOf = (req: import('@playwright/test').Request): string[] | undefined =
   req.postDataJSON()?.variables?.filter?.netexIds;
 
 /**
- * Hold the post-save by-id re-fetch of `id` (the first by-id fetch after a
- * `createOrUpdateVehicleType`) until `release()`. Register after
+ * Hold every by-id fetch of `id` made after a `createOrUpdateVehicleType`
+ * (the post-save re-fetch) until `release()`. Register after
  * `interceptVehicleTypesWithSave` so it runs first and falls back to it.
  *
  * @param {Page} page Playwright Page.
@@ -71,7 +71,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
  *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
  *     resuming after the selection moved to another row leaves that row alone (values, no
- *     success snackbar, URL).
+ *     success snackbar, URL); Edit is withheld while the post-save re-fetch is pending.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -462,5 +462,26 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     // a wrongly shown snackbar auto-hides.
     expect(await page.getByText('Vehicle type saved').count()).toBe(0);
     await expect(page).toHaveURL(/selected=NMR%3AVehicleType%3A2/);
+  });
+
+  // #217: re-entering Edit while the post-save re-fetch is pending would let
+  // its hydrate wipe what the user types — Edit is withheld until it lands.
+  test('Edit is unavailable while the post-save re-fetch is pending', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    const held = await holdPostSaveFetch(page, ALPHA_ID);
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await expect(page.locator('#vtype-name')).toBeDisabled();
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+
+    held.release();
+    await expect(page.getByText('Vehicle type saved')).toBeVisible();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
   });
 });
