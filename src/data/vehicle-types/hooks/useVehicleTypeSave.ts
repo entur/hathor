@@ -23,7 +23,7 @@ interface UseVehicleTypeSaveResult {
  * Save a VehicleType via the `createOrUpdateVehicleType` GraphQL mutation,
  * serialising the editor's domain form to the full-document
  * {@link VehicleTypeInput} ({@link serializeVehicleType}). Mirrors
- * {@link useVehiclePairSave} (config base URL + bearer token, saving/error
+ * {@link useVehiclePairSave} (config base URL + bearer token, saving
  * state) but is a single full-document call, not an XML pair.
  *
  * @returns `save` (→ `{ newId, error }`), plus `saving`, `error`, `clearError`.

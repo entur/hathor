@@ -14,14 +14,12 @@ interface SaveResult {
 interface UseVehicleDeactivateResult {
   deactivate: (form: Vehicle) => Promise<SaveResult>;
   saving: boolean;
-  error: string | null;
-  clearError: () => void;
 }
 
 /**
  * Deactivate a Vehicle via the `deactivateVehicle` GraphQL mutation.
  *
- * @returns `deactivate` (→ `{ newVersion, error }`), plus `saving`, `error`, `clearError`.
+ * @returns `deactivate` (→ `{ newVersion, error }`) and `saving`.
  */
 export function useVehicleDeactivate(): UseVehicleDeactivateResult {
   const { t } = useTranslation();
@@ -29,22 +27,18 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
   const { applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const deactivate = useCallback(
     async (form: Vehicle): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
         const message = t('error.noBaseUrl');
-        setError(message);
         return { newVersion: null, error: message };
       }
       if (!currentOrganisation?.id) {
         const message = t('vehicles.deactivate.noOrganisation');
-        setError(message);
         return { newVersion: null, error: message };
       }
       setSaving(true);
-      setError(null);
       try {
         const token = await getAccessToken();
         const body = await deactivateVehicleRequest(applicationBaseUrl, token, {
@@ -55,7 +49,6 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
         return { newVersion: body.deactivateVehicle?.version ?? null, error: null };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        setError(message);
         return { newVersion: null, error: message };
       } finally {
         setSaving(false);
@@ -64,5 +57,5 @@ export function useVehicleDeactivate(): UseVehicleDeactivateResult {
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { deactivate, saving, error, clearError: () => setError(null) };
+  return { deactivate, saving };
 }
