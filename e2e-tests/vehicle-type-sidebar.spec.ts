@@ -88,9 +88,9 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   navigate tabs → editor-rail collapse drops ?selected= and hides the sidebar.
  * Workflow (describe 2 — sidebar save):
  *   ?selected=<vtId> → editor-rail Edit → edit name → editor-rail Save fires
- *   createOrUpdateVehicleType (full-document serialize) → success snackbar →
- *   by-id re-fetch re-hydrates the record + list refetch → back to read-only view
- *   (re-baselined).
+ *   createOrUpdateVehicleType (full-document serialize) → commit (clean, read-only
+ *   view) → by-id record reload re-hydrates → success snackbar; the list refetch
+ *   runs alongside, not awaited.
  * Covers:
  *   - describe 1: row click writes ?selected=; an id Sobek does not know opens the not-found
  *     body; a failed by-id fetch shows its error, not not-found; leaving a dirty edit resets
@@ -102,8 +102,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     per session, that keeps an out-of-list stored value (#194)
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
- *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
- *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
+ *     preserves the existing lang tag; a failed post-save record reload shows the
+ *     stale-record warning, not a bare success, with the form clean in view mode; a save
  *     resuming after the selection moved to another row leaves that row alone (values, no
  *     success snackbar, URL) yet still refreshes the list; Edit is withheld while the post-save re-fetch is pending;
  *     an organisation round trip during that re-fetch leaves Edit available on return; a save
@@ -384,8 +384,8 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
  * and re-hydrates the form (advancing the dirty baseline).
  *
  * Mock-only here: behavioural flow over a stateful fixture (success snackbar,
- * return-to-view, re-baseline) plus fault-injection (save error, stale post-save
- * refresh) and the lang-tag wire check — none reproducible against a real backend,
+ * return-to-view, re-baseline) plus fault-injection (save error, failed post-save
+ * record reload) and the lang-tag wire check — none reproducible against a real backend,
  * and a real save would mutate the dev DB. The full-document WIRE SHAPE is unit-
  * tested in serializeVehicleType.test.ts; the real live round-trip lives in
  * vehicle-type-save-live.spec.ts. So these skip under `E2E_BACKEND=true`.
@@ -472,13 +472,10 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     expect(lastInput()?.name).toEqual({ value: 'Type Beta X', lang: 'nb' });
   });
 
-  // The mutation commits but the post-save by-id re-fetch 500s. The user must
-  // not get a bare "saved" success over a stale form — the refresh failure is
-  // surfaced (handleSave awaits record.refetch(), which rejects on failure, and
-  // catches → stale warning).
-  test('a failed post-save re-fetch surfaces a stale warning, not a bare success', async ({
-    page,
-  }) => {
+  // #217: the mutation commits but the post-save record reload (the by-id
+  // fetch) 500s. The save is real, so the form commits (clean, view mode) —
+  // but the user gets the stale-record warning, not a bare "saved" success.
+  test('a failed post-save record reload warns, form clean, view mode', async ({ page }) => {
     await interceptVehicleTypesWithSave(page, { failRefetch: true });
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
     await page.waitForLoadState('networkidle');
@@ -487,8 +484,18 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.locator('#vtype-name').fill('Type Alpha X');
     await page.getByTestId('editor-rail-save').click();
 
-    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
-    await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+    await expect(page.getByText(/record could not reload/i)).toBeVisible();
+    // One-shot: the warning has landed, so a success would be up by now.
+    expect(await page.getByText('Vehicle type saved').count()).toBe(0);
+    // The saved form stays up, clean, in view mode: no Save, Edit offered.
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Alpha X');
+    await expect(page.locator('#vtype-name')).toBeDisabled();
+    await expect(page.getByTestId('editor-rail-save')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+
+    await page.getByTestId('editor-rail-collapse').click();
+    await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
+    await expect(page).not.toHaveURL(/selected=/);
   });
 
   // #217: the editor outlives `?selected=` changes, so a save for A that

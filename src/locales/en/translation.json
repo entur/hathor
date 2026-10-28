@@ -148,8 +148,6 @@
   "vehicleType.detailsTitle": "Vehicle Type Details",
   "vehicleType.notFound": "Vehicle type not found",
   "vehicleType.saveSuccess": "Vehicle type saved",
-  "vehicleType.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
-  "vehicleType.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
   "vehicleType.deactivateSuccess": "Vehicle type deactivated",
   "vehicleType.deactivateConfirmTitle": "Deactivate vehicle type?",
   "vehicleType.deactivateConfirmMessage": "This vehicle type will be deactivated.",

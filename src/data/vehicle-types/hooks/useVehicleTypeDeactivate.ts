@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
@@ -13,38 +13,27 @@ interface SaveResult {
 
 interface UseVehicleTypeDeactivateResult {
   deactivate: (form: VehicleType) => Promise<SaveResult>;
-  saving: boolean;
-  error: string | null;
-  clearError: () => void;
 }
 
 /**
  * Deactivate a VehicleType via the `deactivateVehicleType` GraphQL mutation.
  *
- * @returns `deactivate` (→ `{ newVersion, error }`), plus `saving`, `error`, `clearError`.
+ * @returns `deactivate` (→ `{ newVersion, error }`; never throws).
  */
 export function useVehicleTypeDeactivate(): UseVehicleTypeDeactivateResult {
   const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const deactivate = useCallback(
     async (form: VehicleType): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl');
-        setError(message);
-        return { newVersion: null, error: message };
+        return { newVersion: null, error: t('error.noBaseUrl') };
       }
       if (!currentOrganisation?.id) {
-        const message = t('vehicleType.deactivate.noOrganisation');
-        setError(message);
-        return { newVersion: null, error: message };
+        return { newVersion: null, error: t('vehicleType.deactivate.noOrganisation') };
       }
-      setSaving(true);
-      setError(null);
       try {
         const token = await getAccessToken();
         const body = await deactivateVehicleTypeRequest(applicationBaseUrl, token, {
@@ -54,15 +43,11 @@ export function useVehicleTypeDeactivate(): UseVehicleTypeDeactivateResult {
         });
         return { newVersion: body.deactivateVehicleType?.version ?? null, error: null };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        setError(message);
-        return { newVersion: null, error: message };
-      } finally {
-        setSaving(false);
+        return { newVersion: null, error: err instanceof Error ? err.message : String(err) };
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { deactivate, saving, error, clearError: () => setError(null) };
+  return { deactivate };
 }
