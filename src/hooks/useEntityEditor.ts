@@ -72,7 +72,7 @@ export interface EntityEditorApi<F> {
   saving: boolean;
   isDirty: boolean;
   canSubmit: boolean;
-  /** `undefined` while creating, without a record, or once deactivated. */
+  /** `undefined` while creating, without a record, editing, saving, refreshing, or once deactivated. */
   deactivate?: () => Promise<void>;
   saveError: string | null;
   clearSaveError: () => void;
@@ -287,8 +287,12 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
 
   const target = record.data;
   const deactivateWrite = opts.deactivate;
+  // Withheld in edit and across a write: the rail only offers it in view mode,
+  // and a deactivate racing a save's re-fetch would act on a stale version.
+  const deactivateAvailable =
+    id !== NEW_SELECTION && !deactivated && mode !== 'edit' && !saving && !refreshing;
   const deactivate =
-    id === NEW_SELECTION || deactivated || !target || !deactivateWrite
+    !deactivateAvailable || !target || !deactivateWrite
       ? undefined
       : async (): Promise<void> => {
           const isCurrent = captureSelection();
