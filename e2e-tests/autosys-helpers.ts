@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { findResourceFrame, toArray, xmlParser, type ParsedXml } from '../src/data/netex/xmlUtils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -102,20 +103,40 @@ export const interceptDeckPlansQuery = (page: import('@playwright/test').Page) =
 export const loadXmlFixture = (name: string): string =>
   fs.readFileSync(path.join(fixturesDir, name), 'utf-8');
 
+/** A posted `<Name>` / `<Description>` as Sobek's GraphQL reads it back. */
+type PostedText = { value: string; lang?: string } | null;
+
+/** Text of a parsed `<Text>`: a bare string, or `#text` when it carries attributes. */
+const textOf = (t: unknown): string =>
+  typeof t === 'object' && t !== null
+    ? String((t as Record<string, unknown>)['#text'] ?? '')
+    : String(t ?? '');
+
+/** A parsed `<Name>` / `<Description>` node → MultilingualString, or `null` when absent. */
+const postedText = (node: ParsedXml | undefined): PostedText =>
+  node
+    ? { value: textOf(node.Text), ...(node['@_lang'] ? { lang: String(node['@_lang']) } : {}) }
+    : null;
+
 /**
- * The deck plan's own `<Name>` / `<Description>` in a NeTEx document — read
- * between `<DeckPlan …>` and `<decks>`, so frame and deck texts are skipped.
+ * The deck plan a NeTEx import POST carries, read with the app's own
+ * {@link xmlParser} so entities are decoded the way Sobek decodes them before
+ * GraphQL serves the text back (`A &amp; B` → `A & B`). Only the DeckPlan's own
+ * `<Name>` / `<Description>` are read, never the frame's or a deck's.
  *
- * @param xml Posted NeTEx document.
- * @param tag Element to read.
- * @returns The element as a MultilingualString, or `null` when absent.
+ * @param {string} xml Posted NeTEx document.
+ * @returns {{ id: string | undefined, name: PostedText, description: PostedText }}
+ *   The first DeckPlan's id and texts.
  */
-const deckPlanText = (xml: string, tag: 'Name' | 'Description') => {
-  const head = xml.slice(xml.indexOf('<DeckPlan ')).split(/<decks[\s/>]/)[0];
-  const m = head.match(
-    new RegExp(`<${tag}(?:\\s+lang="([^"]*)")?\\s*>\\s*<Text>([\\s\\S]*?)</Text>`)
-  );
-  return m ? { value: m[2], ...(m[1] ? { lang: m[1] } : {}) } : null;
+const postedDeckPlan = (xml: string) => {
+  const dp: ParsedXml | undefined = toArray(
+    findResourceFrame(xmlParser.parse(xml))?.deckPlans?.DeckPlan
+  )[0];
+  return {
+    id: dp?.['@_id'] as string | undefined,
+    name: postedText(dp?.Name),
+    description: postedText(dp?.Description),
+  };
 };
 
 /**
@@ -156,16 +177,10 @@ export async function interceptDeckPlanSave(
     const postData = route.request().postDataJSON();
     const ids = netexIdsOf(postData);
     if (!saved || !ids || !postData?.query?.includes('DeckPlans')) return route.fallback();
-    const savedId = posted.match(/<DeckPlan\b[^>]*\bid="([^"]+)"/)?.[1];
+    const { id: savedId, name, description } = postedDeckPlan(posted);
     const page0 = byNetexIds(MOCK_DECK_PLANS, 'deckPlans', ids) as PageBody;
     const content = page0.data.deckPlans.content.map(r =>
-      r.netexId === savedId
-        ? {
-            ...r,
-            name: deckPlanText(posted, 'Name'),
-            description: deckPlanText(posted, 'Description'),
-          }
-        : r
+      r.netexId === savedId ? { ...r, name, description } : r
     );
     await route.fulfill({
       status: 200,

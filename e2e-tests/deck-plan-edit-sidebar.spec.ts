@@ -27,6 +27,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *   - cancelling a second edit restores the saved baseline (the re-fetched
  *     record), not the pre-save row
  *   - the stored `lang` on <Name> survives a save round-trip
+ *   - a name with XML-sensitive characters (`A & B <C>`) hydrates decoded after
+ *     a save and is escaped exactly once by the next save
  *   - a failed post-save body refetch blocks a second save on the stale document
  *   - Retry re-runs the deck parse, not just the body fetch, so a transient
  *     renderer-side failure (bundle, ghost fetch, parse) clears
@@ -291,6 +293,32 @@ test.describe('/deck-plans — sidebar editor', () => {
     // the unit test on the query document, not here.
     await expect.poll(posted).toContain('Plan Alpha renamed');
     expect(posted()).toMatch(/<Name lang="nb">/);
+  });
+
+  test('a name with XML-sensitive characters survives two saves unchanged', async ({ page }) => {
+    const RAW = 'A & B <C>';
+    const ESCAPED = 'A &amp; B &lt;C&gt;';
+    await openFirstRow(page);
+    const { posted } = await interceptDeckPlanSave(page, xml());
+    const name = page.locator('#deckPlan-name');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await name.fill(RAW);
+    await page.getByTestId('editor-rail-save').click();
+    // The success snackbar follows the post-save re-fetch, so the form has
+    // re-baselined on what the mock "stored" by now.
+    await expect(page.getByText('Deck plan saved')).toBeVisible();
+    await expect(page.getByTestId('deck-plan-details-title')).toHaveText(RAW);
+    await expect(name).toHaveValue(RAW);
+
+    // A second write re-serializes the hydrated name: escaped once, not twice.
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#deckPlan-description').fill('Second write');
+    await page.getByTestId('editor-rail-save').click();
+    await expect.poll(posted).toContain('Second write');
+    expect(posted()).toContain(ESCAPED);
+    expect(posted()).not.toContain('&amp;amp;');
+    await expect(name).toHaveValue(RAW);
   });
 
   test('a failed post-save body refetch blocks a second save on the stale document', async ({
