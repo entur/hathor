@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useConfig } from '../contexts/configContext.ts';
 import { useAuth } from '../auth/authUtils.ts';
 import type { AccessToken } from '../auth';
@@ -22,7 +22,13 @@ export interface EntityRecord<R> {
   error: string | null;
   /** Fetched, and Sobek returned nothing. */
   notFound: boolean;
-  /** Re-fetch the current id; resolves with the fresh record, rejects on failure. */
+  /**
+   * Re-fetch the id this closure was rendered for; resolves with the fresh
+   * record, rejects on failure. A refetch whose id/org is no longer the
+   * current one (e.g. a save continuation resuming after the selection moved)
+   * resolves `null` without starting a request, so it never supersedes the
+   * current key's fetch.
+   */
   refetch: () => Promise<R | null>;
 }
 
@@ -44,7 +50,10 @@ const EMPTY_REC: RecState<unknown> = {
 /**
  * Fetch one entity by id from Sobek. Skips the fetch for a null id or the
  * `NEW_SELECTION` sentinel, re-fetches when the id or organisation changes,
- * and drops responses that arrive after the id has moved on.
+ * and drops responses that arrive after the id has moved on. A `refetch`
+ * captured for an earlier id or org is inert: it resolves `null` and fetches
+ * nothing. `loading` is true from the first render of a new key and during
+ * every same-key `refetch` (the last good `data` stays exposed meanwhile).
  *
  * @param {string | null} id - Entity netexId, `null`, or `NEW_SELECTION` (no fetch).
  * @param {FetchById<R>} fetchById - Fetcher; may be an inline closure (held in a ref).
@@ -63,14 +72,20 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   const fetchRef = useRef(fetchById);
   const tokenRef = useRef(getAccessToken);
   const latest = useRef(0);
+  // The key a `run` must match to fetch; set before the fetch effect below runs.
+  const keyRef = useRef(key);
   useEffect(() => {
     fetchRef.current = fetchById;
     tokenRef.current = getAccessToken;
   });
+  useLayoutEffect(() => {
+    keyRef.current = key;
+  }, [key]);
 
   const run = useCallback(async (): Promise<R | null> => {
-    if (!active) return null;
     const k = `${dataOwnerRef}|${id}`;
+    // A stale closure (the id/org moved on) must not bump the ticket.
+    if (!active || k !== keyRef.current) return null;
     const ticket = ++latest.current;
     setRec(prev =>
       prev.key === k

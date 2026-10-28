@@ -144,4 +144,50 @@ describe('useEntityRecord', () => {
     await act(async () => resolvers.A({ id: 'A' }));
     expect(result.current.data).toEqual({ id: 'B' });
   });
+
+  it('reports loading during a same-key refetch, keeping the last record', async () => {
+    let release!: (v: unknown) => void;
+    const fetchById = vi
+      .fn()
+      .mockResolvedValueOnce({ v: 1 })
+      .mockReturnValueOnce(new Promise(res => (release = res)));
+    const { result } = renderHook(() => useEntityRecord('A', fetchById));
+    await waitFor(() => expect(result.current.data).toEqual({ v: 1 }));
+    let pending!: Promise<unknown>;
+    act(() => {
+      pending = result.current.refetch();
+    });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.data).toEqual({ v: 1 });
+    await act(async () => {
+      release({ v: 2 });
+      await pending;
+    });
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toEqual({ v: 2 });
+  });
+
+  it('a stale-key refetch resolves null without fetching or superseding the current key', async () => {
+    const resolvers: Record<string, (v: unknown) => void> = {};
+    const fetchById = vi.fn((id: string) => new Promise(res => void (resolvers[id] = res)));
+    const { result, rerender } = renderHook(({ id }) => useEntityRecord(id, fetchById), {
+      initialProps: { id: 'A' },
+    });
+    await waitFor(() => expect(resolvers.A).toBeDefined());
+    await act(async () => resolvers.A({ id: 'A' }));
+    const staleRefetch = result.current.refetch;
+
+    rerender({ id: 'B' });
+    await waitFor(() => expect(resolvers.B).toBeDefined());
+    let stale: unknown = 'unset';
+    await act(async () => {
+      stale = await staleRefetch();
+    });
+    expect(stale).toBeNull();
+    expect(fetchById).toHaveBeenCalledTimes(2);
+
+    await act(async () => resolvers.B({ id: 'B' }));
+    expect(result.current.data).toEqual({ id: 'B' });
+    expect(result.current.loading).toBe(false);
+  });
 });
