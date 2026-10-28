@@ -39,9 +39,12 @@ export interface EntityEditorOptions<R, F> {
    */
   initialMode?: 'view' | 'edit';
   /**
-   * Stamp a created id onto the submitted form (the post-create bridge, which
-   * Cancel restores until the record lands). Required for any form whose id is
-   * not a top-level `id` (e.g. `{ vehicle: { id } }`); default: the form unchanged.
+   * Stamp a created id (and anything else a fresh record carries, e.g. its
+   * first version) onto the submitted form. The result is the post-create
+   * bridge: the committed baseline the editor shows — and Cancel restores —
+   * until the new id's record lands. There is no default stamp: without it the
+   * submitted form is committed unchanged, so the bridge keeps the blank id.
+   * Every create-capable host must pass it.
    */
   withNewId?: (form: F, newId: string) => F;
   /** The feature's write; resolves `{ error }` on failure and `{ newId }` on a create. */
@@ -73,7 +76,10 @@ export interface EntityEditorApi<F> {
   saving: boolean;
   isDirty: boolean;
   canSubmit: boolean;
-  /** `undefined` while creating, without a record, editing, saving, refreshing, or once deactivated. */
+  /**
+   * `undefined` while creating, without a record, editing, saving, refreshing,
+   * once deactivated, or while the record is stale (a post-save reload failed).
+   */
   deactivate?: () => Promise<void>;
   saveError: string | null;
   clearSaveError: () => void;
@@ -121,7 +127,9 @@ const report = <R>(cb: ((w: EntityWrite<R>) => void) | undefined, write: EntityW
  * `onClose`, and gets each committed write back through `onWritten`.
  *
  * - Save (existing id): commit the submitted form (clean, view) → re-fetch the
- *   record → success, or the `common.saveRecordStale` warning.
+ *   record → success, or the `common.saveRecordStale` warning; while stale,
+ *   `deactivate` is withheld (it would send the pre-save version) until a new
+ *   `record.data` hydrates or the selection changes.
  * - Create: commit the form with its new id → success → `onCreated(newId)`;
  *   `onWritten('created')` fires once the new id's record lands.
  * - Deactivate: no re-fetch; read-only success; dismissing it calls `onClose`.
@@ -172,6 +180,8 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
   const [saving, setSaving] = useState(false);
   // A committed save's record re-fetch is running; Edit is withheld until it ends.
   const [refreshing, setRefreshing] = useState(false);
+  // A post-save reload failed: `record.data` still holds the pre-save version.
+  const [stale, setStale] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [savedOpen, setSavedOpen] = useState(false);
@@ -202,6 +212,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     setMode(opts.initialMode ?? DEFAULT_MODE);
     setSaving(false);
     setRefreshing(false);
+    setStale(false);
     setSaveError(null);
     setWarning(null);
     setDeactivated(false);
@@ -218,6 +229,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     if (!record.data) return;
     dispatch({ type: 'hydrate', src: record.data });
     setBridgeId(null);
+    setStale(false);
   }, [record.data]);
 
   // The created record's first load settled: report it once (`null` if it failed).
@@ -265,7 +277,10 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     if (current) {
       setRefreshing(false);
       if (fresh !== null) setSavedOpen(true);
-      else setWarning(t(STALE_KEY));
+      else {
+        setWarning(t(STALE_KEY));
+        setStale(true);
+      }
     }
     report(onWrittenRef.current, { type: 'saved', id, record: current ? fresh : null });
   };
@@ -294,9 +309,10 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
   const target = record.data;
   const deactivateWrite = opts.deactivate;
   // Withheld in edit and across a write: the rail only offers it in view mode,
-  // and a deactivate racing a save's re-fetch would act on a stale version.
+  // and a deactivate racing a save's re-fetch — or after it failed — would act
+  // on a stale version.
   const deactivateAvailable =
-    id !== NEW_SELECTION && !deactivated && mode !== 'edit' && !saving && !refreshing;
+    id !== NEW_SELECTION && !deactivated && mode !== 'edit' && !saving && !refreshing && !stale;
   const deactivate =
     !deactivateAvailable || !target || !deactivateWrite
       ? undefined
