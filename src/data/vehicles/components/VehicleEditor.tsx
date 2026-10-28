@@ -91,96 +91,104 @@ export default function VehicleEditor({
 
   // A failed same-key reload keeps `record.data` (and sets `record.error`):
   // the form stays up with the stale warning. Only an editor with nothing to
-  // show renders the load error, not-found, or the skeleton.
-  if (!api.hasRecord) {
-    return (
-      <>
-        {record.error || record.notFound ? (
-          <VehicleLoadFailure id={id} error={record.error} />
-        ) : (
-          <VehicleDetailsSkeleton />
-        )}
-        {actions(api)}
-      </>
-    );
-  }
-
-  const { form } = api;
-  const trimmedName = form.vehicle.name?.value?.trim();
-  const parentType = record.data?.transportType;
-  const tmode = record.data ? vehicleMode(record.data) : UNKNOWN_TRANSPORT_MODE;
-
+  // show renders the load error, not-found, or the skeleton. The snackbars and
+  // `actions(api)` sit outside that branch, so a write's outcome shows whatever
+  // the body (e.g. a record gone after its save) and the rail keeps its state.
   return (
     <>
-      <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-        <FormLayout sx={{ mb: 1 }}>
-          <Typography
-            variant="h6"
-            noWrap
-            title={trimmedName || undefined}
-            data-testid="vehicle-details-title"
-            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-          >
-            {trimmedName || (
-              <>
-                {'[ '}
-                <Box
-                  component="span"
-                  sx={{
-                    color: 'text.disabled',
-                    fontStyle: 'italic',
-                    fontWeight: 400,
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  {BLANK_NAME}
-                </Box>
-                {' ]'}
-              </>
-            )}
-          </Typography>
-          {form.vehicle.id && (
-            <NetexId
-              id={form.vehicle.id}
-              version={form.vehicle.version}
-              copy="onHover"
-              size="small"
-              sx={{ justifySelf: 'start' }}
-            />
-          )}
-        </FormLayout>
-        <Divider sx={{ mb: 2 }} />
-
-        <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
-          <MetaRow label={t('vehicles.field.parentVehicleType')}>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-              <span>{parentType?.name?.value ?? '—'}</span>
-              {parentType?.id && <NetexId id={parentType.id} copy="only" size="medium" />}
-            </Stack>
-          </MetaRow>
-          <MetaRow label={t('vehicles.field.parentTransportMode')}>
-            <TransportModeIcon mode={tmode} iconPosition="left" />
-          </MetaRow>
-        </FormLayout>
-        <Divider sx={{ mb: 2 }} />
-
-        <VehicleEditForm value={form} onChange={api.setForm} mode={api.mode} />
-
-        <SaveErrorSnackbar error={api.saveError} onClose={api.clearSaveError} />
-        <SaveErrorSnackbar error={api.warning} severity="warning" onClose={api.clearWarning} />
-        <SaveSuccessSnackbar
-          open={api.savedOpen}
-          message={t('vehicles.saveSuccess')}
-          onClose={api.closeSaved}
-        />
-        <SaveSuccessSnackbar
-          open={api.deactivatedOpen}
-          message={t('vehicles.deactivateSuccess')}
-          onClose={api.closeDeactivated}
-        />
-      </Box>
+      {api.hasRecord ? (
+        <VehicleFormBody api={api} record={record.data} />
+      ) : record.error || record.notFound ? (
+        <VehicleLoadFailure id={id} error={record.error} />
+      ) : (
+        <VehicleDetailsSkeleton />
+      )}
+      <SaveErrorSnackbar error={api.saveError} onClose={api.clearSaveError} />
+      <SaveErrorSnackbar error={api.warning} severity="warning" onClose={api.clearWarning} />
+      <SaveSuccessSnackbar
+        open={api.savedOpen}
+        message={t('vehicles.saveSuccess')}
+        onClose={api.closeSaved}
+      />
+      <SaveSuccessSnackbar
+        open={api.deactivatedOpen}
+        message={t('vehicles.deactivateSuccess')}
+        onClose={api.closeDeactivated}
+      />
       {actions(api)}
     </>
+  );
+}
+
+interface VehicleFormBodyProps {
+  api: EntityEditorApi<VehicleEditFormValue>;
+  /** Sobek's record (the parent VehicleType context); `null` while creating or bridging. */
+  record: Vehicle | null;
+}
+
+/** The editor body with a form: title, read-only context rows and the fields. */
+function VehicleFormBody({ api, record }: VehicleFormBodyProps) {
+  const { t } = useTranslation();
+  const { form } = api;
+  const trimmedName = form.vehicle.name?.value?.trim();
+  const parentType = record?.transportType;
+  const tmode = record ? vehicleMode(record) : UNKNOWN_TRANSPORT_MODE;
+
+  return (
+    <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
+      <FormLayout sx={{ mb: 1 }}>
+        <Typography
+          variant="h6"
+          noWrap
+          title={trimmedName || undefined}
+          data-testid="vehicle-details-title"
+          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+        >
+          {trimmedName || (
+            <>
+              {'[ '}
+              <Box
+                component="span"
+                sx={{
+                  color: 'text.disabled',
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {BLANK_NAME}
+              </Box>
+              {' ]'}
+            </>
+          )}
+        </Typography>
+        {form.vehicle.id && (
+          <NetexId
+            id={form.vehicle.id}
+            version={form.vehicle.version}
+            copy="onHover"
+            size="small"
+            sx={{ justifySelf: 'start' }}
+          />
+        )}
+      </FormLayout>
+      <Divider sx={{ mb: 2 }} />
+
+      <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
+        <MetaRow label={t('vehicles.field.parentVehicleType')}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+            <span>{parentType?.name?.value ?? '—'}</span>
+            {parentType?.id && <NetexId id={parentType.id} copy="only" size="medium" />}
+          </Stack>
+        </MetaRow>
+        <MetaRow label={t('vehicles.field.parentTransportMode')}>
+          <TransportModeIcon mode={tmode} iconPosition="left" />
+        </MetaRow>
+      </FormLayout>
+      <Divider sx={{ mb: 2 }} />
+
+      <VehicleEditForm value={form} onChange={api.setForm} mode={api.mode} />
+    </Box>
   );
 }
 
