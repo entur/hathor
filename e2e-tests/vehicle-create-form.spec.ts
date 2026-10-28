@@ -41,6 +41,9 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *   - When the created record's by-id read-back fails, Edit → Cancel keeps the
  *     bridged create form (with its new id), so the next Save updates it
  *     instead of creating a duplicate (#217)
+ *   - Creating the first record of an empty list still advances the URL: the
+ *     post-save list refresh keeps the sidebar mounted instead of showing the
+ *     full-page loader (#217)
  * Modes:
  *   - mock (E2E_BACKEND unset): wireCreateFlow intercepts vehicleTypes +
  *     createOrUpdateVehicle + stateful list + by-id; captures mutation input,
@@ -52,7 +55,8 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *   - skip-live: 'sidebar edit: an existing non-numeric TransportTypeRef stays
  *     selectable via picker' — fixture-pinned non-numeric ref the live data
  *     can't reproduce; 'Cancel after a failed create read-back keeps the new
- *     id' — injects a by-id 500
+ *     id' — injects a by-id 500; 'creating the first record in an empty list
+ *     advances to its id' — needs an org with zero vehicles
  */
 
 test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-auth)', () => {
@@ -216,5 +220,53 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await page.getByTestId('editor-rail-save').click();
     await expect.poll(() => capture.input()?.registrationNumber).toBe('NEW-002');
     expect(capture.input()?.netexId).toBe(NEW_ID);
+  });
+
+  // #217: the first record of an empty table. The post-save list refresh must
+  // not swap the page for the full-page loader — that would unmount the
+  // sidebar editor, invalidate the save's continuation and strand the
+  // committed create on a blank `?selected=new` form.
+  test('creating the first record in an empty list advances to its id', async ({ page }) => {
+    test.skip(IS_LIVE, 'mock-only — needs an org with zero vehicles');
+    const created = vehicleRow(NEW_ID, {
+      registrationNumber: 'NEW-001',
+      transportType: { netexId: EXPECTED_REF, version: 1, name: null, transportMode: 'RAIL' },
+    });
+    const state = { saved: false };
+    await interceptVehicleTypesQuery(page);
+    await page.route('**/graphql', async route => {
+      const postData = route.request().postDataJSON();
+      if (!postData?.query?.includes('vehicles(') || postData?.variables?.filter?.netexIds) {
+        await route.fallback();
+        return;
+      }
+      const content = state.saved ? [created] : [];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: { vehicles: { content, totalElements: content.length, page: 0, size: 10000 } },
+        }),
+      });
+    });
+    await interceptVehicleByIdQuery(page, id => (state.saved && id === NEW_ID ? created : null));
+    interceptVehicleSaveMutation(page, NEW_ID, () => {
+      state.saved = true;
+    });
+
+    await page.goto('/vehicles?selected=new');
+    await expect(page.getByTestId('no-data-row')).toBeVisible();
+
+    const reg = page.getByLabel('Registration Number');
+    await reg.fill('NEW-001');
+    await page.getByRole('combobox', { name: 'Vehicle Type' }).click();
+    await page.getByRole('option', { name: PICKED_VT_NAME }).click();
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect(page).toHaveURL(new RegExp(`selected=${ENCODED_NEW_ID}`));
+    await expect(page.getByText('Vehicle saved')).toBeVisible();
+    await expect(reg).toHaveValue('NEW-001');
+    await expect(page.getByRole('combobox', { name: 'Vehicle Type' })).toHaveValue(PICKED_VT_NAME);
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
   });
 });
