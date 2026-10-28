@@ -79,6 +79,7 @@ export interface EntityEditorApi<F> {
   /**
    * `undefined` while creating, without a record, editing, saving, refreshing,
    * once deactivated, or while the record is stale (a post-save reload failed).
+   * Stale clears only on a new selection or a later write's successful reload.
    */
   deactivate?: () => Promise<void>;
   saveError: string | null;
