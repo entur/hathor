@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
@@ -15,45 +15,33 @@ interface SaveResult {
 interface UseDeckPlanSaveResult {
   save: (xml: string) => Promise<SaveResult>;
   saveGQL: (form: DeckPlan) => Promise<{ newId: string | null; error: string | null }>;
-  saving: boolean;
-  error: string | null;
-  clearError: () => void;
 }
 
+const errMsg = (e: unknown): string => (e instanceof Error ? e.message : String(e));
+
 /**
- * Save a deck plan via one of two paths sharing `saving`/`error` state:
+ * Save a deck plan via one of two paths:
  * - `save(xml)` — POSTs the full NeTEx XML to the import endpoint (edit flow
  *   for existing rows; keeps the route view's wire format).
  * - `saveGQL(form)` — fires the `createOrUpdateDeckPlan` GraphQL mutation with
  *   {@link serializeDeckPlan}'s full-replace input (create flow); resolves to
  *   `{ newId, error }` so the caller can advance the sidebar URL.
  *
- * Both resolve to a result object; never throw. Failures flow through `error`
- * and the per-call return so the editor surfaces them via SaveErrorSnackbar
- * without unmounting the slider.
+ * Both resolve to a result object and never throw; the editor surfaces a
+ * failure from the returned `error`.
+ *
+ * @returns `save` (→ `{ error }`) and `saveGQL` (→ `{ newId, error }`).
  */
 export function useDeckPlanSave(): UseDeckPlanSaveResult {
   const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl, applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const save = useCallback(
     async (xml: string): Promise<SaveResult> => {
-      if (!applicationImportBaseUrl) {
-        const message = t('error.noImportBaseUrl');
-        setError(message);
-        return { error: message };
-      }
-      if (!currentOrganisation?.id) {
-        const message = t('deckPlans.save.noOrganisation');
-        setError(message);
-        return { error: message };
-      }
-      setSaving(true);
-      setError(null);
+      if (!applicationImportBaseUrl) return { error: t('error.noImportBaseUrl') };
+      if (!currentOrganisation?.id) return { error: t('deckPlans.save.noOrganisation') };
       try {
         const token = await getAccessToken();
         await saveDeckPlanAsNetexToBackend(
@@ -64,11 +52,7 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
         );
         return { error: null };
       } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        setError(message);
-        return { error: message };
-      } finally {
-        setSaving(false);
+        return { error: errMsg(e) };
       }
     },
     [applicationImportBaseUrl, getAccessToken, currentOrganisation?.id, t]
@@ -76,18 +60,10 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
 
   const saveGQL = useCallback(
     async (form: DeckPlan): Promise<{ newId: string | null; error: string | null }> => {
-      if (!applicationBaseUrl) {
-        const message = t('error.noBaseUrl');
-        setError(message);
-        return { newId: null, error: message };
-      }
+      if (!applicationBaseUrl) return { newId: null, error: t('error.noBaseUrl') };
       if (!currentOrganisation?.id) {
-        const message = t('deckPlans.save.noOrganisation');
-        setError(message);
-        return { newId: null, error: message };
+        return { newId: null, error: t('deckPlans.save.noOrganisation') };
       }
-      setSaving(true);
-      setError(null);
       try {
         const token = await getAccessToken();
         const body = await createOrUpdateDeckPlanRequest(
@@ -97,15 +73,11 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
         );
         return { newId: body.createOrUpdateDeckPlan, error: null };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        setError(message);
-        return { newId: null, error: message };
-      } finally {
-        setSaving(false);
+        return { newId: null, error: errMsg(err) };
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { save, saveGQL, saving, error, clearError: () => setError(null) };
+  return { save, saveGQL };
 }
