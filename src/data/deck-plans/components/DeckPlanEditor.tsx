@@ -92,6 +92,8 @@ export default function DeckPlanEditor({
     // A throw (e.g. the id not in the document) is folded into `{ error }`.
     const result = await saveXml(patchDeckPlanXml(xml, id, form.name, form.description));
     // Re-pull the persisted body; `refetch` bumps a tick, it returns no promise.
+    // Unguarded on purpose: if the selection moved during the POST, the bump
+    // only re-fetches the new id's own body once — nothing is written for it.
     if (!result.error) refetch();
     return result;
   };
