@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import i18next from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import VehicleTypeEditor from './VehicleTypeEditor.tsx';
+import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 
 const mocks = vi.hoisted(() => ({
@@ -42,11 +43,13 @@ vi.mock('./VehicleTypeForm.tsx', () => ({
         onChange={e => onChange({ ...value, name: { value: e.target.value } })}
       />
       <button onClick={() => onChange({ ...value, lowFloor: false })}>low floor off</button>
+      <span data-testid="form-identity">{`${value.id}|${value.version}`}</span>
     </>
   ),
 }));
 
-const ID = 'NMR:VehicleType:1';
+const ID = 'NMR:VehicleType:1',
+  NEW_ID = 'NMR:VehicleType:99';
 // `lowFloor` absent: a null-backed flag projects to `undefined`.
 const stored: VehicleType = { id: ID, version: 1, name: { value: 'Type Alpha' } };
 
@@ -54,18 +57,19 @@ const NOT_FOUND = i18next.t('vehicleType.notFound'),
   STALE = i18next.t('common.saveRecordStale'),
   SAVED = i18next.t('vehicleType.saveSuccess');
 
-const renderEditor = () =>
+const renderEditor = (id = ID, onCreated = vi.fn()) =>
   render(
     <VehicleTypeEditor
-      id={ID}
+      id={id}
       onClose={vi.fn()}
-      onCreated={vi.fn()}
+      onCreated={onCreated}
       actions={api => (
         <>
           <button onClick={api.enterEdit} disabled={!api.enterEdit}>
             edit
           </button>
           <button onClick={() => void api.save()}>save</button>
+          <button onClick={api.cancel}>cancel</button>
           <span data-testid="dirty">{String(api.isDirty)}</span>
         </>
       )}
@@ -119,6 +123,20 @@ describe('VehicleTypeEditor', () => {
     expect(await screen.findByText(NOT_FOUND)).toBeTruthy();
     expect(screen.getByText(STALE)).toBeTruthy();
     expect(screen.queryByText(SAVED)).toBeNull();
+  });
+
+  it('a create bridges the new id at version 1, and Cancel keeps both', async () => {
+    mocks.save.mockResolvedValue({ newId: NEW_ID, error: null });
+    const onCreated = vi.fn();
+    renderEditor(NEW_SELECTION, onCreated);
+    fireEvent.change(screen.getByLabelText('name'), { target: { value: 'Brand new' } });
+    await act(async () => fireEvent.click(screen.getByText('save')));
+    expect(onCreated).toHaveBeenCalledExactlyOnceWith(NEW_ID);
+
+    fireEvent.click(screen.getByText('cancel'));
+    expect(screen.getByTestId('form-identity').textContent).toBe(`${NEW_ID}|1`);
+    expect((screen.getByLabelText('name') as HTMLInputElement).value).toBe('Brand new');
+    expect(screen.getByTestId('dirty').textContent).toBe('false');
   });
 
   it('a Low Floor off over an absent baseline flag is not dirty', async () => {
