@@ -13,6 +13,33 @@ const VEHICLE_ID = 'NMR:Vehicle:rail-1';
 const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
 
 /**
+ * Hold the unfiltered `vehicles(` list query made after a `createOrUpdateVehicle`
+ * (the post-save list refresh) until `release()`. Register after the other
+ * interceptors so it runs first and falls back to them.
+ *
+ * @param {Page} page Playwright Page.
+ * @returns {{ reached: Promise<void>, release: () => void }} `reached` resolves once the held request arrives.
+ */
+async function holdPostSaveListRefresh(page: import('@playwright/test').Page) {
+  let saved = false;
+  let release!: () => void;
+  let arrive!: () => void;
+  const gate = new Promise<void>(r => (release = r));
+  const reached = new Promise<void>(r => (arrive = r));
+  await page.route('**/graphql', async route => {
+    const post = route.request().postDataJSON();
+    const query: string = post?.query ?? '';
+    if (query.includes('createOrUpdateVehicle')) saved = true;
+    else if (saved && query.includes('vehicles(') && !post?.variables?.filter?.netexIds) {
+      arrive();
+      await gate;
+    }
+    await route.fallback();
+  });
+  return { reached, release };
+}
+
+/**
  * /vehicles slider form — fetched Name/dates hydrate the editor and a successful save re-baselines dirty state (hathor #80, GraphQL read/save path post-#101). Also covers #82 — swapping a vehicle's VehicleType via the inline Autocomplete picker round-trips on save.
  *
  * Workflow:
@@ -25,6 +52,8 @@ const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
  *   - Name sourced from vehicles(filter:{netexIds}) name.value shows in title + form field.
  *   - Build/Registration dates render as native date pickers bound to fetched value.
  *   - Closing the slider after a successful save does not wrongly raise the discard dialog.
+ *   - Edit is withheld while the post-save list refresh is pending (#217) — the re-hydrate
+ *     after it would wipe what the user typed.
  *   - VehicleType field is an interactive Autocomplete; picking a different option round-trips as the option's full netex id in the save mutation input.
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts vehicleTypes, list, by-id, and save mutation; Name/date/type values are fixture-controlled.
@@ -99,6 +128,32 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
 
     await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
     await expect(page).not.toHaveURL(/selected=/);
+  });
+
+  // #217: Edit is withheld for the whole post-save continuation. The list
+  // refresh runs before the by-id re-fetch, and `record.loading` is false
+  // during it — hold the LIST route, not the by-id one.
+  test('Edit is unavailable while the post-save list refresh is pending', async ({ page }) => {
+    await interceptVehicleTypesQuery(page);
+    await interceptStatefulVehicleListQuery(page);
+    await interceptVehicleByIdQuery(page, id => vehicleRow(id, { name: { value: 'Oslo Tram 4' } }));
+    interceptVehicleSaveMutation(page, VEHICLE_ID);
+    const held = await holdPostSaveListRefresh(page);
+
+    await page.goto(SELECTED);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vehicle-name').fill('Oslo Tram 4 — renamed');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await expect(page.locator('#vehicle-name')).toBeDisabled();
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+
+    held.release();
+    await expect(page.getByText('Vehicle saved')).toBeVisible();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
   });
 
   test("editing a vehicle's type via the picker round-trips the new ref on save (#82)", async ({

@@ -20,6 +20,7 @@ import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
 import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
+import { succeeds } from '../../../utils/succeeds.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
 import {
@@ -71,6 +72,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const { save, saving, error, clearError } = useVehiclePairSave();
   const { deactivate } = useVehicleDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
+  // A committed write's continuation (list refresh, record re-fetch,
+  // create-advance) is running; Edit is withheld until it ends.
+  const [refreshing, setRefreshing] = useState(false);
 
   const record = useEntityRecord(isCreate ? null : id, fetchVehicleById);
 
@@ -87,6 +91,7 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     setMode(initialMode ?? 'view');
     setCommitError(null);
     setDeactivatedOK(false);
+    setRefreshing(false);
     if (prevId === NEW_SELECTION && id === bridgeId) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -146,38 +151,52 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
       if (isCurrent()) setCommitError(t('common.saveNoIdReturned'));
       return;
     }
-    // Save committed: leave edit mode before the refreshes below, so nothing
-    // typed meanwhile is lost to the re-hydrate. A create re-baselines with
-    // the assigned id now (isDirty=false), bridging until the URL advance
-    // below fetches the created record.
+    // Save committed: leave edit mode and withhold Edit for the refreshes
+    // below, so nothing typed meanwhile is lost to the re-hydrate. A create
+    // re-baselines with the assigned id now (isDirty=false), bridging until
+    // the URL advance below fetches the created record.
     if (isCurrent()) {
       setMode('view');
+      setRefreshing(true);
       if (wasCreate && newId)
         dispatch({ type: 'hydrate', xmlVehicle: { ...submitted, id: newId, version: 1 } });
     }
-    // List refresh first, so the row is fresh when the success shows.
-    await onSaved?.();
-    if (!isCurrent()) return;
-
-    if (wasCreate && newId) {
-      // Advance ?selected=new → ?selected=<newId>; the by-id fetch then lands
-      // the real version.
-      setBridgeId(newId);
-      advanceCreated(newId);
-    } else {
-      // Existing row — re-pull the persisted vehicle so the `hydrate` effect
-      // advances the dirty baseline (and picks up the bumped version). Without
-      // this the form stays dirty after save and `>>` wrongly raises the
-      // discard dialog. The write is real even if the re-pull fails.
-      try {
-        await record.refetch();
-      } catch (err) {
-        if (isCurrent()) setCommitError(graphqlErrMsg(err));
-        return;
-      }
+    try {
+      // List refresh first, so the row is fresh when the success shows. It
+      // and the record re-fetch each run whatever the other's outcome.
+      const listOk = await succeeds(() => onSaved?.());
       if (!isCurrent()) return;
+      const staleList = listOk ? null : t('vehicles.saveStaleList');
+
+      if (wasCreate && newId) {
+        if (staleList) {
+          setCommitError(staleList);
+          return;
+        }
+        // Advance ?selected=new → ?selected=<newId>; the by-id fetch then
+        // lands the real version.
+        setBridgeId(newId);
+        advanceCreated(newId);
+      } else {
+        // Existing row — re-pull the persisted vehicle so the `hydrate` effect
+        // advances the dirty baseline (and picks up the bumped version).
+        // Without this the form stays dirty after save and `>>` wrongly raises
+        // the discard dialog. The write is real even if the re-pull fails.
+        const recordErr = await record.refetch().then(
+          () => null,
+          (err: unknown) => graphqlErrMsg(err)
+        );
+        if (!isCurrent()) return;
+        const warning = recordErr ?? staleList;
+        if (warning) {
+          setCommitError(warning);
+          return;
+        }
+      }
+      setSavedAt(Date.now());
+    } finally {
+      if (isCurrent()) setRefreshing(false);
     }
-    setSavedAt(Date.now());
   };
 
   // Until Sobek's record lands, the post-create bridge form stays up;
@@ -299,9 +318,12 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        // No Edit while the record (re-)loads: its hydrate would wipe what
-        // the user types — e.g. during the post-save re-fetch.
-        onEnterEdit={record.loading ? undefined : () => !deactivatedOK && setMode('edit')}
+        // No Edit while a committed write's refreshes run or the record
+        // (re-)loads: the re-hydrate (or create-advance) would wipe what the
+        // user types.
+        onEnterEdit={
+          refreshing || record.loading ? undefined : () => !deactivatedOK && setMode('edit')
+        }
         onDeactivate={handleDeactivate}
         deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}

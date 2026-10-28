@@ -13,6 +13,7 @@ import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
 import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
+import { succeeds } from '../../../utils/succeeds.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { fetchVehicleTypeById } from '../api/fetchVehicleTypes.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
@@ -90,6 +91,9 @@ export default function VehicleTypeDetails({
   const { save, saving, error, clearError } = useVehicleTypeSave();
   const { deactivate } = useVehicleTypeDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
+  // A committed write's continuation (list refresh, record re-fetch,
+  // create-advance) is running; Edit is withheld until it ends.
+  const [refreshing, setRefreshing] = useState(false);
   // Fetched on the first editor open of the session, cached for every later one.
   const euroClasses = useCodeValues(EMISSION_STANDARD);
 
@@ -108,6 +112,7 @@ export default function VehicleTypeDetails({
     setMode(initialMode ?? 'view');
     setRefreshError(null);
     setDeactivatedOK(false);
+    setRefreshing(false);
     if (prevId === NEW_SELECTION && id === bridgeId) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -155,13 +160,14 @@ export default function VehicleTypeDetails({
   };
 
   // Fire the mutation, bridge the baseline from the submitted form, then
-  // re-fetch the record (the real baseline) and refresh the list (`onSaved`).
+  // re-fetch the record (the real baseline) and refresh the list (`onSaved`)
+  // — each runs whatever the other's outcome.
   const handleSave = async () => {
     const isCurrent = captureSelection();
     setRefreshError(null);
     // `save` resolves to `{ error }` and never throws — so a save failure flows
-    // through the save-error snackbar, and the try below is scoped to ONLY the
-    // post-save refreshes (record re-fetch, `onSaved`).
+    // through the save-error snackbar; the refreshes below report through
+    // `succeeds` instead of throwing.
     const result = await save(state.form);
     if (result.error) return;
 
@@ -183,11 +189,18 @@ export default function VehicleTypeDetails({
     if (isCurrent()) {
       dispatch({ type: 'hydrate', row: hydrateRow });
       setMode('view');
+      setRefreshing(true);
     }
     try {
-      if (!wasCreate && isCurrent()) await record.refetch();
-      await onSaved?.();
+      const recordOk = wasCreate || !isCurrent() || (await succeeds(record.refetch));
+      const listOk = await succeeds(() => onSaved?.());
       if (!isCurrent()) return;
+      // Save is real, but the record or list couldn't refresh — warn instead
+      // of a clean success over stale data.
+      if (!recordOk || !listOk) {
+        setRefreshError(t('vehicleType.saveStaleList'));
+        return;
+      }
       // Advance `?selected=new` → `?selected=<newId>`; the editor then
       // fetches the created record by id.
       if (wasCreate) {
@@ -195,10 +208,8 @@ export default function VehicleTypeDetails({
         advanceCreated(result.newId);
       }
       setSavedAt(Date.now()); // success only once the list is fresh
-    } catch {
-      // Save is real, but the record or list couldn't refresh — warn instead
-      // of a clean success over stale data.
-      if (isCurrent()) setRefreshError(t('vehicleType.saveStaleList'));
+    } finally {
+      if (isCurrent()) setRefreshing(false);
     }
   };
 
@@ -317,9 +328,12 @@ export default function VehicleTypeDetails({
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        // No Edit while the record (re-)loads: its hydrate would wipe what
-        // the user types — e.g. during the post-save re-fetch.
-        onEnterEdit={record.loading ? undefined : () => !deactivatedOK && setMode('edit')}
+        // No Edit while a committed write's refreshes run or the record
+        // (re-)loads: the re-hydrate (or create-advance) would wipe what the
+        // user types.
+        onEnterEdit={
+          refreshing || record.loading ? undefined : () => !deactivatedOK && setMode('edit')
+        }
         onDeactivate={handleDeactivate}
         deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicleType.deactivateConfirmMessage')}

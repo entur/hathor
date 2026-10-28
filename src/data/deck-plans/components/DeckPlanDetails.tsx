@@ -13,6 +13,7 @@ import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
 import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
+import { succeeds } from '../../../utils/succeeds.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { fetchDeckPlanById } from '../api/fetchDeckPlans.ts';
 import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
@@ -96,6 +97,9 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
   const { deactivate } = useDeckPlanDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
+  // A committed write's continuation (list refresh, record re-fetch,
+  // create-advance) is running; Edit is withheld until it ends.
+  const [refreshing, setRefreshing] = useState(false);
 
   // The editor outlives `?selected=` changes: reset per id. Only a create
   // advancing to its new id (`bridgeId`) keeps its form and success snackbar;
@@ -110,6 +114,7 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     setMode(initialMode ?? (id === NEW_SELECTION ? 'edit' : 'view'));
     setRefreshError(null);
     setDeactivatedOK(false);
+    setRefreshing(false);
     if (prevId === NEW_SELECTION && id === bridgeId) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -175,21 +180,26 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
 
       if (isCurrent()) {
         setMode('view');
+        setRefreshing(true);
         // Re-baseline on the write, not on the refresh. The mutation has already
         // committed, so a failing list refetch must not strand the editor dirty —
         // collapsing would then offer to discard changes that are persisted.
         dispatch({ type: 'hydrate', dp: { ...form, id: result.newId } });
       }
       try {
-        await onSaved?.();
+        const listOk = await succeeds(() => onSaved?.());
         if (!isCurrent()) return;
+        if (!listOk) {
+          staleList();
+          return;
+        }
         // Advance `?selected=new` → `?selected=<newId>`; the editor then
         // fetches the created record by id.
         setBridgeId(result.newId);
         advanceCreated(result.newId);
         setSavedAt(Date.now()); // success only once the list is fresh
-      } catch {
-        if (isCurrent()) staleList();
+      } finally {
+        if (isCurrent()) setRefreshing(false);
       }
       return;
     }
@@ -217,6 +227,7 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
 
     if (isCurrent()) {
       setMode('view');
+      setRefreshing(true);
       // Re-baseline on the write, for the same reason as the create branch above
       // — a bridge until the re-fetched record re-hydrates it.
       dispatch({ type: 'hydrate', dp: { ...form, id } });
@@ -225,12 +236,18 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       refetch();
     }
     try {
-      if (isCurrent()) await record.refetch();
-      await onSaved?.();
+      // The record re-fetch and the list refresh each run whatever the
+      // other's outcome.
+      const recordOk = !isCurrent() || (await succeeds(record.refetch));
+      const listOk = await succeeds(() => onSaved?.());
       if (!isCurrent()) return;
+      if (!recordOk || !listOk) {
+        staleList();
+        return;
+      }
       setSavedAt(Date.now());
-    } catch {
-      if (isCurrent()) staleList();
+    } finally {
+      if (isCurrent()) setRefreshing(false);
     }
   };
 
@@ -349,9 +366,12 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        // No Edit while the record (re-)loads: its hydrate would wipe what
-        // the user types — e.g. during the post-save re-fetch.
-        onEnterEdit={record.loading ? undefined : () => !deactivatedOK && setMode('edit')}
+        // No Edit while a committed write's refreshes run or the record
+        // (re-)loads: the re-hydrate (or create-advance) would wipe what the
+        // user types.
+        onEnterEdit={
+          refreshing || record.loading ? undefined : () => !deactivatedOK && setMode('edit')
+        }
         onDeactivate={isCreate ? undefined : handleDeactivate}
         deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('deckPlan.deactivateConfirmMessage')}

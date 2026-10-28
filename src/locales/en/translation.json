@@ -205,6 +205,7 @@
   "vehicles.notFound": "Vehicle not found",
   "vehicles.loading": "Loading vehicle…",
   "vehicles.saveSuccess": "Vehicle saved",
+  "vehicles.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
   "vehicle.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale.",
   "vehicles.deactivateSuccess": "Vehicle deactivated",
   "vehicle.deactivateConfirmTitle": "Deactivate vehicle?",
