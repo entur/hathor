@@ -37,7 +37,7 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     await seedAuth(context);
     if (!IS_LIVE) {
       await interceptVehicleListQuery(page);
-      // The slider's `useVehicle` fires `vehicles(filter:{netexIds})`; resolve
+      // The slider's `useEntityRecord` (`fetchVehicleById`) fires `vehicles(filter:{netexIds})`; resolve
       // it from the same fixture so a `?selected=` deep-link hydrates from the
       // *requested* row, not the list's `content[0]`.
       await interceptVehicleByIdQuery(page, mockVehicleById);

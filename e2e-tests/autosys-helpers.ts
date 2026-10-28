@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { findResourceFrame, toArray, xmlParser, type ParsedXml } from '../src/data/netex/xmlUtils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,17 +18,45 @@ export const fixturesDir = path.join(__dirname, 'fixtures');
 const loadFixture = (name: string): unknown =>
   JSON.parse(fs.readFileSync(path.join(fixturesDir, name), 'utf-8'));
 
+type Row = Record<string, unknown>;
+/** A GraphQL page response: `{ data: { <field>: { content, totalElements, … } } }`. */
+type PageBody = { data: Record<string, { content: Row[]; totalElements: number }> };
+
+/**
+ * Answer a `filter.netexIds` query the way Sobek does: only the matching rows
+ * (an unknown id ⇒ empty `content`). Without it, a by-id fetch — which takes
+ * `content[0]` — would silently open the list's first row.
+ *
+ * @param {unknown} body Full page response for the unfiltered list.
+ * @param {string} field The connection field (e.g. `vehicleTypes`, `deckPlans`).
+ * @param {string[]} [netexIds] `variables.filter.netexIds`, or `undefined` for a list query.
+ * @returns {unknown} `body` narrowed to the requested ids, or `body` itself when unfiltered.
+ */
+export const byNetexIds = (body: unknown, field: string, netexIds?: string[]): unknown => {
+  if (!netexIds) return body;
+  const conn = (body as PageBody).data[field];
+  const content = conn.content.filter(r => netexIds.includes(r.netexId as string));
+  return { data: { [field]: { ...conn, content, totalElements: content.length } } };
+};
+
+/** `variables.filter.netexIds` of a GraphQL POST, or `undefined` for a list query. */
+const netexIdsOf = (postData: { variables?: { filter?: { netexIds?: string[] } } } | null) =>
+  postData?.variables?.filter?.netexIds;
+
 /**
  * Intercept any GraphQL request whose query body contains `queryName` and
- * fulfill it with `body` as JSON. Other requests pass through to the network.
+ * fulfill it with `body` as JSON, narrowed to `filter.netexIds` when the
+ * request carries one. Other requests pass through to the network.
  *
  * @param page Playwright Page instance.
  * @param queryName Substring to match against `postData.query` (e.g. 'vehicleTypes').
+ * @param field Connection field in `body.data` (for the `netexIds` narrowing).
  * @param body JSON payload to return; will be `JSON.stringify`ed.
  */
 const interceptGraphQLQuery = async (
   page: import('@playwright/test').Page,
   queryName: string,
+  field: string,
   body: unknown
 ) => {
   await page.route('**/graphql', async route => {
@@ -36,7 +65,7 @@ const interceptGraphQLQuery = async (
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(body),
+        body: JSON.stringify(byNetexIds(body, field, netexIdsOf(postData))),
       });
     } else {
       // fallback (not continue) so unmatched queries — e.g. the mock
@@ -50,18 +79,20 @@ const MOCK_VEHICLE_TYPES = loadFixture('vehicle-types-mock.json');
 const MOCK_DECK_PLANS = loadFixture('deck-plans-mock.json');
 
 /**
- * Intercept the GraphQL vehicleTypes query and return mock data.
+ * Intercept the GraphQL vehicleTypes query and return mock data — the full
+ * list, or the `filter.netexIds` rows for the editor's by-id fetch.
  * Required for tests that load /vehicle-types without a real backend.
  */
 export const interceptVehicleTypesQuery = (page: import('@playwright/test').Page) =>
-  interceptGraphQLQuery(page, 'vehicleTypes', MOCK_VEHICLE_TYPES);
+  interceptGraphQLQuery(page, 'vehicleTypes', 'vehicleTypes', MOCK_VEHICLE_TYPES);
 
 /**
- * Intercept the GraphQL DeckPlans query and return mock data.
+ * Intercept the GraphQL DeckPlans query and return mock data — the full
+ * list, or the `filter.netexIds` rows for the editor's by-id fetch.
  * Required for tests that load /deck-plans without a real backend.
  */
 export const interceptDeckPlansQuery = (page: import('@playwright/test').Page) =>
-  interceptGraphQLQuery(page, 'DeckPlans', MOCK_DECK_PLANS);
+  interceptGraphQLQuery(page, 'DeckPlans', 'deckPlans', MOCK_DECK_PLANS);
 
 /**
  * Read an XML fixture from `e2e-tests/fixtures/`.
@@ -72,9 +103,49 @@ export const interceptDeckPlansQuery = (page: import('@playwright/test').Page) =
 export const loadXmlFixture = (name: string): string =>
   fs.readFileSync(path.join(fixturesDir, name), 'utf-8');
 
+/** A posted `<Name>` / `<Description>` as Sobek's GraphQL reads it back. */
+type PostedText = { value: string; lang?: string } | null;
+
+/** Text of a parsed `<Text>`: a bare string, or `#text` when it carries attributes. */
+const textOf = (t: unknown): string =>
+  typeof t === 'object' && t !== null
+    ? String((t as Record<string, unknown>)['#text'] ?? '')
+    : String(t ?? '');
+
+/** A parsed `<Name>` / `<Description>` node → MultilingualString, or `null` when absent. */
+const postedText = (node: ParsedXml | undefined): PostedText =>
+  node
+    ? { value: textOf(node.Text), ...(node['@_lang'] ? { lang: String(node['@_lang']) } : {}) }
+    : null;
+
+/**
+ * The deck plan a NeTEx import POST carries, read with the app's own
+ * {@link xmlParser} so entities are decoded the way Sobek decodes them before
+ * GraphQL serves the text back (`A &amp; B` → `A & B`). Only the DeckPlan's own
+ * `<Name>` / `<Description>` are read, never the frame's or a deck's.
+ *
+ * @param {string} xml Posted NeTEx document.
+ * @returns {{ id: string | undefined, name: PostedText, description: PostedText }}
+ *   The first DeckPlan's id and texts.
+ */
+const postedDeckPlan = (xml: string) => {
+  const dp: ParsedXml | undefined = toArray(
+    findResourceFrame(xmlParser.parse(xml))?.deckPlans?.DeckPlan
+  )[0];
+  return {
+    id: dp?.['@_id'] as string | undefined,
+    name: postedText(dp?.Name),
+    description: postedText(dp?.Description),
+  };
+};
+
 /**
  * Intercept the NeTEx import POST that every deck-plan save routes through,
- * capturing the posted document.
+ * capturing the posted document. Like Sobek, the stored record then reflects
+ * the write: a by-id `DeckPlans` query (`filter.netexIds`) for the posted id
+ * answers with the posted name/description over the fixture row, so the
+ * editor's post-save re-fetch re-baselines onto the saved values. List
+ * queries fall through to {@link interceptDeckPlansQuery}.
  *
  * Sibling of {@link interceptVehicleTypesWithSave}: deck plans save by POSTing
  * a patched document rather than by GraphQL mutation, so the capture is the
@@ -102,6 +173,22 @@ export async function interceptDeckPlanSave(
     await route.fulfill({ status: 200, contentType: 'application/xml', body });
   });
 
+  await page.route('**/graphql', async route => {
+    const postData = route.request().postDataJSON();
+    const ids = netexIdsOf(postData);
+    if (!saved || !ids || !postData?.query?.includes('DeckPlans')) return route.fallback();
+    const { id: savedId, name, description } = postedDeckPlan(posted);
+    const page0 = byNetexIds(MOCK_DECK_PLANS, 'deckPlans', ids) as PageBody;
+    const content = page0.data.deckPlans.content.map(r =>
+      r.netexId === savedId ? { ...r, name, description } : r
+    );
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { deckPlans: { ...page0.data.deckPlans, content } } }),
+    });
+  });
+
   return { posted: () => posted, saved: () => saved };
 }
 
@@ -114,8 +201,9 @@ interface VehicleTypeInputCapture {
 interface SaveInterceptOpts {
   /** When set, the mutation responds with this GraphQL error instead of succeeding. */
   saveError?: string;
-  /** When true, the vehicleTypes query AFTER a save fails (500) — exercises the
-   * post-save list-refresh failure path. */
+  /** When true, the by-id vehicleTypes query (`filter.netexIds`) AFTER a save
+   * fails (500) — exercises the post-save record re-fetch failure path. The
+   * list query keeps answering. */
   failRefetch?: boolean;
 }
 
@@ -126,8 +214,9 @@ interface SaveInterceptOpts {
  *  - `createOrUpdateVehicleType` → capture `variables.input`, merge it into the
  *    matching row (bumping `version`), and return the row's netexId — or, when
  *    `saveError` is set, return a GraphQL error (drives `SaveErrorSnackbar`).
- *  - `vehicleTypes` → return the (possibly mutated) state, so the post-save
- *    list refetch re-resolves the row with the persisted edit + bumped version.
+ *  - `vehicleTypes` → return the (possibly mutated) state — narrowed to
+ *    `filter.netexIds` for the editor's by-id fetch — so the post-save re-fetch
+ *    re-baselines on the persisted edit + bumped version.
  *
  * Checked mutation-first: `createOrUpdateVehicleType` does not contain the
  * substring `vehicleTypes`, so the branch order is unambiguous.
@@ -174,7 +263,8 @@ export async function interceptVehicleTypesWithSave(
     }
 
     if (query.includes('vehicleTypes')) {
-      if (opts.failRefetch && saved) {
+      const ids = netexIdsOf(post);
+      if (opts.failRefetch && saved && ids) {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -185,7 +275,7 @@ export async function interceptVehicleTypesWithSave(
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(state),
+        body: JSON.stringify(byNetexIds(state, 'vehicleTypes', ids)),
       });
       return;
     }

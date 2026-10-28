@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
@@ -143,11 +143,21 @@ export default function GenericDataViewPage<T, K extends string>({
     setPage(0);
   }, [searchQuery, activeSearchContext, selectedItem, setPage, activeFilters]);
 
+  // Sticky once the list has loaded successfully — even to zero rows. The
+  // full-page Loading/Error gates below are for the initial load only: a
+  // background refetch (e.g. the post-save list refresh after creating the
+  // first record) must keep the Sidebar mounted, or the editor unmounts and
+  // its pending write continuation is invalidated (#217). Derived-state
+  // update during render, not an effect, so no frame flashes the loader.
+  const [listLoadedOnce, setListLoadedOnce] = useState(false);
+  if (!listLoadedOnce && !dataLoading && !dataError) setListLoadedOnce(true);
+
   const isLoadingDisplay = dataLoading && !(activeSearchContext === 'data' && searchQuery.trim());
   const isErrorDisplay = dataError && !(activeSearchContext === 'data' && searchQuery.trim());
+  const initialLoad = !listLoadedOnce && dataForTable.length === 0;
 
-  if (isLoadingDisplay && dataForTable.length === 0) return <LoadingPage />;
-  if (isErrorDisplay && dataForTable.length === 0) return <ErrorPage message={dataError} />;
+  if (isLoadingDisplay && initialLoad) return <LoadingPage />;
+  if (isErrorDisplay && initialLoad) return <ErrorPage message={dataError} />;
 
   return (
     <Box

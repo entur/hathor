@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ComponentType, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
 
@@ -14,40 +14,42 @@ interface UrlEditorSelectionParams<T> {
   dataForTable: T[];
   rowsPerPage: number;
   setPage: (page: number) => void;
+  /** List fetch in flight — the page jump waits it out; the editor does not. */
   loading: boolean;
   /** Extract the comparable id from an item. */
   getId: (item: T) => string;
-  /** Return a new empty item for the "new" selection (id='new'). Optional. */
-  getEmptyRow?: () => T;
   /**
-   * Render the editor for a resolved item. The argument is `null` when the
-   * id was not found in `allData` after the initial fetch completed (the
-   * editor is still opened and should display a not-found body).
+   * Render the editor for the selected id. `id` is the param value —
+   * `NEW_SELECTION` for the create pane (mode `'edit'` then). The editor
+   * loads its own record; the list row is never handed over. The rendered
+   * editor stays mounted across id changes and must reset itself.
    */
-  renderEditor: (item: T | null, mode: 'edit' | 'view') => ReactNode;
+  renderEditor: (id: string, mode: 'edit' | 'view') => ReactNode;
 }
 
 /**
  * Reconciles a `?<paramKey>=<id>` URL search param with `EditingContext`
- * and pagination. Generic over the row type — lifted from the
- * vehicles-specific `useVehicleUrlSelection` so any sidebar-edit
- * consumer can adopt deep-link selection without rewriting the
- * wait-for-fetch / commit-guard / page-jump dance.
+ * and pagination. Generic over the row type so any sidebar-edit consumer
+ * can adopt deep-link selection.
  *
- * **Wait for the initial fetch.** Cross-page nav (e.g. a chip on another
- * route linking here) lands while `loading === true` and `allData === null`.
- * Committing in that window captures `item=null` in the editor closure,
- * and the commit guard then locks the slider on the not-found body forever.
+ * **Id-only.** The editor commits to `EditingContext` immediately; the page
+ * decides when the sidebar renders (`GenericDataViewPage` shows `LoadingPage`
+ * during the first list load). It is never given a row: it fetches its own
+ * record by id.
  *
- * **Commit guard.** After the first commit, the editor only re-mounts
- * when the resolved id changes (a new deep-link) or when a previously
- * not-found row resolves to found on a later list refetch. Fresh
- * `allData` / `dataForTable` references each render (e.g. from an
- * unmemoised client-side sort) must NOT replace the editor — remounting
- * would wipe its view/edit mode and drop any in-flight snackbar.
+ * **One editor per selection session.** A single `EditorComponent` is
+ * committed when the param appears; later `?selected=` changes only move
+ * `editingItem.id`, so the editor is not remounted (it resets itself on id
+ * change). A list refetch with the same id commits nothing.
  *
- * `getId`, `renderEditor`, and `getEmptyRow` are stashed in refs so the
- * consumer is free to pass inline closures without triggering effect re-runs.
+ * **Page jump.** Once the list has loaded, a selected row that is off the
+ * current page moves the pager to it.
+ *
+ * `getId` and `renderEditor` are stashed in refs so the consumer is free to
+ * pass inline closures without triggering effect re-runs.
+ *
+ * @param {UrlEditorSelectionParams<T>} params - Param key, list state, pager and editor factory.
+ * @returns {void}
  */
 export function useUrlEditorSelection<T>({
   paramKey,
@@ -57,7 +59,6 @@ export function useUrlEditorSelection<T>({
   setPage,
   loading,
   getId,
-  getEmptyRow,
   renderEditor,
 }: UrlEditorSelectionParams<T>): void {
   const [searchParams] = useSearchParams();
@@ -68,43 +69,34 @@ export function useUrlEditorSelection<T>({
   getIdRef.current = getId;
   const renderEditorRef = useRef(renderEditor);
   renderEditorRef.current = renderEditor;
-  const getEmptyRowRef = useRef(getEmptyRow);
-  getEmptyRowRef.current = getEmptyRow;
 
-  const lastCommittedIdRef = useRef<string | null>(null);
-  const lastCommittedRowRef = useRef<T | null>(null);
+  // The session's editor; `null` while no selection is open.
+  const editorRef = useRef<ComponentType<{ itemId: string }> | null>(null);
 
   useEffect(() => {
     if (!selected) {
-      if (lastCommittedIdRef.current !== null) {
+      if (editorRef.current !== null) {
         setEditingItem(null);
-        lastCommittedIdRef.current = null;
-        lastCommittedRowRef.current = null;
+        editorRef.current = null;
       }
       return;
     }
-    if (loading) return;
-    if (allData === null) return;
+    editorRef.current ??= function SelectionEditor({ itemId }: { itemId: string }) {
+      // Read the param directly: `itemId` trails it by one commit.
+      const [params] = useSearchParams();
+      const id = params.get(paramKey) ?? itemId;
+      return <>{renderEditorRef.current(id, id === NEW_SELECTION ? 'edit' : 'view')}</>;
+    };
+    setEditingItem({ id: selected, EditorComponent: editorRef.current });
+  }, [selected, paramKey, setEditingItem]);
 
-    const isNew = selected === NEW_SELECTION;
-    const idx = isNew ? -1 : allData.findIndex(v => getIdRef.current(v) === selected);
-    const row = isNew ? (getEmptyRowRef.current?.() ?? null) : idx >= 0 ? allData[idx] : null;
-
-    const idChanged = lastCommittedIdRef.current !== selected;
-    const resolvedFromMissing = lastCommittedRowRef.current === null && row !== null;
-    if (idChanged || resolvedFromMissing) {
-      setEditingItem({
-        id: selected,
-        EditorComponent: () => <>{renderEditorRef.current(row, isNew ? 'edit' : 'view')}</>,
-      });
-      lastCommittedIdRef.current = selected;
-      lastCommittedRowRef.current = row;
-    }
-
+  useEffect(() => {
+    if (!selected || selected === NEW_SELECTION || loading || allData === null) return;
+    const idx = allData.findIndex(v => getIdRef.current(v) === selected);
     if (idx >= 0 && !dataForTable.some(v => getIdRef.current(v) === selected)) {
       setPage(Math.floor(idx / rowsPerPage));
     }
-  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage, setEditingItem]);
+  }, [selected, loading, allData, dataForTable, rowsPerPage, setPage]);
 
   useEffect(() => {
     return () => {

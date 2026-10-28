@@ -2,6 +2,73 @@ import { test, expect } from '@playwright/test';
 import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
+const ALPHA_ID = 'NMR:VehicleType:1';
+/** Grace for a resumed save continuation to (wrongly) act after its response lands. */
+const SETTLE_MS = 500;
+
+/** `variables.filter.netexIds` of a GraphQL request — set only on a by-id fetch. */
+const byIdOf = (req: import('@playwright/test').Request): string[] | undefined =>
+  req.postDataJSON()?.variables?.filter?.netexIds;
+
+/** Two mock organisations, so a spec can switch org mid-flow. */
+const ORGS = [
+  { netexId: 'NMR:Organisation:1', name: { value: 'First Org' }, type: 'AUTHORITY' },
+  { netexId: 'NMR:Organisation:2', name: { value: 'Second Org' }, type: 'OPERATOR' },
+];
+
+/** Serve {@link ORGS} for the `organisations(` query; everything else falls through. */
+async function interceptTwoOrgs(page: import('@playwright/test').Page) {
+  await page.route('**/graphql', async route => {
+    if (!route.request().postData()?.includes('organisations(')) {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: { organisations: { content: ORGS, totalElements: 2, page: 0, size: 10000 } },
+      }),
+    });
+  });
+}
+
+/** Pick `name` in the header organisation picker. */
+async function switchOrg(page: import('@playwright/test').Page, name: string) {
+  const picker = page.getByRole('banner').getByRole('combobox').first();
+  await picker.click();
+  await page.getByRole('option', { name }).click();
+  await expect(picker).toHaveValue(name);
+}
+
+/**
+ * Hold the first by-id fetch of `id` made after a `createOrUpdateVehicleType`
+ * (the post-save re-fetch) until `release()`; later fetches pass. Register
+ * after `interceptVehicleTypesWithSave` so it runs first and falls back to it.
+ *
+ * @param {Page} page Playwright Page.
+ * @param {string} id NeTEx id whose post-save fetch to hold.
+ * @returns {{ reached: Promise<void>, release: () => void }} `reached` resolves once the held request arrives.
+ */
+async function holdPostSaveFetch(page: import('@playwright/test').Page, id: string) {
+  let saved = false;
+  let held = false;
+  let release!: () => void;
+  let arrive!: () => void;
+  const gate = new Promise<void>(r => (release = r));
+  const reached = new Promise<void>(r => (arrive = r));
+  await page.route('**/graphql', async route => {
+    if (route.request().postData()?.includes('createOrUpdateVehicleType')) saved = true;
+    else if (saved && !held && byIdOf(route.request())?.includes(id)) {
+      held = true;
+      arrive();
+      await gate;
+    }
+    await route.fallback();
+  });
+  return { reached, release };
+}
+
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
   await page.goto('/vehicle-types');
@@ -17,22 +84,30 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *
  * Workflow (describe 1 — deep-link sidebar):
  *   /vehicle-types → row click writes ?selected=<vtId> → tabbed VehicleTypeForm
- *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the resolved row →
+ *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from Sobek's by-id record →
  *   navigate tabs → editor-rail collapse drops ?selected= and hides the sidebar.
  * Workflow (describe 2 — sidebar save):
  *   ?selected=<vtId> → editor-rail Edit → edit name → editor-rail Save fires
  *   createOrUpdateVehicleType (full-document serialize) → success snackbar →
- *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
+ *   by-id re-fetch re-hydrates the record + list refetch → back to read-only view
+ *   (re-baselined).
  * Covers:
- *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
+ *   - describe 1: row click writes ?selected=; an id Sobek does not know opens the not-found
+ *     body; a failed by-id fetch shows its error, not not-found; leaving a dirty edit resets
+ *     the form (dirty guard off, no stale edits on return);
+ *     tabs group fields + are reachable; in-row
  *     vehicle chip routes to /vehicles?selected= (not hijacked by row click); collapse drops
  *     the param; toggling a null-baseline Low Floor switch on/off must not dirty the form;
  *     emission class is a dropdown of Sobek's EMISSION_STANDARD code values, fetched once
  *     per session, that keeps an out-of-list stored value (#194)
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
- *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
- *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
+ *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
+ *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
+ *     resuming after the selection moved to another row leaves that row alone (values, no
+ *     success snackbar, URL) yet still refreshes the list; Edit is withheld while the post-save re-fetch is pending;
+ *     an organisation round trip during that re-fetch leaves Edit available on return; a save
+ *     failing after the selection moved shows no save error on the new row.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -43,10 +118,14 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *       Type Alpha (NMR:VehicleType:1, bus) · Type Beta (…:2, rail, name lang 'nb') · Type Gamma (…:3, lowFloor null)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select (AtB); describe 1 runs the
  *     structural tests (row click → ?selected=, tab navigation, collapse) against the org's
- *     real first row (data-agnostic). Describe 2 is entirely skip-live (the real live vtype save
+ *     real first row (data-agnostic), and the not-found test against an id no org has.
+ *     Describe 2 is entirely skip-live (the real live vtype save
  *     round-trip lives in vehicle-type-save-live.spec.ts).
  *   - skip-live:
- *       describe 1: 'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
+ *       describe 1: 'switching away from a dirty edit resets the form' — holds a mocked by-id
+ *         re-fetch to observe the gap;
+ *       'a failed by-id fetch shows the error, not not-found' — injects a by-id 500;
+ *       'vehicle chip in the row routes to /vehicles?selected=…' — asserts a fixture
  *         vehicle chip target (AA-101 → NMR:Vehicle:101) absent live;
  *       'toggling a null-baseline Low Floor switch on then off should not dirty the form' —
  *         needs a null-lowFloor-baseline row (fixture Gamma) not reproducible live
@@ -143,6 +222,84 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     await expect(page).not.toHaveURL(/vehicle-types/);
   });
 
+  // #217: the editor reads Sobek by id, so an id Sobek does not know lands on
+  // the not-found body — never a stuck skeleton, never the list's first row.
+  test('opening an id not in Sobek shows not-found', async ({ page }) => {
+    const unknownId = 'NMR:VehicleType:does-not-exist';
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(unknownId)}`);
+    await selectFirstOrg(page);
+
+    await expect(page.getByText('Vehicle type not found')).toBeVisible();
+    await expect(page.locator('.sidebar-desktop').getByText(unknownId)).toBeVisible();
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveCount(0);
+    await expect(page.locator('#vtype-name')).toHaveCount(0);
+  });
+
+  // #217: a by-id request that fails (network/auth/GraphQL) is not a missing
+  // record — the editor shows the error, and keeps the rail to collapse it.
+  test('a failed by-id fetch shows the error, not not-found', async ({ page }) => {
+    test.skip(IS_LIVE, 'mock-only — injects a by-id 500');
+    await page.route('**/graphql', async route => {
+      if (!byIdOf(route.request())) return route.fallback();
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ errors: [{ message: 'by-id lookup failed' }] }),
+      });
+    });
+
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+
+    await expect(page.locator('.sidebar-desktop').getByText('by-id lookup failed')).toBeVisible();
+    await expect(page.getByText('Vehicle type not found')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-collapse')).toBeVisible();
+  });
+
+  // #217: the editor stays mounted across `?selected=` changes, so it must drop
+  // the previous id's form itself. Leaving a dirty edit for a not-found id must
+  // disarm the dirty guard, and coming back must show the stored record — never
+  // the unsaved edits — while it re-fetches. History back/forward is in-app
+  // navigation, so the same editor instance sees every id change.
+  test('switching away from a dirty edit resets the form', async ({ page }) => {
+    test.skip(IS_LIVE, 'mock-only — holds the by-id re-fetch to observe the gap');
+    const unknownId = 'NMR:VehicleType:does-not-exist';
+    const alphaId = 'NMR:VehicleType:1';
+    let holdAlpha = false;
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    await page.route('**/graphql', async route => {
+      const ids: string[] | undefined = route.request().postDataJSON()?.variables?.filter?.netexIds;
+      if (holdAlpha && ids?.includes(alphaId)) await gate;
+      await route.fallback();
+    });
+    const beforeUnloadArmed = () =>
+      page.evaluate(() => {
+        const e = new Event('beforeunload', { cancelable: true });
+        window.dispatchEvent(e);
+        return e.defaultPrevented;
+      });
+
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(unknownId)}`);
+    await expect(page.getByText('Vehicle type not found')).toBeVisible();
+    await page.locator('table tr', { hasText: 'Type Alpha' }).click();
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Unsaved edit');
+    expect(await beforeUnloadArmed()).toBe(true);
+
+    // (a) dirty A → not-found id: not-found body, dirty guard disarmed.
+    await page.goBack();
+    await expect(page.getByText('Vehicle type not found')).toBeVisible();
+    expect(await beforeUnloadArmed()).toBe(false);
+
+    // (b) back to A: the skeleton covers the re-fetch, then the stored name.
+    holdAlpha = true;
+    await page.goForward();
+    await expect(page.getByRole('status', { name: 'Loading data...' })).toBeVisible();
+    await expect(page.locator('#vtype-name')).toHaveCount(0);
+    release();
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Alpha');
+  });
+
   test('collapse rail drops ?selected= and hides the sidebar', async ({ page }) => {
     if (IS_LIVE) {
       await openFirstVtype(page);
@@ -223,7 +380,7 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
  * hathor#109/#15 — VehicleType sidebar SAVE now fires the
  * `createOrUpdateVehicleType` mutation (not a mock). The editor serialises the
  * full document (`serializeVehicleType`) so Sobek's full-document-replace does
- * not null untouched fields; on success the list refetch re-resolves the row
+ * not null untouched fields; on success the by-id re-fetch re-hydrates the record
  * and re-hydrates the form (advancing the dirty baseline).
  *
  * Mock-only here: behavioural flow over a stateful fixture (success snackbar,
@@ -315,12 +472,11 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     expect(lastInput()?.name).toEqual({ value: 'Type Beta X', lang: 'nb' });
   });
 
-  // The mutation commits but the post-save list refresh 500s. The user must not
-  // get a bare "saved" success over a stale table — the refresh failure should be
-  // surfaced (handleSave awaits onSaved and catches → stale-list warning). This
-  // works because useVehicleTypes.doFetch returns its fetch chain, so the awaited
-  // onSaved() rejects on a failed refresh instead of resolving early (#117 fix).
-  test('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
+  // The mutation commits but the post-save by-id re-fetch 500s. The user must
+  // not get a bare "saved" success over a stale form — the refresh failure is
+  // surfaced (handleSave awaits record.refetch(), which rejects on failure, and
+  // catches → stale warning).
+  test('a failed post-save re-fetch surfaces a stale warning, not a bare success', async ({
     page,
   }) => {
     await interceptVehicleTypesWithSave(page, { failRefetch: true });
@@ -333,5 +489,129 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     await expect(page.getByText(/list could not refresh/i)).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
+
+  // #217: the editor outlives `?selected=` changes, so a save for A that
+  // resumes after the user opened B must not touch B — no success snackbar,
+  // no re-hydrate with A, no URL advance. The list is page state: A's row
+  // still refreshes to the saved value.
+  test('a save resuming after the selection moved leaves the new row alone', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    const held = await holdPostSaveFetch(page, ALPHA_ID);
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await page.locator('table tr', { hasText: 'Type Beta' }).click();
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
+
+    const resumed = page.waitForResponse(r => !!byIdOf(r.request())?.includes(ALPHA_ID));
+    held.release();
+    await resumed;
+    await page.waitForTimeout(SETTLE_MS);
+
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Beta');
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
+    // One-shot count, not `toHaveCount(0)`: that retries, and would pass once
+    // a wrongly shown snackbar auto-hides.
+    expect(await page.getByText('Vehicle type saved').count()).toBe(0);
+    await expect(page).toHaveURL(/selected=NMR%3AVehicleType%3A2/);
+    await expect(page.locator('table tr', { hasText: 'Type Alpha X' })).toBeVisible();
+  });
+
+  // #217: re-entering Edit while the post-save re-fetch is pending would let
+  // its hydrate wipe what the user types — Edit is withheld until it lands.
+  test('Edit is unavailable while the post-save re-fetch is pending', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    const held = await holdPostSaveFetch(page, ALPHA_ID);
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await expect(page.locator('#vtype-name')).toBeDisabled();
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+
+    held.release();
+    await expect(page.getByText('Vehicle type saved')).toBeVisible();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+  });
+
+  // #217: an org switch while the post-save re-fetch is pending invalidates the
+  // save's continuation, so it never clears its own `refreshing` flag. The
+  // editor resets on the org+id selection, so returning to the first org with
+  // the same id must offer Edit again.
+  test('an org round trip during the post-save re-fetch leaves Edit available', async ({
+    page,
+  }) => {
+    await interceptTwoOrgs(page);
+    await interceptVehicleTypesWithSave(page);
+    const held = await holdPostSaveFetch(page, ALPHA_ID);
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await switchOrg(page, 'Second Org (OPERATOR)');
+    const resumed = page.waitForResponse(r => !!byIdOf(r.request())?.includes(ALPHA_ID));
+    held.release();
+    await resumed;
+    await page.waitForLoadState('networkidle');
+
+    await switchOrg(page, 'First Org (AUTHORITY)');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha X');
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+  });
+
+  // #217: the save hook publishes a failure the moment its request rejects,
+  // before the guarded continuation resumes. A save for A failing after the
+  // user moved to B must not surface on B.
+  test('a save failing after the selection moved shows no error on the new row', async ({
+    page,
+  }) => {
+    await interceptVehicleTypesWithSave(page, { saveError: 'boom' });
+    let release!: () => void;
+    let arrive!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    const reached = new Promise<void>(r => (arrive = r));
+    await page.route('**/graphql', async route => {
+      if (route.request().postData()?.includes('createOrUpdateVehicleType')) {
+        arrive();
+        await gate;
+      }
+      await route.fallback();
+    });
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await reached;
+
+    await page.locator('table tr', { hasText: 'Type Beta' }).click();
+    await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
+
+    const failed = page.waitForResponse(
+      r => !!r.request().postData()?.includes('createOrUpdateVehicleType')
+    );
+    release();
+    await failed;
+    await page.waitForTimeout(SETTLE_MS);
+
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Beta');
+    // One-shot: `toHaveCount(0)` would retry until a wrong snackbar auto-hid.
+    expect(await page.getByText('boom').count()).toBe(0);
   });
 });

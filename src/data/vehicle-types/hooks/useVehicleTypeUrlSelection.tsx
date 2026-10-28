@@ -16,8 +16,8 @@ interface UrlSelectionParams {
 /**
  * VehicleType binding for the generic {@link useUrlEditorSelection} hook: param
  * key `selected`, row id is `vt.id` (already the full NeTEx id), editor is
- * `<VehicleTypeDetails>` with the list `refetch` wired to `onSaved` so a save
- * re-resolves the row and re-hydrates the form.
+ * `<VehicleTypeDetails>` — given only the id, it loads its own record — with
+ * the list `refetch` wired to `onSaved` so a save refreshes the table.
  *
  * @param allData      Full dataset; `null` while the initial fetch is in flight.
  * @param dataForTable Current page slice (drives the deep-link page jump).
@@ -42,9 +42,6 @@ export function useVehicleTypeUrlSelection({
     setPage,
     loading,
     getId: vt => vt.id,
-    getEmptyRow: () => ({ id: '', version: 0 }), // "new" selection factory
-    renderEditor: (row, mode) => (
-      <VehicleTypeDetails vehicleType={row} onSaved={refetch} mode={mode} />
-    ),
+    renderEditor: (id, mode) => <VehicleTypeDetails id={id} onSaved={refetch} mode={mode} />,
   });
 }

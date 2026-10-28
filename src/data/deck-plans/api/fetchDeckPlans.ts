@@ -3,6 +3,7 @@ import {
   fetchDeckPlansRequest,
   type DeckPlansQuery,
 } from '../../../graphql/vehicles/queries/fetchDeckPlans.ts';
+import type { FetchById } from '../../../hooks/useEntityRecord.ts';
 import type { DeckPlan, DeckPlanContext } from '../types/deckPlanTypes.ts';
 import { netexName, type MultilingualString } from '../../netex/multilingualString.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
@@ -23,6 +24,12 @@ export interface DeckPlanInput {
   description?: MultilingualString | null;
 }
 
+/**
+ * Project a GraphQL deck-plan row onto the domain `DeckPlan`.
+ *
+ * @param {DeckPlansQuery['deckPlans']['content'][number]} dp Row as selected by the deck-plans query.
+ * @returns {DeckPlan} The domain deck plan.
+ */
 const projectDeckPlan = (dp: DeckPlansQuery['deckPlans']['content'][number]): DeckPlan => ({
   id: dp.netexId,
   name: dp.name ?? undefined,
@@ -55,4 +62,23 @@ export const fetchDeckPlans = async (
     filter: { dataOwnerRef },
   });
   return { deckPlans: raw.deckPlans.content.map(projectDeckPlan) };
+};
+
+/**
+ * Fetch one DeckPlan by NeTEx id, fresh from Sobek.
+ *
+ * @param {string} id Full NeTEx id (`Codespace:DeckPlan:Number`).
+ * @param {RecordFetchCtx} ctx Base URL, owning organisation and bearer token.
+ * @returns The projected deck plan, or `null` when Sobek has no such record.
+ */
+export const fetchDeckPlanById: FetchById<DeckPlan> = async (
+  id,
+  { applicationBaseUrl, dataOwnerRef, token }
+) => {
+  const raw = await fetchDeckPlansRequest(applicationBaseUrl, token, {
+    size: 1,
+    filter: { netexIds: [id], dataOwnerRef },
+  });
+  const row = raw.deckPlans.content[0];
+  return row ? projectDeckPlan(row) : null;
 };

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { byNetexIds } from './autosys-helpers';
 
 const POST_CLICK_SETTLE_MS = 500;
 
@@ -109,14 +110,18 @@ const mockVehiclesPayload = () => ({
   },
 });
 
+/** Answers the list query, and the editor's by-id fetch with only its row. */
 const interceptVehiclesList = (page: Page) =>
   page.route('**/graphql', async route => {
-    const q: string = route.request().postDataJSON()?.query ?? '';
+    const post = route.request().postDataJSON();
+    const q: string = post?.query ?? '';
     if (q.includes('vehicles(')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(mockVehiclesPayload()),
+        body: JSON.stringify(
+          byNetexIds(mockVehiclesPayload(), 'vehicles', post?.variables?.filter?.netexIds)
+        ),
       });
     } else {
       // fallback so the mock `organisations` query reaches seedAuth's route.

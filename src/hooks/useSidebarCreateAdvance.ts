@@ -4,10 +4,9 @@ import { useSearchParams } from 'react-router-dom';
 /**
  * Sidebar-create URL advance. After a successful save fired from the
  * `?selected=new` sidebar editor (Vehicle, VehicleType, …), the URL still
- * names `new`; refresh/copy-link reopens a blank create form and the
- * `useUrlEditorSelection` commit guard never re-resolves to the just-created
- * row. The returned callback rewrites `?<paramKey>=<newId>` via a replace-
- * history nav so the next render hits the resolved row.
+ * names `new`; refresh/copy-link would reopen a blank create form. The
+ * returned callback rewrites `?<paramKey>=<newId>` via a replace-history nav
+ * so the editor fetches the just-created record by id.
  *
  * Returns `false` (and does NOT touch the URL) when `newId` is null/undefined
  * — a successful save that mints no id is a backend-invariant break, surfaced

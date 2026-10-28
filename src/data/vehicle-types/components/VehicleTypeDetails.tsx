@@ -1,16 +1,22 @@
 import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import NetexId from '../../netex/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
+import FormLayoutSkeleton from '../../../components/FormLayoutSkeleton.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
+import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
+import { useSelectionReset } from '../../../hooks/useSelectionReset.ts';
+import { succeeds } from '../../../utils/succeeds.ts';
+import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
+import { fetchVehicleTypeById } from '../api/fetchVehicleTypes.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
@@ -22,6 +28,7 @@ import { EMISSION_STANDARD } from '../../code-values/types/codeValueTypes.ts';
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
 const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
+const SKELETON_ROWS = 6;
 
 /**
  * Coerce flag booleans so a Switch's `false` (off) compares equal to an absent
@@ -35,12 +42,12 @@ const normalizeForDirty = (vt: VehicleType): VehicleType => ({
 });
 
 interface VehicleTypeDetailsProps {
-  /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
-  vehicleType: VehicleType | null;
+  /** VehicleType netexId to load, or `NEW_SELECTION` for the create pane. */
+  id: string;
   /**
    * List-side refetch fired after a successful save so the row on
-   * `/vehicle-types` (and the resolved sidebar prop) reflects the persisted
-   * values + bumped version before the success snackbar appears. Optional.
+   * `/vehicle-types` reflects the persisted values + bumped version before
+   * the success snackbar appears. Optional.
    */
   onSaved?: () => Promise<void>;
 
@@ -58,49 +65,78 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
 /**
  * Editable sidebar for a VehicleType, opened via `/vehicle-types?selected=<id>`.
- * Hydrates straight from the resolved list row (the list query carries every
- * field) into a tabbed {@link VehicleTypeForm}. The full {@link EditorRail}
- * drives view↔edit; save fires the `createOrUpdateVehicleType` mutation via
- * {@link useVehicleTypeSave}, re-baselines the form from the submitted values,
- * and runs `onSaved` to refresh the list table.
+ * Loads its record from Sobek by id ({@link useEntityRecord}) into a tabbed
+ * {@link VehicleTypeForm}, and stays mounted across `?selected=` changes,
+ * resetting itself whenever the id moves. The full {@link EditorRail} drives
+ * view↔edit; save fires the `createOrUpdateVehicleType` mutation via
+ * {@link useVehicleTypeSave}, bridges the baseline with the submitted values,
+ * re-fetches the record (the real baseline) and runs `onSaved` to refresh the
+ * list table.
  *
- * @param vehicleType Resolved row, or `null` for a not-found deep link.
- * @param onSaved Optional list refetch run after a successful save (table freshness).
- * @param mode Optional initial mode ('view' or 'edit').
+ * @param {string} id VehicleType netexId, or `NEW_SELECTION` for the create pane.
+ * @param {() => Promise<void>} [onSaved] Optional list refetch run after a successful save.
+ * @param {'view' | 'edit'} [mode] Optional initial mode.
+ * @returns {JSX.Element} The editor, its loading skeleton, or the load-error / not-found body.
  */
 export default function VehicleTypeDetails({
-  vehicleType,
+  id,
   onSaved,
   mode: initialMode,
 }: VehicleTypeDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const isCreate = id === NEW_SELECTION;
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
-  const { save, saving, error, clearError } = useVehicleTypeSave();
-  const { deactivate } = useVehicleTypeDeactivate();
+  const { save, saving, clearError: clearSaveError } = useVehicleTypeSave();
+  const { deactivate, clearError: clearDeactivateError } = useVehicleTypeDeactivate();
+  // The current selection's save failure — set from the guarded result only.
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
+  // A committed write's continuation (list refresh, record re-fetch,
+  // create-advance) is running; Edit is withheld until it ends.
+  const [refreshing, setRefreshing] = useState(false);
   // Fetched on the first editor open of the session, cached for every later one.
   const euroClasses = useCodeValues(EMISSION_STANDARD);
 
-  // Re-hydrate (and drop back to view) whenever the deep-link resolves a new row.
+  const record = useEntityRecord(isCreate ? null : id, fetchVehicleTypeById);
+
+  // Once the selection moved (see useSelectionGuard), a write continuation
+  // leaves editor state, the record re-fetch and the create-advance alone. The
+  // list refresh (`onSaved`) is page state: it runs for every committed write.
+  const { selection, captureSelection } = useSelectionGuard(id);
+
+  // The editor outlives `?selected=` and organisation changes: reset on the
+  // guard's selection, so state an invalidated continuation never cleared
+  // (`refreshing`) can't outlive it. Only a create advancing to its new id
+  // (`bridgeId`) keeps its form and success snackbar.
+  const [bridgeId, setBridgeId] = useState<string | null>(null);
+  useSelectionReset(selection, bridgeId, keepForm => {
+    setMode(initialMode ?? 'view');
+    setRefreshError(null);
+    setDeactivatedOK(false);
+    setRefreshing(false);
+    // The write hooks keep their own error across selections.
+    setSaveError(null);
+    clearSaveError();
+    clearDeactivateError();
+    if (keepForm) return;
+    setSavedAt(null);
+    setBridgeId(null);
+    dispatch({ type: 'hydrate', row: EMPTY_VTYPE });
+  });
+
+  // Baseline = Sobek's record, on open and after every post-save re-fetch.
   useEffect(() => {
-    if (vehicleType) {
-      dispatch({ type: 'hydrate', row: vehicleType });
-      setMode(initialMode ?? 'view');
-      // Don't let a prior save snackbar / stale-list warning bleed into the next row.
-      setSavedAt(null);
-      setRefreshError(null);
-      setDeactivatedOK(false);
-    }
-  }, [initialMode, vehicleType]);
+    if (!record.data) return;
+    dispatch({ type: 'hydrate', row: record.data });
+    setBridgeId(null);
+  }, [record.data]);
 
   const isDirty =
-    !!vehicleType &&
     JSON.stringify(normalizeForDirty(state.form)) !==
-      JSON.stringify(normalizeForDirty(state.baseline));
+    JSON.stringify(normalizeForDirty(state.baseline));
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
@@ -108,32 +144,39 @@ export default function VehicleTypeDetails({
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
 
   const handleDeactivate = async () => {
+    const isCurrent = captureSelection();
     const result = await deactivate(state.form);
     if (result.error) {
-      setRefreshError(result.error);
+      if (isCurrent()) setRefreshError(result.error);
       return;
     }
-    setMode('view');
-    try {
+    if (isCurrent()) {
+      setMode('view');
       setDeactivatedOK(true);
+    }
+    try {
       await onSaved?.();
-      setRefreshError(null);
+      if (isCurrent()) setRefreshError(null);
     } catch {
-      setRefreshError(t('vehicleType.deactivateStaleList'));
+      if (isCurrent()) setRefreshError(t('vehicleType.deactivateStaleList'));
     }
   };
 
-  // Fire the mutation, then refresh the list (`onSaved`) so the table reflects
-  // the edit. The sidebar's own re-baseline is from the submitted form, not the
-  // refetched prop: `useUrlEditorSelection`'s commit guard intentionally does
-  // not push a new row into an open editor on a same-id refetch.
+  // Fire the mutation, bridge the baseline from the submitted form, then
+  // re-fetch the record (the real baseline) and refresh the list (`onSaved`)
+  // — each runs whatever the other's outcome.
   const handleSave = async () => {
+    const isCurrent = captureSelection();
     setRefreshError(null);
+    setSaveError(null);
     // `save` resolves to `{ error }` and never throws — so a save failure flows
-    // through the save-error snackbar, and the try below is scoped to ONLY the
-    // post-save list refresh (`onSaved`).
+    // through the save-error snackbar; the refreshes below report through
+    // `succeeds` instead of throwing.
     const result = await save(state.form);
-    if (result.error) return;
+    if (result.error) {
+      if (isCurrent()) setSaveError(result.error);
+      return;
+    }
 
     const wasCreate = state.form.id === '';
     const hydrateRow = { ...state.form };
@@ -142,32 +185,46 @@ export default function VehicleTypeDetails({
       // Sobek invariant break: silently re-baselining to id='' would let the
       // next Edit→Save fire CREATE again and mint a duplicate.
       if (!result.newId) {
-        setRefreshError(t('common.saveNoIdReturned'));
+        if (isCurrent()) setRefreshError(t('common.saveNoIdReturned'));
         return;
       }
       hydrateRow.id = result.newId;
-      hydrateRow.version = 1; // bridge until the refetched list lands the real row
+      hydrateRow.version = 1; // bridge until the by-id fetch lands the real record
     }
-    // Save committed: re-baseline from the submitted form (the commit guard in
-    // useUrlEditorSelection won't push the refetched row into an open editor).
-    dispatch({ type: 'hydrate', row: hydrateRow });
-    setMode('view');
+    // Save committed: bridge the baseline with the submitted form until the
+    // re-fetched record re-hydrates it.
+    if (isCurrent()) {
+      dispatch({ type: 'hydrate', row: hydrateRow });
+      setMode('view');
+      setRefreshing(true);
+    }
     try {
-      await onSaved?.();
-      // Advance `?selected=new` → `?selected=<newId>` only after the list
-      // refetch has landed, so useUrlEditorSelection re-resolves into the
-      // fresh row (not a transient "not found" between save and refetch).
-      if (wasCreate) advanceCreated(result.newId);
+      const recordOk = wasCreate || !isCurrent() || (await succeeds(record.refetch));
+      const listOk = await succeeds(() => onSaved?.());
+      if (!isCurrent()) return;
+      // Save is real, but the record or list couldn't refresh — warn instead
+      // of a clean success over stale data.
+      if (!recordOk || !listOk) {
+        setRefreshError(t('vehicleType.saveStaleList'));
+        return;
+      }
+      // Advance `?selected=new` → `?selected=<newId>`; the editor then
+      // fetches the created record by id.
+      if (wasCreate) {
+        setBridgeId(result.newId);
+        advanceCreated(result.newId);
+      }
       setSavedAt(Date.now()); // success only once the list is fresh
-    } catch {
-      // Save is real, but the list couldn't refresh — warn instead of a clean
-      // success over a stale table.
-      setRefreshError(t('vehicleType.saveStaleList'));
+    } finally {
+      if (isCurrent()) setRefreshing(false);
     }
   };
 
-  if (!vehicleType) {
-    const requestedId = searchParams.get(VEHICLE_TYPE_SELECTED_PARAM);
+  // Until Sobek's record lands, the post-create bridge form stays up;
+  // otherwise skeleton, the load error, or not-found.
+  const hasRecord = isCreate || record.data !== null || bridgeId === id;
+
+  if (!hasRecord && (record.notFound || record.error)) {
     return (
       <>
         <Box sx={{ p: 2 }}>
@@ -175,15 +232,33 @@ export default function VehicleTypeDetails({
             {t('vehicleType.detailsTitle')}
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {t('vehicleType.notFound')}
-          </Typography>
-          {requestedId && (
-            <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-              {requestedId}
+          {/* A failed request is not a missing record: show why it failed. */}
+          {record.error ? (
+            <Typography variant="body2" color="error" sx={{ mb: 1 }}>
+              {record.error}
+            </Typography>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {t('vehicleType.notFound')}
             </Typography>
           )}
+          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+            {id}
+          </Typography>
         </Box>
+        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
+      </>
+    );
+  }
+
+  if (!hasRecord) {
+    return (
+      <>
+        <FormLayoutSkeleton
+          ariaLabel={t('data.loading')}
+          showTitle
+          sections={[{ rowCount: SKELETON_ROWS }]}
+        />
         <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
       </>
     );
@@ -240,7 +315,9 @@ export default function VehicleTypeDetails({
         />
       </Stack>
 
-      <SaveErrorSnackbar error={error} onClose={clearError} />
+      {/* The guarded result, not the hook's raw `error`: a late failure for
+          the previous selection must not surface here. */}
+      <SaveErrorSnackbar error={saveError} onClose={() => setSaveError(null)} />
       <SaveErrorSnackbar
         error={refreshError}
         severity="warning"
@@ -260,14 +337,19 @@ export default function VehicleTypeDetails({
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => !deactivatedOK && setMode('edit')}
+        // No Edit while a committed write's refreshes run or the record
+        // (re-)loads: the re-hydrate (or create-advance) would wipe what the
+        // user types.
+        onEnterEdit={
+          refreshing || record.loading ? undefined : () => !deactivatedOK && setMode('edit')
+        }
         onDeactivate={handleDeactivate}
         deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicleType.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
-          // Revert to the last committed baseline (post-save = saved values),
-          // not the `vehicleType` prop which goes stale after a same-id save.
+          // Revert to the last committed baseline (post-save = the re-fetched
+          // record, or the submitted values if that re-fetch failed).
           dispatch({ type: 'hydrate', row: state.baseline });
           setMode('view');
         }}

@@ -2,6 +2,8 @@ import { useReducer, useCallback, useMemo } from 'react';
 
 export interface FormState<T> {
   form: T;
+  /** Last hydrated value — what Cancel restores. */
+  baseline: T;
   hydratedKey: string;
 }
 
@@ -9,6 +11,7 @@ export interface FormStateActions<T, S> {
   initial: FormState<T>;
   hydrate: (state: FormState<T>, src: S | null | undefined) => FormState<T>;
   edit: (state: FormState<T>, form: T) => FormState<T>;
+  restore: (state: FormState<T>) => FormState<T>;
   isDirty: (state: FormState<T>) => boolean;
 }
 
@@ -20,11 +23,13 @@ export interface CreateFormStateOpts<T, S> {
 }
 
 /**
- * Factory for the dirty-aware form-state reducer trio. State carries
- * both the current `form` value and a baseline `hydratedKey`. `hydrate`
- * advances both atomically so the load → render transition never produces
+ * Factory for the dirty-aware form-state reducers. State carries the current
+ * `form` value, the last hydrated `baseline` and its `hydratedKey`. `hydrate`
+ * advances all three atomically so the load → render transition never produces
  * a brief `isDirty === true` frame; `edit` preserves the baseline so
- * divergence is the only dirty signal.
+ * divergence is the only dirty signal; `restore` drops an in-progress edit
+ * back to the baseline (Cancel) — which may be a value hydrated without a
+ * fetched source, e.g. a just-created record bridged until its read-back.
  *
  * Use the factory directly with `useReducer` when you want module-level
  * exports consumed by tests (the vehicles feature does this); use the
@@ -37,13 +42,16 @@ export function createFormState<T, S>({
 }: CreateFormStateOpts<T, S>): FormStateActions<T, S> {
   const keyOf = (v: T): string => JSON.stringify(v);
   return {
-    initial: { form: blank, hydratedKey: keyOf(blank) },
+    initial: { form: blank, baseline: blank, hydratedKey: keyOf(blank) },
     hydrate(_state, src) {
       const form = formFromSource(src);
-      return { form, hydratedKey: keyOf(form) };
+      return { form, baseline: form, hydratedKey: keyOf(form) };
     },
     edit(state, form) {
       return { ...state, form };
+    },
+    restore(state) {
+      return { ...state, form: state.baseline };
     },
     isDirty(state) {
       return keyOf(state.form) !== state.hydratedKey;

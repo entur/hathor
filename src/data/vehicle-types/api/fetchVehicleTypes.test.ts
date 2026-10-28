@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
+import { fetchVehicleTypes, fetchVehicleTypeById } from './fetchVehicleTypes.ts';
 import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 
 vi.mock('../../../graphql/vehicles/queries/fetchVehicleTypes.ts', () => ({
@@ -165,5 +165,36 @@ describe('fetchVehicleTypes', () => {
     );
     const [vt] = (await fetchVehicleTypes('http://x', null)).vehicleTypes;
     expect(vt.vehicles).toBeUndefined();
+  });
+});
+
+describe('fetchVehicleTypeById', () => {
+  const ctx = { applicationBaseUrl: 'http://x', dataOwnerRef: 'NMR', token: null };
+  const row = { netexId: 'NMR:VehicleType:1', version: 3, transportMode: 'BUS' };
+  beforeEach(() => {
+    mockedRequest.mockReset();
+  });
+
+  it('sends netexIds + dataOwnerRef', async () => {
+    mockedRequest.mockResolvedValue(mkPage([row]));
+    await fetchVehicleTypeById('NMR:VehicleType:1', ctx);
+    expect(mockedRequest).toHaveBeenCalledWith('http://x', null, {
+      size: 1,
+      filter: { netexIds: ['NMR:VehicleType:1'], dataOwnerRef: 'NMR' },
+    });
+  });
+
+  it('projects the first row', async () => {
+    mockedRequest.mockResolvedValue(mkPage([row]));
+    expect(await fetchVehicleTypeById('NMR:VehicleType:1', ctx)).toMatchObject({
+      id: 'NMR:VehicleType:1',
+      version: 3,
+      transportMode: 'BUS',
+    });
+  });
+
+  it('returns null on empty content', async () => {
+    mockedRequest.mockResolvedValue(mkPage([]));
+    expect(await fetchVehicleTypeById('NMR:VehicleType:9', ctx)).toBeNull();
   });
 });

@@ -647,3 +647,66 @@ Deck plans are not ready for every environment, but their route, nav item, Home 
 ### Out of scope
 
 - Loading the deck-plan code lazily behind `sandboxFeatures.DeckPlans`, as enki does for its `sandboxFeatures` from `src/ext/<Feature>/`.
+
+## Sidebar forms load their record from Sobek; hosts refresh their tables _(2026-10-27)_
+
+### Context
+
+The three `?selected=` sidebar editors fill their form from three different sources (#217):
+
+| Editor | Form source | Baseline after save |
+|---|---|---|
+| Vehicle | own fetch — `useVehicle(id)` → `vehicles(filter: { netexIds: [id] })` | awaited re-fetch |
+| VehicleType | the table row | the submitted values |
+| DeckPlan | the table row (name, description) + own XML fetch (`useDeckPlanXml`) | the submitted values; XML re-fetched without waiting |
+
+VehicleType fetched by id until `b1e22f9` (#105) moved it into the sidebar and read the list row instead ("no per-id fetch"); `0a549e8` deleted `useVehicleType` / `fetchVehicleType`. DeckPlan lost its route-based view in `a036346`.
+
+Reading the row has costs. The form shows what the list loaded, not what Sobek stored, and after a save it keeps what the user typed rather than what Sobek kept (e.g. re-padded `<Text>`, sobek#180). `useUrlEditorSelection` needs a commit guard so a list refetch does not push a new row into an open editor. An editor cannot render without a table under it, which blocks moving it off `GenericDataViewPage`. And the editor calls the table's `refetch` (`onSaved`), so each editor is wired to the list it sits on.
+
+Sobek's `createOrUpdate*` mutations return only the id (`String`), so a save cannot hand back the stored record; every entity's list query takes `filter: { netexIds: [...] }`, so each can be fetched by id.
+
+### Decision
+
+- **Fetch-fresh is the only path into a sidebar form.** An editor receives an id (or `NEW_SELECTION`) and loads its record from Sobek by id — on open and again after every committed write. It never hydrates from a table row.
+- **After a save the baseline is the re-fetched record.** The submitted values may bridge the gap until it lands, so the form does not read as dirty in between; Cancel restores the last baseline.
+- **Deactivate is the exception: no re-fetch.** Hathor deactivates at "now" and Sobek's queries return only currently-valid versions, so the record is gone the moment the mutation commits. The editor shows the deactivated success read-only, fires `onWritten({ type: 'deactivated', id, record: null })`, and closes (`onClose`) when that snackbar is dismissed.
+- **The host keeps its table fresh from the editor's `onWritten`.** After a committed write (save, create, deactivate) and the record re-fetch, the editor fires `onWritten({ type, id, record | null })`. A host with a table under the form either patches the row from `record` or reloads the list (`record` is `null` when the re-fetch failed); a table-less host passes nothing. The editor never calls into a table; the `onSaved` / `refetch` wiring from `use*UrlSelection` into `*Details` goes away.
+- **One stable editor per selection session.** `editingItem.id` follows `?selected=` without remounting the editor, so the editor must reset itself (mode, snackbars, warning, form) on an id change. The one exception is the create-advance (`new` → `<newId>`), which keeps the form and the success snackbar.
+- **A table's refresh failure is the table's to show** (#229), not the editor's.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Hydrate from the table row (VehicleType, DeckPlan before #217)** | Shows list data, not stored data; needs the commit guard; the editor cannot exist without a table. |
+| **Baseline from the mutation response** | Not available — `createOrUpdate*` returns only the id. Worth revisiting if Sobek returns the entity; it would remove the re-fetch. |
+| **Editor drives the table's refetch (`onSaved`, before #217)** | Couples each editor to one list and makes success wait on the list. |
+| **App-level write events (context or emitter), tables subscribe by entity kind** | Only useful while a table and a form are mounted together, which only the sidebar host does; no editor writes one kind while another kind's table is on screen. A grid is driven through the host's `apiRef` anyway. |
+
+### Consequences
+
+- VehicleType and DeckPlan get by-id fetchers (`fetchVehicleTypeById` on the existing `fetchVehicleTypeRequest`; `fetchDeckPlanById`) on the shared `useEntityRecord`.
+- One extra round-trip per editor open and per save.
+- The commit guard in `useUrlEditorSelection` loses its reason to exist.
+- Editors become placeable without a table — a prerequisite for replacing `GenericDataViewPage`.
+- Resolves the data half of `OPEN_QUESTIONS.md` "`EditingContext` editor slot vs. selection ownership" in favour of option (a). The Retire-`EditActionCell` ADR's "no per-id endpoint" premise no longer holds.
+
+### Out of scope
+
+- Whether a grid host patches (`apiRef.updateRows`) or reloads — the host's call; it needs the record query to select the list row's fields.
+
+## Form-only entity routes (`/<entities>/:id`) are allowed again _(2026-10-27, placeholder)_
+
+### Context
+
+The [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12) rejected a `/vehicle/:id` page, and `b1e22f9` / `a036346` dropped the `/vehicle-types/:id` and `/deck-plans/:id` routes. [Sidebar forms load their record from Sobek](#sidebar-forms-load-their-record-from-sobek-hosts-refresh-their-tables-2026-10-27) removes the reason: an editor needs only an id, not a table row.
+
+### Decision
+
+- A form-only route `/<entities>/:id` (no table) may host the same `<X>Editor` the `?selected=` sidebar hosts.
+- Editors are host-agnostic: the host supplies `id`, `onClose` and `onCreated(newId)`, and owns its chrome and navigation.
+
+### Open
+
+Placeholder — routes, the page's action bar and the Back/close behaviour are decided when the first page is built; this entry gets alternatives and consequences then.

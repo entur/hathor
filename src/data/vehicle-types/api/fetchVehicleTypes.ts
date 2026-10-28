@@ -10,6 +10,8 @@ import type {
   FuelType,
   HybridCategory,
 } from '../types/vehicleTypeTypes.ts';
+import type { FetchById } from '../../../hooks/useEntityRecord.ts';
+import { fetchVehicleTypeRequest } from '../../../graphql/vehicles/queries/fetchVehicleType.ts';
 import type { AccessToken } from '../../../auth';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import type { MultilingualString } from '../../netex/multilingualString.ts';
@@ -166,4 +168,20 @@ export const fetchVehicleTypes = async (
     filter: { dataOwnerRef },
   });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
+};
+
+/**
+ * Fetch one VehicleType by NeTEx id, fresh from Sobek.
+ *
+ * @param {string} id Full NeTEx id (`Codespace:VehicleType:Number`).
+ * @param {RecordFetchCtx} ctx Base URL, owning organisation and bearer token.
+ * @returns The projected vehicle type, or `null` when Sobek has no such record.
+ */
+export const fetchVehicleTypeById: FetchById<VehicleType> = async (
+  id,
+  { applicationBaseUrl, dataOwnerRef, token }
+) => {
+  const raw = await fetchVehicleTypeRequest(applicationBaseUrl, id, dataOwnerRef, token);
+  const row = raw.vehicleTypes.content[0];
+  return row ? projectVehicleType(row) : null;
 };

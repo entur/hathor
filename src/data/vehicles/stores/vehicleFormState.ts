@@ -2,7 +2,7 @@
  * Pure reducer-style state for the Vehicle edit form. Re-exports the
  * generic `createFormState` factory from `src/hooks/useFormState.ts`
  * bound to `VehicleEditFormValue` + `Partial<Vehicle>` so the public
- * API (`initialFormState`, `hydrate`, `edit`, `isDirty`, `FormState`)
+ * API (`initialFormState`, `hydrate`, `edit`, `restore`, `isDirty`, `FormState`)
  * stays stable for `VehicleDetails` and tests.
  */
 import { createFormState, type FormState as GenericFormState } from '../../../hooks/useFormState';
@@ -19,6 +19,7 @@ export type FormState = GenericFormState<VehicleEditFormValue>;
 export const initialFormState = vehicleForm.initial;
 export const hydrate = vehicleForm.hydrate;
 export const edit = vehicleForm.edit;
+export const restore = vehicleForm.restore;
 export const isDirty = vehicleForm.isDirty;
 
 /** True iff the required fields needed for create-side save are present.
