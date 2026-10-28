@@ -26,8 +26,8 @@ interface UseDeckPlanXmlResult {
  * `useDeckRenderer` included. The cost is that after a failed refetch `xml`
  * holds a *stale* document, and patching and POSTing that would resurrect the
  * values the last save replaced. So a write path must gate on `error` being
- * null, not merely on `xml` being non-empty — `DeckPlanDetails` does, at its
- * save guard and again in `handleSave`.
+ * null, not merely on `xml` being non-empty — `DeckPlanEditor` does, in its
+ * `canSubmit` and again in its edit-path `save`.
  *
  * @param id Full NeTEx id of the deck plan to fetch; `null`/empty pauses the fetch.
  */

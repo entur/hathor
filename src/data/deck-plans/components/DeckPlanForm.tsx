@@ -82,7 +82,7 @@ interface DeckPlanFormProps {
  * fetched document on save instead.
  *
  * Holds no fetch/save logic; chrome (title, EditorRail, snackbars, dirty
- * tracking) lives in `DeckPlanDetails`.
+ * tracking) lives in `DeckPlanEditor` and `useEntityEditor`.
  */
 export default function DeckPlanForm({
   value,

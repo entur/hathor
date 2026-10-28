@@ -94,7 +94,7 @@ const openAndRename = async (value = 'renamed') => {
 
 describe('DeckPlanEditor', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mocks.body = { xml: '<doc/>', loading: false, error: null };
     mocks.saveXml.mockResolvedValue({ error: null });
     mocks.saveGQL.mockResolvedValue({ newId: NEW_ID, error: null });
