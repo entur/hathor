@@ -194,6 +194,7 @@
 
   "common.none": "None",
   "common.saveNoIdReturned": "Saved, but no id was returned — please refresh.",
+  "common.saveRecordStale": "Saved — but the record could not reload; it may be stale.",
   "common.showLess": "Show less",
   "common.showMore": "+{{count}} more",
 

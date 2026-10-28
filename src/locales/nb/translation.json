@@ -193,6 +193,7 @@
 
   "common.none": "Ingen",
   "common.saveNoIdReturned": "Lagret, men ingen id ble returnert — last på nytt.",
+  "common.saveRecordStale": "Lagret — men posten kunne ikke lastes på nytt; den kan være utdatert.",
   "common.showLess": "Vis mindre",
   "common.showMore": "+{{count}} til",
 
