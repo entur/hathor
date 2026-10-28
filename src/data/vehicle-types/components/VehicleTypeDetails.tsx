@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../../netex/NetexId.tsx';
@@ -13,6 +13,7 @@ import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
 import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
+import { useSelectionReset } from '../../../hooks/useSelectionReset.ts';
 import { succeeds } from '../../../utils/succeeds.ts';
 import { NEW_SELECTION } from '../../../hooks/useUrlEditorSelection.tsx';
 import { fetchVehicleTypeById } from '../api/fetchVehicleTypes.ts';
@@ -99,25 +100,26 @@ export default function VehicleTypeDetails({
 
   const record = useEntityRecord(isCreate ? null : id, fetchVehicleTypeById);
 
-  // The editor outlives `?selected=` changes: reset per id. Only a create
-  // advancing to its new id (`bridgeId`) keeps its form and success snackbar;
-  // any other move drops the previous id's form, so neither its unsaved
-  // edits nor its dirty flag outlive it.
+  // Once the selection moved (see useSelectionGuard), a write continuation
+  // leaves editor state, the record re-fetch and the create-advance alone. The
+  // list refresh (`onSaved`) is page state: it runs for every committed write.
+  const { selection, captureSelection } = useSelectionGuard(id);
+
+  // The editor outlives `?selected=` and organisation changes: reset on the
+  // guard's selection, so state an invalidated continuation never cleared
+  // (`refreshing`) can't outlive it. Only a create advancing to its new id
+  // (`bridgeId`) keeps its form and success snackbar.
   const [bridgeId, setBridgeId] = useState<string | null>(null);
-  const prevIdRef = useRef(id);
-  useEffect(() => {
-    const prevId = prevIdRef.current;
-    if (prevId === id) return;
-    prevIdRef.current = id;
+  useSelectionReset(selection, bridgeId, keepForm => {
     setMode(initialMode ?? 'view');
     setRefreshError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
-    if (prevId === NEW_SELECTION && id === bridgeId) return;
+    if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
     dispatch({ type: 'hydrate', row: EMPTY_VTYPE });
-  }, [id, initialMode, bridgeId]);
+  });
 
   // Baseline = Sobek's record, on open and after every post-save re-fetch.
   useEffect(() => {
@@ -134,11 +136,6 @@ export default function VehicleTypeDetails({
 
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
-
-  // Once the selection moved (see useSelectionGuard), a write continuation
-  // leaves editor state, the record re-fetch and the create-advance alone. The
-  // list refresh (`onSaved`) is page state: it runs for every committed write.
-  const captureSelection = useSelectionGuard(id);
 
   const handleDeactivate = async () => {
     const isCurrent = captureSelection();

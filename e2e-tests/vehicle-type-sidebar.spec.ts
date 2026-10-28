@@ -10,10 +10,41 @@ const SETTLE_MS = 500;
 const byIdOf = (req: import('@playwright/test').Request): string[] | undefined =>
   req.postDataJSON()?.variables?.filter?.netexIds;
 
+/** Two mock organisations, so a spec can switch org mid-flow. */
+const ORGS = [
+  { netexId: 'NMR:Organisation:1', name: { value: 'First Org' }, type: 'AUTHORITY' },
+  { netexId: 'NMR:Organisation:2', name: { value: 'Second Org' }, type: 'OPERATOR' },
+];
+
+/** Serve {@link ORGS} for the `organisations(` query; everything else falls through. */
+async function interceptTwoOrgs(page: import('@playwright/test').Page) {
+  await page.route('**/graphql', async route => {
+    if (!route.request().postData()?.includes('organisations(')) {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: { organisations: { content: ORGS, totalElements: 2, page: 0, size: 10000 } },
+      }),
+    });
+  });
+}
+
+/** Pick `name` in the header organisation picker. */
+async function switchOrg(page: import('@playwright/test').Page, name: string) {
+  const picker = page.getByRole('banner').getByRole('combobox').first();
+  await picker.click();
+  await page.getByRole('option', { name }).click();
+  await expect(picker).toHaveValue(name);
+}
+
 /**
- * Hold every by-id fetch of `id` made after a `createOrUpdateVehicleType`
- * (the post-save re-fetch) until `release()`. Register after
- * `interceptVehicleTypesWithSave` so it runs first and falls back to it.
+ * Hold the first by-id fetch of `id` made after a `createOrUpdateVehicleType`
+ * (the post-save re-fetch) until `release()`; later fetches pass. Register
+ * after `interceptVehicleTypesWithSave` so it runs first and falls back to it.
  *
  * @param {Page} page Playwright Page.
  * @param {string} id NeTEx id whose post-save fetch to hold.
@@ -21,13 +52,15 @@ const byIdOf = (req: import('@playwright/test').Request): string[] | undefined =
  */
 async function holdPostSaveFetch(page: import('@playwright/test').Page, id: string) {
   let saved = false;
+  let held = false;
   let release!: () => void;
   let arrive!: () => void;
   const gate = new Promise<void>(r => (release = r));
   const reached = new Promise<void>(r => (arrive = r));
   await page.route('**/graphql', async route => {
     if (route.request().postData()?.includes('createOrUpdateVehicleType')) saved = true;
-    else if (saved && byIdOf(route.request())?.includes(id)) {
+    else if (saved && !held && byIdOf(route.request())?.includes(id)) {
+      held = true;
       arrive();
       await gate;
     }
@@ -72,7 +105,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
  *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
  *     resuming after the selection moved to another row leaves that row alone (values, no
- *     success snackbar, URL) yet still refreshes the list; Edit is withheld while the post-save re-fetch is pending.
+ *     success snackbar, URL) yet still refreshes the list; Edit is withheld while the post-save re-fetch is pending;
+ *     an organisation round trip during that re-fetch leaves Edit available on return.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -506,6 +540,36 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     held.release();
     await expect(page.getByText('Vehicle type saved')).toBeVisible();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+  });
+
+  // #217: an org switch while the post-save re-fetch is pending invalidates the
+  // save's continuation, so it never clears its own `refreshing` flag. The
+  // editor resets on the org+id selection, so returning to the first org with
+  // the same id must offer Edit again.
+  test('an org round trip during the post-save re-fetch leaves Edit available', async ({
+    page,
+  }) => {
+    await interceptTwoOrgs(page);
+    await interceptVehicleTypesWithSave(page);
+    const held = await holdPostSaveFetch(page, ALPHA_ID);
+    await page.goto(`/vehicle-types?selected=${encodeURIComponent(ALPHA_ID)}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+    await held.reached;
+
+    await switchOrg(page, 'Second Org (OPERATOR)');
+    const resumed = page.waitForResponse(r => !!byIdOf(r.request())?.includes(ALPHA_ID));
+    held.release();
+    await resumed;
+    await page.waitForLoadState('networkidle');
+
+    await switchOrg(page, 'First Org (AUTHORITY)');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha X');
     await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
   });
 });

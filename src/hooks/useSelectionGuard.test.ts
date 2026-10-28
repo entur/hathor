@@ -10,7 +10,7 @@ vi.mock('../contexts/useOrganisationsContext.ts', () => ({
 }));
 
 const renderGuard = (id: string) =>
-  renderHook(({ id }) => useSelectionGuard(id), { initialProps: { id } });
+  renderHook(({ id }) => useSelectionGuard(id).captureSelection, { initialProps: { id } });
 
 describe('useSelectionGuard', () => {
   beforeEach(() => {
@@ -60,5 +60,18 @@ describe('useSelectionGuard', () => {
     const capture = result.current;
     rerender({ id: 'B' });
     expect(result.current).toBe(capture);
+  });
+
+  it('exposes the org + id selection key the guard follows', () => {
+    const { result, rerender } = renderHook(({ id }) => useSelectionGuard(id).selection, {
+      initialProps: { id: 'A' },
+    });
+    expect(result.current).toEqual({ id: 'A', orgId: 'ORG:1', key: 'ORG:1|A' });
+    const first = result.current;
+    rerender({ id: 'A' });
+    expect(result.current).toBe(first);
+    mocks.org = null;
+    rerender({ id: 'A' });
+    expect(result.current.key).toBe('null|A');
   });
 });
