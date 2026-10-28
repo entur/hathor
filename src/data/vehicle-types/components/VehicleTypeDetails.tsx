@@ -130,20 +130,23 @@ export default function VehicleTypeDetails({
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
 
-  // Every write continuation bails once the selection moved (see useSelectionGuard).
+  // Once the selection moved (see useSelectionGuard), a write continuation
+  // leaves editor state, the record re-fetch and the create-advance alone. The
+  // list refresh (`onSaved`) is page state: it runs for every committed write.
   const captureSelection = useSelectionGuard(id);
 
   const handleDeactivate = async () => {
     const isCurrent = captureSelection();
     const result = await deactivate(state.form);
-    if (!isCurrent()) return;
     if (result.error) {
-      setRefreshError(result.error);
+      if (isCurrent()) setRefreshError(result.error);
       return;
     }
-    setMode('view');
-    try {
+    if (isCurrent()) {
+      setMode('view');
       setDeactivatedOK(true);
+    }
+    try {
       await onSaved?.();
       if (isCurrent()) setRefreshError(null);
     } catch {
@@ -160,7 +163,7 @@ export default function VehicleTypeDetails({
     // through the save-error snackbar, and the try below is scoped to ONLY the
     // post-save refreshes (record re-fetch, `onSaved`).
     const result = await save(state.form);
-    if (!isCurrent() || result.error) return;
+    if (result.error) return;
 
     const wasCreate = state.form.id === '';
     const hydrateRow = { ...state.form };
@@ -169,7 +172,7 @@ export default function VehicleTypeDetails({
       // Sobek invariant break: silently re-baselining to id='' would let the
       // next Edit→Save fire CREATE again and mint a duplicate.
       if (!result.newId) {
-        setRefreshError(t('common.saveNoIdReturned'));
+        if (isCurrent()) setRefreshError(t('common.saveNoIdReturned'));
         return;
       }
       hydrateRow.id = result.newId;
@@ -177,11 +180,12 @@ export default function VehicleTypeDetails({
     }
     // Save committed: bridge the baseline with the submitted form until the
     // re-fetched record re-hydrates it.
-    dispatch({ type: 'hydrate', row: hydrateRow });
-    setMode('view');
+    if (isCurrent()) {
+      dispatch({ type: 'hydrate', row: hydrateRow });
+      setMode('view');
+    }
     try {
-      if (!wasCreate) await record.refetch();
-      if (!isCurrent()) return;
+      if (!wasCreate && isCurrent()) await record.refetch();
       await onSaved?.();
       if (!isCurrent()) return;
       // Advance `?selected=new` → `?selected=<newId>`; the editor then

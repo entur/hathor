@@ -107,20 +107,23 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const closeSlider = useCloseSliderParam(VEHICLE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_SELECTED_PARAM);
 
-  // Every write continuation bails once the selection moved (see useSelectionGuard).
+  // Once the selection moved (see useSelectionGuard), a write continuation
+  // leaves editor state, the record re-fetch and the create-advance alone. The
+  // list refresh (`onSaved`) is page state: it runs for every committed write.
   const captureSelection = useSelectionGuard(id);
 
   const handleDeactivate = async () => {
     const isCurrent = captureSelection();
     const result = await deactivate(form.vehicle);
-    if (!isCurrent()) return;
     if (result.error) {
-      setCommitError(result.error);
+      if (isCurrent()) setCommitError(result.error);
       return;
     }
-    setMode('view');
-    try {
+    if (isCurrent()) {
+      setMode('view');
       setDeactivatedOK(true);
+    }
+    try {
       await onSaved?.();
       if (isCurrent()) setCommitError(null);
     } catch {
@@ -133,23 +136,25 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     const wasCreate = (form.vehicle.id ?? '') === '';
     const submitted = form.vehicle;
     const result = await save(form);
-    if (!isCurrent() || result.error) return;
+    if (result.error) return;
     const { newId } = result;
 
     // Sobek's mutation must mint a newId on create; null here = invariant
     // break. Re-baselining with id='' would let the next Edit→Save fire
     // CREATE again and mint a duplicate.
     if (wasCreate && !newId) {
-      setCommitError(t('common.saveNoIdReturned'));
+      if (isCurrent()) setCommitError(t('common.saveNoIdReturned'));
       return;
     }
     // Save committed: leave edit mode before the refreshes below, so nothing
     // typed meanwhile is lost to the re-hydrate. A create re-baselines with
     // the assigned id now (isDirty=false), bridging until the URL advance
     // below fetches the created record.
-    setMode('view');
-    if (wasCreate && newId)
-      dispatch({ type: 'hydrate', xmlVehicle: { ...submitted, id: newId, version: 1 } });
+    if (isCurrent()) {
+      setMode('view');
+      if (wasCreate && newId)
+        dispatch({ type: 'hydrate', xmlVehicle: { ...submitted, id: newId, version: 1 } });
+    }
     // List refresh first, so the row is fresh when the success shows.
     await onSaved?.();
     if (!isCurrent()) return;

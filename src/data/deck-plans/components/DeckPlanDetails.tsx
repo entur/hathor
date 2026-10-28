@@ -132,21 +132,24 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
 
-  // Every write continuation bails once the selection moved (see useSelectionGuard).
+  // Once the selection moved (see useSelectionGuard), a write continuation
+  // leaves editor state, the record re-fetch and the create-advance alone. The
+  // list refresh (`onSaved`) is page state: it runs for every committed write.
   const captureSelection = useSelectionGuard(id);
 
   const handleDeactivate = async () => {
     if (!record.data) return;
     const isCurrent = captureSelection();
     const result = await deactivate(record.data);
-    if (!isCurrent()) return;
     if (result.error) {
-      setRefreshError(result.error);
+      if (isCurrent()) setRefreshError(result.error);
       return;
     }
-    setMode('view');
-    try {
+    if (isCurrent()) {
+      setMode('view');
       setDeactivatedOK(true);
+    }
+    try {
       await onSaved?.();
       if (isCurrent()) setRefreshError(null);
     } catch {
@@ -161,20 +164,22 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     setRefreshError(null);
     if (isCreate) {
       const result = await saveGQL(form);
-      if (!isCurrent() || result.error) return;
+      if (result.error) return;
 
       // Blank id factory → a create. A successful save with no `newId` is a
       // Sobek invariant break: surfaced as a snackbar so the user can refresh.
       if (!result.newId) {
-        setRefreshError(t('common.saveNoIdReturned'));
+        if (isCurrent()) setRefreshError(t('common.saveNoIdReturned'));
         return;
       }
 
-      setMode('view');
-      // Re-baseline on the write, not on the refresh. The mutation has already
-      // committed, so a failing list refetch must not strand the editor dirty —
-      // collapsing would then offer to discard changes that are persisted.
-      dispatch({ type: 'hydrate', dp: { ...form, id: result.newId } });
+      if (isCurrent()) {
+        setMode('view');
+        // Re-baseline on the write, not on the refresh. The mutation has already
+        // committed, so a failing list refetch must not strand the editor dirty —
+        // collapsing would then offer to discard changes that are persisted.
+        dispatch({ type: 'hydrate', dp: { ...form, id: result.newId } });
+      }
       try {
         await onSaved?.();
         if (!isCurrent()) return;
@@ -208,18 +213,19 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       return;
     }
     const result = await save(patched);
-    if (!isCurrent() || result.error) return;
+    if (result.error) return;
 
-    setMode('view');
-    // Re-baseline on the write, for the same reason as the create branch above
-    // — a bridge until the re-fetched record re-hydrates it.
-    dispatch({ type: 'hydrate', dp: { ...form, id } });
-    // Re-pull the persisted body so the XML tab stops showing the pre-save
-    // document. Fire-and-forget: `refetch` bumps a tick, it returns no promise.
-    refetch();
+    if (isCurrent()) {
+      setMode('view');
+      // Re-baseline on the write, for the same reason as the create branch above
+      // — a bridge until the re-fetched record re-hydrates it.
+      dispatch({ type: 'hydrate', dp: { ...form, id } });
+      // Re-pull the persisted body so the XML tab stops showing the pre-save
+      // document. Fire-and-forget: `refetch` bumps a tick, it returns no promise.
+      refetch();
+    }
     try {
-      await record.refetch();
-      if (!isCurrent()) return;
+      if (isCurrent()) await record.refetch();
       await onSaved?.();
       if (!isCurrent()) return;
       setSavedAt(Date.now());

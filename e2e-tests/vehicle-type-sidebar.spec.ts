@@ -72,7 +72,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     preserves the existing lang tag; a failed post-save record re-fetch surfaces a stale
  *     warning, not a bare success (the re-fetch must reject, not resolve early); a save
  *     resuming after the selection moved to another row leaves that row alone (values, no
- *     success snackbar, URL); Edit is withheld while the post-save re-fetch is pending.
+ *     success snackbar, URL) yet still refreshes the list; Edit is withheld while the post-save re-fetch is pending.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -458,7 +458,8 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
   // #217: the editor outlives `?selected=` changes, so a save for A that
   // resumes after the user opened B must not touch B — no success snackbar,
-  // no re-hydrate with A, no URL advance.
+  // no re-hydrate with A, no URL advance. The list is page state: A's row
+  // still refreshes to the saved value.
   test('a save resuming after the selection moved leaves the new row alone', async ({ page }) => {
     await interceptVehicleTypesWithSave(page);
     const held = await holdPostSaveFetch(page, ALPHA_ID);
@@ -484,6 +485,7 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     // a wrongly shown snackbar auto-hides.
     expect(await page.getByText('Vehicle type saved').count()).toBe(0);
     await expect(page).toHaveURL(/selected=NMR%3AVehicleType%3A2/);
+    await expect(page.locator('table tr', { hasText: 'Type Alpha X' })).toBeVisible();
   });
 
   // #217: re-entering Edit while the post-save re-fetch is pending would let

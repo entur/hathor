@@ -10,7 +10,8 @@ export type IsCurrentSelection = () => boolean;
  * create or deactivate started for record A can resume after the user moved
  * to B. Call the returned `capture` when a write starts; after every `await`
  * the predicate it returns must be `true` before the continuation touches
- * editor state, refetches, runs `onSaved` or navigates.
+ * editor state, re-fetches the record or navigates (the create-advance).
+ * Page state such as the list refresh is not the editor's and runs anyway.
  *
  * The selection is the id plus the current organisation. Any change — even a
  * round trip back to the same id, which resets the editor — invalidates every
