@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { interceptDeckPlanSave, interceptDeckPlansQuery, loadXmlFixture } from './autosys-helpers';
+import {
+  interceptDeckPlanSave,
+  interceptDeckPlansQuery,
+  loadXmlFixture,
+  netexIdsOf,
+} from './autosys-helpers';
 import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 /**
@@ -234,7 +239,7 @@ test.describe('/deck-plans — sidebar editor', () => {
         query?: string;
         variables?: { filter?: { netexIds?: string[] } };
       };
-      const listQuery = !body?.variables?.filter?.netexIds;
+      const listQuery = !netexIdsOf(body);
       if (body?.query?.includes('deckPlans') && listQuery && saved()) {
         return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
       }

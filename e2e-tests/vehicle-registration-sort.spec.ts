@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
-import { byNetexIds } from './autosys-helpers';
+import { byNetexIds, netexIdsOf } from './autosys-helpers';
 
 const POST_CLICK_SETTLE_MS = 500;
 
@@ -119,9 +119,7 @@ const interceptVehiclesList = (page: Page) =>
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(
-          byNetexIds(mockVehiclesPayload(), 'vehicles', post?.variables?.filter?.netexIds)
-        ),
+        body: JSON.stringify(byNetexIds(mockVehiclesPayload(), 'vehicles', netexIdsOf(post))),
       });
     } else {
       // fallback so the mock `organisations` query reaches seedAuth's route.

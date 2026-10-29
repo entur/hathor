@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import NetexId from '../../netex/NetexId.tsx';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
+import EditorRecordGate from '../../../components/sidebar/EditorRecordGate.tsx';
 import { FormLayout, MetaRow } from '../../../components/FormLayout.tsx';
 import { VEHICLE_SELECTED_PARAM } from '../utils/vehicleUrlParams.ts';
 import { vehicleMode, type Vehicle } from '../types/vehicle.ts';
@@ -71,8 +72,8 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [commitError, setCommitError] = useState<string | null>(null);
-  const { save, saving, clearError: clearSaveError } = useVehiclePairSave();
-  const { deactivate, clearError: clearDeactivateError } = useVehicleDeactivate();
+  const { save, saving } = useVehiclePairSave();
+  const { deactivate } = useVehicleDeactivate();
   // The current selection's save failure — set from the guarded result only.
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
@@ -97,10 +98,7 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
     setCommitError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
-    // The write hooks keep their own error across selections.
     setSaveError(null);
-    clearSaveError();
-    clearDeactivateError();
     if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -170,9 +168,21 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         dispatch({ type: 'hydrate', xmlVehicle: { ...submitted, id: newId, version: 1 } });
     }
     try {
-      // List refresh first, so the row is fresh when the success shows. It
-      // and the record re-fetch each run whatever the other's outcome.
-      const listOk = await succeeds(() => onSaved?.());
+      // The list refresh and, for an existing row, the record re-fetch run
+      // concurrently, each whatever the other's outcome; success waits on both.
+      // The re-pull advances the dirty baseline via the `hydrate` effect (and
+      // picks up the bumped version) — without it the form stays dirty after
+      // save and `>>` wrongly raises the discard dialog. The write is real even
+      // if the re-pull fails.
+      const [listOk, recordErr] = await Promise.all([
+        succeeds(() => onSaved?.()),
+        wasCreate || !isCurrent()
+          ? null
+          : record.refetch().then(
+              () => null,
+              (err: unknown) => graphqlErrMsg(err)
+            ),
+      ]);
       if (!isCurrent()) return;
       const staleList = listOk ? null : t('vehicles.saveStaleList');
 
@@ -186,15 +196,6 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         setBridgeId(newId);
         advanceCreated(newId);
       } else {
-        // Existing row — re-pull the persisted vehicle so the `hydrate` effect
-        // advances the dirty baseline (and picks up the bumped version).
-        // Without this the form stays dirty after save and `>>` wrongly raises
-        // the discard dialog. The write is real even if the re-pull fails.
-        const recordErr = await record.refetch().then(
-          () => null,
-          (err: unknown) => graphqlErrMsg(err)
-        );
-        if (!isCurrent()) return;
         const warning = recordErr ?? staleList;
         if (warning) {
           setCommitError(warning);
@@ -211,39 +212,18 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   // otherwise skeleton, the load error, or not-found.
   const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
-  if (!hasRecord && (record.notFound || record.error)) {
-    return (
-      <>
-        <Box sx={{ p: 2 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-            <Typography variant="h6">{t('vehicles.detailsTitle')}</Typography>
-          </Stack>
-          <Divider sx={{ mb: 2 }} />
-          {/* A failed request is not a missing record: show why it failed. */}
-          {record.error ? (
-            <Typography variant="body2" color="error" sx={{ mb: 1 }}>
-              {record.error}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {t('vehicles.notFound')}
-            </Typography>
-          )}
-          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-            {id}
-          </Typography>
-        </Box>
-        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
-      </>
-    );
-  }
-
   if (!hasRecord) {
     return (
-      <>
-        <VehicleDetailsSkeleton />
-        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
-      </>
+      <EditorRecordGate
+        title={t('vehicles.detailsTitle')}
+        notFoundLabel={t('vehicles.notFound')}
+        id={id}
+        error={record.error}
+        notFound={record.notFound}
+        skeleton={<VehicleDetailsSkeleton />}
+        onCollapse={closeSlider}
+        side={RAIL_SIDE}
+      />
     );
   }
 

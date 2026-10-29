@@ -3,6 +3,7 @@ import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../../netex/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
+import EditorRecordGate from '../../../components/sidebar/EditorRecordGate.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
 import FormLayoutSkeleton from '../../../components/FormLayoutSkeleton.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
@@ -87,7 +88,8 @@ function formReducer(state: FormState, action: FormAction): FormState {
 export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: DeckPlanDetailsProps) {
   const { t } = useTranslation();
   const isCreate = id === NEW_SELECTION;
-  const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? (isCreate ? 'edit' : 'view'));
+  const defaultMode = initialMode ?? (isCreate ? 'edit' : 'view');
+  const [mode, setMode] = useState<'view' | 'edit'>(defaultMode);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, initialFormState);
@@ -95,8 +97,8 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
 
   const record = useEntityRecord(isCreate ? null : id, fetchDeckPlanById);
   const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(isCreate ? null : id);
-  const { save, saveGQL, saving, clearError: clearSaveError } = useDeckPlanSave();
-  const { deactivate, clearError: clearDeactivateError } = useDeckPlanDeactivate();
+  const { save, saveGQL, saving } = useDeckPlanSave();
+  const { deactivate } = useDeckPlanDeactivate();
   // The current selection's save failure — set from the guarded result only.
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
@@ -115,14 +117,11 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   // (`bridgeId`) keeps its form and success snackbar.
   const [bridgeId, setBridgeId] = useState<string | null>(null);
   useSelectionReset(selection, bridgeId, keepForm => {
-    setMode(initialMode ?? (id === NEW_SELECTION ? 'edit' : 'view'));
+    setMode(defaultMode);
     setRefreshError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
-    // The write hooks keep their own error across selections.
     setSaveError(null);
-    clearSaveError();
-    clearDeactivateError();
     if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -246,10 +245,12 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       refetch();
     }
     try {
-      // The record re-fetch and the list refresh each run whatever the
-      // other's outcome.
-      const recordOk = !isCurrent() || (await succeeds(record.refetch));
-      const listOk = await succeeds(() => onSaved?.());
+      // The record re-fetch and the list refresh run concurrently, each
+      // whatever the other's outcome.
+      const [recordOk, listOk] = await Promise.all([
+        !isCurrent() || succeeds(record.refetch),
+        succeeds(() => onSaved?.()),
+      ]);
       if (!isCurrent()) return;
       if (!recordOk || !listOk) {
         staleList();
@@ -265,43 +266,24 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   // otherwise skeleton, the load error, or not-found.
   const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
-  if (!hasRecord && (record.notFound || record.error)) {
-    return (
-      <>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            {t('deckPlans.detailsTitle')}
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          {/* A failed request is not a missing record: show why it failed. */}
-          {record.error ? (
-            <Typography variant="body2" color="error" sx={{ mb: 1 }}>
-              {record.error}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {t('deckPlans.notFound')}
-            </Typography>
-          )}
-          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-            {id}
-          </Typography>
-        </Box>
-        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
-      </>
-    );
-  }
-
   if (!hasRecord) {
     return (
-      <>
-        <FormLayoutSkeleton
-          ariaLabel={t('data.loading')}
-          showTitle
-          sections={[{ rowCount: SKELETON_ROWS }]}
-        />
-        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
-      </>
+      <EditorRecordGate
+        title={t('deckPlans.detailsTitle')}
+        notFoundLabel={t('deckPlans.notFound')}
+        id={id}
+        error={record.error}
+        notFound={record.notFound}
+        skeleton={
+          <FormLayoutSkeleton
+            ariaLabel={t('data.loading')}
+            showTitle
+            sections={[{ rowCount: SKELETON_ROWS }]}
+          />
+        }
+        onCollapse={closeSlider}
+        side={RAIL_SIDE}
+      />
     );
   }
 

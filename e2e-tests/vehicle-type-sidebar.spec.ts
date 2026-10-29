@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { interceptVehicleTypesQuery, interceptVehicleTypesWithSave } from './autosys-helpers';
+import {
+  interceptVehicleTypesQuery,
+  interceptVehicleTypesWithSave,
+  netexIdsOf,
+} from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-helpers';
 
 const ALPHA_ID = 'NMR:VehicleType:1';
 /** Grace for a resumed save continuation to (wrongly) act after its response lands. */
 const SETTLE_MS = 500;
-
-/** `variables.filter.netexIds` of a GraphQL request — set only on a by-id fetch. */
-const byIdOf = (req: import('@playwright/test').Request): string[] | undefined =>
-  req.postDataJSON()?.variables?.filter?.netexIds;
 
 /** Two mock organisations, so a spec can switch org mid-flow. */
 const ORGS = [
@@ -59,7 +59,7 @@ async function holdPostSaveFetch(page: import('@playwright/test').Page, id: stri
   const reached = new Promise<void>(r => (arrive = r));
   await page.route('**/graphql', async route => {
     if (route.request().postData()?.includes('createOrUpdateVehicleType')) saved = true;
-    else if (saved && !held && byIdOf(route.request())?.includes(id)) {
+    else if (saved && !held && netexIdsOf(route.request().postDataJSON())?.includes(id)) {
       held = true;
       arrive();
       await gate;
@@ -240,7 +240,7 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
   test('a failed by-id fetch shows the error, not not-found', async ({ page }) => {
     test.skip(IS_LIVE, 'mock-only — injects a by-id 500');
     await page.route('**/graphql', async route => {
-      if (!byIdOf(route.request())) return route.fallback();
+      if (!netexIdsOf(route.request().postDataJSON())) return route.fallback();
       await route.fulfill({
         status: 500,
         contentType: 'application/json',
@@ -268,7 +268,7 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     let release!: () => void;
     const gate = new Promise<void>(r => (release = r));
     await page.route('**/graphql', async route => {
-      const ids: string[] | undefined = route.request().postDataJSON()?.variables?.filter?.netexIds;
+      const ids = netexIdsOf(route.request().postDataJSON());
       if (holdAlpha && ids?.includes(alphaId)) await gate;
       await route.fallback();
     });
@@ -509,7 +509,9 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.locator('table tr', { hasText: 'Type Beta' }).click();
     await expect(page.locator('#vtype-name')).toHaveValue('Type Beta');
 
-    const resumed = page.waitForResponse(r => !!byIdOf(r.request())?.includes(ALPHA_ID));
+    const resumed = page.waitForResponse(
+      r => !!netexIdsOf(r.request().postDataJSON())?.includes(ALPHA_ID)
+    );
     held.release();
     await resumed;
     await page.waitForTimeout(SETTLE_MS);
@@ -563,7 +565,9 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await held.reached;
 
     await switchOrg(page, 'Second Org (OPERATOR)');
-    const resumed = page.waitForResponse(r => !!byIdOf(r.request())?.includes(ALPHA_ID));
+    const resumed = page.waitForResponse(
+      r => !!netexIdsOf(r.request().postDataJSON())?.includes(ALPHA_ID)
+    );
     held.release();
     await resumed;
     await page.waitForLoadState('networkidle');

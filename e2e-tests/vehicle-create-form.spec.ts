@@ -7,6 +7,7 @@ import {
   vehicleRow,
 } from './vehicle-list-helpers';
 import { IS_LIVE, seedAuth, liveCreateOverrides } from './live-auth-helpers';
+import { netexIdsOf } from './autosys-helpers';
 
 const NEW_ID = 'NMR:Vehicle:NEW-1';
 const ENCODED_NEW_ID = encodeURIComponent(NEW_ID);
@@ -186,7 +187,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     test.skip(IS_LIVE, 'mock-only — injects a by-id 500');
     const capture = await wireCreateFlow(page);
     await page.route('**/graphql', async route => {
-      const ids: string[] | undefined = route.request().postDataJSON()?.variables?.filter?.netexIds;
+      const ids = netexIdsOf(route.request().postDataJSON());
       if (!ids?.includes(NEW_ID)) {
         await route.fallback();
         return;
@@ -236,7 +237,7 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await interceptVehicleTypesQuery(page);
     await page.route('**/graphql', async route => {
       const postData = route.request().postDataJSON();
-      if (!postData?.query?.includes('vehicles(') || postData?.variables?.filter?.netexIds) {
+      if (!postData?.query?.includes('vehicles(') || netexIdsOf(postData)) {
         await route.fallback();
         return;
       }

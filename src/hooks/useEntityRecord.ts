@@ -83,34 +83,33 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   }, [key]);
 
   const run = useCallback(async (): Promise<R | null> => {
-    const k = `${dataOwnerRef}|${id}`;
     // A stale closure (the id/org moved on) must not bump the ticket.
-    if (!active || k !== keyRef.current) return null;
+    if (!active || key !== keyRef.current) return null;
     const ticket = ++latest.current;
     setRec(prev =>
-      prev.key === k
+      prev.key === key
         ? { ...prev, loading: true, error: null }
-        : { key: k, data: null, notFound: false, error: null, loading: true }
+        : { key, data: null, notFound: false, error: null, loading: true }
     );
     try {
       const token = await tokenRef.current();
       const record = await fetchRef.current(id, { applicationBaseUrl, dataOwnerRef, token });
       if (ticket === latest.current)
-        setRec({ key: k, data: record, notFound: record === null, error: null, loading: false });
+        setRec({ key, data: record, notFound: record === null, error: null, loading: false });
       return record;
     } catch (err: unknown) {
       if (ticket === latest.current)
         // A failed refetch of the same key keeps the last good record.
         setRec(prev => ({
-          key: k,
-          data: prev.key === k ? prev.data : null,
-          notFound: prev.key === k ? prev.notFound : false,
+          key,
+          data: prev.key === key ? prev.data : null,
+          notFound: prev.key === key ? prev.notFound : false,
           error: graphqlErrMsg(err),
           loading: false,
         }));
       throw err;
     }
-  }, [active, id, applicationBaseUrl, dataOwnerRef]);
+  }, [active, key, id, applicationBaseUrl, dataOwnerRef]);
 
   useEffect(() => {
     if (!active) {

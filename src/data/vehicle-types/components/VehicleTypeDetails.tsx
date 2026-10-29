@@ -3,6 +3,7 @@ import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../../netex/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
+import EditorRecordGate from '../../../components/sidebar/EditorRecordGate.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
 import FormLayoutSkeleton from '../../../components/FormLayoutSkeleton.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
@@ -89,8 +90,8 @@ export default function VehicleTypeDetails({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
-  const { save, saving, clearError: clearSaveError } = useVehicleTypeSave();
-  const { deactivate, clearError: clearDeactivateError } = useVehicleTypeDeactivate();
+  const { save, saving } = useVehicleTypeSave();
+  const { deactivate } = useVehicleTypeDeactivate();
   // The current selection's save failure — set from the guarded result only.
   const [saveError, setSaveError] = useState<string | null>(null);
   const [deactivatedOK, setDeactivatedOK] = useState(false);
@@ -117,10 +118,7 @@ export default function VehicleTypeDetails({
     setRefreshError(null);
     setDeactivatedOK(false);
     setRefreshing(false);
-    // The write hooks keep their own error across selections.
     setSaveError(null);
-    clearSaveError();
-    clearDeactivateError();
     if (keepForm) return;
     setSavedAt(null);
     setBridgeId(null);
@@ -199,8 +197,12 @@ export default function VehicleTypeDetails({
       setRefreshing(true);
     }
     try {
-      const recordOk = wasCreate || !isCurrent() || (await succeeds(record.refetch));
-      const listOk = await succeeds(() => onSaved?.());
+      // The record re-fetch and the list refresh run concurrently, each
+      // whatever the other's outcome.
+      const [recordOk, listOk] = await Promise.all([
+        wasCreate || !isCurrent() || succeeds(record.refetch),
+        succeeds(() => onSaved?.()),
+      ]);
       if (!isCurrent()) return;
       // Save is real, but the record or list couldn't refresh — warn instead
       // of a clean success over stale data.
@@ -224,43 +226,24 @@ export default function VehicleTypeDetails({
   // otherwise skeleton, the load error, or not-found.
   const hasRecord = isCreate || record.data !== null || bridgeId === id;
 
-  if (!hasRecord && (record.notFound || record.error)) {
-    return (
-      <>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            {t('vehicleType.detailsTitle')}
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          {/* A failed request is not a missing record: show why it failed. */}
-          {record.error ? (
-            <Typography variant="body2" color="error" sx={{ mb: 1 }}>
-              {record.error}
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {t('vehicleType.notFound')}
-            </Typography>
-          )}
-          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-            {id}
-          </Typography>
-        </Box>
-        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
-      </>
-    );
-  }
-
   if (!hasRecord) {
     return (
-      <>
-        <FormLayoutSkeleton
-          ariaLabel={t('data.loading')}
-          showTitle
-          sections={[{ rowCount: SKELETON_ROWS }]}
-        />
-        <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
-      </>
+      <EditorRecordGate
+        title={t('vehicleType.detailsTitle')}
+        notFoundLabel={t('vehicleType.notFound')}
+        id={id}
+        error={record.error}
+        notFound={record.notFound}
+        skeleton={
+          <FormLayoutSkeleton
+            ariaLabel={t('data.loading')}
+            showTitle
+            sections={[{ rowCount: SKELETON_ROWS }]}
+          />
+        }
+        onCollapse={closeSlider}
+        side={RAIL_SIDE}
+      />
     );
   }
 
