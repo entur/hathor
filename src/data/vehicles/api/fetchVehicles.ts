@@ -1,4 +1,7 @@
-import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
+import {
+  fetchVehiclesRequest,
+  type VehiclesQuery,
+} from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import type { FetchById } from '../../../hooks/useEntityRecord.ts';
@@ -29,6 +32,29 @@ export interface VehicleInput {
   registrationDate?: string | null;
 }
 
+type VehiclesRow = VehiclesQuery['vehicles']['content'][number];
+
+/** A `vehicles(...)` wire row → the camelCase `Vehicle` shape. */
+const projectVehicle = (v: VehiclesRow): Vehicle => ({
+  id: v.netexId || '',
+  version: v.version,
+  name: v.name || undefined,
+  registrationNumber: v.registrationNumber,
+  operationalNumber: v.operationalNumber ?? undefined,
+  buildDate: v.buildDate,
+  chassisNumber: v.chassisNumber,
+  description: v.description,
+  registrationDate: v.registrationDate,
+  transportType: v.transportType
+    ? {
+        id: v.transportType.netexId,
+        version: v.transportType.version,
+        name: v.transportType.name || undefined,
+        transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
+      }
+    : undefined,
+});
+
 /**
  * Fetch the full Vehicle list from Sobek's `vehicles(...)` GraphQL query and
  * project each entry into the camelCase row shape consumed by the list view.
@@ -52,68 +78,7 @@ export async function fetchVehicles(
       `fetchVehicles: server reports ${totalElements} vehicles but only ${content.length} returned — list is truncated. Bump FETCH_ALL_SIZE or move to server-side paging.`
     );
   }
-  return content.map<Vehicle>(v => ({
-    id: v.netexId || '',
-    version: v.version,
-    name: v.name || undefined,
-    registrationNumber: v.registrationNumber,
-    operationalNumber: v.operationalNumber ?? undefined,
-    buildDate: v.buildDate,
-    chassisNumber: v.chassisNumber,
-    description: v.description,
-    registrationDate: v.registrationDate,
-    transportType: v.transportType
-      ? {
-          id: v.transportType.netexId,
-          version: v.transportType.version,
-          name: v.transportType.name || undefined,
-          transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
-        }
-      : undefined,
-  }));
-}
-
-/**
- * Fetch one Vehicle from Sobek's `vehicles(...)` GraphQL query and
- *
- * @param applicationBaseUrl Sobek base URL.
- * @param token OIDC access token (bearer).
- */
-export async function fetchVehicle(
-  netexId: string,
-  applicationBaseUrl: string,
-  dataOwnerRef: string,
-  token: AccessToken
-): Promise<Vehicle[]> {
-  const raw = await fetchVehiclesRequest(applicationBaseUrl, token, {
-    size: FETCH_ALL_SIZE,
-    filter: { netexIds: [netexId], dataOwnerRef },
-  });
-  const { content, totalElements } = raw.vehicles;
-  if (content.length < totalElements) {
-    console.warn(
-      `fetchVehicles: server reports ${totalElements} vehicles but only ${content.length} returned — list is truncated. Bump FETCH_ALL_SIZE or move to server-side paging.`
-    );
-  }
-  return content.map<Vehicle>(v => ({
-    id: v.netexId || '',
-    version: v.version,
-    name: v.name || undefined,
-    registrationNumber: v.registrationNumber,
-    operationalNumber: v.operationalNumber ?? undefined,
-    buildDate: v.buildDate,
-    chassisNumber: v.chassisNumber,
-    description: v.description,
-    registrationDate: v.registrationDate,
-    transportType: v.transportType
-      ? {
-          id: v.transportType.netexId,
-          version: v.transportType.version,
-          name: v.transportType.name || undefined,
-          transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
-        }
-      : undefined,
-  }));
+  return content.map(projectVehicle);
 }
 
 /**
@@ -126,4 +91,11 @@ export async function fetchVehicle(
 export const fetchVehicleById: FetchById<Vehicle> = async (
   id,
   { applicationBaseUrl, dataOwnerRef, token }
-) => (await fetchVehicle(id, applicationBaseUrl, dataOwnerRef, token))[0] ?? null;
+) => {
+  const raw = await fetchVehiclesRequest(applicationBaseUrl, token, {
+    size: 1,
+    filter: { netexIds: [id], dataOwnerRef },
+  });
+  const row = raw.vehicles.content[0];
+  return row ? projectVehicle(row) : null;
+};

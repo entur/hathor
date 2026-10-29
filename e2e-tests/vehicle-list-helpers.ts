@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import type { Page } from '@playwright/test';
-import { byNetexIds } from './autosys-helpers';
+import { byNetexIds, netexIdsOf } from './autosys-helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,7 +35,7 @@ export const interceptVehicleListQuery = (page: Page) =>
   page.route('**/graphql', async route => {
     const postData = route.request().postDataJSON();
     const query: string = postData?.query ?? '';
-    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    const netexIds = netexIdsOf(postData);
     if (query.includes('vehicles(') && !netexIds) {
       await route.fulfill({
         status: 200,
@@ -82,7 +82,7 @@ export const interceptStatefulVehicleListQuery = async (page: Page) => {
     // Only the unfiltered *list* query is this handler's concern. A
     // `filter.netexIds` query is a single-vehicle fetch — let the by-id
     // handler answer it; the save mutation likewise belongs elsewhere.
-    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    const netexIds = netexIdsOf(postData);
     if (!query.includes('vehicles(') || netexIds) {
       await route.fallback();
       return;
@@ -128,7 +128,7 @@ const makeExtraVehicle = (id: string) =>
 
 /** A single-vehicle GraphQL row. Mirrors the `vehicles(...)` selection in
  *  `src/graphql/vehicles/queries/fetchVehicles.ts` field-for-field so the mock
- *  exercises `fetchVehicle`'s projection against the real wire shape. All
+ *  exercises `fetchVehicleById`'s projection against the real wire shape. All
  *  nullable fields default to null; override per test via {@link vehicleRow}. */
 export interface VehicleRow {
   netexId: string;
@@ -187,7 +187,7 @@ export const interceptVehicleByIdQuery = (page: Page, resolve: (id: string) => V
   page.route('**/graphql', async route => {
     const postData = route.request().postDataJSON();
     const query: string = postData?.query ?? '';
-    const netexIds: string[] | undefined = postData?.variables?.filter?.netexIds;
+    const netexIds = netexIdsOf(postData);
     if (!query.includes('vehicles(') || !netexIds?.length) {
       await route.fallback();
       return;
@@ -288,7 +288,7 @@ export const interceptVehicleTypesQuery = (
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(byNetexIds(body, 'vehicleTypes', postData?.variables?.filter?.netexIds)),
+      body: JSON.stringify(byNetexIds(body, 'vehicleTypes', netexIdsOf(postData))),
     });
   });
 

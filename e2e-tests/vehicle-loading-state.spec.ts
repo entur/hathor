@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
 import { IS_LIVE, seedAuth } from './live-auth-helpers';
+import { netexIdsOf } from './autosys-helpers';
 
 const SELECTED_ID = 'NMR:Vehicle:bus-1';
 
@@ -55,7 +56,7 @@ test.describe('vehicle editor — a single-vehicle fetch with no match shows not
     await page.route('**/graphql', async route => {
       const body = route.request().postDataJSON();
       const q: string = body?.query ?? '';
-      if (q.includes('vehicles(') && !body?.variables?.filter?.netexIds) {
+      if (q.includes('vehicles(') && !netexIdsOf(body)) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',

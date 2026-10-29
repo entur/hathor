@@ -8,6 +8,7 @@ import {
   vehicleRow,
 } from './vehicle-list-helpers';
 import { seedAuth } from './live-auth-helpers';
+import { netexIdsOf } from './autosys-helpers';
 
 const VEHICLE_ID = 'NMR:Vehicle:rail-1';
 const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
@@ -31,7 +32,7 @@ async function routePostSaveRecordReload(
     const post = route.request().postDataJSON();
     const query: string = post?.query ?? '';
     if (query.includes('createOrUpdateVehicle')) saved = true;
-    else if (saved && query.includes('vehicles(') && post?.variables?.filter?.netexIds?.length) {
+    else if (saved && query.includes('vehicles(') && netexIdsOf(post)?.length) {
       await onReload(route);
       return;
     }

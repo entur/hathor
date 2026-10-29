@@ -40,7 +40,7 @@ export const byNetexIds = (body: unknown, field: string, netexIds?: string[]): u
 };
 
 /** `variables.filter.netexIds` of a GraphQL POST, or `undefined` for a list query. */
-const netexIdsOf = (postData: { variables?: { filter?: { netexIds?: string[] } } } | null) =>
+export const netexIdsOf = (postData: { variables?: { filter?: { netexIds?: string[] } } } | null) =>
   postData?.variables?.filter?.netexIds;
 
 /**
