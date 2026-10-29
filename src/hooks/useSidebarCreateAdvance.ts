@@ -6,31 +6,23 @@ import { useSearchParams } from 'react-router-dom';
  * `?selected=new` sidebar editor (Vehicle, VehicleType, …), the URL still
  * names `new`; refresh/copy-link would reopen a blank create form. The
  * returned callback rewrites `?<paramKey>=<newId>` via a replace-history nav
- * so the editor fetches the just-created record by id.
+ * so the editor fetches the just-created record by id. A save that mints no id
+ * never gets here: {@link useEntityEditor} warns instead.
  *
- * Returns `false` (and does NOT touch the URL) when `newId` is null/undefined
- * — a successful save that mints no id is a backend-invariant break, surfaced
- * by the caller as a save-error (the `common.saveNoIdReturned` snackbar).
- *
- * @param paramKey The feature's `?selected=` key (e.g. `VEHICLE_SELECTED_PARAM`).
- * @returns `(newId) => boolean` — `true` if advanced, `false` if no id.
+ * @param {string} paramKey - The feature's `?selected=` key (e.g. `VEHICLE_SELECTED_PARAM`).
+ * @returns {(newId: string) => void} The URL advance.
  */
-export function useSidebarCreateAdvance(
-  paramKey: string
-): (newId: string | null | undefined) => boolean {
+export function useSidebarCreateAdvance(paramKey: string): (newId: string) => void {
   const [, setSearchParams] = useSearchParams();
   return useCallback(
-    (newId: string | null | undefined): boolean => {
-      if (!newId) return false;
+    (newId: string) =>
       setSearchParams(
         params => {
           params.set(paramKey, newId);
           return params;
         },
         { replace: true }
-      );
-      return true;
-    },
+      ),
     [paramKey, setSearchParams]
   );
 }

@@ -20,11 +20,11 @@ interface UrlEditorSelectionParams<T> {
   getId: (item: T) => string;
   /**
    * Render the editor for the selected id. `id` is the param value —
-   * `NEW_SELECTION` for the create pane (mode `'edit'` then). The editor
-   * loads its own record; the list row is never handed over. The rendered
-   * editor stays mounted across id changes and must reset itself.
+   * `NEW_SELECTION` for the create pane. The editor loads its own record;
+   * the list row is never handed over. The rendered editor stays mounted
+   * across id changes and must reset itself.
    */
-  renderEditor: (id: string, mode: 'edit' | 'view') => ReactNode;
+  renderEditor: (id: string) => ReactNode;
 }
 
 /**
@@ -85,7 +85,7 @@ export function useUrlEditorSelection<T>({
       // Read the param directly: `itemId` trails it by one commit.
       const [params] = useSearchParams();
       const id = params.get(paramKey) ?? itemId;
-      return <>{renderEditorRef.current(id, id === NEW_SELECTION ? 'edit' : 'view')}</>;
+      return <>{renderEditorRef.current(id)}</>;
     };
     setEditingItem({ id: selected, EditorComponent: editorRef.current });
   }, [selected, paramKey, setEditingItem]);

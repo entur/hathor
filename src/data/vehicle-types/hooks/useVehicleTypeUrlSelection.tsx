@@ -43,8 +43,6 @@ export function useVehicleTypeUrlSelection({
     setPage,
     loading,
     getId: vt => vt.id,
-    renderEditor: (id, mode) => (
-      <VehicleTypeDetails id={id} mode={mode} onWritten={() => void refetch?.().catch(() => {})} />
-    ),
+    renderEditor: id => <VehicleTypeDetails id={id} onWritten={() => refetch?.()} />,
   });
 }

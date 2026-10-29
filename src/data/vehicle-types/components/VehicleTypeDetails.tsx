@@ -10,8 +10,6 @@ import VehicleTypeEditor from './VehicleTypeEditor.tsx';
 interface VehicleTypeDetailsProps {
   /** VehicleType netexId to load, or `NEW_SELECTION` for the create pane. */
   id: string;
-  /** Mode on open. */
-  mode?: 'view' | 'edit';
   /** Fire-and-forget report of each committed write (the list refetch). */
   onWritten?: (write: EntityWrite<VehicleType>) => void;
 }
@@ -22,17 +20,16 @@ interface VehicleTypeDetailsProps {
  * it to the new id, and the editor's controls are the sidebar's
  * {@link SidebarEditorRail}.
  *
- * @param {VehicleTypeDetailsProps} props - Id, initial mode and the write report.
+ * @param {VehicleTypeDetailsProps} props - Id and the write report.
  * @returns {JSX.Element} The VehicleType editor with its sidebar rail.
  */
-export default function VehicleTypeDetails({ id, mode, onWritten }: VehicleTypeDetailsProps) {
+export default function VehicleTypeDetails({ id, onWritten }: VehicleTypeDetailsProps) {
   const { t } = useTranslation();
   const closeSlider = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
   return (
     <VehicleTypeEditor
       id={id}
-      mode={mode}
       onClose={closeSlider}
       onCreated={advanceCreated}
       onWritten={onWritten}

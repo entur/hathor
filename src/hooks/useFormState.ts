@@ -35,10 +35,8 @@ export interface CreateFormStateOpts<T, S> {
  * back to the baseline (Cancel) — which may be a value hydrated without a
  * fetched source, e.g. a just-created record bridged until its read-back.
  *
- * Use the factory directly with `useReducer` when you want module-level
- * exports consumed by tests (the vehicles feature does this); use the
- * companion {@link useFormState} hook when the consumer just needs a
- * drop-in form-state primitive without the reducer boilerplate.
+ * Use the factory directly for pure reducer tests; components use the
+ * companion {@link useFormState} hook (e.g. via {@link useEntityEditor}).
  */
 export function createFormState<T, S>({
   blank,
@@ -82,39 +80,64 @@ interface UseFormStateReturn<T, S> {
   hydrate: (src: S | null | undefined) => void;
   /** Apply a user edit. Baseline preserved so `isDirty` tracks divergence. */
   setForm: (form: T) => void;
+  /** Drop an in-progress edit back to the baseline (Cancel). */
+  restore: () => void;
+  /** Adopt `form` as both the current value and the new baseline (clean). */
+  commit: (form: T) => void;
   /** True iff the form has diverged from the last hydrated baseline. */
   isDirty: boolean;
 }
 
-type FormAction<T, S> = { type: 'hydrate'; src: S | null | undefined } | { type: 'edit'; form: T };
+type FormAction<T, S> =
+  | { type: 'hydrate'; src: S | null | undefined }
+  | { type: 'edit'; form: T }
+  | { type: 'restore' }
+  | { type: 'commit'; form: T };
 
 /**
- * React hook wrapping {@link createFormState} + `useReducer`. Returns
- * `{ state, hydrate, setForm, isDirty }` — drop into a sidebar editor
- * with no boilerplate.
+ * React hook wrapping {@link createFormState} + `useReducer`.
  *
  * `opts` is captured at mount (the form's shape is treated as fixed for
  * the lifetime of the consumer). If `blank` or `formFromSource` need to
  * change dynamically, prefer the factory + `useReducer` directly.
+ *
+ * @param {CreateFormStateOpts<T, S>} opts - Blank form, source mapping and dirty normaliser.
+ * @param {S | null} [initialSrc] - Source to hydrate the first state from (default: `blank`).
+ * @returns {UseFormStateReturn<T, S>} State, stable actions and `isDirty`.
  */
-export function useFormState<T, S>(opts: CreateFormStateOpts<T, S>): UseFormStateReturn<T, S> {
+export function useFormState<T, S>(
+  opts: CreateFormStateOpts<T, S>,
+  initialSrc?: S | null
+): UseFormStateReturn<T, S> {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const actions = useMemo(() => createFormState(opts), []);
 
   const reducer = useCallback(
-    (state: FormState<T>, action: FormAction<T, S>): FormState<T> =>
-      action.type === 'hydrate'
-        ? actions.hydrate(state, action.src)
-        : actions.edit(state, action.form),
+    (state: FormState<T>, action: FormAction<T, S>): FormState<T> => {
+      switch (action.type) {
+        case 'hydrate':
+          return actions.hydrate(state, action.src);
+        case 'edit':
+          return actions.edit(state, action.form);
+        case 'restore':
+          return actions.restore(state);
+        case 'commit':
+          return actions.commit(state, action.form);
+      }
+    },
     [actions]
   );
 
-  const [state, dispatch] = useReducer(reducer, actions.initial);
+  const [state, dispatch] = useReducer(reducer, initialSrc, src =>
+    src == null ? actions.initial : actions.hydrate(actions.initial, src)
+  );
 
   return {
     state,
     hydrate: useCallback((src: S | null | undefined) => dispatch({ type: 'hydrate', src }), []),
     setForm: useCallback((form: T) => dispatch({ type: 'edit', form }), []),
+    restore: useCallback(() => dispatch({ type: 'restore' }), []),
+    commit: useCallback((form: T) => dispatch({ type: 'commit', form }), []),
     isDirty: actions.isDirty(state),
   };
 }

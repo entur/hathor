@@ -5,6 +5,8 @@ import type { AccessToken } from '../auth';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { graphqlErrMsg } from '../data/graphqlErrMsg.ts';
 import { NEW_SELECTION } from './useUrlEditorSelection';
+import { useLatestRequest } from './useLatestRequest.ts';
+import { selectionKeyOf } from './useSelectionGuard.ts';
 
 /** Everything a by-id fetcher needs besides the id itself. */
 export interface RecordFetchCtx {
@@ -66,12 +68,12 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   const dataOwnerRef = currentOrganisation?.id;
   const active = !!id && id !== NEW_SELECTION && !!applicationBaseUrl && !!dataOwnerRef;
 
-  const key = active ? `${dataOwnerRef}|${id}` : null;
+  const key = active ? selectionKeyOf(dataOwnerRef, id) : null;
   const [rec, setRec] = useState<RecState<R>>(EMPTY_REC as RecState<R>);
 
   const fetchRef = useRef(fetchById);
   const tokenRef = useRef(getAccessToken);
-  const latest = useRef(0);
+  const beginRequest = useLatestRequest();
   // The key a `run` must match to fetch; set before the fetch effect below runs.
   const keyRef = useRef(key);
   useEffect(() => {
@@ -83,10 +85,11 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   }, [key]);
 
   const run = useCallback(async (): Promise<R | null> => {
-    const k = `${dataOwnerRef}|${id}`;
-    // A stale closure (the id/org moved on) must not bump the ticket.
-    if (!active || k !== keyRef.current) return null;
-    const ticket = ++latest.current;
+    // A stale closure (the id/org moved on) must not supersede the current fetch.
+    if (!active) return null;
+    const k = selectionKeyOf(dataOwnerRef, id);
+    if (k !== keyRef.current) return null;
+    const isLatest = beginRequest();
     setRec(prev =>
       prev.key === k
         ? { ...prev, loading: true, error: null }
@@ -95,11 +98,11 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
     try {
       const token = await tokenRef.current();
       const record = await fetchRef.current(id, { applicationBaseUrl, dataOwnerRef, token });
-      if (ticket === latest.current)
+      if (isLatest())
         setRec({ key: k, data: record, notFound: record === null, error: null, loading: false });
       return record;
     } catch (err: unknown) {
-      if (ticket === latest.current)
+      if (isLatest())
         // A failed refetch of the same key keeps the last good record.
         setRec(prev => ({
           key: k,
@@ -110,15 +113,15 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
         }));
       throw err;
     }
-  }, [active, id, applicationBaseUrl, dataOwnerRef]);
+  }, [active, id, applicationBaseUrl, dataOwnerRef, beginRequest]);
 
   useEffect(() => {
     if (!active) {
-      latest.current++;
+      beginRequest(); // drop whatever is still in flight
       return;
     }
     run().catch(() => {});
-  }, [active, run]);
+  }, [active, run, beginRequest]);
 
   // State belonging to another key is never exposed; loading is true from the first render of a new key.
   const fresh = key !== null && rec.key === key;

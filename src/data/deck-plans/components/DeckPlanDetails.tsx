@@ -10,8 +10,6 @@ import DeckPlanEditor from './DeckPlanEditor.tsx';
 interface DeckPlanDetailsProps {
   /** DeckPlan netexId to load, or `NEW_SELECTION` for the create pane. */
   id: string;
-  /** Mode on open. */
-  mode?: 'view' | 'edit';
   /** Fire-and-forget report of each committed write (the list refetch). */
   onWritten?: (write: EntityWrite<DeckPlan>) => void;
 }
@@ -22,17 +20,16 @@ interface DeckPlanDetailsProps {
  * to the new id, and the editor's controls are the sidebar's
  * {@link SidebarEditorRail}.
  *
- * @param {DeckPlanDetailsProps} props - Id, initial mode and the write report.
+ * @param {DeckPlanDetailsProps} props - Id and the write report.
  * @returns {JSX.Element} The DeckPlan editor with its sidebar rail.
  */
-export default function DeckPlanDetails({ id, mode, onWritten }: DeckPlanDetailsProps) {
+export default function DeckPlanDetails({ id, onWritten }: DeckPlanDetailsProps) {
   const { t } = useTranslation();
   const closeSlider = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
   const advanceCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
   return (
     <DeckPlanEditor
       id={id}
-      mode={mode}
       onClose={closeSlider}
       onCreated={advanceCreated}
       onWritten={onWritten}

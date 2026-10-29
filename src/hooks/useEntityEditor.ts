@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createFormState, type FormState } from './useFormState.ts';
+import { useFormState } from './useFormState.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 import { useSelectionGuard, type IsCurrentSelection } from './useSelectionGuard.ts';
 import { useSelectionReset } from './useSelectionReset.ts';
 import { NEW_SELECTION } from './useUrlEditorSelection.tsx';
 import type { EntityRecord } from './useEntityRecord.ts';
 
-const DEFAULT_MODE = 'view' as const;
 const NO_ID_KEY = 'common.saveNoIdReturned',
   STALE_KEY = 'common.saveRecordStale';
 
@@ -33,9 +32,8 @@ export interface EntityEditorOptions<R, F> {
   /** Canonicalise a form before the dirty compare. Treated as fixed. */
   normalise?: (form: F) => F;
   /**
-   * Mode on open and after every selection change (default `'view'`); re-read
-   * at each reset. A host whose create opens in edit passes
-   * `id === NEW_SELECTION ? 'edit' : mode`.
+   * Mode on open and after every selection change; re-read at each reset.
+   * Default: `'edit'` for a create (`NEW_SELECTION`), else `'view'`.
    */
   initialMode?: 'view' | 'edit';
   /**
@@ -101,12 +99,6 @@ export interface EntityEditorApi<F> {
   closeDeactivated: () => void;
 }
 
-type FormAction<R, F> =
-  | { type: 'hydrate'; src: R | null }
-  | { type: 'edit'; form: F }
-  | { type: 'restore' }
-  | { type: 'commit'; form: F };
-
 const errMsg = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
 /** Run a write, folding a throw (sync or async) into `{ error }`. */
@@ -155,37 +147,19 @@ const report = <R>(cb: ((w: EntityWrite<R>) => void) | undefined, write: EntityW
 export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEditorApi<F> {
   const { id, record } = opts;
   const { t } = useTranslation();
-  const toFormRef = useRef(opts.toForm);
-  const normaliseRef = useRef(opts.normalise ?? ((f: F) => f));
-  const actions = useMemo(
-    () =>
-      createFormState<F, R>({
-        blank: toFormRef.current(null),
-        formFromSource: src => toFormRef.current(src ?? null),
-        normalise: f => normaliseRef.current(f),
-      }),
-    []
-  );
-  const reducer = useCallback(
-    (state: FormState<F>, a: FormAction<R, F>): FormState<F> => {
-      switch (a.type) {
-        case 'hydrate':
-          return actions.hydrate(state, a.src);
-        case 'edit':
-          return actions.edit(state, a.form);
-        case 'restore':
-          return actions.restore(state);
-        case 'commit':
-          return actions.commit(state, a.form);
-      }
+  const initialMode = opts.initialMode ?? (id === NEW_SELECTION ? 'edit' : 'view');
+  // `toForm` / `normalise` are captured at mount (treated as fixed).
+  const formState = useFormState<F, R>(
+    {
+      blank: opts.toForm(null),
+      formFromSource: src => opts.toForm(src ?? null),
+      normalise: opts.normalise,
     },
-    [actions]
+    record.data
   );
-  const [state, dispatch] = useReducer(reducer, record.data, src =>
-    actions.hydrate(actions.initial, src)
-  );
+  const { state, hydrate, commit } = formState;
 
-  const [mode, setMode] = useState<'view' | 'edit'>(opts.initialMode ?? DEFAULT_MODE);
+  const [mode, setMode] = useState<'view' | 'edit'>(initialMode);
   const [saving, setSaving] = useState(false);
   // A committed save's record re-fetch is running; Edit is withheld until it ends.
   const [refreshing, setRefreshing] = useState(false);
@@ -218,7 +192,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
   // Declared before the hydrate effect, so a reset and the next record landing
   // in one commit end with the record, not the blank form.
   useSelectionReset(selection, bridgeId, keepForm => {
-    setMode(opts.initialMode ?? DEFAULT_MODE);
+    setMode(initialMode);
     setSaving(false);
     setRefreshing(false);
     setStale(false);
@@ -230,16 +204,16 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     flushPendingCreate();
     setSavedOpen(false);
     setBridgeId(null);
-    dispatch({ type: 'hydrate', src: null });
+    hydrate(null);
   });
 
   // Baseline = Sobek's record, on open and after every re-fetch.
   useEffect(() => {
     if (!record.data) return;
-    dispatch({ type: 'hydrate', src: record.data });
+    hydrate(record.data);
     setBridgeId(null);
     setStale(false);
-  }, [record.data]);
+  }, [record.data, hydrate]);
 
   // The created record's first load settled: report it once (`null` if it failed).
   useEffect(() => {
@@ -251,7 +225,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
 
   useEffect(() => flushPendingCreate, [flushPendingCreate]);
 
-  const isDirty = actions.isDirty(state);
+  const { isDirty } = formState;
   useDirtyFormBlock(isDirty);
 
   const finishCreate = (isCurrent: IsCurrentSelection, submitted: F, newId: string | null) => {
@@ -264,7 +238,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
       return;
     }
     const bridged = opts.withNewId ? opts.withNewId(submitted, newId) : submitted;
-    dispatch({ type: 'commit', form: bridged });
+    commit(bridged);
     setBridgeId(newId);
     setMode('view');
     setSavedOpen(true);
@@ -277,7 +251,7 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
       report(onWrittenRef.current, { type: 'saved', id, record: null });
       return;
     }
-    dispatch({ type: 'commit', form: submitted });
+    commit(submitted);
     setMode('view');
     setRefreshing(true);
     // A reload that resolves nothing (the record is gone) is a failed reload.
@@ -350,11 +324,11 @@ export function useEntityEditor<R, F>(opts: EntityEditorOptions<R, F>): EntityEd
     form: state.form,
     hasRecord,
     selectionKey: selection.key,
-    setForm: useCallback((form: F) => dispatch({ type: 'edit', form }), []),
+    setForm: formState.setForm,
     mode,
     enterEdit: editAvailable ? () => setMode('edit') : undefined,
     cancel: () => {
-      dispatch({ type: 'restore' });
+      formState.restore();
       setMode('view');
     },
     save,

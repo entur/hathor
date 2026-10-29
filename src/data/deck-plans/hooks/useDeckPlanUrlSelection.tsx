@@ -44,8 +44,6 @@ export function useDeckPlanUrlSelection({
     setPage,
     loading,
     getId: dp => dp.id,
-    renderEditor: (id, mode) => (
-      <DeckPlanDetails id={id} mode={mode} onWritten={() => void refetch?.().catch(() => {})} />
-    ),
+    renderEditor: id => <DeckPlanDetails id={id} onWritten={() => refetch?.()} />,
   });
 }

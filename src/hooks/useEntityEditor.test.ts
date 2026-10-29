@@ -93,6 +93,13 @@ describe('useEntityEditor', () => {
     expect(h.result.current.mode).toBe('view');
   });
 
+  it('opens a create in edit mode by default, and back to view once it moves to an id', () => {
+    const h = setup({ id: NEW_SELECTION, record: fakeRecord() });
+    expect(h.result.current.mode).toBe('edit');
+    h.rerender({ id: B, record: fakeRecord({ data: recB }) });
+    expect(h.result.current.mode).toBe('view');
+  });
+
   it('selectionKey follows the org + id', () => {
     const h = setup();
     const keyA = h.result.current.selectionKey;

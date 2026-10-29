@@ -27,11 +27,11 @@ const probe = {
   mounts: 0,
 };
 
-function Editor({ id, mode }: { id: string; mode: 'view' | 'edit' }) {
+function Editor({ id }: { id: string }) {
   useEffect(() => {
     probe.mounts += 1;
   }, []);
-  return <div data-testid="editor">{`${id}|${mode}`}</div>;
+  return <div data-testid="editor">{id}</div>;
 }
 
 function Harness({ allData, dataForTable, loading, setPage }: HarnessProps) {
@@ -45,7 +45,7 @@ function Harness({ allData, dataForTable, loading, setPage }: HarnessProps) {
     setPage,
     loading,
     getId: r => r.id,
-    renderEditor: (id, mode) => <Editor id={id} mode={mode} />,
+    renderEditor: id => <Editor id={id} />,
   });
   const { editingItem } = useEditingItem();
   probe.editingItem = editingItem;
@@ -97,12 +97,12 @@ describe('useUrlEditorSelection', () => {
   it('commits the editor before the list has loaded', () => {
     renderAt('?selected=NMR:Thing:3', unloaded());
     expect(probe.editingItem?.id).toBe('NMR:Thing:3');
-    expect(screen.getByTestId('editor').textContent).toBe('NMR:Thing:3|view');
+    expect(screen.getByTestId('editor').textContent).toBe('NMR:Thing:3');
   });
 
-  it('opens the create pane in edit mode', () => {
+  it('opens the create pane before the list has loaded', () => {
     renderAt('?selected=new', unloaded());
-    expect(screen.getByTestId('editor').textContent).toBe('new|edit');
+    expect(screen.getByTestId('editor').textContent).toBe('new');
   });
 
   it('does not re-commit on a list refetch with the same id', () => {
@@ -119,7 +119,7 @@ describe('useUrlEditorSelection', () => {
     select('NMR:Thing:4');
     expect(probe.editingItem?.id).toBe('NMR:Thing:4');
     expect(probe.editingItem?.EditorComponent).toBe(Component);
-    expect(screen.getByTestId('editor').textContent).toBe('NMR:Thing:4|view');
+    expect(screen.getByTestId('editor').textContent).toBe('NMR:Thing:4');
     expect(probe.mounts).toBe(1);
   });
 
