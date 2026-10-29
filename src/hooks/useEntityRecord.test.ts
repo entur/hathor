@@ -131,6 +131,23 @@ describe('useEntityRecord', () => {
     expect(result.current.notFound).toBe(false);
   });
 
+  it('drops the record on going inactive, so returning to its id reloads', async () => {
+    const fetchById = vi
+      .fn()
+      .mockResolvedValueOnce({ id: 'A' })
+      .mockRejectedValueOnce(new Error('x'));
+    const { result, rerender } = renderHook(({ id }) => useEntityRecord(id, fetchById), {
+      initialProps: { id: 'A' },
+    });
+    await waitFor(() => expect(result.current.data).toEqual({ id: 'A' }));
+    rerender({ id: NEW_SELECTION });
+    rerender({ id: 'A' });
+    expect(result.current.data).toBeNull();
+    expect(result.current.loading).toBe(true);
+    await waitFor(() => expect(result.current.error).toBe('x'));
+    expect(result.current.data).toBeNull();
+  });
+
   it('ignores a stale response after the id changed', async () => {
     const resolvers: Record<string, (v: unknown) => void> = {};
     const fetchById = vi.fn((id: string) => new Promise(res => void (resolvers[id] = res)));

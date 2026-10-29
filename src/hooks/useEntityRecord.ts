@@ -54,6 +54,7 @@ const EMPTY_REC: RecState<unknown> = {
  * captured for an earlier id or org is inert: it resolves `null` and fetches
  * nothing. `loading` is true from the first render of a new key and during
  * every same-key `refetch` (the last good `data` stays exposed meanwhile).
+ * Going inactive (null id, `NEW_SELECTION`) drops the record.
  *
  * @param {string | null} id - Entity netexId, `null`, or `NEW_SELECTION` (no fetch).
  * @param {FetchById<R>} fetchById - Fetcher; may be an inline closure (held in a ref).
@@ -114,6 +115,9 @@ export function useEntityRecord<R>(id: string | null, fetchById: FetchById<R>): 
   useEffect(() => {
     if (!active) {
       latest.current++;
+      // Drop the last record: returning to its id (e.g. back from the create
+      // pane) must start a fresh load, not re-expose it with loading=false.
+      setRec(EMPTY_REC as RecState<R>);
       return;
     }
     run().catch(() => {});

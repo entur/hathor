@@ -13,6 +13,7 @@ import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { useBridgeReadBack } from '../../../hooks/useBridgeReadBack.ts';
 import { useSelectionGuard } from '../../../hooks/useSelectionGuard.ts';
 import { useSelectionReset } from '../../../hooks/useSelectionReset.ts';
 import { succeeds } from '../../../utils/succeeds.ts';
@@ -131,6 +132,13 @@ export default function VehicleTypeDetails({
     dispatch({ type: 'hydrate', row: record.data });
     setBridgeId(null);
   }, [record.data]);
+
+  // The created record's read-back failed or found nothing: the bridged form
+  // stays (Cancel keeps the created id), the success snackbar gives way to a warning.
+  useBridgeReadBack(record, bridgeId === id, t('vehicleType.notFound'), warning => {
+    setSavedAt(null);
+    setRefreshError(warning);
+  });
 
   const isDirty =
     JSON.stringify(normalizeForDirty(state.form)) !==

@@ -39,9 +39,9 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *     once the URL advances (#173)
  *   - An existing non-numeric TransportTypeRef stays selectable via the picker
  *     (orphan-option fallback) AND can be swapped for a known option
- *   - When the created record's by-id read-back fails, Edit → Cancel keeps the
- *     bridged create form (with its new id), so the next Save updates it
- *     instead of creating a duplicate (#217)
+ *   - When the created record's by-id read-back fails, its error replaces the
+ *     success snackbar, and Edit → Cancel keeps the bridged create form (with
+ *     its new id), so the next Save updates it instead of creating a duplicate (#217)
  *   - Creating the first record of an empty list still advances the URL: the
  *     post-save list refresh keeps the sidebar mounted instead of showing the
  *     full-page loader (#217)
@@ -208,6 +208,9 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await page.getByTestId('editor-rail-save').click();
     await expect(page).toHaveURL(new RegExp(`selected=${ENCODED_NEW_ID}`));
     await page.waitForLoadState('networkidle');
+    // The bridged form stays up, but the failed read-back replaces the success.
+    await expect(page.getByText('read-back failed')).toBeVisible();
+    await expect(page.getByText('Vehicle saved')).toHaveCount(0);
 
     await page.getByTestId('editor-rail-edit').click();
     await page.getByTestId('editor-rail-cancel').click();
