@@ -101,7 +101,6 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
     page,
   }) => {
     await page.goto(`/vehicles?selected=${SELECTED_ID}`);
-    await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 

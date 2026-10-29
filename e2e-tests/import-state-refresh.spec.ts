@@ -104,12 +104,10 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
 async function establishFilteredState(page: Page): Promise<string> {
   if (!IS_LIVE) {
     await page.goto(`/vehicle-types?filter=${MOCK_FILTER_TYPE_ID}`);
-    await page.waitForLoadState('networkidle');
     return page.url();
   }
   await page.goto('/'); // the import launches from Home
   await selectFirstOrg(page);
-  await page.waitForLoadState('networkidle');
   await importRegViaAutosys(page, REG_NR); // redirects to /vehicle-types?filter=<ids>
   return page.url();
 }
@@ -144,13 +142,12 @@ test.describe('#141 import filter leaks into sibling lists', () => {
       // Ground truth: a full reload of the list (F5 clears the leak).
       await page.goto(href);
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
       const fullCount = await rowCount(page);
 
       // Client-navigate to the same list FROM the filtered state — must match the F5 count.
       await page.goto(filterUrl);
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
+      await expect(page.getByTestId('url-filter-chip')).toBeVisible();
       await railNavigate(page, href);
       await expect(
         page.getByTestId('total-entries'),

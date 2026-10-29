@@ -47,7 +47,6 @@ const openReview = async (page: Page, regNrs: string[]) => {
 
   await page.goto('/');
   await selectFirstOrg(page); // the button renders only once an organisation is selected
-  await page.waitForLoadState('networkidle');
 
   // Open the multi-import dialog
   const multiButton = page.getByTestId(IMPORT_BTN);

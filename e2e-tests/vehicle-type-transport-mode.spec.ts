@@ -32,7 +32,6 @@ test.describe('#23 — TransportMode column + filter-dropdown icons', () => {
 
     await page.goto('/vehicle-types');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
 
     const table = page.locator('table');
     await expect(table).toBeVisible();
@@ -63,7 +62,6 @@ test.describe('#23 — TransportMode column + filter-dropdown icons', () => {
 
     await page.goto('/vehicles');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('search-filter-button').click();
 
@@ -90,7 +88,6 @@ test.describe('#23 — TransportMode column + filter-dropdown icons', () => {
 
     await page.goto('/vehicle-types');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('search-filter-button').click();
 
