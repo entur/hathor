@@ -30,6 +30,19 @@ export default tseslint.config(
     },
   },
   {
+    // #232: networkidle is flaky; wait on a web-first assertion instead.
+    files: ['e2e-tests/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Literal[value='networkidle']",
+          message: "Don't wait on 'networkidle' — assert on the element you need (#232).",
+        },
+      ],
+    },
+  },
+  {
     // netex-ts-gen output: machine-generated, regenerated on schema bumps.
     // Loosen the two rules whose violations are intrinsic to the emission
     // (Extensions?: any in entity interfaces; intentionally-unused Reshape

@@ -331,6 +331,8 @@ export const rowCount = async (page: Page): Promise<number> => {
  * @returns Full `Codespace:Type:Value` ids, in row order.
  */
 export const readNetexIds = async (page: Page, n: number): Promise<string[]> => {
+  // `rows.count()` doesn't retry; `total-entries` mounts only on a settled list.
+  await expect(page.getByTestId('total-entries')).toBeVisible();
   const rows = page.locator('table tbody tr');
   const total = Math.min(n, await rows.count());
   const out: string[] = [];
@@ -354,7 +356,6 @@ export const readNetexIds = async (page: Page, n: number): Promise<string[]> => 
 export const liveVehicleTypeInt = async (page: Page): Promise<string> => {
   await page.goto('/vehicle-types');
   await selectFirstOrg(page);
-  await page.waitForLoadState('networkidle');
   const [id] = await readNetexIds(page, 1);
   const m = id?.match(/:(\d+)$/);
   expect(m, 'expected a numeric live VehicleType id to build a transportType ref').toBeTruthy();

@@ -6,7 +6,6 @@ import { IS_LIVE, seedAuth, selectFirstOrg, rowCount, readNetexIds } from './liv
 async function openList(page: import('@playwright/test').Page) {
   await page.goto('/vehicle-types');
   await selectFirstOrg(page);
-  await page.waitForLoadState('networkidle');
   const table = page.locator('table');
   await expect(table).toBeVisible();
   return table;
@@ -65,7 +64,6 @@ test.describe('Vehicle type URL filtering', () => {
 
       await page.goto(`/vehicle-types?filter=${encodeURIComponent(id)}`);
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
 
       const filterChip = page.getByTestId('url-filter-chip');
       await expect(filterChip).toBeVisible({ timeout: 10000 });
@@ -76,7 +74,6 @@ test.describe('Vehicle type URL filtering', () => {
     }
 
     await page.goto('/vehicle-types?filter=NMR:VehicleType:2');
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     const filterChip = page.getByTestId('url-filter-chip');
@@ -97,7 +94,6 @@ test.describe('Vehicle type URL filtering', () => {
       const param = encodeURIComponent(ids.join(','));
       await page.goto(`/vehicle-types?filter=${param}`);
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
 
       const filterChip = page.getByTestId('url-filter-chip');
       await expect(filterChip).toBeVisible({ timeout: 10000 });
@@ -108,7 +104,6 @@ test.describe('Vehicle type URL filtering', () => {
 
     const filterParam = encodeURIComponent('NMR:VehicleType:1,NMR:VehicleType:3');
     await page.goto(`/vehicle-types?filter=${filterParam}`);
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     const filterChip = page.getByTestId('url-filter-chip');
@@ -129,10 +124,8 @@ test.describe('Vehicle type URL filtering', () => {
       expect(id).toBeTruthy();
       await page.goto(`/vehicle-types?filter=${encodeURIComponent(id)}`);
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
     } else {
       await page.goto('/vehicle-types?filter=NMR:VehicleType:1');
-      await page.waitForLoadState('networkidle');
     }
 
     const filterChip = page.getByTestId('url-filter-chip');
@@ -163,7 +156,6 @@ test.describe('Vehicle type URL filtering', () => {
     const absentId = 'NMR:VehicleType:999999999';
     await page.goto(`/vehicle-types?filter=${encodeURIComponent(absentId)}`);
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     const filterChip = page.getByTestId('url-filter-chip');

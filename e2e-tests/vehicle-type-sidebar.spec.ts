@@ -6,7 +6,6 @@ import { IS_LIVE, seedAuth, selectFirstOrg, openFirstRow } from './live-auth-hel
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
   await page.goto('/vehicle-types');
   await selectFirstOrg(page);
-  await page.waitForLoadState('networkidle');
   await expect(page.locator('table')).toBeVisible();
   return openFirstRow(page, 'vehicle-type-details-title');
 }
@@ -71,7 +70,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     }
 
     await page.goto('/vehicle-types');
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     await page.locator('table tr', { hasText: 'Type Alpha' }).click();
@@ -103,7 +101,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     }
 
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
 
     // Edit tab (default): name hydrated from the row, dimensions collapsed in here.
     await expect(page.locator('#vtype-name')).toHaveValue('Type Alpha');
@@ -134,7 +131,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     test.skip(IS_LIVE, 'mock-only — asserts a fixture vehicle chip target');
 
     await page.goto('/vehicle-types');
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     await page.locator('table').getByRole('link', { name: 'AA-101' }).click();
@@ -148,7 +144,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
       await openFirstVtype(page);
     } else {
       await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-      await page.waitForLoadState('networkidle');
       await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
     }
 
@@ -173,7 +168,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     test.skip(IS_LIVE, 'mock-only — needs a null-lowFloor-baseline row');
 
     await page.goto('/vehicle-types?selected=NMR:VehicleType:3');
-    await page.waitForLoadState('networkidle');
     await page.getByTestId('editor-rail-edit').click();
 
     const lowFloor = page.locator('#vtype-low-floor');
@@ -199,7 +193,6 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
       await openFirstVtype(page);
     } else {
       await page.goto('/vehicle-types?selected=NMR:VehicleType:2');
-      await page.waitForLoadState('networkidle');
       // A second editor open (in-app, so the session survives) reuses the cache.
       await page.locator('table tr', { hasText: 'Type Alpha' }).click();
       await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha');
@@ -248,7 +241,6 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   test('edit name → save fires the mutation, shows success, returns to view', async ({ page }) => {
     await interceptVehicleTypesWithSave(page);
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
 
     await expect(page.locator('#vtype-name')).toBeDisabled();
     await page.getByTestId('editor-rail-edit').click();
@@ -272,7 +264,6 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   test('after save the form re-baselines — collapse raises no discard dialog', async ({ page }) => {
     await interceptVehicleTypesWithSave(page);
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vtype-name').fill('Type Alpha X');
@@ -287,7 +278,6 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   test('save error surfaces in a snackbar and stays in edit mode', async ({ page }) => {
     await interceptVehicleTypesWithSave(page, { saveError: 'boom' });
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vtype-name').fill('Type Alpha X');
@@ -305,7 +295,6 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   test('editing the name text preserves the existing lang tag', async ({ page }) => {
     const { lastInput } = await interceptVehicleTypesWithSave(page);
     await page.goto('/vehicle-types?selected=NMR:VehicleType:2');
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vtype-name').fill('Type Beta X');
@@ -325,7 +314,6 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   }) => {
     await interceptVehicleTypesWithSave(page, { failRefetch: true });
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vtype-name').fill('Type Alpha X');

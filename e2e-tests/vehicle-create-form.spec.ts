@@ -78,7 +78,6 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     if (IS_LIVE) {
       const { reg } = await liveCreateOverrides(page);
       await page.goto('/vehicles?selected=new');
-      await page.waitForLoadState('networkidle');
 
       const save = page.getByTestId('editor-rail-save');
       await expect(fab).toBeHidden();
@@ -107,7 +106,6 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
 
     const capture = await wireCreateFlow(page);
     await page.goto('/vehicles?selected=new');
-    await page.waitForLoadState('networkidle');
 
     const save = page.getByTestId('editor-rail-save');
     await expect(fab).toBeHidden();
@@ -148,7 +146,6 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     const save = interceptVehicleSaveMutation(page, vehicleId);
 
     await page.goto(`/vehicles?selected=${encodeURIComponent(vehicleId)}`);
-    await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
     await page.getByTestId('editor-rail-edit').click();

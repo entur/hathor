@@ -174,7 +174,6 @@ const runSortStabilityTests = (params: {
         if (IS_LIVE) {
           await page.goto('/vehicles');
           await selectFirstOrg(page);
-          await page.waitForLoadState('networkidle');
           await expect(page.locator('table')).toBeVisible();
 
           await firstRow.click();
@@ -193,7 +192,6 @@ const runSortStabilityTests = (params: {
         }
 
         await page.goto(params.route);
-        await page.waitForLoadState('networkidle');
 
         if (params.locked) {
           await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
