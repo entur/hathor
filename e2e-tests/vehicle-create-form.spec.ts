@@ -80,8 +80,9 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
       await page.goto('/vehicles?selected=new');
 
       const save = page.getByTestId('editor-rail-save');
-      await expect(fab).toBeHidden();
       await page.getByLabel('Registration Number').fill(reg);
+      // After fill: the form is rendered, so hidden can't pass on the loading screen.
+      await expect(fab).toBeHidden();
       await expect(save).toBeDisabled();
       // Picker is fed by the live `vehicleTypes(` query — pick whatever the
       // local Sobek serves first. Requires at least one VehicleType seeded.
@@ -108,9 +109,8 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await page.goto('/vehicles?selected=new');
 
     const save = page.getByTestId('editor-rail-save');
-    await expect(fab).toBeHidden();
-
     await page.getByLabel('Registration Number').fill('NEW-001');
+    await expect(fab).toBeHidden();
     await expect(save).toBeDisabled();
 
     await page.getByRole('combobox', { name: 'Vehicle Type' }).click();

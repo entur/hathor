@@ -192,7 +192,12 @@ test.describe('/vehicle-types editable sidebar deep-link (no-auth)', () => {
     if (IS_LIVE) {
       await openFirstVtype(page);
     } else {
+      const betaCodes = page.waitForResponse(
+        r => !!r.request().postData()?.includes('codeValues(')
+      );
       await page.goto('/vehicle-types?selected=NMR:VehicleType:2');
+      // Let Beta's fetch settle, so Alpha hits the settled cache, not the in-flight one.
+      await betaCodes;
       // A second editor open (in-app, so the session survives) reuses the cache.
       await page.locator('table tr', { hasText: 'Type Alpha' }).click();
       await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha');
