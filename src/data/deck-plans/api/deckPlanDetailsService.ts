@@ -7,13 +7,23 @@ import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../../nete
  * Fetch NeTEx XML for a single deck plan from Sobek
  * Throws with the response body (or statusText) on non-OK responses so that
  * downstream error translation can match known backend error patterns.
+ *
+ * @param {string} applicationNeTExBaseUrl - Sobek NeTEx base URL from config.
+ * @param {string} dataOwnerRef - NeTEx id of the owning organisation; Sobek requires it and
+ *   treats a deck plan owned by anyone else as not found.
+ * @param {string} id - NeTEx id of the deck plan.
+ * @param {AccessToken} token - Bearer token.
+ * @returns {Promise<string>} The `PublicationDelivery` XML.
  */
 export const fetchDeckPlanDetails = async (
   applicationNeTExBaseUrl: string,
+  dataOwnerRef: string,
   id: string,
   token: AccessToken
 ): Promise<string> => {
-  const response = await fetch(`${applicationNeTExBaseUrl}/deckplans/${encodeURIComponent(id)}`, {
+  const url = new URL(`${applicationNeTExBaseUrl}/deckplans/${encodeURIComponent(id)}`);
+  url.searchParams.set('dataOwner', dataOwnerRef);
+  const response = await fetch(url, {
     method: 'GET',
     headers: authHeader(token),
   });

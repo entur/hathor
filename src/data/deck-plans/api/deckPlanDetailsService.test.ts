@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService.ts';
+import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService.ts';
 
 const IMPORT_URL = 'http://sobek/services/vehicles/netex';
 const OWNER = 'NMR:Organisation:1';
@@ -70,5 +70,21 @@ describe('saveDeckPlanAsNetexToBackend', () => {
     await saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null);
     expect(posted).toContain(OWNER);
     expect(posted).toContain('NMR:ResponsibilitySet:1');
+  });
+});
+
+/** Sobek rejects a single-object export without `dataOwner` (entur/sobek#227). */
+describe('fetchDeckPlanDetails', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('sends the owning organisation as dataOwner', async () => {
+    const fetchMock = vi.fn(async (_url: URL) => ({ ok: true, text: async () => '<xml/>' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchDeckPlanDetails(IMPORT_URL, OWNER, 'NMR:DeckPlan:1', null);
+
+    const url = fetchMock.mock.calls[0][0];
+    expect(url.pathname).toBe('/services/vehicles/netex/deckplans/NMR%3ADeckPlan%3A1');
+    expect(url.searchParams.get('dataOwner')).toBe(OWNER);
   });
 });
