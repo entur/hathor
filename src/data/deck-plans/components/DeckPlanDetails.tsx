@@ -2,7 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import NetexId from '../../netex/NetexId.tsx';
+import NetexId from '../../../components/NetexId.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
 import { FormLayout } from '../../../components/FormLayout.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';

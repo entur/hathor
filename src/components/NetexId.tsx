@@ -141,22 +141,21 @@ export default function NetexId({
     : copy === 'only'
       ? t('netex.copyIdWith', { id })
       : t('netex.copyId');
-  if (copy === 'only') {
-    return (
-      <Tooltip title={copyTooltip}>
-        <IconButton
-          size="small"
-          onClick={onCopyClick}
-          className={COPY_CLS}
-          data-testid="netex-id-copy"
-          aria-label={copyTooltip}
-          sx={{ width: dim.btn, height: dim.btn, p: 0, '& svg': { fontSize: dim.icon } }}
-        >
-          {copied ? <CheckIcon fontSize="inherit" /> : <ContentCopyIcon fontSize="inherit" />}
-        </IconButton>
-      </Tooltip>
-    );
-  }
+  const copyButton = (
+    <Tooltip title={copyTooltip}>
+      <IconButton
+        size="small"
+        onClick={onCopyClick}
+        className={COPY_CLS}
+        data-testid="netex-id-copy"
+        aria-label={copyTooltip}
+        sx={{ width: dim.btn, height: dim.btn, p: 0, '& svg': { fontSize: dim.icon } }}
+      >
+        {copied ? <CheckIcon fontSize="inherit" /> : <ContentCopyIcon fontSize="inherit" />}
+      </IconButton>
+    </Tooltip>
+  );
+  if (copy === 'only') return copyButton;
   const labelNode = (
     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: dim.gap }}>
       <span>
@@ -180,25 +179,7 @@ export default function NetexId({
           }}
         />
       )}
-      {showCopy && (
-        <Tooltip title={copyTooltip}>
-          <IconButton
-            size="small"
-            onClick={onCopyClick}
-            className={COPY_CLS}
-            data-testid="netex-id-copy"
-            aria-label={copyTooltip}
-            sx={{
-              width: dim.btn,
-              height: dim.btn,
-              p: 0,
-              '& svg': { fontSize: dim.icon },
-            }}
-          >
-            {copied ? <CheckIcon fontSize="inherit" /> : <ContentCopyIcon fontSize="inherit" />}
-          </IconButton>
-        </Tooltip>
-      )}
+      {showCopy && copyButton}
     </Box>
   );
   const hoverSx =
