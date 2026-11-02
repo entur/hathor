@@ -47,7 +47,7 @@ const DECK_PLANS: ListView = {
   title: 'deck-plan-details-title',
   mock: async page => {
     await interceptDeckPlansQuery(page);
-    await page.route(/\/deckplans\/[^/?#]+$/, route =>
+    await page.route(/\/deckplans\/[^/?#]+(\?|$)/, route =>
       route.fulfill({
         status: 200,
         contentType: 'application/xml',
