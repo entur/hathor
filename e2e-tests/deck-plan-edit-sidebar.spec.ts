@@ -53,7 +53,7 @@ test.describe('/deck-plans — sidebar editor', () => {
 
   const openFirstRow = async (page: import('@playwright/test').Page, body = xml()) => {
     await interceptDeckPlansQuery(page);
-    await page.route(/\/deckplans\/[^/?#]+$/, route =>
+    await page.route(/\/deckplans\/[^/?#]+(\?|$)/, route =>
       route.fulfill({ status: 200, contentType: 'application/xml', body })
     );
     await page.goto('/deck-plans');
@@ -199,7 +199,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     // Hold the body fetch open so the editor is dirty while `xml` is still ''.
     let release!: () => void;
     const gate = new Promise<void>(r => (release = r));
-    await page.route(/\/deckplans\/[^/?#]+$/, async route => {
+    await page.route(/\/deckplans\/[^/?#]+(\?|$)/, async route => {
       await gate;
       await route.fulfill({ status: 200, contentType: 'application/xml', body: xml() });
     });
@@ -233,7 +233,7 @@ test.describe('/deck-plans — sidebar editor', () => {
       }
       return route.fallback();
     });
-    await page.route(/\/deckplans\/[^/?#]+$/, route =>
+    await page.route(/\/deckplans\/[^/?#]+(\?|$)/, route =>
       route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
     );
 
@@ -298,7 +298,7 @@ test.describe('/deck-plans — sidebar editor', () => {
     // own before any save (auth/org identity churn), so a "second fetch" gate
     // would 500 the initial load instead.
     const { saved } = await interceptDeckPlanSave(page, xml());
-    await page.route(/\/deckplans\/[^/?#]+$/, route =>
+    await page.route(/\/deckplans\/[^/?#]+(\?|$)/, route =>
       saved()
         ? route.fulfill({ status: 500, contentType: 'text/plain', body: 'body fetch failed' })
         : route.fulfill({ status: 200, contentType: 'application/xml', body: xml() })
