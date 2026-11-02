@@ -10,7 +10,7 @@ const meta: Meta<typeof FormLayoutSkeleton> = {
     docs: {
       description: {
         component:
-          'Wave-animated loading skeleton sharing the same grid shape as `FormLayout`. Drop it into any sidebar editor that hasn’t loaded yet.',
+          'Wave-animated loading skeleton sharing the shape of `FormLayout` (label+value rows) or `FormStack` (`stacked` sections). Drop it into any sidebar editor that hasn’t loaded yet.',
       },
     },
   },
@@ -42,6 +42,15 @@ export const WithTitle: Story = {
     ariaLabel: 'Loading vehicle',
     showTitle: true,
     sections: [{ rowCount: 4 }],
+  },
+};
+
+/** Read-only context rows above a stack of editable fields, as `/vehicles` loads. */
+export const StackedFields: Story = {
+  args: {
+    ariaLabel: 'Loading vehicle',
+    showTitle: true,
+    sections: [{ rowCount: 2 }, { rowCount: 5, stacked: true }],
   },
 };
 
