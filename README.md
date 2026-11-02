@@ -41,7 +41,7 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 
 ## Architecture diagram
 
-[`docs/architecture.html`](docs/architecture.html) is a standalone, interactive diagram of the component architecture — from `App.tsx` down through the generic wrappers (`GenericDataViewPage`, `GenericDetailsPage`) to every feature view. Open it in a browser (it loads D3 from a CDN); click a widget chip to expand its detail.
+[`docs/architecture.html`](docs/architecture.html) is a standalone, interactive diagram of the component architecture — from `App.tsx` down through the generic wrapper (`GenericDataViewPage`) to every feature view. Open it in a browser (it loads D3 from a CDN); click a widget chip to expand its detail.
 
 **Keeping it in sync:** the diagram is driven by `docs/architecture-data.js`, a generated metafile. When routes or views change in `src/App.tsx`, regenerate it with `npm run gen:arch`. See the **RUN** section of the JSDoc header in [`scripts/gen-arch-metafile.mjs`](scripts/gen-arch-metafile.mjs) for details.
 
@@ -62,7 +62,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 
 - `components/` — UI components grouped by sub-area (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`).
 - `hooks/` — global hooks shared across features.
-- `pages/` — generic infrastructure (`GenericDataViewPage`, `GenericDetailsPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
+- `pages/` — generic infrastructure (`GenericDataViewPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
 - `utils/` — domain-neutral helpers (`iconLoaderUtils.ts`).
 - `contexts/` — top-level React contexts not yet hosted in feature folders (`configContext`, `CustomizationContext`, `EditingContext`, `SessionContext`).
 - `static/` — static assets.
