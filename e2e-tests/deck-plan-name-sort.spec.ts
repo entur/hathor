@@ -59,7 +59,6 @@ test.describe('Deck-plan sort: blanks last (regression for issue #63)', () => {
     }
 
     await page.goto('/deck-plans');
-    await page.waitForLoadState('networkidle');
 
     // Header label for the name column is "Name" (deckPlans.field.name).
     // First click flips orderBy='name' from asc → desc. Exact match: avoids

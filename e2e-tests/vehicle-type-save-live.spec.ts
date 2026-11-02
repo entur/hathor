@@ -31,7 +31,6 @@ test.describe('VehicleType sidebar save — LIVE Sobek', () => {
     // Derive a real org-owned VehicleType id from the live list.
     await page.goto('/vehicle-types');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
     const [vtId] = await readNetexIds(page, 1);
     expect(vtId, 'expected an org-owned VehicleType to edit').toBeTruthy();
     const selected = `/vehicle-types?selected=${encodeURIComponent(vtId)}`;
@@ -39,7 +38,6 @@ test.describe('VehicleType sidebar save — LIVE Sobek', () => {
     // Capture the original name so we can restore it on teardown.
     await page.goto(selected);
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
     const original = await page.locator('#vtype-name').inputValue();
     // Capture a sibling field to prove the name-only save doesn't wipe it
@@ -57,7 +55,6 @@ test.describe('VehicleType sidebar save — LIVE Sobek', () => {
     // the untouched sibling field survived the full-document replace.
     await page.goto(selected);
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText(marker);
     await expect(page.locator('#vtype-length')).toHaveValue(originalLength);
 

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import SiteNavCards from '../components/site-nav-cards/SiteNavCards.tsx';
 import AutosysImportFloatingMenu from '../data/vehicle-imports/components/AutosysImportFloatingMenu.tsx';
 import type { CountCtx } from '../components/site-nav-cards/siteTypes.ts';
+import { useIsFeatureOn } from '../config/featureFlags.ts';
 import { useConfig } from '../contexts/configContext.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useAuth } from '../auth/index.ts';
@@ -34,6 +35,7 @@ export default function HomePage() {
   } = useOrganisationsContext();
   const { isAuthenticated, getAccessToken, login } = useAuth();
   const { applicationBaseUrl, oidcConfig } = useConfig();
+  const showAutosysImport = useIsFeatureOn()('AutosysImport');
   // getAccessToken's identity changes on every OIDC silent renew; read it through a
   // ref so a token refresh doesn't rebuild ctx and re-run every card's count fetch.
   const tokenRef = useRef(getAccessToken);
@@ -79,7 +81,7 @@ export default function HomePage() {
           </Typography>
         </Box>
 
-        {isAuthenticated && currentOrganisation && (
+        {isAuthenticated && currentOrganisation && showAutosysImport && (
           <Box sx={{ mb: 3 }}>
             <AutosysImportFloatingMenu
               variant="outlined"

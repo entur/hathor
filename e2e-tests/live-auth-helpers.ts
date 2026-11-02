@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page, type Route } from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +15,9 @@ const CONFIG_FIXTURE = {
   'auth-off': 'config-no-auth.json',
 } as const;
 export type ConfigProfile = keyof typeof CONFIG_FIXTURE;
+
+/** Top-level `config.json` keys a spec overrides on top of a profile's fixture. */
+export type ConfigOverrides = Record<string, unknown>;
 
 /** Fixture bodies read once at module init — workers reuse them. */
 const CONFIG_BODY: Record<ConfigProfile, string> = {
@@ -32,11 +35,19 @@ const CONFIG_BODY: Record<ConfigProfile, string> = {
  *
  * @param router Playwright `Page` or `BrowserContext`.
  * @param profile 'auth-on' (OIDC) or 'auth-off' (no oidcConfig).
+ * @param overrides Top-level keys merged over the profile's fixture, e.g.
+ *   `{ sandboxFeatures: { DeckPlans: false } }` to turn a feature flag off.
  */
-export const setConfig = (router: Page | BrowserContext, profile: ConfigProfile) =>
-  router.route('**/config.json', route =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: CONFIG_BODY[profile] })
+export const setConfig = (
+  router: Page | BrowserContext,
+  profile: ConfigProfile,
+  overrides?: ConfigOverrides
+) => {
+  const body = JSON.stringify({ ...JSON.parse(CONFIG_BODY[profile]), ...overrides });
+  return router.route('**/config.json', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body })
   );
+};
 
 /** Timeout (ms) for the org picker to render + auto-select after login. */
 const ORG_READY_TIMEOUT = 20000;
@@ -101,6 +112,14 @@ const MOCK_ORGANISATIONS = {
   },
 };
 
+/** Sobek's seeded code lists by `valueType` (V13__AddCodeValues.sql): value `Euro1`, label `Euro 1`. */
+const MOCK_CODE_LISTS: Record<string, { label: string; value: string }[]> = {
+  EMISSION_STANDARD: [1, 2, 3, 4, 5, 6, 7].map(n => ({ label: `Euro ${n}`, value: `Euro${n}` })),
+};
+
+const fulfillJson = (route: Route, body: unknown) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+
 /**
  * Load the JWT captured by the login handoff (`playwright/.auth/capture.mjs`).
  * Throws with a runnable hint if absent OR expired — fail fast with the right
@@ -136,10 +155,11 @@ export const loadOidcUser = (): OidcUser => {
  *
  * Also serves the oidc-enabled `config.json` (`setConfig 'auth-on'`) in BOTH
  * modes — the app needs it to authenticate and render the org picker — so
- * callers no longer touch `public/config.json` on disk.
+ * callers no longer touch `public/config.json` on disk. `configOverrides` are
+ * merged over that config (see {@link setConfig}).
  */
-export const seedAuth = async (context: BrowserContext) => {
-  await setConfig(context, 'auth-on');
+export const seedAuth = async (context: BrowserContext, configOverrides?: ConfigOverrides) => {
+  await setConfig(context, 'auth-on', configOverrides);
   const { k, v } = IS_LIVE ? loadOidcUser() : MOCK_OIDC;
   await context.addInitScript(([key, val]) => window.sessionStorage.setItem(key, val), [
     k,
@@ -159,25 +179,26 @@ export const seedAuth = async (context: BrowserContext) => {
     }
     return;
   }
-  await mockOrgs(context);
+  await mockAppLookups(context);
 };
 
 /**
- * Mock: claim only the `organisations` query; each spec's page-level list
- * interceptors run first and handle their own queries (they must `fallback()`
- * non-matches so the org query reaches this route).
+ * Mock: claim only the app-wide lookups — the `organisations` query and the
+ * `codeValues` code lists; each spec's page-level list interceptors run first
+ * and handle their own queries (they must `fallback()` non-matches so these
+ * reach this route).
  *
  * @param router Playwright `Page` or `BrowserContext`.
  */
-export const mockOrgs = (router: Page | BrowserContext) =>
+export const mockAppLookups = (router: Page | BrowserContext) =>
   router.route('**/graphql', async route => {
-    const query: string = route.request().postDataJSON()?.query ?? '';
+    const post = route.request().postDataJSON();
+    const query: string = post?.query ?? '';
     if (query.includes('organisations')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(MOCK_ORGANISATIONS),
-      });
+      await fulfillJson(route, MOCK_ORGANISATIONS);
+    } else if (query.includes('codeValues(')) {
+      const content = MOCK_CODE_LISTS[post?.variables?.filter?.valueType] ?? [];
+      await fulfillJson(route, { data: { codeValues: { content } } });
     } else {
       await route.fallback();
     }
@@ -310,6 +331,8 @@ export const rowCount = async (page: Page): Promise<number> => {
  * @returns Full `Codespace:Type:Value` ids, in row order.
  */
 export const readNetexIds = async (page: Page, n: number): Promise<string[]> => {
+  // `rows.count()` doesn't retry; `total-entries` mounts only on a settled list.
+  await expect(page.getByTestId('total-entries')).toBeVisible();
   const rows = page.locator('table tbody tr');
   const total = Math.min(n, await rows.count());
   const out: string[] = [];
@@ -333,7 +356,6 @@ export const readNetexIds = async (page: Page, n: number): Promise<string[]> => 
 export const liveVehicleTypeInt = async (page: Page): Promise<string> => {
   await page.goto('/vehicle-types');
   await selectFirstOrg(page);
-  await page.waitForLoadState('networkidle');
   const [id] = await readNetexIds(page, 1);
   const m = id?.match(/:(\d+)$/);
   expect(m, 'expected a numeric live VehicleType id to build a transportType ref').toBeTruthy();

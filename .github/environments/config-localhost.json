@@ -1,6 +1,6 @@
 {
   "applicationBaseUrl": "http://127.0.0.1:37999/services/vehicles/graphql",
-  "applicationGetAutosysUrl": "http://127.0.0.1:37998/services/autosys?registrationNumber=",
+  "motorVehicleRegistryProxy": "http://127.0.0.1:37998/services/autosys/vehicles",
   "applicationImportBaseUrl": "http://127.0.0.1:37999/services/vehicles/netex",
   "applicationEnv": "development",
   "claimsNamespace": "https://ror.entur.io/role_assignments",
@@ -13,5 +13,10 @@
     },
     "redirect_uri": "http://localhost:5000"
   },
-  "themeFilePath": "/theme-dev.json"
+  "themeFilePath": "/theme-dev.json",
+  "faviconPath": "/assets/M-favicon.svg",
+  "sandboxFeatures": {
+    "DeckPlans": true,
+    "AutosysImport": true
+  }
 }

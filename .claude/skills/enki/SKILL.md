@@ -9,7 +9,10 @@ description: >-
   Uttu's frontend, "align with NPlan", "like NPlan does it", "match the other Entur tools", or a
   hathor issue that cites NPlan as the reference (e.g. #185 header alignment) — and also before
   restyling hathor's header, org select, theme tokens, page frame or list/editor layout, since enki
-  is the reference for those even when the request doesn't name it.
+  is the reference for those even when the request doesn't name it. Also use it for feature flags,
+  config toggles, `sandboxFeatures` / `featureFlags`, `extPath` or per-installation customisation
+  in hathor's `config.json`. It covers how enki and its sibling abzu (the NSR stop-place frontend)
+  do this.
 ---
 
 # enki — hathor's alignment reference
@@ -98,6 +101,20 @@ non-obvious call (adopt enki's way, or keep hathor's), record it there as an ADR
 Full tables — folders, idioms, vocabulary, routes, config, commands, and what has no counterpart —
 are in **`references/map.md`**. Read it when the quick map doesn't cover the path in question.
 
+## Feature flags in config
+
+Hathor keeps every flag in `sandboxFeatures`, one flag per feature, read with `useIsFeatureOn()`
+(FORK_DECISIONS 2026-10-21) — don't add top-level `enableX` booleans. Enki and abzu (`../abzu`,
+Entur's stop-place frontend) build theirs on `bootstrap.json` and `@entur/react-component-toggle`,
+and split it differently:
+- **enki:** plain `enableX` booleans at the top level, and `sandboxFeatures` only for lazy-loaded
+  `src/ext/` code.
+- **abzu:** one mixed `featureFlags` map, plus a three-way `uiMode` setting and runtime JSON themes.
+
+Before adding a flag, toggle or per-installation slot to hathor's config, read
+**`references/feature-flags.md`**. It covers both setups with file:line refs, where they differ,
+what each need maps to in hathor, and hathor's decided rules.
+
 ## Aligning a piece of UI
 
 1. Read the hathor issue; note what it scopes out (e.g. #185 excludes enki's hamburger menu).
@@ -116,7 +133,8 @@ are in **`references/map.md`**. Read it when the quick map doesn't cover the pat
 
 ## Keeping this skill true
 
-The tables were verified against enki `0.710.0` (`3f8d31cb`) and hathor `0.103.0`. When you find a
+The tables were verified against enki `0.710.0` (`3f8d31cb`) and hathor `0.103.0`;
+`feature-flags.md` also against abzu `1.660.0` (`1dae3802`). When you find a
 row that no longer holds — a moved file, a new MUI major on either side, a hathor decision that
 supersedes a "deliberately differs" note — fix the row in the same change. A stale map is worse
 than none, because it gets trusted.

@@ -47,7 +47,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
   test('list renders rows with TransportMode icons in the column', async ({ page }) => {
     await page.goto('/vehicles');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
 
     const table = page.locator('table');
     await expect(table).toBeVisible();
@@ -82,7 +81,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
   test('Rail chip filter narrows rows to rail-mode only', async ({ page }) => {
     await page.goto('/vehicles');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     const before = await rowCount(page);
@@ -111,7 +109,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
   test('row click opens sidebar and writes ?selected= to URL', async ({ page }) => {
     await page.goto('/vehicles');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
     await expect(page.locator('table')).toBeVisible();
 
     if (IS_LIVE) {
@@ -135,7 +132,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     if (IS_LIVE) {
       await page.goto('/vehicles');
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
       await expect(page.locator('table')).toBeVisible();
       await openFirstRow(page, 'vehicle-details-title');
       const context = page.getByTestId('vehicle-context');
@@ -146,7 +142,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     }
 
     await page.goto('/vehicles?selected=NMR:Vehicle:bus-1');
-    await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
     const context = page.getByTestId('vehicle-context');
@@ -160,12 +155,10 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     if (IS_LIVE) {
       await page.goto('/vehicles');
       await selectFirstOrg(page);
-      await page.waitForLoadState('networkidle');
       await expect(page.locator('table')).toBeVisible();
       await openFirstRow(page, 'vehicle-details-title');
     } else {
       await page.goto('/vehicles?selected=NMR:Vehicle:bus-1');
-      await page.waitForLoadState('networkidle');
       await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
     }
 
@@ -183,7 +176,6 @@ test.describe('/vehicles list, sidebar, deep-link, chip filter (no-auth)', () =>
     test.skip(IS_LIVE, 'pagination math is fixture-deterministic; no stable live target row');
 
     await page.goto('/vehicles?selected=NMR:Vehicle:rail-9');
-    await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
     // Pagination text should now read "11–15 of 15" (page 1).

@@ -1,4 +1,5 @@
 import type { MenuIconName } from '../icons/MenuIcon.tsx';
+import type { FeatureFlag } from '../../config/featureFlags.ts';
 
 /**
  * siteTypes — the registry entity types the Home dashboard cards render, plus
@@ -25,6 +26,8 @@ export type SiteType = {
   statKey: string;
   createKey: string;
   count: (ctx: CountCtx) => Promise<number>;
+  /** Hides the type unless this `sandboxFeatures` key is on in config.json. */
+  flag?: FeatureFlag;
 };
 
 /** Resolves `n` after a staggered fake latency — placeholder for a real count query. */
@@ -62,5 +65,6 @@ export const TYPES: SiteType[] = [
     statKey: 'home.stat.deckPlans',
     createKey: 'home.createNew.deckPlan',
     count: fakeCount(58, 2),
+    flag: 'DeckPlans',
   },
 ];

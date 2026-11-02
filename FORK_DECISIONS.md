@@ -638,3 +638,69 @@ The 2026-05-15 grid sizes its label column to content (`fit-content(12rem)`). In
 - Row height goes back up (~40px field + 16px gap) — the vertical space the 2026-05-15 ADR reclaimed is traded for stable widths.
 - An `Autocomplete`'s DOM id goes on the `Autocomplete`, not the inner `TextField`, so the label and the combobox input share it.
 - `FormLayoutSkeleton` sections are either label+value rows or `stacked`.
+
+## Feature flags live in `sandboxFeatures`; one flag per feature _(2026-10-21)_
+
+### Context
+
+Deck plans are not ready for every environment, but their route, nav item, Home cards and the references to them elsewhere (vehicle-type column, multi-import count) were always on (#202). Each environment's `config.json` lives in `hathor-deployment-config`; only dev and localhost are in this repo (`.github/environments/`). enki and abzu already gate per-installation features from `config.json` under `sandboxFeatures`.
+
+### Decision
+
+- **One place for flags.** `sandboxFeatures.<Feature>` (PascalCase, `SandboxFeatures` in `src/contexts/configContext.ts`), as in enki. `useIsFeatureOn()` (`src/config/featureFlags.ts`) is the only reader.
+- **One flag per feature.** `sandboxFeatures.DeckPlans` covers the `/deck-plans` route, nav item and Home cards, and the deck-plan references on other screens: the vehicle-type deck-plan column and the multi-import deck-plan count.
+- **A missing key is off.** Each environment opts in; dev and localhost set `DeckPlans: true`.
+- **Lists declare their gate.** Menu items, Home `SiteType`s and table columns take an optional `flag`; the component that renders the list drops entries whose flag is off.
+- **A config URL is not a flag.** `sandboxFeatures.AutosysImport` gates the SVV bulk import on Home; `applicationGetAutosysUrl` only says where Autosys lives.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Separate flag for references (`enableDeckPlanRefs`)** | Referencing something you can neither register nor see is not useful, and two independent flags add states nobody needs (PR #203 review). |
+| **Top-level `enable*` booleans beside `sandboxFeatures`** | Two ways to read a flag in one project; `sandboxFeatures` can carry every flag. |
+| **Missing means on** | A new environment would show unfinished features until someone remembers to turn them off. |
+| **A set URL turns its feature on (`applicationGetAutosysUrl` present → SVV import shown)** | One key doing two jobs: an endpoint can't be validated as required while its absence also means "off", and turning a feature off means deleting the URL (#202). |
+| **Build-time flags (`import.meta.env` / `define`)** | One image is deployed to every environment with its own `config.json`; a build-time flag needs a build per environment. |
+
+### Consequences
+
+- Deck plans and their references disappear in every `hathor-deployment-config` environment until that repo sets the flag; a PR there follows this one.
+- A misspelt key reads as missing, i.e. off, with no error.
+- Deck-plan code still ships in the main chunk when the flag is off. Size at ed3c6b1 (0.109.0), from source maps:
+
+| Part | Size |
+|---|---|
+| `src/data/deck-plans/**` in the main chunk | 16.0 kB min (components 8.5, hooks 3.7, utils 2.4, api 1.0) |
+| Main chunk total | 1,098.68 kB min / 336.78 kB gz |
+| `netex-deckplan-editor` web component | 154.57 kB min / 48.36 kB gz, own chunk, loaded on first deck render (`loadDeckRenderer.ts`) |
+| `sample-deck-plan.xml` | ~20 kB, fetched at runtime (`loadGhostDeckPlan.ts`) |
+
+### Out of scope
+
+- Loading the deck-plan code lazily behind `sandboxFeatures.DeckPlans`, as enki does for its `sandboxFeatures` from `src/ext/<Feature>/`.
+
+## SVV import: one bulk request to shepet, its XML posted to Sobek untouched _(2026-10-27)_
+
+### Context
+
+The SVV (Autosys) multi-import sent one `GET` per plate to shepet and built the Sobek document in the browser: it merged the ResourceFrames, deduplicated entities, injected `OperationalNumber` and added the owning ResponsibilitySet (#214). entur/shepet#39 moves that work into shepet behind `POST …/autosys/vehicles?dataOwner=`. Against that shepet, the client-side assembly put `DefaultResponsibilitySetRef` after shepet's `DefaultLocale`, so Sobek refused the import with an XSD order error (500).
+
+### Decision
+
+- **One `POST` per import**, at config key `motorVehicleRegistryProxy` (the full bulk endpoint URL). `applicationGetAutosysUrl` is gone.
+- **Shepet's XML goes to Sobek as returned.** Hathor parses it only to count entities for the confirm step (`assembleAutosysResults.ts`). Verified live: Sobek accepts it, including the `fetchError-*` KeyList.
+- **Per-plate failures come from shepet's KeyList** (`fetchError-registrationNumber-<i>` / `fetchError-message-<i>`) and still go through `translateAutosysError`. If the whole request fails, the wizard stays on Review and shows that one error.
+- **The fetch progress bar is indeterminate**, because there is one request and so no per-plate progress.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the per-plate path behind a feature flag** | It no longer works against shepet#39 (see Context), and a flag would keep two document builders alive. |
+| **Chunk large imports client-side** | Shepet has no cap yet. Revisit if a real import hits a gateway timeout. |
+
+### Consequences
+
+- An environment needs a shepet with #39 deployed before its import works.
+- Shepet sends no DeckPlans, so the confirm step's deck-plan count is 0.

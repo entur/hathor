@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import type { Order, ColumnDefinition } from './dataTableTypes.ts';
 import MobileDetailRow from './MobileDetailRow.tsx';
 import type { UrlFilterInfo } from '../../pages/viewConfigTypes.ts';
+import { useIsFeatureOn } from '../../config/featureFlags.ts';
 
 const COMPACT_VIEW_THRESHOLD = 700;
 
@@ -79,8 +80,10 @@ export default function DataPageContent<
   const containerRef = useRef<HTMLDivElement>(null);
   const compact = useContainerResponsiveView(containerRef, COMPACT_VIEW_THRESHOLD, loading);
 
-  const visibleColumns = columns.filter(col => col.display !== 'desktop-only' || !compact);
-  const detailColumns = columns.filter(col => col.display === 'desktop-only');
+  const isFeatureOn = useIsFeatureOn();
+  const flaggedColumns = columns.filter(col => isFeatureOn(col.flag));
+  const visibleColumns = flaggedColumns.filter(col => col.display !== 'desktop-only' || !compact);
+  const detailColumns = flaggedColumns.filter(col => col.display === 'desktop-only');
   const colSpan = visibleColumns.length + (compact ? 1 : 0);
 
   const detailComponent = MobileDetailRow as ComponentType<{

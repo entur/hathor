@@ -40,9 +40,6 @@ export default function MultiImportConfirm({
         <Typography color="text.secondary">{t('import.multi.vehicleTypes')}</Typography>
         <Typography>{assembledResult.summary.vehicleTypeIds.size}</Typography>
 
-        <Typography color="text.secondary">{t('import.multi.deckPlans')}</Typography>
-        <Typography>{assembledResult.summary.deckPlanIds.size}</Typography>
-
         <Typography color="text.secondary">{t('import.multi.vehicleModels')}</Typography>
         <Typography>{assembledResult.summary.vehicleModelIds.size}</Typography>
       </Box>

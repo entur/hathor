@@ -41,7 +41,6 @@ test.describe('/vehicles compact detail row shows translated labels, not raw i18
 
     await page.goto('/vehicles');
     await selectFirstOrg(page);
-    await page.waitForLoadState('networkidle');
 
     const firstRow = page.locator('table tbody tr').first();
     await expect(firstRow).toBeVisible();

@@ -65,6 +65,7 @@ const vehicleTypeColumns: ColumnDefinition<VehicleType, OrderBy>[] = [
     isSortable: true,
     renderCell: item => deckPlanLabel(item.deckPlan),
     display: 'desktop-only',
+    flag: 'DeckPlans',
   },
   {
     id: 'vehicles',

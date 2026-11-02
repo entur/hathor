@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -11,19 +12,16 @@ import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
 import { type AutosysAssembledResult, assembleAutosysResults } from '../api/assembleAutosysResults';
-import { fetchAllWithConcurrency } from '../api/fetchAllWithConcurrency';
 import type { TableMeta } from '../utils/inputTextAnalyzer';
 import { type RegNumbersStatus, deduplicateEntries } from '../utils/regNumbersTextTransformer';
 import type { ImportEntry } from '../types/importTypes';
-import { fetchVehicleFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
-import { extractVehicleTypeIds, mergeResourceFrames } from '../api/xmlUtils';
+import { fetchVehiclesFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
+import { extractVehicleTypeIds } from '../api/parseImportResponse';
 import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
-
-const CONCURRENCY_LIMIT = 5;
 
 /** Steps when a CSV table is detected (includes column mapping) */
 const TABLE_STEPS = ['Upload file', 'Map columns', 'Review', 'Confirm'] as const;
@@ -37,7 +35,7 @@ interface MultiImportProps {
 
 export default function MultiImport({ onClose, onImportComplete }: MultiImportProps) {
   const { t } = useTranslation();
-  const { applicationGetAutosysUrl, applicationImportBaseUrl } = useConfig();
+  const { motorVehicleRegistryProxy, applicationImportBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -47,7 +45,6 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   const columnMappingRef = useRef<ColumnMapping | null>(null);
 
   const [fetching, setFetching] = useState(false);
-  const [fetchProgress, setFetchProgress] = useState({ completed: 0, total: 0 });
   const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -124,24 +121,24 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       setSubmitError(t('import.multi.noOrganisation'));
       return;
     }
-    const regNumbers = entries.map(e => e.queryRegNumber);
     setFetching(true);
-    setFetchProgress({ completed: 0, total: regNumbers.length });
-
-    const token = await getAccessToken();
-    const results = await fetchAllWithConcurrency(
-      regNumbers,
-      rn => fetchVehicleFromAutosys(applicationGetAutosysUrl || '', rn, token),
-      CONCURRENCY_LIMIT,
-      completed => setFetchProgress({ completed, total: regNumbers.length })
-    );
-
-    const assembled = assembleAutosysResults(currentOrganisation.id, results, frames =>
-      mergeResourceFrames(frames, entries)
-    );
-    setAssembledResult(assembled);
-    setFetching(false);
-    setActiveStep(prev => prev + 1); // advance to Confirm
+    setSubmitError(null);
+    try {
+      const token = await getAccessToken();
+      const xml = await fetchVehiclesFromAutosys(
+        motorVehicleRegistryProxy || '',
+        currentOrganisation.id,
+        entries,
+        token
+      );
+      setAssembledResult(assembleAutosysResults(xml, entries));
+      setActiveStep(prev => prev + 1); // advance to Confirm
+    } catch (e) {
+      // the whole request failed — stay on Review with one error
+      setSubmitError(e instanceof Error ? e.message : t('import.multi.importFailed'));
+    } finally {
+      setFetching(false);
+    }
   };
 
   const startSubmit = async () => {
@@ -149,7 +146,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const xml = assembledResult?.postPayload;
+      const xml = assembledResult.postPayload;
       const token = await getAccessToken();
       const responseXml = await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
       if (onImportComplete) {
@@ -187,6 +184,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     if (current === 'Confirm') {
       setAssembledResult(null);
     }
+    setSubmitError(null);
     setActiveStep(s => s - 1);
   };
 
@@ -198,8 +196,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     fetching ||
     submitting ||
     (currentStepName === 'Review' && entries.length === 0) ||
-    (currentStepName === 'Confirm' &&
-      (!assembledResult || assembledResult.summary.successCount === 0));
+    (currentStepName === 'Confirm' && !assembledResult?.postPayload);
 
   const nextLabel = (() => {
     switch (currentStepName) {
@@ -242,14 +239,20 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
             <MultiImportColumnMapper tableMeta={tableMeta} onConfirm={handleColumnMappingChange} />
           )}
           {currentStepName === 'Review' && (
-            <MultiImportReviewInput
-              entries={entries}
-              status={status}
-              fetching={fetching}
-              fetchProgress={fetchProgress}
-              onDeleteEntry={handleDeleteEntry}
-              onAddEntry={handleAddEntry}
-            />
+            <>
+              <MultiImportReviewInput
+                entries={entries}
+                status={status}
+                fetching={fetching}
+                onDeleteEntry={handleDeleteEntry}
+                onAddEntry={handleAddEntry}
+              />
+              {submitError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {submitError}
+                </Alert>
+              )}
+            </>
           )}
           {currentStepName === 'Confirm' && assembledResult && (
             <MultiImportConfirm assembledResult={assembledResult} submitError={submitError} />

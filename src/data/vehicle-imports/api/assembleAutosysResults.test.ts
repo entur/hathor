@@ -1,193 +1,101 @@
 import { describe, expect, it } from 'vitest';
 import { assembleAutosysResults } from './assembleAutosysResults';
-import type { AutosysFetchResult } from './assembleAutosysResults';
-import { makeXml, makeXmlFlat } from './__fixtures__/makeXml';
+import type { ImportEntry } from '../types/importTypes';
+import {
+  INVALID_REGISTRATION_NUMBER,
+  NOT_FOUND,
+  UPSTREAM_ERROR,
+  makeBulkXml,
+} from './__fixtures__/makeXml';
+
+const entries = (...regs: string[]): ImportEntry[] =>
+  regs.map(queryRegNumber => ({ queryRegNumber }));
 
 describe('assembleAutosysResults', () => {
-  it('parses a single successful XML', () => {
-    const results: AutosysFetchResult[] = [
-      { queryRegNumber: 'AB1234', xml: makeXml(), error: null },
-    ];
+  it('summarises a single vehicle and passes the XML through as payload', () => {
+    const xml = makeBulkXml({ vehicles: [{ reg: 'AB1234' }] });
 
-    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
+    const { summary, postPayload } = assembleAutosysResults(xml, entries('AB1234'));
 
     expect(summary.vehicleCount).toBe(1);
-    expect(summary.vehicleTypeIds.size).toBe(1);
-    expect(summary.vehicleTypeIds.has('NMR:VehicleType:1')).toBe(true);
-    expect(summary.deckPlanIds.size).toBe(1);
-    expect(summary.deckPlanIds.has('NMR:DeckPlan:1')).toBe(true);
-    expect(summary.vehicleModelIds.size).toBe(1);
-    expect(summary.vehicleModelIds.has('NMR:VehicleModel:1')).toBe(true);
+    expect([...summary.vehicleTypeIds]).toEqual(['NMR:VehicleType:1']);
+    expect([...summary.vehicleModelIds]).toEqual(['NMR:VehicleModel:1']);
     expect(summary.errors).toEqual([]);
     expect(summary.successCount).toBe(1);
-    expect(postPayload).toBeDefined();
-    expect(postPayload).toContain('PublicationDelivery');
-    expect(postPayload).toContain('VehicleType');
+    expect(postPayload).toBe(xml);
   });
 
-  it('deduplicates shared VehicleType, DeckPlan, and VehicleModel ids', () => {
-    const results: AutosysFetchResult[] = [
-      { queryRegNumber: 'AB1234', xml: makeXml({ vehicleReg: 'AB1234' }), error: null },
-      {
-        queryRegNumber: 'CD5678',
-        xml: makeXml({
-          vehicleReg: 'CD5678',
-          vehicleTypeId: 'NMR:VehicleType:1',
-          deckPlanId: 'NMR:DeckPlan:1',
-          vehicleModelId: 'NMR:VehicleModel:1',
-        }),
-        error: null,
-      },
-      {
-        queryRegNumber: 'EF9012',
-        xml: makeXml({
-          vehicleReg: 'EF9012',
-          vehicleTypeId: 'NMR:VehicleType:2',
-          deckPlanId: 'NMR:DeckPlan:2',
-          vehicleModelId: 'NMR:VehicleModel:2',
-        }),
-        error: null,
-      },
-    ];
+  it('counts shared VehicleType and VehicleModel once', () => {
+    const xml = makeBulkXml({
+      vehicles: [
+        { reg: 'AB1234' },
+        { reg: 'CD5678' },
+        { reg: 'EF9012', vehicleTypeId: 'NMR:VehicleType:2', vehicleModelId: 'NMR:VehicleModel:2' },
+      ],
+    });
 
-    const { summary } = assembleAutosysResults('NOG:Authority:1', results);
+    const { summary } = assembleAutosysResults(xml, entries('AB1234', 'CD5678', 'EF9012'));
 
-    // All 3 vehicles share Vehicle id="NMR:Vehicle:1" so dedup yields 1 unique
-    expect(summary.vehicleCount).toBe(1);
+    expect(summary.vehicleCount).toBe(3);
     expect(summary.vehicleTypeIds.size).toBe(2);
-    expect(summary.deckPlanIds.size).toBe(2);
     expect(summary.vehicleModelIds.size).toBe(2);
-    expect(summary.errors).toEqual([]);
     expect(summary.successCount).toBe(3);
   });
 
-  it('collects errors for failed fetches and still processes successes', () => {
-    const results: AutosysFetchResult[] = [
-      { queryRegNumber: 'AB1234', xml: makeXml({ vehicleReg: 'AB1234' }), error: null },
-      { queryRegNumber: 'FAIL1', xml: '', error: 'Network error' },
-      { queryRegNumber: 'FAIL2', xml: '', error: '404 Not Found' },
-    ];
+  it('reads per-plate errors from the KeyList and translates them', () => {
+    const xml = makeBulkXml({
+      vehicles: [{ reg: 'AB1234' }],
+      errors: [
+        { reg: 'XX0000000', message: NOT_FOUND },
+        { reg: 'FAIL2', message: UPSTREAM_ERROR },
+        { reg: 'Ø', message: INVALID_REGISTRATION_NUMBER },
+      ],
+    });
 
-    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
+    const { summary, postPayload } = assembleAutosysResults(
+      xml,
+      entries('AB1234', 'XX0000000', 'FAIL2', 'Ø')
+    );
 
     expect(summary.vehicleCount).toBe(1);
-    expect(summary.vehicleTypeIds.size).toBe(1);
-    expect(summary.errors).toHaveLength(2);
-    expect(summary.errors[0]).toEqual({ queryRegNumber: 'FAIL1', message: 'Network error' });
-    expect(summary.errors[1]).toEqual({ queryRegNumber: 'FAIL2', message: '404 Not Found' });
+    expect(summary.errors).toEqual([
+      { queryRegNumber: 'XX0000000', message: 'Unknown registration number' },
+      { queryRegNumber: 'FAIL2', message: 'Autosys lookup failed' },
+      { queryRegNumber: 'Ø', message: 'Invalid registration number format' },
+    ]);
     expect(summary.successCount).toBe(1);
-    expect(postPayload).toContain('PublicationDelivery');
+    expect(postPayload).toBe(xml);
   });
 
-  it('returns empty result for empty input', () => {
-    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', []);
+  it('has no payload when every plate failed', () => {
+    const xml = makeBulkXml({
+      vehicles: [],
+      errors: [{ reg: 'XX0000000', message: NOT_FOUND }],
+    });
+
+    const { summary, postPayload } = assembleAutosysResults(xml, entries('XX0000000'));
 
     expect(summary.vehicleCount).toBe(0);
-    expect(summary.vehicleTypeIds.size).toBe(0);
-    expect(summary.deckPlanIds.size).toBe(0);
-    expect(summary.vehicleModelIds.size).toBe(0);
-    expect(summary.errors).toEqual([]);
     expect(summary.successCount).toBe(0);
+    expect(summary.errors).toHaveLength(1);
     expect(postPayload).toBeUndefined();
   });
 
-  it('reports error when XML has no ResourceFrame', () => {
+  // A response without a ResourceFrame means the whole request failed, not one plate.
+  it('throws when the response has no ResourceFrame', () => {
     const badXml = `<?xml version="1.0"?><PublicationDelivery><dataObjects></dataObjects></PublicationDelivery>`;
-    const results: AutosysFetchResult[] = [{ queryRegNumber: 'AB1234', xml: badXml, error: null }];
 
-    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
-
-    expect(summary.vehicleCount).toBe(0);
-    expect(summary.errors).toHaveLength(1);
-    expect(summary.errors[0].message).toBe('No ResourceFrame found in response');
-    expect(summary.successCount).toBe(0);
-    expect(postPayload).toBeUndefined();
+    expect(() => assembleAutosysResults(badXml, entries('AB1234'))).toThrow(
+      'No ResourceFrame found in response'
+    );
   });
 
-  it('parses XML with ResourceFrame directly under dataObjects (no CompositeFrame)', () => {
-    const results: AutosysFetchResult[] = [
-      { queryRegNumber: 'AB1234', xml: makeXmlFlat(), error: null },
-    ];
-
-    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
-
-    expect(summary.vehicleCount).toBe(1);
-    expect(summary.vehicleTypeIds.size).toBe(1);
-    expect(summary.deckPlanIds.size).toBe(1);
-    expect(summary.vehicleModelIds.size).toBe(1);
-    expect(summary.errors).toEqual([]);
-    expect(summary.successCount).toBe(1);
-    expect(postPayload).toContain('PublicationDelivery');
-  });
-
-  it('handles XML without optional vehicleModels section', () => {
-    const results: AutosysFetchResult[] = [
-      {
-        queryRegNumber: 'AB1234',
-        xml: makeXml({ includeVehicleModel: false }),
-        error: null,
-      },
-    ];
-
-    const { summary } = assembleAutosysResults('NOG:Authority:1', results);
-
-    expect(summary.vehicleCount).toBe(1);
-    expect(summary.vehicleTypeIds.size).toBe(1);
-    expect(summary.deckPlanIds.size).toBe(1);
-    expect(summary.vehicleModelIds.size).toBe(0);
-    expect(summary.errors).toEqual([]);
-  });
-
-  it('translates known autosys error responses', () => {
-    const results: AutosysFetchResult[] = [
-      {
-        queryRegNumber: 'AA1111',
-        xml: '',
-        error:
-          'Cannot invoke "org.entur.autosys.model.KjoretoyData.getKjoretoyId()" because the return value is null',
-      },
-      {
-        queryRegNumber: 'BB2222',
-        xml: '',
-        error: '400 Bad Request: "{"feilmelding":"UGYLDIG_FORMAT_UNR_ELLER_KJENNEMERKE"}"',
-      },
-    ];
-
-    const { summary } = assembleAutosysResults('NOG:Authority:1', results);
-
-    expect(summary.errors).toHaveLength(2);
-    expect(summary.errors[0]).toEqual({
-      queryRegNumber: 'AA1111',
-      message: 'Incomplete vehicle data in Autosys',
-    });
-    expect(summary.errors[1]).toEqual({
-      queryRegNumber: 'BB2222',
-      message: 'Invalid format or unknown registration number',
-    });
-  });
-
-  it('reports error for malformed XML', () => {
-    const results: AutosysFetchResult[] = [
-      { queryRegNumber: 'AB1234', xml: 'not xml at all <<<>>>', error: null },
-    ];
-
-    const { summary, postPayload } = assembleAutosysResults('NOG:Authority:1', results);
-
-    expect(summary.errors).toHaveLength(1);
-    expect(summary.errors[0].queryRegNumber).toBe('AB1234');
-    expect(postPayload).toBeUndefined();
-  });
-
-  // This payload is parsed and re-serialized before it is POSTed, so tag-value
-  // coercion would rewrite the document on the way through: `0080` -> `80`.
+  // The payload goes to Sobek as shepet sent it — never re-serialised, so `0080` stays `0080`.
   it('sends numeric-looking text back verbatim', () => {
-    const results: AutosysFetchResult[] = [
-      { queryRegNumber: '0080', xml: makeXmlFlat({ vehicleReg: '0080' }), error: null },
-    ];
+    const xml = makeBulkXml({ vehicles: [{ reg: '0080' }] });
 
-    const { postPayload } = assembleAutosysResults('NOG:Authority:1', results);
+    const { postPayload } = assembleAutosysResults(xml, entries('0080'));
 
     expect(postPayload).toContain('<RegistrationNumber>0080</RegistrationNumber>');
-    expect(postPayload).not.toContain('<RegistrationNumber>80</RegistrationNumber>');
   });
 });

@@ -16,6 +16,8 @@ import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import VehicleTypeForm from './VehicleTypeForm.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { useVehicleTypeDeactivate } from '../hooks/useVehicleTypeDeactivate.ts';
+import { useCodeValues } from '../../code-values/hooks/useCodeValues.ts';
+import { EMISSION_STANDARD } from '../../code-values/types/codeValueTypes.ts';
 
 const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
@@ -80,6 +82,8 @@ export default function VehicleTypeDetails({
   const { save, saving, error, clearError } = useVehicleTypeSave();
   const { deactivate } = useVehicleTypeDeactivate();
   const [deactivatedOK, setDeactivatedOK] = useState(false);
+  // Fetched on the first editor open of the session, cached for every later one.
+  const euroClasses = useCodeValues(EMISSION_STANDARD);
 
   // Re-hydrate (and drop back to view) whenever the deep-link resolves a new row.
   useEffect(() => {
@@ -232,6 +236,7 @@ export default function VehicleTypeDetails({
           value={state.form}
           onChange={form => dispatch({ type: 'edit', form })}
           mode={mode}
+          euroClasses={euroClasses}
         />
       </Stack>
 

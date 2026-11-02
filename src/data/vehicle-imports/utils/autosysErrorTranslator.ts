@@ -1,44 +1,34 @@
 /**
- * Temporary hardcoded mapping of raw Autosys/Sobek error response bodies to
- * user-friendly messages. This exists because Sobek does not yet expose a
- * structured error-response schema in its OpenAPI spec.
- *
- * Remove this file once Sobek returns typed error responses.
- * See: https://github.com/entur/hathor/issues/4
+ * Map shepet's per-plate fetch error codes (`FetchVehicleErrorCode`, entur/shepet#39)
+ * to user-friendly messages. Shepet keeps the upstream detail in its log and puts
+ * only the code in the bulk response's `fetchError-message-<i>` KeyValue.
  */
 import i18next from 'i18next';
 
-interface ErrorPattern {
-  pattern: RegExp;
-  key: string;
-  defaultMessage: string;
-}
-
-const ERROR_PATTERNS: ErrorPattern[] = [
-  {
-    pattern: /Cannot invoke "org\.entur\.autosys\.model/,
-    key: 'autosys.errResp.incomplete.autosys.data',
-    defaultMessage: 'Incomplete vehicle data in Autosys',
+/** i18n key + English fallback per shepet error code. */
+const ERROR_CODES: Record<string, { key: string; defaultMessage: string }> = {
+  NOT_FOUND: {
+    key: 'autosys.errResp.notFound',
+    defaultMessage: 'Unknown registration number',
   },
-  {
-    pattern: /400 Bad Request: "\{"feilmelding":"UGYLDIG_FORMAT_UNR_ELLER_KJENNEMERKE"\}"/,
-    key: 'autosys.errResp.badFormat.or.unknown',
-    defaultMessage: 'Invalid format or unknown registration number',
+  INVALID_REGISTRATION_NUMBER: {
+    key: 'autosys.errResp.invalidFormat',
+    defaultMessage: 'Invalid registration number format',
   },
-];
+  UPSTREAM_ERROR: {
+    key: 'autosys.errResp.upstream',
+    defaultMessage: 'Autosys lookup failed',
+  },
+};
 
 /**
- * Map a raw Autosys/Sobek error body to a localised, user-facing message.
+ * Map a shepet fetch error code to a localised, user-facing message.
  *
- * @param {string} raw - Error body as returned by Sobek.
- * @returns {string} The translated message for a known pattern, else `raw`
+ * @param {string} code - Shepet's `fetchError-message-<i>` value, e.g. `NOT_FOUND`.
+ * @returns {string} The translated message for a known code, else `code`
  *   unchanged (an untranslated backend string beats swallowing the detail).
  */
-export function translateAutosysError(raw: string): string {
-  for (const { pattern, key, defaultMessage } of ERROR_PATTERNS) {
-    if (pattern.test(raw)) {
-      return i18next.t(key, defaultMessage);
-    }
-  }
-  return raw;
+export function translateAutosysError(code: string): string {
+  const known = ERROR_CODES[code];
+  return known ? i18next.t(known.key, known.defaultMessage) : code;
 }

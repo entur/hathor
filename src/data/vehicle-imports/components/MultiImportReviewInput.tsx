@@ -15,7 +15,6 @@ interface MultiImportReviewInputProps {
   entries: ImportEntry[];
   status: RegNumbersStatus | null;
   fetching: boolean;
-  fetchProgress: { completed: number; total: number };
   onDeleteEntry: (regNumber: string) => void;
   onAddEntry: (entry: ImportEntry) => void;
 }
@@ -51,15 +50,11 @@ export default function MultiImportReviewInput({
   entries,
   status,
   fetching,
-  fetchProgress,
   onDeleteEntry,
   onAddEntry,
 }: MultiImportReviewInputProps) {
   const { t } = useTranslation();
   const [newEntry, setNewEntry] = useState('');
-
-  const progressPercent =
-    fetchProgress.total > 0 ? Math.round((fetchProgress.completed / fetchProgress.total) * 100) : 0;
 
   const handleAddEntry = () => {
     const parsed = parseEntryInput(newEntry);
@@ -80,16 +75,9 @@ export default function MultiImportReviewInput({
     return (
       <Box sx={{ textAlign: 'center', py: 3 }}>
         <Typography sx={{ mb: 2 }}>
-          {t('import.multi.fetching', {
-            completed: fetchProgress.completed,
-            total: fetchProgress.total,
-          })}
+          {t('import.multi.fetching', { count: entries.length })}
         </Typography>
-        <LinearProgress
-          variant="determinate"
-          value={progressPercent}
-          sx={{ height: 8, borderRadius: 1 }}
-        />
+        <LinearProgress sx={{ height: 8, borderRadius: 1 }} />
       </Box>
     );
   }

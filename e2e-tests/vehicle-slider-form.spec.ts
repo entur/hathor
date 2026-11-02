@@ -42,7 +42,6 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
     await interceptVehicleByIdQuery(page, id => vehicleRow(id, { name: { value: 'Oslo Tram 4' } }));
 
     await page.goto(SELECTED);
-    await page.waitForLoadState('networkidle');
 
     await expect(page.getByTestId('vehicle-details-title')).toHaveText('Oslo Tram 4');
     await expect(page.locator('#vehicle-name')).toHaveValue('Oslo Tram 4');
@@ -62,7 +61,6 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
     );
 
     await page.goto(SELECTED);
-    await page.waitForLoadState('networkidle');
 
     const build = page.locator('#vehicle-build-date');
     const reg = page.locator('#vehicle-registration-date');
@@ -85,7 +83,6 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
     interceptVehicleSaveMutation(page, VEHICLE_ID);
 
     await page.goto(SELECTED);
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vehicle-name').fill('Oslo Tram 4 — renamed');
@@ -121,7 +118,6 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
     const save = interceptVehicleSaveMutation(page, VEHICLE_ID);
 
     await page.goto(SELECTED);
-    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('editor-rail-edit').click();
 

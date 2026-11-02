@@ -1,8 +1,7 @@
 /**
  * Generic NeTEx XML helpers — no domain (Vehicle/VehicleModel/import)
- * knowledge. Consumers: `vehicles/xml/*-parser.ts`,
- * `vehicles/xml/parseVehicleImportResponse.ts`,
- * `vehicle-imports/api/xmlUtils.ts`, `vehicle-imports/types/importTypes.ts`.
+ * knowledge. Consumers: `deck-plans/` (details service, XML patch),
+ * `vehicle-imports/api/` (bulk-result assembly, import-response parse).
  */
 import { XMLParser } from 'fast-xml-parser';
 
@@ -20,6 +19,21 @@ export function toArray<T>(value: T | T[] | undefined): T[] {
   if (value === undefined || value === null) return [];
   return Array.isArray(value) ? value : [value];
 }
+
+/**
+ * Collect the `@_id`s of one entity collection in a ResourceFrame.
+ *
+ * @param {ParsedXml} rf - A parsed ResourceFrame.
+ * @param {string} section - Collection element, e.g. `vehicleTypes`.
+ * @param {string} element - Entity element, e.g. `VehicleType`.
+ * @returns {Set<string>} The ids, deduplicated.
+ */
+export const entityIds = (rf: ParsedXml, section: string, element: string): Set<string> =>
+  new Set(
+    toArray<ParsedXml>(rf[section]?.[element])
+      .map(e => e['@_id'])
+      .filter(Boolean)
+  );
 
 export function addDataOwnerRefToFrame(
   baseFrame: ParsedXml,

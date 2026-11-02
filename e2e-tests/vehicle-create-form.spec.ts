@@ -78,11 +78,11 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     if (IS_LIVE) {
       const { reg } = await liveCreateOverrides(page);
       await page.goto('/vehicles?selected=new');
-      await page.waitForLoadState('networkidle');
 
       const save = page.getByTestId('editor-rail-save');
-      await expect(fab).toBeHidden();
       await page.getByLabel('Registration Number').fill(reg);
+      // After fill: the form is rendered, so hidden can't pass on the loading screen.
+      await expect(fab).toBeHidden();
       await expect(save).toBeDisabled();
       // Picker is fed by the live `vehicleTypes(` query — pick whatever the
       // local Sobek serves first. Requires at least one VehicleType seeded.
@@ -107,12 +107,10 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
 
     const capture = await wireCreateFlow(page);
     await page.goto('/vehicles?selected=new');
-    await page.waitForLoadState('networkidle');
 
     const save = page.getByTestId('editor-rail-save');
-    await expect(fab).toBeHidden();
-
     await page.getByLabel('Registration Number').fill('NEW-001');
+    await expect(fab).toBeHidden();
     await expect(save).toBeDisabled();
 
     await page.getByRole('combobox', { name: 'Vehicle Type' }).click();
@@ -148,7 +146,6 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     const save = interceptVehicleSaveMutation(page, vehicleId);
 
     await page.goto(`/vehicles?selected=${encodeURIComponent(vehicleId)}`);
-    await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
 
     await page.getByTestId('editor-rail-edit').click();

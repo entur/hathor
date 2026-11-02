@@ -1,18 +1,17 @@
 import i18next from 'i18next';
 import { translateAutosysError } from '../utils/autosysErrorTranslator';
-import type { ParsedXml, FramesByQueryRegNumber } from '../types/importTypes';
-import type { MergedEntities } from './xmlUtils';
-import { mergeResourceFrames, pubDeliverySingleRcFrame } from './xmlUtils';
-import { findResourceFrame, xmlParser } from '../../netex/xmlUtils';
+import type { ImportEntry } from '../types/importTypes';
+import {
+  type ParsedXml,
+  entityIds,
+  findResourceFrame,
+  toArray,
+  xmlParser,
+} from '../../netex/xmlUtils';
 
-/** Result of fetching a single vehicle from the Autosys registry.
- * On success `xml` contains the raw NeTEx XML and `error` is null.
- * On failure `xml` is empty and `error` holds the backend error message. */
-export interface AutosysFetchResult {
-  queryRegNumber: string;
-  xml: string;
-  error: string | null;
-}
+/** Shepet's per-plate failure keys: `fetchError-registrationNumber-<i>` / `fetchError-message-<i>`. */
+const FETCH_ERROR_REG = 'fetchError-registrationNumber-';
+const FETCH_ERROR_MSG = 'fetchError-message-';
 
 /** Deduplicated summary produced by {@link assembleAutosysResults}.
  * Entity IDs are collected into Sets so shared types/plans across
@@ -20,81 +19,64 @@ export interface AutosysFetchResult {
 export interface AutosysAssembledSummary {
   vehicleCount: number;
   vehicleTypeIds: Set<string>;
-  deckPlanIds: Set<string>;
   vehicleModelIds: Set<string>;
   successCount: number;
   errors: { queryRegNumber: string; message: string }[];
 }
 
 /** Combined output of {@link assembleAutosysResults}: a deduplicated
- * summary, and the combined netex-payload  */
+ * summary, and the netex-payload to POST to Sobek */
 export interface AutosysAssembledResult {
   summary: AutosysAssembledSummary;
   postPayload?: string;
 }
 
+/** Pair shepet's indexed `fetchError-*` KeyValues into one error per plate. */
+const fetchErrors = (rf: ParsedXml): AutosysAssembledSummary['errors'] => {
+  const kv = new Map(
+    toArray<ParsedXml>(rf.keyList?.KeyValue).map(({ Key, Value }) => [
+      String(Key),
+      String(Value ?? ''),
+    ])
+  );
+  return [...kv.keys()]
+    .filter(k => k.startsWith(FETCH_ERROR_REG))
+    .map(k => ({
+      queryRegNumber: kv.get(k)!,
+      message: translateAutosysError(
+        kv.get(FETCH_ERROR_MSG + k.slice(FETCH_ERROR_REG.length)) ?? ''
+      ),
+    }));
+};
+
 /**
- * Parse an array of Autosys fetch results, extract the NeTEx ResourceFrame
- * from each successful XML, and produce a deduplicated summary of
- * VehicleType, DeckPlan, and VehicleModel IDs along with a vehicle count.
- * Failed fetches are collected as translated errors.
+ * Summarise shepet's bulk `PublicationDelivery` for the confirm step. The XML is
+ * Sobek-ready as returned, so it is passed through untouched as the payload.
+ *
+ * @param {string} xml - Shepet's bulk response.
+ * @param {ImportEntry[]} entries - The plates that were requested.
+ * @returns {AutosysAssembledResult} Entity ids, per-plate errors from the frame's
+ *   `keyList`, and the payload — absent when no vehicle came back.
+ * @throws {Error} When the response has no ResourceFrame — the whole request failed.
  */
 export function assembleAutosysResults(
-  dataOwnerRef: string,
-  results: AutosysFetchResult[],
-  mergeFn: (frames: FramesByQueryRegNumber) => MergedEntities = mergeResourceFrames
+  xml: string,
+  entries: ImportEntry[]
 ): AutosysAssembledResult {
-  const errors: { queryRegNumber: string; message: string }[] = [];
-  const inFrames: FramesByQueryRegNumber = {};
-  let firstXml: ParsedXml | undefined = undefined;
+  const rf = findResourceFrame(xmlParser.parse(xml));
+  if (!rf) throw new Error(i18next.t('import.multi.noResourceFrame'));
 
-  for (const result of results) {
-    if (result.error) {
-      errors.push({
-        queryRegNumber: result.queryRegNumber,
-        message: translateAutosysError(result.error),
-      });
-      continue;
-    }
-
-    try {
-      const parsed = xmlParser.parse(result.xml);
-      const resourceFrame = findResourceFrame(parsed);
-
-      if (!resourceFrame) {
-        errors.push({
-          queryRegNumber: result.queryRegNumber,
-          message: i18next.t('import.multi.noResourceFrame'),
-        });
-        continue;
-      }
-
-      inFrames[result.queryRegNumber] = resourceFrame;
-
-      // Use the first successfully parsed XML as the envelope template
-      if (!firstXml) {
-        firstXml = parsed;
-      }
-    } catch (e) {
-      errors.push({
-        queryRegNumber: result.queryRegNumber,
-        message: e instanceof Error ? e.message : i18next.t('import.multi.xmlParseFailed'),
-      });
-    }
-  }
-
-  const merged = mergeFn(inFrames);
-  const frameCount = Object.keys(inFrames).length;
+  const errors = fetchErrors(rf);
+  const vehicleCount = toArray(rf.vehicles?.Vehicle).length;
 
   return {
     summary: {
-      vehicleCount: merged.vehicles.length,
-      vehicleTypeIds: new Set(merged.vehicleTypes.map(vt => vt['@_id'])),
-      deckPlanIds: new Set(merged.deckPlans.map(dp => dp['@_id'])),
-      vehicleModelIds: new Set(merged.vehicleModels.map(vm => vm['@_id'])),
-      successCount: frameCount,
+      vehicleCount,
+      vehicleTypeIds: entityIds(rf, 'vehicleTypes', 'VehicleType'),
+      vehicleModelIds: entityIds(rf, 'vehicleModels', 'VehicleModel'),
+      successCount: Math.max(entries.length - errors.length, 0),
       errors,
     },
-    postPayload: pubDeliverySingleRcFrame(firstXml, merged, dataOwnerRef),
+    postPayload: vehicleCount > 0 ? xml : undefined,
   };
 }
