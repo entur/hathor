@@ -24,17 +24,16 @@ interface DiscardDialogProps {
  * Reusable confirm-discard dialog for any flow that wants to interrupt a
  * dirty-form action (back nav, sidebar collapse, edit-mode cancel). Mirrors
  * the prior inline dialog in EditorRail so the two consumers stay in lockstep.
- * Translations reuse the existing `vehicles.discardTitle` / `vehicles.discardBody`
- * keys — generic enough to live outside the vehicles namespace if a non-vehicle
- * consumer appears.
+ * Copy comes from `common.discardTitle` / `common.discardBody`, shared by all
+ * three editors.
  */
 export default function DiscardDialog({ open, onCancel, onDiscard, onSave }: DiscardDialogProps) {
   const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onCancel}>
-      <DialogTitle>{t('vehicles.discardTitle')}</DialogTitle>
+      <DialogTitle>{t('common.discardTitle')}</DialogTitle>
       <DialogContent>
-        <DialogContentText>{t('vehicles.discardBody')}</DialogContentText>
+        <DialogContentText>{t('common.discardBody')}</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>{t('cancel')}</Button>

@@ -12,8 +12,6 @@
  *   C. EditingContext   — `setEditingItem({ EditorComponent: X, ... })` in the
  *                          view file *or* any one-hop `use*` hook imported by
  *                          view or viewConfig. Fills the `EditorComponent` slot.
- *   D. Details child    — first meaningful JSX child of `<GenericDetailsPage>`,
- *                          skipping MUI layout primitives. Fills `detailsChildren`.
  *
  * Soft-fail contract: any single-view extraction error is `console.warn`-ed and
  * that view contributes nothing for the affected slot. Output is never partial
@@ -28,20 +26,12 @@ import { isJsxEl, jsxAttr } from './extract-routes.mjs';
 // ---------------------------------------------------------------------------
 // Slot taxonomy. Mirrored from wrappers-data.mjs widget keys.
 // ---------------------------------------------------------------------------
-const COMPONENT_SLOTS = new Set([
-  'floatingAction',
-  'PageContentComponent',
-  'EditorComponent',
-  'detailsChildren',
-]);
+const COMPONENT_SLOTS = new Set(['floatingAction', 'PageContentComponent', 'EditorComponent']);
 const HOOK_SLOTS = new Set(['useData', 'useSearchRegistration', 'useUrlEffect', 'useRowClick']);
 const FN_SLOTS = new Set(['getFilterKey', 'handleColumnEvent', 'getSortValue']);
 const VIEWCONFIG_SLOTS = new Set(
-  [...COMPONENT_SLOTS, ...HOOK_SLOTS, ...FN_SLOTS].filter(
-    k => k !== 'EditorComponent' && k !== 'detailsChildren'
-  )
+  [...COMPONENT_SLOTS, ...HOOK_SLOTS, ...FN_SLOTS].filter(k => k !== 'EditorComponent')
 );
-const LAYOUT_SKIP = new Set(['Paper', 'Box', 'Stack', 'Container', 'Grid', 'Card', 'CardContent']);
 
 /** slot key -> wrapperId. Built lazily from WRAPPERS. */
 const SLOT_WRAPPER = (() => {
@@ -67,8 +57,6 @@ export function deriveWidgetBindings(views, repoRoot) {
         harvestSpreadOverride(v, out, repoRoot);
         harvestViewConfigLiteral(v, out, repoRoot);
         harvestEditorComponent(v, out, repoRoot);
-      } else if (v.wrapperId === 'GenericDetailsPage') {
-        harvestDetailsChild(v, out, repoRoot);
       }
     } catch (err) {
       console.warn(`⚠ [derive-widget-bindings] ${v.file} — ${err.message} (bindings left partial)`);
@@ -199,47 +187,6 @@ function harvestEditorComponent(view, out, repoRoot) {
       if (nextAbs && !seen.has(nextAbs)) queue.push(nextAbs);
     }
   }
-}
-
-// ---------------------------------------------------------------------------
-// Site D — first meaningful JSX child of <GenericDetailsPage>
-// ---------------------------------------------------------------------------
-/** Capture the first non-layout JSX child of `<GenericDetailsPage>…</…>`. */
-function harvestDetailsChild(view, out, repoRoot) {
-  const { sf } = loadSourceFile(view.abs, view.file, 'derive-widget-bindings');
-  let found = null;
-  walk(sf, n => {
-    if (found || !ts.isJsxElement(n)) return;
-    if (n.openingElement.tagName.getText() !== 'GenericDetailsPage') return;
-    found = firstMeaningfulJsxChild(n);
-  });
-  if (found) pushBinding(out, view, sf, view.abs, 'detailsChildren', found, 'jsx-child', repoRoot);
-}
-
-/** Descend through MUI layout primitives, return the first concrete JSX tag. */
-function firstMeaningfulJsxChild(parent) {
-  const queue = [...(parent.children ?? [])];
-  while (queue.length) {
-    const c = queue.shift();
-    if (ts.isJsxText(c)) continue;
-    if (ts.isJsxExpression(c)) {
-      if (c.expression) queue.unshift(c.expression);
-      continue;
-    }
-    if (ts.isJsxElement(c)) {
-      const tag = c.openingElement.tagName.getText();
-      if (LAYOUT_SKIP.has(tag)) {
-        queue.unshift(...(c.children ?? []));
-        continue;
-      }
-      return c.openingElement;
-    }
-    if (ts.isJsxSelfClosingElement(c)) {
-      if (LAYOUT_SKIP.has(c.tagName.getText())) continue;
-      return c;
-    }
-  }
-  return null;
 }
 
 // ---------------------------------------------------------------------------

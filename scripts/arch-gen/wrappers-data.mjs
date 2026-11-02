@@ -104,36 +104,6 @@ export const WRAPPERS = [
       },
     ],
   },
-  {
-    id: 'GenericDetailsPage',
-    name: 'GenericDetailsPage',
-    file: 'src/pages/GenericDetailsPage.tsx',
-    summary: 'Reusable details / create page — a titled form container with an async Save button.',
-    alwaysOn: [
-      'Centered Container (maxWidth md)',
-      'Save button — async, shows a spinner and a "Saving" label',
-      'Inline error display on a failed save',
-    ],
-    widgets: [
-      {
-        key: 'detailsChildren',
-        type: 'ReactNode (JSX child)',
-        desc: 'Form / editor body the detail view passes as <GenericDetailsPage>…</GenericDetailsPage> child.',
-        structural: true,
-        source: 'jsx-child',
-      },
-      {
-        key: 'onBack',
-        type: '() => void',
-        desc: 'Back affordance — an arrow IconButton left of the title. Caller owns dirty-form confirmation.',
-      },
-      {
-        key: 'saveDisabled',
-        type: 'boolean',
-        desc: 'Lets the caller disable the Save button (e.g. an invalid form).',
-      },
-    ],
-  },
 ];
 
 /**

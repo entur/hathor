@@ -11,7 +11,7 @@ import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { getVehicleTypeSortValue } from '../utils/vehicleTypeSortValue.ts';
 import { deckPlanLabel } from '../utils/deckPlanLabel.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
-import NetexId from '../../netex/NetexId.tsx';
+import NetexId from '../../../components/NetexId.tsx';
 import { transportModeFilters, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 import { useVehicleTypeUrlSelection } from '../hooks/useVehicleTypeUrlSelection.tsx';
 import { vehicleTypeSelectedHref } from '../utils/vehicleTypeUrlParams.ts';

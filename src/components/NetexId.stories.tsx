@@ -6,7 +6,7 @@ const SAMPLE_ID = 'NSR:VehicleType:6f3a9e';
 const SIZES: NetexIdSize[] = ['xsmall', 'small', 'medium', 'large'];
 
 const meta: Meta<typeof NetexId> = {
-  title: 'data/netex/NetexId',
+  title: 'components/NetexId',
   component: NetexId,
   parameters: {
     layout: 'centered',

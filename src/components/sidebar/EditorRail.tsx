@@ -135,9 +135,9 @@ export default function EditorRail({
   const saveLabel = saving
     ? t('saving')
     : !isDirty
-      ? t('vehicles.rail.saveDisabled')
+      ? t('editorRail.saveDisabled')
       : !canSubmit
-        ? t('vehicles.rail.saveMissingFields')
+        ? t('editorRail.saveMissingFields')
         : t('save');
   const saveDisabled = !isDirty || saving || !canSubmit;
 
@@ -161,10 +161,10 @@ export default function EditorRail({
           zIndex: theme.zIndex.fab,
         }}
       >
-        <Tooltip title={t('vehicles.rail.collapse')} placement="left" arrow>
+        <Tooltip title={t('editorRail.collapse')} placement="left" arrow>
           <IconButton
             onClick={handleCollapseClick}
-            aria-label={t('vehicles.rail.collapseAria')}
+            aria-label={t('editorRail.collapseAria')}
             data-testid="editor-rail-collapse"
             sx={{ width: SEGMENT_SIZE, height: SEGMENT_SIZE, borderRadius: 0 }}
           >
@@ -175,7 +175,7 @@ export default function EditorRail({
         {showPen && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
-            <Tooltip title={t('vehicles.rail.editTooltip')} placement="left" arrow>
+            <Tooltip title={t('editorRail.editTooltip')} placement="left" arrow>
               <IconButton
                 onClick={onEnterEdit}
                 aria-label={t('edit')}
@@ -197,10 +197,10 @@ export default function EditorRail({
         {showDeactivate && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
-            <Tooltip title={t('vehicles.rail.deactivateTooltip')} placement="left" arrow>
+            <Tooltip title={t('editorRail.deactivateTooltip')} placement="left" arrow>
               <IconButton
                 onClick={handleDeactivateClick}
-                aria-label={t('vehicles.rail.deactivateAria')}
+                aria-label={t('editorRail.deactivateAria')}
                 data-testid="editor-rail-deactivate"
                 sx={{
                   width: SEGMENT_SIZE,
@@ -219,10 +219,10 @@ export default function EditorRail({
         {showCancel && (
           <>
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
-            <Tooltip title={t('vehicles.rail.cancelTooltip')} placement="left" arrow>
+            <Tooltip title={t('editorRail.cancelTooltip')} placement="left" arrow>
               <IconButton
                 onClick={handleCancelClick}
-                aria-label={t('vehicles.rail.cancelAria')}
+                aria-label={t('editorRail.cancelAria')}
                 data-testid="editor-rail-cancel"
                 sx={{
                   width: SEGMENT_SIZE,

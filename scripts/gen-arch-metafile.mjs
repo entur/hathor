@@ -28,7 +28,7 @@
  *
  * GRAPH MODEL — four layers, top-down
  *   L1  App.tsx (single root)                         — visible
- *   L2  GenericDataViewPage, GenericDetailsPage       — visible
+ *   L2  GenericDataViewPage                           — visible
  *   L3  one widget-detail node per opt-in widget      — hidden until expanded
  *   L4  feature View components                       — visible; L2 -> L4
  *       edges skip the L3 rank. `Home` is a leaf straight off App.tsx.
@@ -108,7 +108,7 @@ function extract() {
         const bs = bindings.get(w.id + '::' + x.key) ?? [];
         // `usedBy` ∪ binding viewIds — bindings are ground truth for slots
         // filled outside the view/config files (e.g. EditorComponent via
-        // EditingContext, detailsChildren as JSX children).
+        // EditingContext).
         const tokenUsage = (usage.get(x.key) ?? []).filter(n => viewWrapper.get(n) === w.id);
         const combined = [...new Set([...tokenUsage, ...bs.map(b => b.viewId)])];
         return { ...x, usedBy: combined, bindings: bs };
