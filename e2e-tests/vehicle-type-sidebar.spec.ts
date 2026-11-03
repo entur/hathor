@@ -16,6 +16,47 @@ async function numberToTextRatio(page: import('@playwright/test').Page): Promise
   return numberWidth / textWidth;
 }
 
+/**
+ * Serve two organisations to the header org picker; optionally hold the
+ * VehicleType save mutation until `gate` resolves.
+ *
+ * @param {import('@playwright/test').Page} page Test page.
+ * @param {Promise<void>} [gate] Released by the test to let the save through.
+ * @returns {Promise<void>} Once the route is registered.
+ */
+async function routeTwoOrgs(page: import('@playwright/test').Page, gate?: Promise<void>) {
+  const org = (n: number, type: string) => ({
+    netexId: `NMR:Organisation:${n}`,
+    name: { value: n === 1 ? 'First Org' : 'Second Org' },
+    type,
+  });
+  await page.route('**/graphql', async route => {
+    const query: string = route.request().postDataJSON()?.query ?? '';
+    if (gate && query.includes('createOrUpdateVehicleType')) await gate;
+    if (!query.includes('organisations(')) return route.fallback();
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          organisations: {
+            content: [org(1, 'AUTHORITY'), org(2, 'OPERATOR')],
+            totalElements: 2,
+            page: 0,
+            size: 10000,
+          },
+        },
+      }),
+    });
+  });
+}
+
+/** Pick the second organisation in the header org picker. */
+async function switchToSecondOrg(page: import('@playwright/test').Page) {
+  await page.getByRole('banner').getByRole('combobox').first().click();
+  await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+}
+
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
 async function openFirstVtype(page: import('@playwright/test').Page): Promise<string> {
   await page.goto('/vehicle-types');
@@ -327,7 +368,8 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.locator('#vtype-name').fill('Type Alpha X');
     await page.getByTestId('editor-rail-save').click();
 
-    await expect(page.getByRole('alert')).toContainText('boom');
+    // Sobek's own message, not graphql-request's request/response dump.
+    await expect(page.getByRole('alert')).toHaveText('boom');
     // No success, and the editor stays editable (still dirty in edit mode).
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
     await expect(page.locator('#vtype-name')).toBeEnabled();
@@ -399,48 +441,36 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   test('an org switch during save leaves the editor on the new org, not loading', async ({
     page,
   }) => {
-    const org = (n: number, type: string) => ({
-      netexId: `NMR:Organisation:${n}`,
-      name: { value: n === 1 ? 'First Org' : 'Second Org' },
-      type,
-    });
     let release!: () => void;
     const gate = new Promise<void>(r => (release = r));
     await interceptVehicleTypesWithSave(page);
     // Registered last → first look (LIFO): two orgs; hold the save mutation.
-    await page.route('**/graphql', async route => {
-      const query: string = route.request().postDataJSON()?.query ?? '';
-      if (query.includes('createOrUpdateVehicleType')) await gate;
-      if (!query.includes('organisations(')) return route.fallback();
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          data: {
-            organisations: {
-              content: [org(1, 'AUTHORITY'), org(2, 'OPERATOR')],
-              totalElements: 2,
-              page: 0,
-              size: 10000,
-            },
-          },
-        }),
-      });
-    });
+    await routeTwoOrgs(page, gate);
     await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vtype-name').fill('Type Alpha X');
     await page.getByTestId('editor-rail-save').click();
 
-    const orgPicker = page.getByRole('banner').getByRole('combobox').first();
-    await orgPicker.click();
-    await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+    await switchToSecondOrg(page);
     await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
     release();
 
     await expect(page.getByLabel(/loading/i)).toHaveCount(0);
     await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+  });
+
+  // #238: an org switch re-mounts an open editor; an unsaved create draft
+  // must survive it, as it did before.
+  test('an org switch keeps an unsaved create draft', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    await routeTwoOrgs(page);
+    await page.goto('/vehicle-types?selected=new');
+
+    await page.locator('#vtype-name').fill('Draft Type');
+    await switchToSecondOrg(page);
+
+    await expect(page.locator('#vtype-name')).toHaveValue('Draft Type');
   });
 
   // A failed first read leaves no record: Edit / Deactivate must not act on an
@@ -462,8 +492,11 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
   });
 
   // Deactivated but the list reload is still pending: Edit must already be
-  // blocked, or a save could land on the deactivated record.
-  test('Edit is blocked while the post-deactivate list reload is pending', async ({ page }) => {
+  // blocked, or a save could land on the deactivated record; Deactivate too,
+  // or a second click re-sends the mutation.
+  test('Edit and Deactivate are blocked while the post-deactivate list reload is pending', async ({
+    page,
+  }) => {
     let release!: () => void;
     const gate = new Promise<void>(r => (release = r));
     let deactivated = false;
@@ -481,6 +514,7 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Deactivate' }).click();
     await expect.poll(() => deactivated).toBe(true);
 
+    await expect(page.getByTestId('editor-rail-deactivate')).toHaveCount(0);
     await page.getByTestId('editor-rail-edit').click();
     await expect(page.locator('#vtype-name')).toBeDisabled();
     release();

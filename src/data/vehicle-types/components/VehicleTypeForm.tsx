@@ -1,8 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Box, Chip, Divider, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Chip, Divider, Tab, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FormStack } from '../../../components/FormLayout.tsx';
+import PillTabs from '../../../components/PillTabs.tsx';
 import {
   FormAutocompleteField,
   FormNumberField,
@@ -102,38 +103,13 @@ export default function VehicleTypeForm({
 
   return (
     <Box>
-      {/* Pill/segmented tabs: the sliding underline indicator misaligns once
-          the tabs wrap onto a second line in a narrow rail, so hide it and mark
-          the active tab with a filled background. Tabs still wrap (no chevrons). */}
-      <Tabs
-        value={tab}
-        onChange={(_e, v: TabKey) => setTab(v)}
-        sx={{
-          mb: 1.5,
-          minHeight: 0,
-          '& .MuiTabs-indicator': { display: 'none' },
-          '& .MuiTabs-flexContainer': { flexWrap: 'wrap', gap: 0.75 },
-          '& .MuiTab-root': {
-            minHeight: 30,
-            px: 1.25,
-            py: 0.25,
-            borderRadius: 1,
-            textTransform: 'none',
-            bgcolor: 'action.hover',
-            color: 'text.secondary',
-          },
-          '& .MuiTab-root.Mui-selected': {
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-          },
-        }}
-      >
+      <PillTabs value={tab} onChange={(_e, v: TabKey) => setTab(v)}>
         <Tab value="general" label={t('vehicleType.tab.general')} />
         <Tab value="propulsion" label={t('vehicleType.tab.propulsion')} />
         <Tab value="capacity" label={t('vehicleType.tab.capacity')} />
         <Tab value="environment" label={t('vehicleType.tab.environment')} />
         <Tab value="vehicles" label={t('vehicleType.tab.vehicles')} />
-      </Tabs>
+      </PillTabs>
 
       {tab === 'general' && (
         <FormStack data-testid="vtype-tab-general">

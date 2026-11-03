@@ -160,6 +160,72 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await expect(page.getByLabel('Registration Number')).toHaveValue('NEW-001');
   });
 
+  // The create pane survives an org switch (draft kept), so a create started
+  // under org A that lands after the switch must not advance the URL to A's
+  // new id nor flip the B-scoped pane to view.
+  test('a create that lands after an org switch keeps the draft on ?selected=new', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'needs a held mutation + a second mocked org');
+    await interceptVehicleTypesQuery(page);
+    await interceptStatefulVehicleListQuery(page);
+    await interceptVehicleByIdQuery(page, id => (id === NEW_ID ? vehicleRow(id) : null));
+    interceptVehicleSaveMutation(page, NEW_ID);
+    let release!: () => void;
+    const held = new Promise<void>(res => (release = res));
+    // Registered last → first look (LIFO): two orgs, and the create held until released.
+    await page.route('**/graphql', async route => {
+      const query: string = route.request().postDataJSON()?.query ?? '';
+      if (query.includes('createOrUpdateVehicle')) {
+        await held;
+        return route.fallback();
+      }
+      if (!query.includes('organisations(')) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            organisations: {
+              content: [
+                { netexId: 'NMR:Organisation:1', name: { value: 'First Org' }, type: 'AUTHORITY' },
+                { netexId: 'NMR:Organisation:2', name: { value: 'Second Org' }, type: 'OPERATOR' },
+              ],
+              totalElements: 2,
+              page: 0,
+              size: 10000,
+            },
+          },
+        }),
+      });
+    });
+    await page.goto('/vehicles?selected=new');
+
+    await page.getByLabel('Registration Number').fill('NEW-001');
+    await page.getByRole('combobox', { name: 'Vehicle Type' }).click();
+    await page.getByRole('option', { name: PICKED_VT_NAME }).click();
+    const save = page.getByTestId('editor-rail-save');
+    await save.click();
+    await expect(save).toBeDisabled(); // saving
+
+    const orgPicker = page.getByRole('banner').getByRole('combobox').first();
+    await orgPicker.click();
+    await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+    await expect(orgPicker).toHaveValue('Second Org (OPERATOR)');
+
+    const landed = page.waitForResponse(
+      r => !!r.request().postData()?.includes('createOrUpdateVehicle')
+    );
+    release();
+    await landed;
+    // Saving ends in the same render as the (stale) run would flip to view, so
+    // once Save is enabled again the run has had its chance to publish.
+    await expect(save).toBeEnabled();
+    expect(page.url()).toContain('selected=new');
+    await expect(page.getByLabel('Registration Number')).toHaveValue('NEW-001');
+    await expect(page.getByLabel('Registration Number')).toBeEditable();
+  });
+
   test('sidebar edit: an existing non-numeric TransportTypeRef stays selectable via picker', async ({
     page,
   }) => {

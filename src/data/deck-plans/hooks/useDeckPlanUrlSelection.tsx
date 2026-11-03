@@ -32,6 +32,6 @@ export function useDeckPlanUrlSelection({
     rowsPerPage,
     setPage,
     getId: dp => dp.id,
-    renderEditor: (id, mode) => <DeckPlanDetails id={id} onSaved={refetch} mode={mode} />,
+    renderEditor: host => <DeckPlanDetails {...host} onSaved={refetch} />,
   });
 }

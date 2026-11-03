@@ -30,7 +30,7 @@ const SEGMENT_SIZE = 40;
 const SPINNER_SIZE = 18;
 const DIVIDER_OPACITY = 0.35;
 
-interface EditorRailProps {
+export interface EditorRailProps {
   /** Always required; called when the user requests pane collapse (and confirms when dirty). */
   onCollapse: () => void;
   /** Current form mode. Omit to hide both pen and cancel segments (degraded mode). */

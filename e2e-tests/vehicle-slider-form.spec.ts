@@ -149,7 +149,9 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#vehicle-name').fill('Oslo Tram 4 — renamed');
     await page.getByTestId('editor-rail-save').click();
-    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+    await expect(page.getByTestId('vehicle-record-fetch-error')).toBeVisible();
+    // Edit stays hidden until a retry reads the record, so its hydrate can't overwrite edits.
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
 
     await page.getByTestId('editor-rail-collapse').click();
     await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);

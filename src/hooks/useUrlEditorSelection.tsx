@@ -1,6 +1,10 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
+import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
+import { useCloseSliderParam } from './useCloseSliderParam.ts';
+import type { EntityEditorHostProps } from './useEntityEditor.ts';
+import { useSidebarCreateAdvance } from './useSidebarCreateAdvance.ts';
 
 /** `?<paramKey>=` value (and `editingItem.id`) of the create pane — not a row id. */
 export const NEW_SELECTION = 'new';
@@ -17,11 +21,12 @@ interface UrlEditorSelectionParams<T> {
   /** Extract the comparable id from an item. */
   getId: (item: T) => string;
   /**
-   * Render the editor for a selected id. `''` is the create pane
-   * (`?<paramKey>=new`). The editor reads its own record by id — the list
-   * row is never handed over, so the editor needs no list to mount.
+   * Render the editor from its host props: `id` (`''` is the create pane,
+   * `?<paramKey>=new`), `initialMode`, and the URL writes `onClose` /
+   * `onCreated`. The editor reads its own record by id — the list row is never
+   * handed over, so the editor needs no list to mount.
    */
-  renderEditor: (id: string, mode: 'edit' | 'view') => ReactNode;
+  renderEditor: (host: Omit<EntityEditorHostProps, 'onSaved'>) => ReactNode;
 }
 
 /**
@@ -30,9 +35,9 @@ interface UrlEditorSelectionParams<T> {
  * can adopt deep-link selection.
  *
  * **Commit on id change only.** The editor is (re)mounted when the
- * selected id changes, never on a list refetch: it owns its record, so
- * fresh `allData` references must not replace it — remounting would wipe
- * its view/edit mode and drop any in-flight snackbar.
+ * selected id or the organisation changes, never on a list refetch: it owns
+ * its record, so fresh `allData` references must not replace it — remounting
+ * would wipe its view/edit mode and drop any in-flight snackbar.
  *
  * **Page jump.** Once the list holds the selected row, the pager moves to
  * the page that shows it (row highlight).
@@ -52,6 +57,10 @@ export function useUrlEditorSelection<T>({
   const [searchParams] = useSearchParams();
   const selected = searchParams.get(paramKey);
   const { setEditingItem } = useEditingItem();
+  const onClose = useCloseSliderParam(paramKey);
+  const onCreated = useSidebarCreateAdvance(paramKey);
+  const hostRef = useRef({ onClose, onCreated });
+  hostRef.current = { onClose, onCreated };
 
   const getIdRef = useRef(getId);
   getIdRef.current = getId;
@@ -70,9 +79,22 @@ export function useUrlEditorSelection<T>({
     const isNew = selected === NEW_SELECTION;
     setEditingItem({
       id: selected,
-      EditorComponent: () => (
-        <>{renderEditorRef.current(isNew ? '' : selected, isNew ? 'edit' : 'view')}</>
-      ),
+      // Keyed on the org: an org switch re-mounts a record's editor, so nothing
+      // from the previous org's record, form or in-flight save carries over.
+      // The create pane has no record to lose, so its unsaved draft stays
+      // (useEntityEditor still invalidates its in-flight create on the switch).
+      EditorComponent: function SelectedEditor() {
+        const orgId = useOrganisationsContext().currentOrganisation?.id;
+        return (
+          <Fragment key={isNew ? NEW_SELECTION : orgId}>
+            {renderEditorRef.current({
+              id: isNew ? '' : selected,
+              initialMode: isNew ? 'edit' : 'view',
+              ...hostRef.current,
+            })}
+          </Fragment>
+        );
+      },
     });
   }, [selected, setEditingItem]);
 
