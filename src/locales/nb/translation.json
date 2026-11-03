@@ -203,6 +203,7 @@
   "vehicles.viewChipLabel": "Vis",
   "vehicles.notFound": "Kjøretøy ikke funnet",
   "vehicles.loading": "Laster kjøretøy…",
+  "vehicles.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
   "vehicles.saveSuccess": "Kjøretøy lagret",
   "vehicle.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert.",
   "vehicles.deactivateSuccess": "Kjøretøy deaktivert",

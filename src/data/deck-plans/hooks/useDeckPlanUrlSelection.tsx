@@ -8,7 +8,6 @@ interface UrlSelectionParams {
   dataForTable: DeckPlan[];
   rowsPerPage: number;
   setPage: (page: number) => void;
-  loading: boolean;
   /** List refetch, forwarded into `DeckPlanDetails` so a save can refresh the row. */
   refetch?: () => Promise<void>;
 }
@@ -24,7 +23,6 @@ export function useDeckPlanUrlSelection({
   dataForTable,
   rowsPerPage,
   setPage,
-  loading,
   refetch,
 }: UrlSelectionParams): void {
   useUrlEditorSelection<DeckPlan>({
@@ -33,9 +31,7 @@ export function useDeckPlanUrlSelection({
     dataForTable,
     rowsPerPage,
     setPage,
-    loading,
     getId: dp => dp.id,
-    getEmptyRow: () => ({ id: '' }),
-    renderEditor: (row, mode) => <DeckPlanDetails deckPlan={row} onSaved={refetch} mode={mode} />,
+    renderEditor: (id, mode) => <DeckPlanDetails id={id} onSaved={refetch} mode={mode} />,
   });
 }

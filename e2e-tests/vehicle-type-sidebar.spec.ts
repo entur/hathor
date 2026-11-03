@@ -30,12 +30,12 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *
  * Workflow (describe 1 — deep-link sidebar):
  *   /vehicle-types → row click writes ?selected=<vtId> → tabbed VehicleTypeForm
- *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the resolved row →
+ *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the by-id read →
  *   navigate tabs → editor-rail collapse drops ?selected= and hides the sidebar.
  * Workflow (describe 2 — sidebar save):
  *   ?selected=<vtId> → editor-rail Edit → edit name → editor-rail Save fires
  *   createOrUpdateVehicleType (full-document serialize) → success snackbar →
- *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
+ *   by-id re-read re-hydrates the form + list refetch → back to read-only view (re-baselined).
  * Covers:
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
  *     number fields render at 2/3 of a text field's width, and at full width once the
@@ -47,7 +47,11 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
- *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
+ *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early);
+ *     a failed post-deactivate list refresh shows only the warning, no green (#237);
+ *     a failed first by-id read offers no Edit or Deactivate; Edit stays hidden until
+ *     the post-save re-read lands; Edit is blocked while the post-deactivate list
+ *     reload is pending; an org switch during save leaves the editor on the new org.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -289,7 +293,7 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.getByTestId('editor-rail-save').click();
 
     await expect(page.getByText('Vehicle type saved')).toBeVisible();
-    // Refetch re-resolves the row → re-hydrate → back to read-only view.
+    // The by-id re-read re-hydrates the form → back to read-only view.
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha X');
     await expect(page.locator('#vtype-name')).toBeDisabled();
   });
@@ -361,5 +365,140 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     await expect(page.getByText(/list could not refresh/i)).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
+
+  // Edit stays hidden until the post-save re-read lands, so typing can't be
+  // overwritten by the re-read's re-baseline.
+  test('Edit stays hidden until the post-save re-read lands', async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    let saved = false;
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): hold the by-id read once the write has landed.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      if (post?.query?.includes('createOrUpdateVehicleType')) saved = true;
+      else if (saved && post?.variables?.filter?.netexIds) await gate;
+      return route.fallback();
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect(page.getByTestId('editor-rail-save')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+    release();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+    await expect(page.getByText('Vehicle type saved')).toBeVisible();
+  });
+
+  // A save that outlives an org switch must not re-read under the old org and
+  // leave the editor stuck on its skeleton.
+  test('an org switch during save leaves the editor on the new org, not loading', async ({
+    page,
+  }) => {
+    const org = (n: number, type: string) => ({
+      netexId: `NMR:Organisation:${n}`,
+      name: { value: n === 1 ? 'First Org' : 'Second Org' },
+      type,
+    });
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): two orgs; hold the save mutation.
+    await page.route('**/graphql', async route => {
+      const query: string = route.request().postDataJSON()?.query ?? '';
+      if (query.includes('createOrUpdateVehicleType')) await gate;
+      if (!query.includes('organisations(')) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            organisations: {
+              content: [org(1, 'AUTHORITY'), org(2, 'OPERATOR')],
+              totalElements: 2,
+              page: 0,
+              size: 10000,
+            },
+          },
+        }),
+      });
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+
+    const orgPicker = page.getByRole('banner').getByRole('combobox').first();
+    await orgPicker.click();
+    await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+    release();
+
+    await expect(page.getByLabel(/loading/i)).toHaveCount(0);
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+  });
+
+  // A failed first read leaves no record: Edit / Deactivate must not act on an
+  // empty form (Deactivate would send a blank netexId).
+  test('a failed first by-id read offers no Edit or Deactivate', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): 500 the by-id read only.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      const isById = post?.query?.includes('vehicleTypes') && !!post?.variables?.filter?.netexIds;
+      if (!isById) return route.fallback();
+      return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await expect(page.getByTestId('editor-rail-collapse')).toBeVisible();
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-deactivate')).toHaveCount(0);
+  });
+
+  // Deactivated but the list reload is still pending: Edit must already be
+  // blocked, or a save could land on the deactivated record.
+  test('Edit is blocked while the post-deactivate list reload is pending', async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    let deactivated = false;
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): hold the list reload once deactivated.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      if (post?.query?.includes('deactivateVehicleType')) deactivated = true;
+      else if (deactivated && post?.query?.includes('vehicleTypes')) await gate;
+      return route.fallback();
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-deactivate').click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Deactivate' }).click();
+    await expect.poll(() => deactivated).toBe(true);
+
+    await page.getByTestId('editor-rail-edit').click();
+    await expect(page.locator('#vtype-name')).toBeDisabled();
+    release();
+    await expect(page.getByText('Vehicle type deactivated')).toBeVisible();
+  });
+
+  // #237: deactivate used to show green before the list refresh, so a failed
+  // refresh showed green + amber together. Only the warning may show.
+  test('a failed post-deactivate list refresh shows only the stale-list warning', async ({
+    page,
+  }) => {
+    await interceptVehicleTypesWithSave(page, { failRefetch: true });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-deactivate').click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Deactivate' }).click();
+
+    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+    await expect(page.getByText('Vehicle type deactivated')).toHaveCount(0);
   });
 });

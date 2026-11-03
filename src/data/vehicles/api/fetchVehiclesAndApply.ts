@@ -1,9 +1,10 @@
 /**
  * Pure async orchestration for the `/vehicles` list fetch. Awaits the
  * full chain so callers can `await refetch()` and observe new data
- * (M3, PR #74 review). Side-effects flow through injected setters; the
- * `fetchVehiclesImpl` seam exists so tests can drive completion with a
- * deferred promise without mocking the module graph.
+ * (M3, PR #74 review), and rejects when it fails. Side-effects flow
+ * through injected setters; the `fetchVehiclesImpl` seam exists so tests
+ * can drive completion with a deferred promise without mocking the
+ * module graph.
  */
 import type { AccessToken } from '../../../auth';
 import { graphqlErrMsg } from '../../graphqlErrMsg';
@@ -39,5 +40,7 @@ export async function fetchVehiclesAndApply({
     setData(rows);
   } catch (err) {
     setError(graphqlErrMsg(err));
+    // Re-throw so an awaited `refetch()` (the editor's `onSaved`) rejects on failure.
+    throw err;
   }
 }

@@ -8,7 +8,6 @@ interface UrlSelectionParams {
   dataForTable: Vehicle[];
   rowsPerPage: number;
   setPage: (page: number) => void;
-  loading: boolean;
   /** List refetch, forwarded into `VehicleDetails` so a save can refresh the row. */
   refetch?: () => Promise<void>;
 }
@@ -24,7 +23,6 @@ export function useVehicleUrlSelection({
   dataForTable,
   rowsPerPage,
   setPage,
-  loading,
   refetch,
 }: UrlSelectionParams): void {
   useUrlEditorSelection<Vehicle>({
@@ -33,9 +31,7 @@ export function useVehicleUrlSelection({
     dataForTable,
     rowsPerPage,
     setPage,
-    loading,
     getId: v => v.id ?? '',
-    getEmptyRow: () => ({ id: '' }), // "new" selection factory
-    renderEditor: (row, mode) => <VehicleDetails vehicle={row} onSaved={refetch} mode={mode} />,
+    renderEditor: (id, mode) => <VehicleDetails id={id} onSaved={refetch} mode={mode} />,
   });
 }

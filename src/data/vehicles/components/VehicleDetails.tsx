@@ -1,7 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
 import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import NetexId from '../../../components/NetexId.tsx';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import EditorRail from '../../../components/sidebar/EditorRail.tsx';
@@ -12,13 +11,13 @@ import VehicleEditForm from './VehicleEditForm.tsx';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import SaveErrorSnackbar from '../../../components/feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../../../components/feedback/SaveSuccessSnackbar.tsx';
-import { useVehicle } from '../hooks/useVehicle.ts';
+import { useEntityRecord } from '../../../hooks/useEntityRecord.ts';
+import { fetchVehicle } from '../api/fetchVehicles.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { useDirtyFormBlock } from '../../../hooks/useDirtyFormBlock.ts';
 import { useLiftEditorDirty } from '../../../hooks/useLiftEditorDirty.ts';
 import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
 import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
-import { commitSave } from '../../../utils/commitSave.ts';
 import {
   edit,
   hydrate,
@@ -34,45 +33,40 @@ const BLANK_NAME = 'unnamed';
 const RAIL_SIDE = 'right' as const;
 
 interface VehicleDetailsProps {
-  /** Resolved row, or `null` when the deep-link `?selected=…` id was not found. */
-  vehicle: Vehicle | null;
+  /** NeTEx id to edit; `''` is the create pane. The editor reads the record itself. */
+  id: string;
   /**
-   * List-side refetch fired after a successful save so the row on `/vehicles`
-   * reflects the new registrationNumber/name/version before the success
-   * snackbar appears. Optional — callers without a list channel can omit.
+   * List-side refetch fired after a successful save or deactivate so the row
+   * on `/vehicles` is fresh before the success snackbar appears; a rejection
+   * shows a stale-list warning instead. Optional — hosts without a list omit it.
    */
   onSaved?: () => Promise<void>;
   mode?: 'view' | 'edit';
 }
 
-export default function VehicleDetails({
-  vehicle,
-  onSaved,
-  mode: initialMode,
-}: VehicleDetailsProps) {
+export default function VehicleDetails({ id, onSaved, mode: initialMode }: VehicleDetailsProps) {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
+  const isCreate = id === '';
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [formState, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = formState;
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  // True from Save until the post-save re-read + list refresh land; Edit stays
+  // hidden so typing can't be overwritten by the re-read's re-baseline.
+  const [settling, setSettling] = useState(false);
   const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
   const { deactivate } = useVehicleDeactivate();
-  const [deactivatedOK, setDeactivatedOK] = useState(false);
+  // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.
+  const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
 
-  const {
-    data: xmlVehicle,
-    loading: xmlLoading,
-    error: xmlError,
-    refetch: refetchXml,
-  } = useVehicle(vehicle?.id);
+  const { data: record, loading, error: fetchError, refetch } = useEntityRecord(id, fetchVehicle);
 
+  // Re-baseline on every read of the record — the first one and each post-save re-read.
   useEffect(() => {
-    dispatch({ type: 'hydrate', xmlVehicle });
-    setDeactivatedOK(false);
-  }, [xmlVehicle]);
+    dispatch({ type: 'hydrate', xmlVehicle: record });
+  }, [record]);
 
   const isDirty = isFormDirty(formState);
   useDirtyFormBlock(isDirty);
@@ -88,21 +82,21 @@ export default function VehicleDetails({
       return;
     }
     setMode('view');
+    setDeactivated('stale'); // blocks Edit while the list refreshes
     try {
-      setDeactivatedOK(true);
       await onSaved?.();
-      setCommitError(null);
+      setDeactivated('ok');
     } catch {
       setCommitError(t('vehicle.deactivateStaleList'));
     }
   };
 
   const handleSave = async () => {
-    const wasCreate = (form.vehicle.id ?? '') === '';
-    const result = await commitSave(save, form, onSaved);
+    setCommitError(null);
+    const result = await save(form);
     if (result.error) return;
 
-    if (wasCreate) {
+    if (isCreate) {
       // Sobek's mutation must mint a newId on create; null here = invariant
       // break. Re-baselining with id='' would let the next Edit→Save fire
       // CREATE again and mint a duplicate.
@@ -110,29 +104,38 @@ export default function VehicleDetails({
         setCommitError(t('common.saveNoIdReturned'));
         return;
       }
-      // Re-baseline the form with the assigned id so isDirty=false immediately,
-      // bridging until the URL advance below re-resolves the row from the list.
+      // Re-baseline on the write so a failing list refresh can't strand the
+      // editor dirty.
       dispatch({
         type: 'hydrate',
         xmlVehicle: { ...form.vehicle, id: result.newId, version: 1 },
       });
-      // useVehicle('') short-circuited; advance ?selected=new → ?selected=<newId>
-      // so useUrlEditorSelection re-resolves into the just-created row and the
-      // single-vehicle fetch lands the real version.
-      advanceCreated(result.newId);
-    } else {
-      // Existing row — re-pull the persisted vehicle so the `hydrate` effect
-      // advances the dirty baseline (and picks up the bumped version). Without
-      // this the form stays dirty after save and `>>` wrongly raises the
-      // discard dialog.
-      await refetchXml();
+      setMode('view');
+      try {
+        await onSaved?.();
+        // ?selected=new → ?selected=<newId>: the editor re-mounts on the new id
+        // and reads the created record.
+        advanceCreated(result.newId);
+        setSavedAt(Date.now());
+      } catch {
+        setCommitError(t('vehicles.saveStaleList'));
+      }
+      return;
     }
-    setSavedAt(Date.now());
+
+    // Re-baseline on the write too, so a failing re-read can't strand the
+    // editor dirty over a persisted save.
+    dispatch({ type: 'hydrate', xmlVehicle: form.vehicle });
     setMode('view');
+    // "Saved" means the record was re-read: the re-read re-baselines the form
+    // (bumped version included). The list refresh runs alongside.
+    const [reread, list] = await Promise.allSettled([refetch(), onSaved?.()]);
+    if (reread.status === 'rejected') return; // the body shows `fetchError`
+    if (list.status === 'rejected') setCommitError(t('vehicles.saveStaleList'));
+    else setSavedAt(Date.now());
   };
 
-  if (!vehicle) {
-    const requestedId = searchParams.get(VEHICLE_SELECTED_PARAM);
+  if (!isCreate && !record && !loading && !fetchError) {
     return (
       <>
         <Box sx={{ p: 2 }}>
@@ -143,18 +146,16 @@ export default function VehicleDetails({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             {t('vehicles.notFound')}
           </Typography>
-          {requestedId && (
-            <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
-              {requestedId}
-            </Typography>
-          )}
+          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+            {id}
+          </Typography>
         </Box>
         <EditorRail onCollapse={closeSlider} side={RAIL_SIDE} />
       </>
     );
   }
 
-  if (xmlLoading) {
+  if (loading && !record) {
     return (
       <>
         <VehicleDetailsSkeleton />
@@ -164,7 +165,7 @@ export default function VehicleDetails({
   }
 
   const trimmedName = form.vehicle.name?.value?.trim();
-  const tmode = vehicleMode(vehicle);
+  const tmode = vehicleMode(record ?? { id: '' });
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -209,9 +210,9 @@ export default function VehicleDetails({
       <FormLayout rowGap={0.5} sx={{ mb: 2 }} data-testid="vehicle-context">
         <MetaRow label={t('vehicles.field.parentVehicleType')}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-            <span>{vehicle.transportType?.name?.value ?? '—'}</span>
-            {xmlVehicle?.transportType?.id && (
-              <NetexId id={xmlVehicle.transportType.id} copy="only" size="medium" />
+            <span>{record?.transportType?.name?.value ?? '—'}</span>
+            {record?.transportType?.id && (
+              <NetexId id={record.transportType.id} copy="only" size="medium" />
             )}
           </Stack>
         </MetaRow>
@@ -221,9 +222,9 @@ export default function VehicleDetails({
       </FormLayout>
       <Divider sx={{ mb: 2 }} />
 
-      {xmlError ? (
+      {fetchError ? (
         <Typography variant="body2" color="error" sx={{ py: 2 }}>
-          {xmlError}
+          {fetchError}
         </Typography>
       ) : (
         <VehicleEditForm value={form} onChange={setForm} mode={mode} />
@@ -241,7 +242,7 @@ export default function VehicleDetails({
         onClose={() => setSavedAt(null)}
       />
       <SaveSuccessSnackbar
-        open={deactivatedOK}
+        open={deactivated === 'ok'}
         message={t('vehicles.deactivateSuccess')}
         onClose={closeSlider}
       />
@@ -249,22 +250,33 @@ export default function VehicleDetails({
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => !deactivatedOK && setMode('edit')}
-        onDeactivate={handleDeactivate}
+        // No record (first read failed) → nothing to edit or deactivate.
+        onEnterEdit={
+          (isCreate || record) && !settling ? () => !deactivated && setMode('edit') : undefined
+        }
+        onDeactivate={record ? handleDeactivate : undefined}
         deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', xmlVehicle });
+          // Restore the committed baseline, not `record`: after a create whose
+          // list reload failed there is no record yet, and re-hydrating from
+          // null would drop the assigned id (the next save would mint a duplicate).
+          // shortcut: baseline read back from `hydratedKey`; #238 adds a real restore.
+          const baseline = JSON.parse(formState.hydratedKey) as VehicleEditFormValue;
+          dispatch({ type: 'hydrate', xmlVehicle: baseline.vehicle });
           setMode('view');
         }}
-        onSave={handleSave}
+        onSave={() => {
+          setSettling(true);
+          return handleSave().finally(() => setSettling(false));
+        }}
         isDirty={isDirty}
         saving={saving}
         // Block create-with-no-TransportTypeRef: Sobek's vehicles() resolver
         // silently excludes refless vehicles from the list (create-but-invisible).
         // Existing rows already carry a ref, so only the create flow needs the gate.
-        canSubmit={(form.vehicle.id ?? '') !== '' || canSubmit(form)}
+        canSubmit={!isCreate || canSubmit(form)}
       />
     </Box>
   );

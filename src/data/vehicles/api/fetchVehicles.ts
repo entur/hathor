@@ -1,9 +1,34 @@
-import { fetchVehiclesRequest } from '../../../graphql/vehicles/queries/fetchVehicles.ts';
+import {
+  fetchVehiclesRequest,
+  type VehiclesQuery,
+} from '../../../graphql/vehicles/queries/fetchVehicles.ts';
 import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import type { Vehicle } from '../types/vehicle.ts';
 import type { AccessToken } from '../../../auth';
 import type { MultilingualString } from '../../netex/multilingualString.ts';
+
+type VehicleRow = VehiclesQuery['vehicles']['content'][number];
+
+const projectVehicle = (v: VehicleRow): Vehicle => ({
+  id: v.netexId || '',
+  version: v.version,
+  name: v.name || undefined,
+  registrationNumber: v.registrationNumber,
+  operationalNumber: v.operationalNumber ?? undefined,
+  buildDate: v.buildDate,
+  chassisNumber: v.chassisNumber,
+  description: v.description,
+  registrationDate: v.registrationDate,
+  transportType: v.transportType
+    ? {
+        id: v.transportType.netexId,
+        version: v.transportType.version,
+        name: v.transportType.name || undefined,
+        transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
+      }
+    : undefined,
+});
 
 /**
  * Sobek `VehicleInput` — the mutation-accepted shape (mirrors `input
@@ -51,66 +76,28 @@ export async function fetchVehicles(
       `fetchVehicles: server reports ${totalElements} vehicles but only ${content.length} returned — list is truncated. Bump FETCH_ALL_SIZE or move to server-side paging.`
     );
   }
-  return content.map<Vehicle>(v => ({
-    id: v.netexId || '',
-    version: v.version,
-    name: v.name || undefined,
-    registrationNumber: v.registrationNumber,
-    operationalNumber: v.operationalNumber ?? undefined,
-    buildDate: v.buildDate,
-    chassisNumber: v.chassisNumber,
-    description: v.description,
-    registrationDate: v.registrationDate,
-    transportType: v.transportType
-      ? {
-          id: v.transportType.netexId,
-          version: v.transportType.version,
-          name: v.transportType.name || undefined,
-          transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
-        }
-      : undefined,
-  }));
+  return content.map(projectVehicle);
 }
 
 /**
- * Fetch one Vehicle from Sobek's `vehicles(...)` GraphQL query and
+ * Fetch one Vehicle by NeTEx id — the `vehicles(...)` query filtered to
+ * `netexIds: [id]`.
  *
+ * @param netexId Full NeTEx id.
  * @param applicationBaseUrl Sobek base URL.
+ * @param dataOwnerRef Current organisation ref.
  * @param token OIDC access token (bearer).
+ * @returns The vehicle, or `null` when Sobek returns none for the id.
  */
 export async function fetchVehicle(
   netexId: string,
   applicationBaseUrl: string,
   dataOwnerRef: string,
   token: AccessToken
-): Promise<Vehicle[]> {
+): Promise<Vehicle | null> {
   const raw = await fetchVehiclesRequest(applicationBaseUrl, token, {
-    size: FETCH_ALL_SIZE,
+    size: 1,
     filter: { netexIds: [netexId], dataOwnerRef },
   });
-  const { content, totalElements } = raw.vehicles;
-  if (content.length < totalElements) {
-    console.warn(
-      `fetchVehicles: server reports ${totalElements} vehicles but only ${content.length} returned — list is truncated. Bump FETCH_ALL_SIZE or move to server-side paging.`
-    );
-  }
-  return content.map<Vehicle>(v => ({
-    id: v.netexId || '',
-    version: v.version,
-    name: v.name || undefined,
-    registrationNumber: v.registrationNumber,
-    operationalNumber: v.operationalNumber ?? undefined,
-    buildDate: v.buildDate,
-    chassisNumber: v.chassisNumber,
-    description: v.description,
-    registrationDate: v.registrationDate,
-    transportType: v.transportType
-      ? {
-          id: v.transportType.netexId,
-          version: v.transportType.version,
-          name: v.transportType.name || undefined,
-          transportMode: v.transportType.transportMode ?? UNKNOWN_TRANSPORT_MODE,
-        }
-      : undefined,
-  }));
+  return raw.vehicles.content.map(projectVehicle).find(v => v.id === netexId) ?? null;
 }

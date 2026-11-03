@@ -704,3 +704,29 @@ The SVV (Autosys) multi-import sent one `GET` per plate to shepet and built the 
 
 - An environment needs a shepet with #39 deployed before its import works.
 - Shepet sends no DeckPlans, so the confirm step's deck-plan count is 0.
+
+## Editors read their record by id; "saved" means re-read _(2026-11-03)_
+
+### Context
+
+`?selected=<id>` resolved the editor's record by copying the row out of the list (`useUrlEditorSelection`). The editor could not mount without the list, a same-id save never pushed the fresh row back in, and success hung on the list reload. Vehicle's list reload swallowed its own failure, so "saved" showed over a stale table; deactivate (all three) went green before the reload, so a failed one showed green and amber together (#237).
+
+### Decision
+
+- **One by-id read per editor**: `useEntityRecord(id, fetchX)` (`src/hooks/useEntityRecord.ts`) with a by-id fetcher in each feature's `api/` (`fetchVehicle`, `fetchVehicleType`, `fetchDeckPlan`). The URL carries only the id; `useUrlEditorSelection` passes `id` (`''` = create) and re-mounts only when the id changes.
+- **Derived, not synced**: the record is keyed on org + id, and only the latest request may write it. A late response for an older key is dropped, and a key change never shows the previous record.
+- **"Saved" = the record was re-read.** The re-read re-baselines the form. The list reload runs alongside; if it fails, the editor shows the stale-list warning instead of success. Deactivate shows green only after the list reload.
+- All three list `refetch`es reject on failure (`fetchVehiclesAndApply` now re-throws).
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the list row, re-commit the editor on refetch** | Re-mounting drops mode and snackbars; the editor still can't live outside the list. |
+| **Success on the list reload (as before)** | Ties a record's write to a different query's health (list errors: #229). |
+
+### Consequences
+
+- An editor needs only an id. That is the first half of a standalone `/<entity>/:id` page; the sidebar-coupled I/O (`useCloseSliderParam`, `useSidebarCreateAdvance`, `EditorRail`) is #238.
+- Mocks must answer the by-id `filter.netexIds` read like Sobek, including the saved values after a write (`e2e-tests/deck-plan-edit-sidebar.spec.ts`).
+- A create still re-mounts the editor when `?selected=new` advances to the new id, so its success snackbar does not survive; unchanged by this decision.

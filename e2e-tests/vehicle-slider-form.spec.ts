@@ -25,6 +25,8 @@ const SELECTED = `/vehicles?selected=${encodeURIComponent(VEHICLE_ID)}`;
  *   - Name sourced from vehicles(filter:{netexIds}) name.value shows in title + form field.
  *   - Build/Registration dates render as native date pickers bound to fetched value.
  *   - Closing the slider after a successful save does not wrongly raise the discard dialog.
+ *   - A failed post-save list refresh warns instead of a bare "Vehicle saved" (#237).
+ *   - A failed post-save re-read still re-baselines the form (no discard on collapse).
  *   - VehicleType field is an interactive Autocomplete; picking a different option round-trips as the option's full netex id in the save mutation input.
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts vehicleTypes, list, by-id, and save mutation; Name/date/type values are fixture-controlled.
@@ -94,6 +96,62 @@ test.describe('/vehicles slider form — fetch + post-save dirty baseline (no-au
 
     await page.getByTestId('editor-rail-collapse').click();
 
+    await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
+    await expect(page).not.toHaveURL(/selected=/);
+  });
+
+  // #237: the list refresh used to swallow its failure, so "Vehicle saved"
+  // showed over a stale table. The re-read succeeds; only the list 500s.
+  test('a failed post-save list refresh surfaces a stale-list warning, not a bare success', async ({
+    page,
+  }) => {
+    let saved = false;
+    await interceptVehicleTypesQuery(page);
+    await interceptVehicleListQuery(page);
+    await interceptVehicleByIdQuery(page, id => vehicleRow(id, { name: { value: 'Oslo Tram 4' } }));
+    interceptVehicleSaveMutation(page, VEHICLE_ID, () => (saved = true));
+    // Registered last → first look (LIFO): 500 the list query once the write has landed.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      const isList = post?.query?.includes('vehicles(') && !post?.variables?.filter?.netexIds;
+      if (!saved || !isList) return route.fallback();
+      return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+    });
+
+    await page.goto(SELECTED);
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vehicle-name').fill('Oslo Tram 4 — renamed');
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+    await expect(page.getByText('Vehicle saved')).toHaveCount(0);
+  });
+
+  // The write landed but the by-id re-read 500s: the form must still be
+  // re-baselined, so collapsing offers no discard of persisted changes.
+  test('a failed post-save re-read still re-baselines — collapse raises no discard', async ({
+    page,
+  }) => {
+    let saved = false;
+    await interceptVehicleTypesQuery(page);
+    await interceptVehicleListQuery(page);
+    await interceptVehicleByIdQuery(page, id => vehicleRow(id, { name: { value: 'Oslo Tram 4' } }));
+    interceptVehicleSaveMutation(page, VEHICLE_ID, () => (saved = true));
+    // Registered last → first look (LIFO): 500 the by-id read once the write has landed.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      const isById = post?.query?.includes('vehicles(') && !!post?.variables?.filter?.netexIds;
+      if (!saved || !isById) return route.fallback();
+      return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+    });
+
+    await page.goto(SELECTED);
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vehicle-name').fill('Oslo Tram 4 — renamed');
+    await page.getByTestId('editor-rail-save').click();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+
+    await page.getByTestId('editor-rail-collapse').click();
     await expect(page.getByRole('button', { name: 'Discard' })).toHaveCount(0);
     await expect(page).not.toHaveURL(/selected=/);
   });

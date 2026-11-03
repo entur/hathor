@@ -114,8 +114,8 @@ interface VehicleTypeInputCapture {
 interface SaveInterceptOpts {
   /** When set, the mutation responds with this GraphQL error instead of succeeding. */
   saveError?: string;
-  /** When true, the vehicleTypes query AFTER a save fails (500) — exercises the
-   * post-save list-refresh failure path. */
+  /** When true, the vehicleTypes LIST query (no `filter.netexIds`) AFTER a save
+   * or deactivate fails (500) — exercises the post-save list-refresh failure path. */
   failRefetch?: boolean;
 }
 
@@ -126,6 +126,7 @@ interface SaveInterceptOpts {
  *  - `createOrUpdateVehicleType` → capture `variables.input`, merge it into the
  *    matching row (bumping `version`), and return the row's netexId — or, when
  *    `saveError` is set, return a GraphQL error (drives `SaveErrorSnackbar`).
+ *  - `deactivateVehicleType` → succeed (counts as a write for `failRefetch`).
  *  - `vehicleTypes` → return the (possibly mutated) state, so the post-save
  *    list refetch re-resolves the row with the persisted edit + bumped version.
  *
@@ -173,8 +174,20 @@ export async function interceptVehicleTypesWithSave(
       return;
     }
 
+    if (query.includes('deactivateVehicleType')) {
+      const id: string = post.variables?.input?.netexId ?? 'NMR:VehicleType:1';
+      saved = true;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { deactivateVehicleType: { netexId: id, version: 2 } } }),
+      });
+      return;
+    }
+
     if (query.includes('vehicleTypes')) {
-      if (opts.failRefetch && saved) {
+      // Only the list refresh fails; the editor's by-id re-read still answers.
+      if (opts.failRefetch && saved && !post.variables?.filter?.netexIds) {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
