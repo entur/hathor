@@ -99,7 +99,7 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(id);
   const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
   const { deactivate } = useDeckPlanDeactivate();
-  // 'stale' = deactivated but the list didn't refresh: edit stays blocked, no green.
+  // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
 
   // Re-baseline on every read of the record — the first one and each post-save
@@ -124,11 +124,11 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
       return;
     }
     setMode('view');
+    setDeactivated('stale'); // blocks Edit while the list refreshes
     try {
       await onSaved?.();
       setDeactivated('ok');
     } catch {
-      setDeactivated('stale');
       setRefreshError(t('deckPlan.deactivateStaleList'));
     }
   };

@@ -87,7 +87,7 @@ export default function VehicleTypeDetails({
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
   const { save, saving, error, clearError } = useVehicleTypeSave();
   const { deactivate } = useVehicleTypeDeactivate();
-  // 'stale' = deactivated but the list didn't refresh: edit stays blocked, no green.
+  // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
   const {
     data: record,
@@ -120,11 +120,11 @@ export default function VehicleTypeDetails({
       return;
     }
     setMode('view');
+    setDeactivated('stale'); // blocks Edit while the list refreshes
     try {
       await onSaved?.();
       setDeactivated('ok');
     } catch {
-      setDeactivated('stale');
       setRefreshError(t('vehicleType.deactivateStaleList'));
     }
   };

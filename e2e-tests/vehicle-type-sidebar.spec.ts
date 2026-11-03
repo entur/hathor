@@ -50,7 +50,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early);
  *     a failed post-deactivate list refresh shows only the warning, no green (#237);
  *     a failed first by-id read offers no Edit or Deactivate; Edit stays hidden until
- *     the post-save re-read lands.
+ *     the post-save re-read lands; Edit is blocked while the post-deactivate list
+ *     reload is pending.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -409,6 +410,32 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await expect(page.getByTestId('editor-rail-collapse')).toBeVisible();
     await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
     await expect(page.getByTestId('editor-rail-deactivate')).toHaveCount(0);
+  });
+
+  // Deactivated but the list reload is still pending: Edit must already be
+  // blocked, or a save could land on the deactivated record.
+  test('Edit is blocked while the post-deactivate list reload is pending', async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    let deactivated = false;
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): hold the list reload once deactivated.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      if (post?.query?.includes('deactivateVehicleType')) deactivated = true;
+      else if (deactivated && post?.query?.includes('vehicleTypes')) await gate;
+      return route.fallback();
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-deactivate').click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Deactivate' }).click();
+    await expect.poll(() => deactivated).toBe(true);
+
+    await page.getByTestId('editor-rail-edit').click();
+    await expect(page.locator('#vtype-name')).toBeDisabled();
+    release();
+    await expect(page.getByText('Vehicle type deactivated')).toBeVisible();
   });
 
   // #237: deactivate used to show green before the list refresh, so a failed

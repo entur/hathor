@@ -58,7 +58,7 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
   const { deactivate } = useVehicleDeactivate();
-  // 'stale' = deactivated but the list didn't refresh: edit stays blocked, no green.
+  // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
 
   const { data: record, loading, error: fetchError, refetch } = useEntityRecord(id, fetchVehicle);
@@ -82,11 +82,11 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
       return;
     }
     setMode('view');
+    setDeactivated('stale'); // blocks Edit while the list refreshes
     try {
       await onSaved?.();
       setDeactivated('ok');
     } catch {
-      setDeactivated('stale');
       setCommitError(t('vehicle.deactivateStaleList'));
     }
   };
