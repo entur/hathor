@@ -1,4 +1,6 @@
 import { useUrlEditorSelection } from '../../../hooks/useUrlEditorSelection.tsx';
+import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
+import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import DeckPlanDetails from '../components/DeckPlanDetails.tsx';
 import { DECK_PLAN_SELECTED_PARAM } from '../utils/deckPlanUrlParams.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
@@ -25,6 +27,8 @@ export function useDeckPlanUrlSelection({
   setPage,
   refetch,
 }: UrlSelectionParams): void {
+  const onClose = useCloseSliderParam(DECK_PLAN_SELECTED_PARAM);
+  const onCreated = useSidebarCreateAdvance(DECK_PLAN_SELECTED_PARAM);
   useUrlEditorSelection<DeckPlan>({
     paramKey: DECK_PLAN_SELECTED_PARAM,
     allData,
@@ -32,6 +36,14 @@ export function useDeckPlanUrlSelection({
     rowsPerPage,
     setPage,
     getId: dp => dp.id,
-    renderEditor: (id, mode) => <DeckPlanDetails id={id} onSaved={refetch} mode={mode} />,
+    renderEditor: (id, mode) => (
+      <DeckPlanDetails
+        id={id}
+        onSaved={refetch}
+        mode={mode}
+        onClose={onClose}
+        onCreated={onCreated}
+      />
+    ),
   });
 }

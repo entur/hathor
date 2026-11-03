@@ -730,3 +730,30 @@ The SVV (Autosys) multi-import sent one `GET` per plate to shepet and built the 
 - An editor needs only an id. That is the first half of a standalone `/<entity>/:id` page; the sidebar-coupled I/O (`useCloseSliderParam`, `useSidebarCreateAdvance`, `EditorRail`) is #238.
 - Mocks must answer the by-id `filter.netexIds` read like Sobek, including the saved values after a write (`e2e-tests/deck-plan-edit-sidebar.spec.ts`).
 - A create still re-mounts the editor when `?selected=new` advances to the new id, so its success snackbar does not survive; unchanged by this decision.
+
+## One entity editor: flow, hook, frame _(2026-11-03)_
+
+### Context
+
+The vehicle, vehicle-type and deck-plan editors each carried a copy of the same state machine (mode, save, cancel, deactivate, snackbars), the same chrome and a byte-identical deactivate hook. The copies had drifted. Form state came in three shapes, and so did Cancel (a parsed JSON key, a re-hydrate, a `restore`). Vehicle blanked its form on a null record, DeckPlan's badge dropped the version, and the blank-name label was an untranslated constant ×3. None of them checked that a save was still for the selection on screen, so a create whose list reload landed after the user picked another row could still rewrite `?selected=` (#238).
+
+### Decision
+
+- **One flow**: `runSave` / `runDeactivate` (`src/hooks/entityEditorFlow.ts`) are plain async functions over injected callbacks, with `live()` checked after every await. They are vitest-tested without a React harness.
+- **One hook**: `useEntityEditor` (`src/hooks/useEntityEditor.ts`) wires `useEntityRecord`, the feature's `createFormState` binding (`baseline`, `rebase`, `restore`, `normalise`) and the flow, and returns ready-made `EditorRail` props. `live()` goes false on unmount (the selection moved on) or an org switch, which also resets mode and snackbars.
+- **Host-agnostic**: router I/O arrives as `onClose` / `onCreated`, wired by each `use*UrlSelection`. The hook and `*Details` never touch `useSearchParams`.
+- **One frame**: `EditorFrame` (`src/components/sidebar/EditorFrame.tsx`) draws the skeleton, the not-found view, title + `NetexId`, the read-error `BodyState` with Retry, the four snackbars and the rail.
+- Each feature declares only `fetchById`, `formState`, `write`, `withNewId`, `deactivateRequest`, its copy keys, its body and `canSubmit`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Shared frame only, state machine stays per feature** | The drift was in the state machine, not the chrome. |
+| **Keep three copies, align them by review** | They had already drifted once (#237 aligned them); nothing stops it again. |
+
+### Consequences
+
+- A standalone `/<entity>/:id` page needs only a host that supplies `onClose` / `onCreated`. `EditorFrame` still renders the sidebar `EditorRail`.
+- Visible changes: blank names read `common.unnamed`, a failed record read offers Retry, DeckPlan's badge shows the version, and a DeckPlan patch or stale-body refusal shows as a save error (red), no longer a warning.
+- The three per-feature save hooks keep their own `saving` / `error` state, which the editor no longer reads; the hook owns both.
