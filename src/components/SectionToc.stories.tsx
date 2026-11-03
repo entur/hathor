@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 import { Box, Paper, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { SectionToc } from './SectionToc';
+import { REDUCED_MOTION_QUERY } from '../utils/motion';
 
 /** The VehicleType editor's sections, in full words (user test II, V3). */
 const SECTIONS = ['General', 'Dimensions', 'Propulsion', 'Capacity', 'Environment', 'Vehicles'];
@@ -43,9 +44,10 @@ const InPageDemo = () => {
   const [active, setActive] = useState(SECTIONS[0]);
   const refs = useRef<Record<string, HTMLElement | null>>({});
   const wide = useMediaQuery(useTheme().breakpoints.up('lg'));
+  const still = useMediaQuery(REDUCED_MOTION_QUERY);
   const select = (section: string) => {
     setActive(section);
-    refs.current[section]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    refs.current[section]?.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
   };
   const toc = (
     <SectionToc

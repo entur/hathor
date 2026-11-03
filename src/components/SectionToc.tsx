@@ -12,6 +12,7 @@ import type { FC } from 'react';
 import {
   Box,
   List,
+  ListItem,
   ListItemButton,
   ListItemText,
   MenuItem,
@@ -106,24 +107,25 @@ export const SectionToc: FC<SectionTocProps> = ({
       ) : (
         <List dense disablePadding aria-hidden>
           {sections.map(section => (
-            <ListItemButton
-              key={section}
-              component="div"
-              role="presentation"
-              tabIndex={-1}
-              disableRipple
-              sx={ITEM_SX}
-            >
-              <ListItemText
-                // In a span: Skeleton hides element children, not bare text.
-                primary={
-                  <Skeleton animation="wave">
-                    <span>{section}</span>
-                  </Skeleton>
-                }
-                slotProps={{ primary: { variant: 'body2', noWrap: true } }}
-              />
-            </ListItemButton>
+            <ListItem key={section} disablePadding>
+              <ListItemButton
+                component="div"
+                role="presentation"
+                tabIndex={-1}
+                disableRipple
+                sx={ITEM_SX}
+              >
+                <ListItemText
+                  // In a span: Skeleton hides element children, not bare text.
+                  primary={
+                    <Skeleton animation="wave">
+                      <span>{section}</span>
+                    </Skeleton>
+                  }
+                  slotProps={{ primary: { variant: 'body2', noWrap: true } }}
+                />
+              </ListItemButton>
+            </ListItem>
           ))}
         </List>
       )}
@@ -152,19 +154,21 @@ export const SectionToc: FC<SectionTocProps> = ({
       ) : (
         <List dense disablePadding>
           {sections.map(section => (
-            <ListItemButton
-              key={section}
-              selected={section === active}
-              // "location", not "page": the entries are places within one view.
-              aria-current={section === active ? 'location' : undefined}
-              onClick={() => onSelect(section)}
-              sx={ITEM_SX}
-            >
-              <ListItemText
-                primary={section}
-                slotProps={{ primary: { variant: 'body2', noWrap: true } }}
-              />
-            </ListItemButton>
+            // In an <li>: the <ul> keeps its item count for assistive tech.
+            <ListItem key={section} disablePadding>
+              <ListItemButton
+                selected={section === active}
+                // "location", not "page": the entries are places within one view.
+                aria-current={section === active ? 'location' : undefined}
+                onClick={() => onSelect(section)}
+                sx={ITEM_SX}
+              >
+                <ListItemText
+                  primary={section}
+                  slotProps={{ primary: { variant: 'body2', noWrap: true } }}
+                />
+              </ListItemButton>
+            </ListItem>
           ))}
         </List>
       )}

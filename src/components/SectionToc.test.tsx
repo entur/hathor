@@ -150,3 +150,10 @@ describe('SectionToc loading under reduced motion stops the skeleton wave', () =
     expect(still.some(sel => /\.MuiSkeleton-root::after/.test(sel))).toBe(true);
   });
 });
+
+describe('SectionToc list semantics', () => {
+  it('puts each entry in its own list item', () => {
+    render(<SectionToc sections={sections} onSelect={() => {}} />);
+    expect(screen.getAllByRole('listitem').map(li => li.textContent)).toEqual(sections);
+  });
+});
