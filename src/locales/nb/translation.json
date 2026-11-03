@@ -185,6 +185,7 @@
   "vehicleType.field.hybridCategory": "Hybridkategori",
 
   "vehicleTypes.actions.new": "Ny kjøretøytype",
+  "vehicleTypes.empty": "Ingen kjøretøytyper for {{org}} ennå",
 
   "common.none": "Ingen",
   "common.saveNoIdReturned": "Lagret, men ingen id ble returnert — last på nytt.",
@@ -237,6 +238,7 @@
   "session.expired.reloginButton": "Logg inn igjen",
 
   "header.actions.search": "søk",
+  "header.skipToContent": "Hopp til innhold",
   "header.actions.userAccount": "brukerkonto",
   "header.actions.login": "Logg inn",
   "header.actions.authDisabled": "Autentisering av",
@@ -327,6 +329,7 @@
   "common.deactivate": "Deaktiver",
   "common.retry": "Prøv igjen",
   "common.unnamed": "uten navn",
+  "common.new": "Ny",
   "common.deactivate.noOrganisation": "Ingen organisasjon valgt — kan ikke deaktivere",
   "common.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
   "common.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert."

@@ -62,16 +62,18 @@ export const Outer: Story = {
   ),
 };
 
-const collection = (state: { loading?: boolean; error?: string | null }) => (
+const collection = (state: { loading?: boolean; error?: string | null; empty?: boolean }) => (
   <AtRoute
     entry={LIST}
     path="things"
     child={
       <CollectionShell
         titleKey="vehicleType.title"
+        subtitle="Mock Org · Total entries: 3"
         loading={state.loading ?? false}
         error={state.error ?? null}
         actions={<Button variant="contained">New</Button>}
+        empty={state.empty ? <Standin text="empty state — message + New" /> : undefined}
       >
         <Standin text="collection body — EntityCollection (#252 pri 2)" />
       </CollectionShell>
@@ -84,6 +86,9 @@ export const Collection: Story = { render: () => collection({}) };
 
 /** CollectionShell while the list loads. */
 export const CollectionLoading: Story = { render: () => collection({ loading: true }) };
+
+/** CollectionShell with no rows: the host's empty state replaces the body. */
+export const CollectionEmpty: Story = { render: () => collection({ empty: true }) };
 
 /** CollectionShell when the list read failed. */
 export const CollectionError: Story = {

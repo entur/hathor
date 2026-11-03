@@ -186,6 +186,7 @@
   "vehicleType.field.hybridCategory": "Hybrid Category",
 
   "vehicleTypes.actions.new": "New Vehicle Type",
+  "vehicleTypes.empty": "No vehicle types for {{org}} yet",
 
   "common.none": "None",
   "common.saveNoIdReturned": "Saved, but no id was returned — please refresh.",
@@ -238,6 +239,7 @@
   "session.expired.reloginButton": "Log In Again",
 
   "header.actions.search": "search",
+  "header.skipToContent": "Skip to content",
   "header.actions.userAccount": "user account",
   "header.actions.login": "Log in",
   "header.actions.authDisabled": "Auth off",
@@ -328,6 +330,7 @@
   "common.deactivate": "Deactivate",
   "common.retry": "Retry",
   "common.unnamed": "unnamed",
+  "common.new": "New",
   "common.deactivate.noOrganisation": "No organisation selected — cannot deactivate",
   "common.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
   "common.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale."

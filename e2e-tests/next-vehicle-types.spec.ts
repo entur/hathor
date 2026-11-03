@@ -6,6 +6,8 @@ const LIST = '/next/vehicle-types';
 // Fixture row (vehicle-types-mock.json): Type Alpha.
 const FIXTURE_ID = 'NMR:VehicleType:1';
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
+// Rows in vehicle-types-mock.json.
+const FIXTURE_ROWS = 3;
 
 /**
  * /next/vehicle-types — the page shell (#253, epic #252) beside the legacy list:
@@ -20,10 +22,15 @@ const MOBILE_VIEWPORT = { width: 390, height: 844 };
  *   - Edit → details page in edit mode; collapse → back on the list
  *   - a deep link to /next/vehicle-types/<id> opens in view mode
  *   - `Collections` flag off → /next/* redirects to /
+ *   - user test II: <main> + skip link; subtitle names the organisation and the count;
+ *     empty list offers New; New shortens to "New" on a phone; focus moves to the editor
+ *     heading on open and back to the row's Edit link on close
+ *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
+ *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery (vehicle-types-mock.json)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
- *   - skip-live: the deep-link test (fixture id)
+ *   - skip-live: the deep-link test (fixture id); the empty-list test (mocked empty list)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -45,6 +52,8 @@ test.describe('/next/vehicle-types page shell', () => {
     await selectFirstOrg(page);
     await expect(page.getByTestId('collection-list')).toBeVisible();
     expect(await searchIcon.count()).toBe(0);
+    // innerText skips the hidden long label (textContent would include both).
+    await expect.poll(() => page.getByTestId('create-vehicle-type-fab').innerText()).toBe('New');
 
     // In-app to the legacy list (header state survives), open the search, then Back.
     await banner.getByRole('button', { name: 'Expand menu' }).click();
@@ -63,15 +72,66 @@ test.describe('/next/vehicle-types page shell', () => {
   }) => {
     await page.goto(LIST);
     await selectFirstOrg(page);
-    await page.getByTestId('collection-edit').first().click();
+    const firstEdit = page.getByTestId('collection-edit').first();
+    await firstEdit.click();
 
     await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));
-    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeFocused();
     await expect(page.getByTestId('editor-rail-save')).toBeVisible();
 
     await page.getByTestId('editor-rail-collapse').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
-    await expect(page.getByTestId('collection-list')).toBeVisible();
+    await expect(firstEdit).toBeFocused();
+  });
+
+  test('skip link jumps to <main>; the subtitle names the organisation and the count', async ({
+    page,
+  }) => {
+    await page.goto(LIST);
+    await selectFirstOrg(page);
+    await expect(page.getByTestId('collection-subtitle')).toHaveText(
+      IS_LIVE ? /· Total entries: \d+$/ : `Mock Org · Total entries: ${FIXTURE_ROWS}`
+    );
+    await page.keyboard.press('Tab');
+    await expect(page.getByTestId('skip-to-content')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('main')).toBeFocused();
+  });
+
+  test('an empty list says so and offers New', async ({ page }) => {
+    test.skip(IS_LIVE, 'mocked empty list');
+    await page.route('**/graphql', route =>
+      route.request().postDataJSON()?.query?.includes('vehicleTypes')
+        ? route.fulfill({
+            json: { data: { vehicleTypes: { content: [], totalElements: 0, page: 0, size: 0 } } },
+          })
+        : route.fallback()
+    );
+    await page.goto(LIST);
+    const empty = page.getByTestId('collection-empty');
+    await expect(empty).toContainText('No vehicle types for Mock Org yet');
+    await expect(empty.getByTestId('create-vehicle-type-fab')).toBeVisible();
+  });
+
+  test('the create page shows no edit pen and no New button', async ({ page }) => {
+    await page.goto(`${LIST}/new`);
+    await selectFirstOrg(page);
+    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
+    expect(await page.getByTestId('editor-rail-edit').count()).toBe(0);
+    expect(await page.getByTestId('create-vehicle-type-fab').count()).toBe(0);
+  });
+
+  test.fixme('the create page hides the Vehicles tab; Cancel returns to where you came from', async ({
+    page,
+  }) => {
+    // Internal user test, create mode: fixed in the form-page slice of #252.
+    await page.goto(LIST);
+    await selectFirstOrg(page);
+    await page.getByTestId('create-vehicle-type-fab').click();
+    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
+    expect(await page.getByRole('tab', { name: 'Vehicles' }).count()).toBe(0);
+    await page.getByTestId('editor-rail-cancel').click();
+    await expect(page).toHaveURL(new RegExp(`${LIST}$`));
   });
 
   test('a deep link opens the record in view mode', async ({ page }) => {

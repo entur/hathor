@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useOrganisationsContext } from '../../contexts/useOrganisationsContext.ts';
@@ -8,6 +8,9 @@ import {
   type EntityEditorHostProps,
 } from '../../hooks/useEntityEditor.ts';
 import { SEGMENT_SIZE as EDITOR_RAIL_WIDTH_PX } from '../../components/sidebar/EditorRail.tsx';
+import type { CollectionLinkState } from './CollectionShell.tsx';
+
+const HEADING = 'h1, h2, h3, h4, h5, h6';
 
 /** Router state a link may carry to open the record straight in edit mode. */
 export interface DetailsLinkState {
@@ -25,8 +28,9 @@ interface EntityDetailsShellProps {
  * Full-page host for one entity editor at `<listPath>/:id` — the route
  * counterpart of the sidebar's `useUrlEditorSelection`. `:id` = `new` is the
  * create pane (edit mode); a record opens in view mode unless the link's
- * {@link DetailsLinkState} says `edit`. Close navigates to `listPath`; a create
- * replaces the URL with the minted id.
+ * {@link DetailsLinkState} says `edit`. Close navigates to `listPath` and asks it
+ * to refocus this record's Edit link; a create replaces the URL with the minted id.
+ * Focus moves to the editor's heading once it renders (after the record loads).
  *
  * @param {EntityDetailsShellProps} props The list route and the editor renderer.
  * @returns {JSX.Element} The editor, padded clear of the fixed `EditorRail`.
@@ -37,16 +41,37 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
   const navigate = useNavigate();
   const orgId = useOrganisationsContext().currentOrganisation?.id;
   const isNew = id === NEW_SELECTION;
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = frameRef.current;
+    if (!root) return;
+    const focusHeading = () => {
+      const heading = root.querySelector<HTMLElement>(HEADING);
+      if (!heading) return false;
+      heading.tabIndex = -1;
+      heading.focus();
+      return true;
+    };
+    if (focusHeading()) return;
+    // The heading appears only once the record has loaded (a skeleton until then).
+    const observer = new MutationObserver(() => focusHeading() && observer.disconnect());
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [id]);
 
   return (
-    <Box sx={{ height: '100%', pr: `${EDITOR_RAIL_WIDTH_PX}px` }}>
+    <Box ref={frameRef} sx={{ height: '100%', pr: `${EDITOR_RAIL_WIDTH_PX}px` }}>
       {/* Keyed like useUrlEditorSelection: an org switch re-mounts a record's
           editor; the create pane keeps its draft. */}
       <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
         {renderEditor({
           id: isNew ? '' : id,
           initialMode: isNew ? 'edit' : (state?.initialMode ?? 'view'),
-          onClose: () => navigate(listPath),
+          onClose: () =>
+            navigate(listPath, {
+              state: { focusEditId: isNew ? undefined : id } satisfies CollectionLinkState,
+            }),
           onCreated: newId =>
             navigate(`${listPath}/${encodeURIComponent(newId)}`, { replace: true }),
         })}

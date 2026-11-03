@@ -1,5 +1,5 @@
 import { Add } from '@mui/icons-material';
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 interface NewEntityFabProps {
@@ -9,6 +9,8 @@ interface NewEntityFabProps {
   to: string;
   /** `data-testid` for e2e selectors (e.g. `create-vehicle-fab`). */
   testid: string;
+  /** Shown instead of `label` below the `sm` breakpoint, so the button stays one line. */
+  shortLabel?: string;
 }
 
 /**
@@ -16,7 +18,7 @@ interface NewEntityFabProps {
  * `to` URL (the `?selected=new` sidebar editor for every current entity);
  * shared between Vehicle and VehicleType create flows.
  */
-export default function NewEntityFab({ label, to, testid }: NewEntityFabProps) {
+export default function NewEntityFab({ label, to, testid, shortLabel }: NewEntityFabProps) {
   const navigate = useNavigate();
   return (
     <Button
@@ -28,7 +30,18 @@ export default function NewEntityFab({ label, to, testid }: NewEntityFabProps) {
       aria-label={label}
       sx={{ textTransform: 'none' }}
     >
-      {label}
+      {shortLabel ? (
+        <>
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {label}
+          </Box>
+          <Box component="span" sx={{ display: { sm: 'none' } }}>
+            {shortLabel}
+          </Box>
+        </>
+      ) : (
+        label
+      )}
     </Button>
   );
 }

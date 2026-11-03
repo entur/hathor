@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { AppBar, Toolbar, useTheme, useMediaQuery } from '@mui/material';
+import { AppBar, Link, Toolbar, useTheme, useMediaQuery } from '@mui/material';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
 import { useNavRail } from '../../contexts/NavRailContext.tsx';
-// import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
 import DesktopSearchBar from '../search/DesktopSearchBar.tsx';
 import MobileSearchBar from '../search/MobileSearchBar.tsx';
 import HeaderActions from './HeaderActions.tsx';
 import { matchPath, useLocation } from 'react-router-dom';
+
+/** Id of the app's `<main>`; the header's skip link jumps to it. */
+export const MAIN_CONTENT_ID = 'main-content';
 
 // Routes whose page registers into the header search (the legacy list views, #252).
 const SEARCH_ROUTES = ['/vehicle-types', '/vehicles', '/deck-plans'];
@@ -23,7 +26,7 @@ export default function Header() {
 
   const auth = useAuth();
   const { oidcConfig } = useConfig();
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -37,6 +40,21 @@ export default function Header() {
 
   return (
     <>
+      <Link
+        href={`#${MAIN_CONTENT_ID}`}
+        data-testid="skip-to-content"
+        sx={{
+          position: 'fixed',
+          left: 8,
+          top: -48,
+          zIndex: theme.zIndex.appBar + 1,
+          p: 1,
+          bgcolor: 'background.paper',
+          '&:focus': { top: 8 },
+        }}
+      >
+        {t('header.skipToContent')}
+      </Link>
       <AppBar position="fixed">
         <Toolbar
           sx={{
