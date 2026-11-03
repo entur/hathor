@@ -210,6 +210,15 @@ describe('QueryField', () => {
     expect(onQuery).toHaveBeenCalledWith({ filters: { name: 'fli' } });
   });
 
+  it('removes only the focused chip on a full Backspace press, not the last filter too', () => {
+    const onQuery = mount({ query: { filters: { name: 'fli', transportMode: ['rail'] } } });
+    const first = screen.getByRole('button', { name: 'Name: fli, remove filter' });
+    first.focus();
+    fireEvent.keyDown(first, { key: 'Backspace' });
+    fireEvent.keyUp(first, { key: 'Backspace' });
+    expect(onQuery.mock.calls).toEqual([[{ filters: { transportMode: ['rail'] } }]]);
+  });
+
   it('leaves the filters alone on Backspace while text remains', () => {
     const onQuery = mount({ query: { search: 'x', filters: { name: 'fli' } } });
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Search' }), { key: 'Backspace' });

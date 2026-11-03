@@ -185,6 +185,7 @@ export function QueryField({
   ) : null;
 
   // Backspace in an empty field takes the last filter back, as token fields do.
+  // On the input itself: the chips sit beside it, so their own Backspace never reaches it.
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
     const last = active[active.length - 1];
     if (e.key === 'Backspace' && !query.search && last) remove(last.key);
@@ -219,10 +220,10 @@ export function QueryField({
         placeholder={labels.searchPlaceholder}
         value={query.search}
         onChange={e => onQuery({ search: e.target.value })}
-        onKeyDown={onKeyDown}
         slotProps={{
           htmlInput: {
             'aria-label': labels.search,
+            onKeyDown,
             // Basis 0, growing into what is left: the chips keep their natural
             // width until space runs out, and only then shrink.
             style: {
