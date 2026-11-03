@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
 import { Box, Divider, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
@@ -9,6 +9,7 @@ import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
 import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import EditorRail from './EditorRail.tsx';
+import { EditorHeadingContext } from './editorHeading.ts';
 
 const RAIL_SIDE = 'right' as const;
 
@@ -56,6 +57,7 @@ export default function EditorFrame<T, F>({
 }: EditorFrameProps<T, F>) {
   const { t } = useTranslation();
   const { rail } = editor;
+  const heading = useContext(EditorHeadingContext);
 
   if (editor.loading && !editor.record) {
     return (
@@ -78,7 +80,7 @@ export default function EditorFrame<T, F>({
     return (
       <>
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>
+          <Typography variant="h6" component={heading} sx={{ mb: 1 }}>
             {t(copy.title)}
           </Typography>
           <Divider sx={{ mb: 2 }} />
@@ -101,6 +103,7 @@ export default function EditorFrame<T, F>({
       <FormLayout sx={{ mb: 1 }}>
         <Typography
           variant="h6"
+          component={heading}
           noWrap
           title={trimmed || undefined}
           data-testid={`${testId}-details-title`}

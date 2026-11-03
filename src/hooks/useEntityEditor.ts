@@ -18,6 +18,8 @@ export interface EntityEditorConfig<T, F> {
   /** NeTEx id to edit; `''` is the create pane. */
   id: string;
   initialMode?: EditorMode;
+  /** Open with the "saved" toast showing — a create re-mounted on its minted id. */
+  initialSaved?: boolean;
   fetchById: FetchById<T>;
   /** The feature's `createFormState` binding (module-level, stable). */
   formState: FormStateActions<F, T>;
@@ -37,7 +39,7 @@ export interface EntityEditorConfig<T, F> {
 /** What a host (e.g. `useUrlEditorSelection`) hands an entity editor. */
 export type EntityEditorHostProps = Pick<
   EntityEditorConfig<unknown, unknown>,
-  'id' | 'initialMode' | 'onSaved' | 'onClose' | 'onCreated'
+  'id' | 'initialMode' | 'initialSaved' | 'onSaved' | 'onClose' | 'onCreated'
 >;
 
 export interface EntityEditor<T, F> {
@@ -89,7 +91,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   // True from Save until the post-save reads land; Edit stays hidden so typing
   // can't be overwritten by the re-read's re-baseline.
   const [settling, setSettling] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(cfg.initialSaved ?? false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.

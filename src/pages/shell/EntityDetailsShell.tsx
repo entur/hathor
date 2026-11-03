@@ -8,13 +8,14 @@ import {
   type EntityEditorHostProps,
 } from '../../hooks/useEntityEditor.ts';
 import { SEGMENT_SIZE as EDITOR_RAIL_WIDTH_PX } from '../../components/sidebar/EditorRail.tsx';
+import { EditorHeadingContext } from '../../components/sidebar/editorHeading.ts';
 import type { CollectionLinkState } from './CollectionShell.tsx';
-
-const HEADING = 'h1, h2, h3, h4, h5, h6';
 
 /** Router state a link may carry to open the record straight in edit mode. */
 export interface DetailsLinkState {
   initialMode?: EditorMode;
+  /** Set by a create's own redirect: the re-mounted editor shows its "saved" toast. */
+  created?: boolean;
 }
 
 interface EntityDetailsShellProps {
@@ -29,7 +30,8 @@ interface EntityDetailsShellProps {
  * counterpart of the sidebar's `useUrlEditorSelection`. `:id` = `new` is the
  * create pane (edit mode); a record opens in view mode unless the link's
  * {@link DetailsLinkState} says `edit`. Close navigates to `listPath` and asks it
- * to refocus this record's Edit link; a create replaces the URL with the minted id.
+ * to refocus this record's Edit link (New, from the create pane); a create
+ * replaces the URL with the minted id and hands its "saved" toast across the re-mount.
  * Focus moves to the editor's heading once it renders (after the record loads).
  *
  * @param {EntityDetailsShellProps} props The list route and the editor renderer.
@@ -47,7 +49,7 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
     const root = frameRef.current;
     if (!root) return;
     const focusHeading = () => {
-      const heading = root.querySelector<HTMLElement>(HEADING);
+      const heading = root.querySelector<HTMLElement>('h1');
       if (!heading) return false;
       heading.tabIndex = -1;
       heading.focus();
@@ -64,18 +66,23 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
     <Box ref={frameRef} sx={{ height: '100%', pr: `${EDITOR_RAIL_WIDTH_PX}px` }}>
       {/* Keyed like useUrlEditorSelection: an org switch re-mounts a record's
           editor; the create pane keeps its draft. */}
-      <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
-        {renderEditor({
-          id: isNew ? '' : id,
-          initialMode: isNew ? 'edit' : (state?.initialMode ?? 'view'),
-          onClose: () =>
-            navigate(listPath, {
-              state: { focusEditId: isNew ? undefined : id } satisfies CollectionLinkState,
-            }),
-          onCreated: newId =>
-            navigate(`${listPath}/${encodeURIComponent(newId)}`, { replace: true }),
-        })}
-      </Fragment>
+      <EditorHeadingContext.Provider value="h1">
+        <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
+          {renderEditor({
+            id: isNew ? '' : id,
+            initialMode: isNew ? 'edit' : (state?.initialMode ?? 'view'),
+            // shortcut: the flag stays in this history entry, so a reload re-shows the toast; clear it if that bothers.
+            initialSaved: state?.created,
+            onClose: () =>
+              navigate(listPath, { state: { focusEditId: id } satisfies CollectionLinkState }),
+            onCreated: newId =>
+              navigate(`${listPath}/${encodeURIComponent(newId)}`, {
+                replace: true,
+                state: { created: true } satisfies DetailsLinkState,
+              }),
+          })}
+        </Fragment>
+      </EditorHeadingContext.Provider>
     </Box>
   );
 }

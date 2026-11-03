@@ -23,8 +23,8 @@ const FIXTURE_ROWS = 3;
  *   - a deep link to /next/vehicle-types/<id> opens in view mode
  *   - `Collections` flag off → /next/* redirects to /
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
- *     empty list offers New; New shortens to "New" on a phone; focus moves to the editor
- *     heading on open and back to the row's Edit link on close
+ *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
+ *     h1 on open and back to the row's Edit link on close (to New, closing the create page)
  *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
  *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
@@ -76,7 +76,9 @@ test.describe('/next/vehicle-types page shell', () => {
     await firstEdit.click();
 
     await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));
-    await expect(page.getByTestId('vehicle-type-details-title')).toBeFocused();
+    const title = page.getByTestId('vehicle-type-details-title');
+    await expect(title).toBeFocused();
+    await expect(title).toHaveJSProperty('tagName', 'H1');
     await expect(page.getByTestId('editor-rail-save')).toBeVisible();
 
     await page.getByTestId('editor-rail-collapse').click();
@@ -111,6 +113,18 @@ test.describe('/next/vehicle-types page shell', () => {
     const empty = page.getByTestId('collection-empty');
     await expect(empty).toContainText('No vehicle types for Mock Org yet');
     await expect(empty.getByTestId('create-vehicle-type-fab')).toBeVisible();
+    await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
+  });
+
+  test('closing the create page returns focus to New', async ({ page }) => {
+    await page.goto(LIST);
+    await selectFirstOrg(page);
+    const newAction = page.getByTestId('create-vehicle-type-fab');
+    await newAction.click();
+    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
+    await page.getByTestId('editor-rail-collapse').click();
+    await expect(page).toHaveURL(new RegExp(`${LIST}$`));
+    await expect(newAction).toBeFocused();
   });
 
   test('the create page shows no edit pen and no New button', async ({ page }) => {

@@ -15,7 +15,14 @@ const MINTED_ID = 'NMR:VehicleType:9';
 /** Render the shell at `entry`; the spy editor exposes the host it got. */
 function renderAt(entry: string | { pathname: string; state: unknown }) {
   const hosts: EntityEditorHostProps[] = [];
-  const Where = () => <output data-testid="where">{useLocation().pathname}</output>;
+  const Where = () => {
+    const { pathname, state } = useLocation();
+    return (
+      <output data-testid="where" data-state={JSON.stringify(state)}>
+        {pathname}
+      </output>
+    );
+  };
   render(
     <MemoryRouter initialEntries={[LIST, entry]} initialIndex={1}>
       <Routes>
@@ -73,12 +80,20 @@ describe('EntityDetailsShell', () => {
     expect(screen.getByTestId('where').textContent).toBe(LIST);
   });
 
-  it('onCreated replaces the create URL with the new id', () => {
+  it('closing the create pane asks the list to refocus New', () => {
+    renderAt(`${LIST}/new`);
+    fireEvent.click(screen.getByText('close'));
+    expect(JSON.parse(screen.getByTestId('where').dataset.state!)).toEqual({
+      focusEditId: 'new',
+    });
+  });
+
+  it('onCreated replaces the create URL with the new id and hands its editor the saved toast', () => {
     const { last } = renderAt(`${LIST}/new`);
     fireEvent.click(screen.getByText('created'));
     expect(screen.getAllByTestId('where')[0].textContent).toBe(
       `${LIST}/${encodeURIComponent(MINTED_ID)}`
     );
-    expect(last()).toMatchObject({ id: MINTED_ID, initialMode: 'view' });
+    expect(last()).toMatchObject({ id: MINTED_ID, initialMode: 'view', initialSaved: true });
   });
 });

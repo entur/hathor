@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import LoadingPage from '../../components/common/LoadingPage.tsx';
 import ErrorPage from '../../components/common/ErrorPage.tsx';
 
-/** Router state the details page hands back on close: the record whose Edit link regains focus. */
+/** Router state the details page hands back on close: the record whose Edit link regains focus
+ *  (`new` = the New action). */
 export interface CollectionLinkState {
   focusEditId?: string;
 }
@@ -19,9 +20,10 @@ interface CollectionShellProps {
   error: string | null;
   /** Host buttons at the end of the title row (e.g. a New action). */
   actions?: ReactNode;
-  /** Shown instead of the body when set — the host sets it for an empty list. */
+  /** Shown instead of the body (and `actions`) when set — the host sets it for an empty
+   *  list, with its own New. */
   empty?: ReactNode;
-  /** The entity's list body. Edit links carry `data-edit-id` so focus can return to them. */
+  /** The entity's list body. Edit links (and New, as `new`) carry `data-edit-id` so focus can return to them. */
   children: ReactNode;
 }
 
@@ -29,7 +31,7 @@ interface CollectionShellProps {
  * Frame of an entity's collection page, inside {@link PageShell}: title row
  * with actions and subtitle, then the list body — or the loading / error /
  * empty state in its place. Back from the details page, focus returns to the
- * Edit link named by {@link CollectionLinkState}.
+ * Edit link named by {@link CollectionLinkState} — or the title, when that link is gone.
  *
  * @param {CollectionShellProps} props Title, load state, actions and the list body.
  * @returns {JSX.Element} The collection page frame.
@@ -45,32 +47,45 @@ export default function CollectionShell({
 }: CollectionShellProps) {
   const { t } = useTranslation();
   const focusEditId = (useLocation().state as CollectionLinkState | null)?.focusEditId;
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (loading || !focusEditId) return;
-    bodyRef.current
-      ?.querySelector<HTMLElement>(`[data-edit-id="${CSS.escape(focusEditId)}"]`)
-      ?.focus();
+    const link = rootRef.current?.querySelector<HTMLElement>(
+      `[data-edit-id="${CSS.escape(focusEditId)}"]`
+    );
+    (link ?? headingRef.current)?.focus();
   }, [loading, focusEditId]);
 
+  const loaded = !loading && !error;
+  const showEmpty = loaded && empty != null;
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 2 }}>
+    <Box ref={rootRef} sx={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Typography variant="h5" component="h1">
+          <Typography variant="h5" component="h1" ref={headingRef} tabIndex={-1}>
             {t(titleKey)}
           </Typography>
-          {subtitle && (
+          {subtitle && loaded && (
             <Typography variant="body2" color="text.secondary" data-testid="collection-subtitle">
               {subtitle}
             </Typography>
           )}
         </Box>
-        {actions}
+        {!showEmpty && actions}
       </Box>
-      <Box ref={bodyRef} sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto' }}>
-        {error ? <ErrorPage message={error} /> : loading ? <LoadingPage /> : (empty ?? children)}
+      <Box sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto' }}>
+        {error ? (
+          <ErrorPage message={error} />
+        ) : loading ? (
+          <LoadingPage />
+        ) : showEmpty ? (
+          empty
+        ) : (
+          children
+        )}
       </Box>
     </Box>
   );

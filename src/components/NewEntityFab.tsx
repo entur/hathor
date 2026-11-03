@@ -1,6 +1,7 @@
 import { Add } from '@mui/icons-material';
 import { Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { NEW_SELECTION } from '../hooks/useEntityEditor.ts';
 
 interface NewEntityFabProps {
   /** Displayed label and aria-label. */
@@ -28,6 +29,8 @@ export default function NewEntityFab({ label, to, testid, shortLabel }: NewEntit
       onClick={() => navigate(to)}
       data-testid={testid}
       aria-label={label}
+      // Closing the create pane hands focus back here (`CollectionShell`).
+      data-edit-id={NEW_SELECTION}
       sx={{ textTransform: 'none' }}
     >
       {shortLabel ? (
