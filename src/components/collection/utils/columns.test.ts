@@ -7,7 +7,7 @@ const FIELDS: Record<string, FieldSpec> = {
   name: { kind: 'name', path: ['name'] },
   transportMode: { kind: 'enum', path: ['transportMode'], options: ['bus', 'rail'] },
   range: { kind: 'number', path: ['range'], patched: true },
-  vehicles: { kind: 'grid', path: ['vehicles'], serverManaged: true },
+  vehicles: { kind: 'grid', path: ['vehicles'] },
   length: { kind: 'number', path: ['length'] },
 };
 
@@ -75,6 +75,12 @@ describe('resolveCard', () => {
     });
     expect(card.subtitle?.key).toBe('netexId');
     expect(card.fields.map(c => c.key)).toEqual(['length']);
+  });
+
+  it("keeps a column's label override on an explicit card", () => {
+    const labelled = resolveColumns(FIELDS, ['name', { field: 'length', label: 'Length (m)' }]);
+    const card = resolveCard(FIELDS, labelled, { title: 'name', fields: ['length', 'netexId'] });
+    expect(card.fields.map(c => c.label)).toEqual(['Length (m)', 'Id']);
   });
 
   it('survives an empty column list', () => {

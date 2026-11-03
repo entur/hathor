@@ -70,8 +70,8 @@ export const resolveColumns = (
 
 /**
  * Resolve what a card shows. An explicit `card` is looked up against the whole
- * registry (a card may show a field the grid hides), keeping a column's `render`;
- * the default derives from the resolved columns.
+ * registry (a card may show a field the grid hides), a shown column as resolved —
+ * its label and `render`; the default derives from the resolved columns.
  *
  * @param fields the entity's `FIELDS` registry
  * @param cols   the resolved columns
@@ -86,11 +86,9 @@ export const resolveCard = (
   idLabel: string = DEFAULT_LABELS.id
 ): ResolvedCard => {
   if (card) {
+    // A shown column comes as resolved (its label and render); any other field from the registry.
     const pick = (keys: readonly string[]): Column[] =>
-      resolveColumns(fields, keys, idLabel).map(c => ({
-        ...c,
-        render: cols.find(col => col.key === c.key)?.render,
-      }));
+      keys.flatMap(k => cols.find(c => c.key === k) ?? resolveColumns(fields, [k], idLabel));
     return {
       title: pick([card.title])[0],
       subtitle: card.subtitle ? pick([card.subtitle])[0] : undefined,
