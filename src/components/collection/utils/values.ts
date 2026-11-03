@@ -47,6 +47,21 @@ export const rawValue = (row: unknown, spec: FieldSpec): unknown => {
 };
 
 /**
+ * A row holding just one value of a field, at the field's path (a list for
+ * `enumMulti`), so the field's `render` can draw a value that has no row — a
+ * filter option, say.
+ *
+ * @param spec  the field's registry entry
+ * @param value one value
+ * @returns the one-field row
+ */
+export const rowWith = (spec: FieldSpec, value: string): unknown =>
+  spec.path.reduceRight<unknown>(
+    (inner, key) => ({ [key]: inner }),
+    spec.kind === 'enumMulti' ? [value] : value
+  );
+
+/**
  * The field's value as a list of strings: a list value without its null
  * members, a single value as a one-item list, nothing as an empty list.
  *

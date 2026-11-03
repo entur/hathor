@@ -173,6 +173,32 @@ describe('Edit link', () => {
   });
 });
 
+describe('filter dropdown', () => {
+  it("draws options and picked tags with the field's render, as the cell does", async () => {
+    const Filterable = createEntityCollection(
+      { ...FIELDS, transportMode: { ...FIELDS.transportMode, options: ['bus', 'rail'] } },
+      { filterFields: { transportMode: { arg: 'transportModes', op: 'anyOf' } } }
+    );
+    await act(async () => {
+      render(<Filterable rows={ROWS} view="cards-sm" columns={['name', MODE_BADGE]} />);
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    const modes = within(screen.getByRole('dialog', { name: 'Filters' })).getByRole('combobox', {
+      name: 'Transport mode',
+    });
+    fireEvent.mouseDown(modes);
+    const options = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(options.map(o => within(o).getByTestId('mode').textContent)).toEqual(['BUS', 'RAIL']);
+    fireEvent.click(options[0]);
+    const dialog = screen.getByRole('dialog', { name: 'Filters' });
+    expect(
+      within(dialog)
+        .getAllByTestId('mode')
+        .map(t => t.textContent)
+    ).toContain('BUS');
+  });
+});
+
 describe('sort headers', () => {
   it('carry aria-sort for the sorted column', async () => {
     await mount({

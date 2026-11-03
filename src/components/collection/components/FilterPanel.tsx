@@ -7,6 +7,7 @@
 import { useId } from 'react';
 import {
   Autocomplete,
+  Chip,
   Divider,
   List,
   ListItem,
@@ -18,6 +19,11 @@ import {
 } from '@mui/material';
 import type { CollectionFilters, CollectionLabels, Column, FilterFields } from '../types.ts';
 import { asList, asText, cleanList, withFilter } from '../utils/filters.ts';
+import { rowWith } from '../utils/values.ts';
+
+/** A value drawn by its column's `render`, as the column's cells draw it. */
+const drawn = (c: Column, value: string): React.ReactNode =>
+  c.render ? c.render(rowWith(c.spec, value)) : c.entryLabel(value);
 
 const POPOVER_W = 320,
   BLOCKED_MAX_H = 220;
@@ -92,6 +98,18 @@ export function FilterPanel({
               options={[...(c.spec.options ?? [])]}
               value={asList(filters[c.key])}
               onChange={(_e, next) => onChange(withFilter(filters, c.key, cleanList(next)))}
+              // Options and tags as the cells draw them (an icon + text for a mode).
+              renderOption={({ key, ...props }, v) => (
+                <li key={key} {...props}>
+                  {drawn(c, v)}
+                </li>
+              )}
+              renderValue={(values, getItemProps) =>
+                values.map((v, index) => {
+                  const { key, ...item } = getItemProps({ index });
+                  return <Chip key={key} size="small" label={drawn(c, v)} {...item} />;
+                })
+              }
               renderInput={params => <TextField {...params} label={c.label} />}
             />
           )
