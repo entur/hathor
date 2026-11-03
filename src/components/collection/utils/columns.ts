@@ -25,7 +25,7 @@ const CARD_DEFAULT_FIELDS = 6;
 const eligible = (spec: FieldSpec | undefined): spec is FieldSpec =>
   !!spec && spec.kind !== 'grid' && !spec.patched;
 
-type Rules = Pick<Column, 'display' | 'matches' | 'entryLabel' | 'cardText'>;
+type Rules = Pick<Column, 'display' | 'matches' | 'entryLabel' | 'cardText' | 'muted'>;
 const same = (text: string): string => text;
 /** Every field but the identity shows and matches its text as is. */
 const PLAIN: Rules = {
@@ -33,6 +33,7 @@ const PLAIN: Rules = {
   matches: (have, typed) => have === typed,
   entryLabel: same,
   cardText: same,
+  muted: false,
 };
 /** The identity shows compact and matches on its last segment, full id as a fallback. */
 const IDENTITY: Rules = {
@@ -40,6 +41,7 @@ const IDENTITY: Rules = {
   matches: idMatches,
   entryLabel: compactIdEntry,
   cardText: withVersion,
+  muted: true,
 };
 
 /**
@@ -61,13 +63,15 @@ export const resolveColumns = (
     if (!eligible(spec)) return [];
     const identity = isIdSpec(spec);
     const label = entry.label ?? (identity ? idLabel : humanize(entry.field));
-    return [{ key: entry.field, label, spec, ...(identity ? IDENTITY : PLAIN) }];
+    return [
+      { key: entry.field, label, spec, render: entry.render, ...(identity ? IDENTITY : PLAIN) },
+    ];
   });
 
 /**
  * Resolve what a card shows. An explicit `card` is looked up against the whole
- * registry (a card may show a field the grid hides); the default derives from
- * the resolved columns.
+ * registry (a card may show a field the grid hides), keeping a column's `render`;
+ * the default derives from the resolved columns.
  *
  * @param fields the entity's `FIELDS` registry
  * @param cols   the resolved columns
@@ -82,7 +86,11 @@ export const resolveCard = (
   idLabel: string = DEFAULT_LABELS.id
 ): ResolvedCard => {
   if (card) {
-    const pick = (keys: readonly string[]): Column[] => resolveColumns(fields, keys, idLabel);
+    const pick = (keys: readonly string[]): Column[] =>
+      resolveColumns(fields, keys, idLabel).map(c => ({
+        ...c,
+        render: cols.find(col => col.key === c.key)?.render,
+      }));
     return {
       title: pick([card.title])[0],
       subtitle: card.subtitle ? pick([card.subtitle])[0] : undefined,

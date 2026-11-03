@@ -8,14 +8,16 @@ import {
   alpha,
   Box,
   Card,
+  CardActions,
   CardContent,
   Chip,
   Typography,
   type CardProps,
   type TypographyProps,
 } from '@mui/material';
-import type { CollectionLabels, Column, KeyedRow, ResolvedCard } from '../types.ts';
+import type { CollectionLabels, Column, KeyedRow, ResolvedCard, RowEdit } from '../types.ts';
 import { displayValue, EMPTY_TEXT, fullTitle, valueList } from '../utils/values.ts';
+import { EditLink } from './EditLink.tsx';
 
 // A card never gets narrower than its size's minimum (or the whole row, on a
 // screen narrower than that); the row wraps instead.
@@ -29,15 +31,21 @@ const MEDIA_ASPECT = '16 / 10';
 const SCRIM_ALPHA = 0.85;
 const CHIP_KINDS: readonly Column['spec']['kind'][] = ['enum', 'enumMulti'];
 
-/** One value as text: the shown form as a card reads it, the full one on hover, a dash when empty. */
+/** One value as text: the shown form as a card reads it, the full one on hover, a dash when
+ *  empty — or the column's `render`. The identity is muted. */
 const ValueText = ({
   row,
   col,
   labels,
   ...typography
 }: { row: unknown; col: Column; labels: CollectionLabels } & TypographyProps) => (
-  <Typography noWrap title={fullTitle(row, col)} {...typography}>
-    {col.cardText(displayValue(row, col, labels), row) || EMPTY_TEXT}
+  <Typography
+    noWrap
+    title={fullTitle(row, col)}
+    color={col.muted ? 'text.secondary' : undefined}
+    {...typography}
+  >
+    {col.render ? col.render(row) : col.cardText(displayValue(row, col, labels), row) || EMPTY_TEXT}
   </Typography>
 );
 
@@ -50,7 +58,7 @@ const CardValue = ({
   col: Column;
   labels: CollectionLabels;
 }) => {
-  const chips = CHIP_KINDS.includes(col.spec.kind) ? valueList(row, col.spec) : [];
+  const chips = !col.render && CHIP_KINDS.includes(col.spec.kind) ? valueList(row, col.spec) : [];
   return chips.length ? (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
       {chips.map(c => (
@@ -78,6 +86,8 @@ export interface CardsViewProps {
   /** `big` only: the picture area's height in px (`EntityCollectionProps`). */
   reservedHeightForImg?: number;
   cardProps?: CardProps;
+  /** Set → an Edit link at the foot of every card. */
+  edit?: RowEdit;
 }
 
 type HeadingProps = { row: unknown; card: ResolvedCard; labels: CollectionLabels };
@@ -175,6 +185,7 @@ const CardMediaArea = ({
  * @param media     `big` only: fills a row's picture area
  * @param reservedHeightForImg `big` only: the picture area's height in px
  * @param cardProps spread onto every `Card`
+ * @param edit      set → an Edit link on every card
  * @returns the card list
  */
 export function CardsView({
@@ -185,6 +196,7 @@ export function CardsView({
   media,
   reservedHeightForImg,
   cardProps,
+  edit,
 }: CardsViewProps): React.ReactNode {
   const big = size === 'big';
   return (
@@ -233,6 +245,11 @@ export function CardsView({
               ))}
             </Box>
           </CardContent>
+          {edit ? (
+            <CardActions>
+              <EditLink row={row} edit={edit} label={labels.edit} />
+            </CardActions>
+          ) : null}
         </Card>
       ))}
     </Box>

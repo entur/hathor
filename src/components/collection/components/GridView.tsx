@@ -22,7 +22,9 @@ import {
   type CollectionQuery,
   type Column,
   type KeyedRow,
+  type RowEdit,
 } from '../types.ts';
+import { EditLink } from './EditLink.tsx';
 import { displayValue, EMPTY_TEXT, fullTitle, rawValue } from '../utils/values.ts';
 
 const COL_MIN_W = 120;
@@ -66,9 +68,34 @@ const toColDef = (col: Column, labels: Pick<CollectionLabels, 'yes' | 'no'>): Gr
     ...base,
     valueGetter: (_v, row) => displayValue(entityOf(row), col),
     // Shortened text (a compact id) keeps the full value on hover — the cards' rule too.
-    renderCell: p => <span title={fullTitle(entityOf(p.row), col)}>{p.value}</span>,
+    renderCell: p => (
+      <Box
+        component="span"
+        title={fullTitle(entityOf(p.row), col)}
+        sx={col.muted ? { color: 'text.secondary' } : undefined}
+      >
+        {p.value}
+      </Box>
+    ),
   };
 };
+
+/** The column drawn by the entry's `render` when it has one (the value stays text). */
+const withRender = (def: GridColDef, { render }: Column): GridColDef =>
+  render ? { ...def, renderCell: p => render(entityOf(p.row)) } : def;
+
+const EDIT_FIELD = '__edit'; // never a registry key: the registry's keys are field names
+const EDIT_COL_W = 96;
+
+/** The trailing Edit-link column: not sortable, not in the Columns chooser. */
+const editColDef = (edit: RowEdit, label: string): GridColDef => ({
+  field: EDIT_FIELD,
+  headerName: label,
+  width: EDIT_COL_W,
+  sortable: false,
+  hideable: false,
+  renderCell: p => <EditLink row={entityOf(p.row)} edit={edit} label={label} />,
+});
 
 export interface GridViewProps {
   /** The visible page, keyed (`keyRows`). */
@@ -84,6 +111,8 @@ export interface GridViewProps {
   hidden: Readonly<Record<string, boolean>>;
   labels: CollectionLabels;
   dataGrid?: Partial<DataGridProps>;
+  /** Set → a trailing Edit-link column. */
+  edit?: RowEdit;
 }
 
 /**
@@ -99,6 +128,7 @@ export interface GridViewProps {
  * @param hidden   column visibility model
  * @param labels   UI strings
  * @param dataGrid host passthrough, applied before the owned props
+ * @param edit     set → a trailing Edit-link column
  * @returns the grid
  */
 export function GridView({
@@ -112,9 +142,13 @@ export function GridView({
   hidden,
   labels,
   dataGrid,
+  edit,
 }: GridViewProps): React.ReactNode {
   const { yes, no } = labels;
-  const colDefs = useMemo(() => columns.map(c => toColDef(c, { yes, no })), [columns, yes, no]);
+  const colDefs = useMemo(() => {
+    const defs = columns.map(c => withRender(toColDef(c, { yes, no }), c));
+    return edit ? [...defs, editColDef(edit, labels.edit)] : defs;
+  }, [columns, yes, no, edit, labels.edit]);
   const { sort, pageSize } = query;
   // Stable models: the grid re-applies sorting / paging whenever their identity changes.
   const sortModel = useMemo<GridSortModel>(

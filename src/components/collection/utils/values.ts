@@ -99,13 +99,10 @@ export const formatValue = (
  */
 export const rowKeys = (rows: readonly unknown[], offset = 0): string[] => {
   const base = rows.map((row, i) => {
-    const obj = (row ?? {}) as Record<string, unknown>;
-    const idKey = ID_KEYS.find(k => obj[k] != null);
-    if (!idKey) return `${POSITION_PREFIX}${offset + i}`;
-    const version = obj[VERSION_KEY];
-    return version == null || version === ''
-      ? String(obj[idKey])
-      : `${String(obj[idKey])}${VERSION_SEP}${String(version)}`;
+    const id = rowId(row);
+    if (id === undefined) return `${POSITION_PREFIX}${offset + i}`;
+    const version = (row as Record<string, unknown>)[VERSION_KEY];
+    return version == null || version === '' ? id : `${id}${VERSION_SEP}${String(version)}`;
   });
   const taken = new Set(base);
   const seen = new Set<string>();
@@ -147,7 +144,19 @@ export const keyRows = (rows: readonly unknown[], offset = 0): KeyedRow[] => {
  * @returns whether it is the identity field
  */
 export const isIdSpec = (spec: FieldSpec): boolean =>
-  spec.path.length === 1 && spec.path[0] === ID_FIELD;
+  spec.path.length === 1 && (ID_KEYS as readonly string[]).includes(spec.path[0]);
+
+/**
+ * A row's identity: `netexId`, else `id` (hathor's types name it so).
+ *
+ * @param row one entity
+ * @returns the id, or `undefined` for an id-less row
+ */
+export const rowId = (row: unknown): string | undefined => {
+  const obj = (row ?? {}) as Record<string, unknown>;
+  const idKey = ID_KEYS.find(k => obj[k] != null);
+  return idKey && String(obj[idKey]);
+};
 
 const lastSegment = (id: string): string => id.slice(id.lastIndexOf(ID_SEP) + 1);
 

@@ -30,11 +30,17 @@ export interface FieldSpec {
   patched?: boolean;
 }
 
-/** A column or card entry: a registry key plus overrides. `K` is the registry's key union. */
-export interface FieldEntry<K extends string = string> {
+/** A column or card entry: a registry key plus overrides. `K` is the registry's key
+ *  union, `E` the row type. */
+export interface FieldEntry<K extends string = string, E = unknown> {
   field: K;
   /** Overrides the humanized default label. */
   label?: string;
+  /** Draws the value wherever the field shows (grid cell, card field or title) —
+   *  e.g. an icon plus its text. Display only: sort, filter and search still read
+   *  the field's text. A field shown only on an explicit `card` (not in `columns`)
+   *  has no entry, so no `render`. Hathor's addition to the sandbox interface. */
+  render?(row: E): ReactNode;
 }
 
 /** `cards-sm`: compact text cards. `cards-big`: wider cards with room for a
@@ -101,6 +107,8 @@ export interface CollectionLabels {
   /** Names of the views on the view switch (each button's name and tooltip). */
   views: Record<CollectionView, string>;
   empty: string;
+  /** The Edit link's text; its accessible name adds the record's title. */
+  edit: string;
   yes: string;
   no: string;
 }
@@ -127,7 +135,7 @@ export interface EntityCollectionProps<E, K extends string = string> {
   /** Fired with the view picked on the toolbar's switch. */
   onViewChange?: (view: CollectionView) => void;
   /** Whitelist, order and labels. Omit → every eligible field. */
-  columns?: readonly (K | FieldEntry<K>)[];
+  columns?: readonly (K | FieldEntry<K, E>)[];
   /** Omit → `name` as title plus the first columns. */
   card?: CardSpec<K>;
   /** `cards-big` only: what fills the picture area at the top of a row's card
@@ -153,6 +161,20 @@ export interface EntityCollectionProps<E, K extends string = string> {
   filterMode?: 'client' | 'server';
   labels?: Partial<CollectionLabels>;
   slotProps?: CollectionSlotProps;
+  /** The record's details page. Set → an Edit link per grid row and card, named
+   *  "Edit <title>" and marked `data-edit-id` (the row's id) for focus return.
+   *  Keep it stable (module level): the grid rebuilds its columns when it changes. */
+  editHref?: (row: E) => string;
+  /** Router state the Edit link carries (e.g. the details page's `{ initialMode: 'edit' }`). */
+  editState?: unknown;
+}
+
+/** A record's Edit link, as both views draw it. */
+export interface RowEdit {
+  href: (row: unknown) => string;
+  /** The record's title text, for the link's accessible name. */
+  name: (row: unknown) => string;
+  state?: unknown;
 }
 
 /**
@@ -175,6 +197,10 @@ export interface Column {
   /** The shown text as a card reads it: the identity adds the row's version
    *  (`::1004/ver3`) — the grid has a Version column, a card does not. */
   cardText: (shown: string, row: unknown) => string;
+  /** Shown in the secondary text colour (the identity). */
+  muted: boolean;
+  /** The entry's `render`, when it has one. */
+  render?: (row: unknown) => ReactNode;
 }
 
 /** A visible row with the unique key both views identify it by. */
@@ -246,6 +272,7 @@ export const DEFAULT_LABELS: CollectionLabels = {
   view: 'View',
   views: { grid: 'Table', 'cards-sm': 'Small cards', 'cards-big': 'Large cards' },
   empty: 'No rows',
+  edit: 'Edit',
   yes: 'Yes',
   no: 'No',
 };

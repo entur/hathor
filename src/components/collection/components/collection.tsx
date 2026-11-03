@@ -20,10 +20,11 @@ import {
   type EntityCollectionProps,
   type FieldSpec,
   type FilterFields,
+  type RowEdit,
 } from '../types.ts';
 import { matchRows, pageRows, sortRows } from '../utils/applyQuery.ts';
 import { norm, resolveCard, resolveColumns } from '../utils/columns.ts';
-import { keyRows } from '../utils/values.ts';
+import { displayValue, keyRows } from '../utils/values.ts';
 import { CardsView } from './CardsView.tsx';
 import { CollectionToolbar } from './CollectionToolbar.tsx';
 import { GridView } from './GridView.tsx';
@@ -72,6 +73,8 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     filterMode = 'client',
     labels,
     slotProps,
+    editHref,
+    editState,
   }: EntityCollectionProps<E, K>): ReactNode => {
     const [inner, setInner] = useState<CollectionQuery>(defaultCollectionQuery);
     const [density, setDensity] = useState<GridDensity>(DEFAULT_DENSITY);
@@ -89,9 +92,24 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     const columnsKey = columns
       ? JSON.stringify(columns.map(norm).map(e => [e.field, e.label]))
       : '';
+    // shortcut: `render` is not in the key, so the first one per field is kept; a render that
+    // closes over changing host state goes stale — key it in when a host needs that.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `columnsKey` stands for `columns`
     const cols = useMemo(() => resolveColumns(fields, columns, L.id), [columnsKey, L.id]);
     const resolvedCard = useMemo(() => resolveCard(fields, cols, card, L.id), [cols, card, L.id]);
+    // Named by the card's title (e.g. "Edit Flirt") in both views.
+    // Keyed on what it reads, so an inline `card` or `labels` doesn't rebuild the grid's columns.
+    const { title } = resolvedCard;
+    const { yes, no } = L;
+    const edit = useMemo<RowEdit | undefined>(
+      () =>
+        editHref && {
+          href: editHref as (row: unknown) => string,
+          name: row => (title ? displayValue(row, title, { yes, no }) : ''),
+          state: editState,
+        },
+      [editHref, editState, title, yes, no]
+    );
     // Filters reach every filterable field, shown or not: a condition the host
     // set on a field outside `columns` is applied here, gets a chip, and matches
     // what `toSobekFilter` sends in server mode.
@@ -194,6 +212,7 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
             hidden={hidden}
             labels={L}
             dataGrid={slotProps?.dataGrid}
+            edit={edit}
           />
         ) : (
           <>
@@ -210,6 +229,7 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
                 media={cardMedia as ((row: unknown) => ReactNode) | undefined}
                 reservedHeightForImg={reservedHeightForImg}
                 cardProps={slotProps?.card}
+                edit={edit}
               />
             )}
             <TablePagination
