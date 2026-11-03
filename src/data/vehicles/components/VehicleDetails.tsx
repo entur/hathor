@@ -120,6 +120,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
       return;
     }
 
+    // Re-baseline on the write too, so a failing re-read can't strand the
+    // editor dirty over a persisted save.
+    dispatch({ type: 'hydrate', xmlVehicle: form.vehicle });
     setMode('view');
     // "Saved" means the record was re-read: the re-read re-baselines the form
     // (bumped version included). The list refresh runs alongside.
