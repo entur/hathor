@@ -3,7 +3,7 @@ import { Box, useTheme } from '@mui/material';
 import { useSearch } from '../components/search';
 import { useResizableSidebar } from '../hooks/useResizableSidebar.ts';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
-import { NEW_SELECTION } from '../hooks/useUrlEditorSelection.tsx';
+import { NEW_SELECTION } from '../hooks/useEntityEditor.ts';
 import { Sidebar, type Side } from '../components/sidebar/Sidebar.tsx';
 import LoadingPage from '../components/common/LoadingPage.tsx';
 import ErrorPage from '../components/common/ErrorPage.tsx';

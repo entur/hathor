@@ -19,6 +19,9 @@ import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx'
 import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx';
 import DeckPlanView from './data/deck-plans/components/DeckPlanView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
+import PageShell, { NEXT_BASE } from './pages/shell/PageShell.tsx';
+import VehicleTypeCollectionPage from './data/vehicle-types/components/VehicleTypeCollectionPage.tsx';
+import VehicleTypeDetailsPage from './data/vehicle-types/components/VehicleTypeDetailsPage.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
 import { useIsFeatureOn } from './config/featureFlags.ts';
@@ -77,6 +80,19 @@ export default function App() {
                       )
                     }
                   />
+                  <Route
+                    path={NEXT_BASE}
+                    element={
+                      isFeatureOn('Collections') ? (
+                        <ProtectedRoute element={<PageShell />} />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  >
+                    <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
+                    <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
+                  </Route>
                 </Routes>
               </Box>
             </AppShell>

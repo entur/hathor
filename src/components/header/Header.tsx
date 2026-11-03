@@ -12,6 +12,9 @@ import MobileSearchBar from '../search/MobileSearchBar.tsx';
 import HeaderActions from './HeaderActions.tsx';
 import { useLocation } from 'react-router-dom';
 
+// Routes whose page registers into the header search (the legacy list views, #252).
+const SEARCH_ROUTES = ['/vehicle-types', '/vehicles', '/deck-plans'];
+
 export default function Header() {
   const { toggleMobile } = useNavRail();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -25,7 +28,7 @@ export default function Header() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
-  const isHomePage = location.pathname === '/';
+  const hideSearch = !SEARCH_ROUTES.includes(location.pathname);
 
   // const handleMobileSearchUIClose = () => {
   //   setSearchActive(false);
@@ -50,11 +53,11 @@ export default function Header() {
           ) : (
             <>
               <HeaderBranding />
-              {!isHomePage && !isMobile && <DesktopSearchBar />}
+              {!hideSearch && !isMobile && <DesktopSearchBar />}
               <HeaderActions
                 isMobile={isMobile}
-                isHomePage={isHomePage}
-                onSearchIconClick={isHomePage ? () => {} : () => setSearchActive(true)}
+                hideSearch={hideSearch}
+                onSearchIconClick={() => setSearchActive(true)}
                 onUserIconClick={() => (auth.isAuthenticated ? setUserOpen(true) : auth.login())}
                 onSettingsIconClick={() => setSettingsOpen(true)}
                 onMenuIconClick={toggleMobile}

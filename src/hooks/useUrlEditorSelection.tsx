@@ -3,11 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useEditingItem } from '../contexts/EditingContext.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useCloseSliderParam } from './useCloseSliderParam.ts';
-import type { EntityEditorHostProps } from './useEntityEditor.ts';
+import { NEW_SELECTION, type EntityEditorHostProps } from './useEntityEditor.ts';
 import { useSidebarCreateAdvance } from './useSidebarCreateAdvance.ts';
-
-/** `?<paramKey>=` value (and `editingItem.id`) of the create pane — not a row id. */
-export const NEW_SELECTION = 'new';
 
 interface UrlEditorSelectionParams<T> {
   /** URL search param key holding the selected id (e.g. 'selected'). */

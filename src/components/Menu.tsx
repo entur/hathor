@@ -20,7 +20,7 @@ import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useIsFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
 
-const APP_HEADER_HEIGHT_PX = 64;
+export const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
 
 // textKey values reuse existing i18n keys so labels translate without

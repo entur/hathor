@@ -11,6 +11,9 @@ import { useLiftEditorDirty } from './useLiftEditorDirty.ts';
 
 export type EditorMode = 'view' | 'edit';
 
+/** Id a host routes to the create pane (`?selected=new`, `/<entity>/new`) — not a record id. */
+export const NEW_SELECTION = 'new';
+
 export interface EntityEditorConfig<T, F> {
   /** NeTEx id to edit; `''` is the create pane. */
   id: string;

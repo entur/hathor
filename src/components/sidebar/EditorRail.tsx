@@ -26,7 +26,8 @@ import { useTranslation } from 'react-i18next';
 import { useLiftEditorClose } from '../../hooks/useLiftEditorClose.ts';
 import type { Side } from './Sidebar.tsx';
 
-const SEGMENT_SIZE = 40;
+/** Rail width in px; a full-page host pads its content clear of it. */
+export const SEGMENT_SIZE = 40;
 const SPINNER_SIZE = 18;
 const DIVIDER_OPACITY = 0.35;
 
