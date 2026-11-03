@@ -38,6 +38,8 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *     once the URL advances (#173)
  *   - An existing non-numeric TransportTypeRef stays selectable via the picker
  *     (orphan-option fallback) AND can be swapped for a known option
+ *   - After a create whose list reload fails, Cancel keeps the saved form (and
+ *     its new id) instead of blanking it
  * Modes:
  *   - mock (E2E_BACKEND unset): wireCreateFlow intercepts vehicleTypes +
  *     createOrUpdateVehicle + stateful list + by-id; captures mutation input,
@@ -46,6 +48,8 @@ const REF_PATTERN = /^NMR:VehicleType:\d+$/;
  *     unique reg E2E-<ts>; picker is fed by the live `vehicleTypes(` query and
  *     picks whatever option Sobek serves first (requires ≥1 VehicleType seeded);
  *     URL advance proves reg + ref survived Sobek round-trip
+ *   - skip-live: 'after a create whose list reload fails, Cancel keeps the saved
+ *     form' — fault injection on the post-create list reload
  *   - skip-live: 'sidebar edit: an existing non-numeric TransportTypeRef stays
  *     selectable via picker' — fixture-pinned non-numeric ref the live data
  *     can't reproduce
@@ -124,6 +128,36 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await expect(fab).toBeVisible();
     const input = capture.input() as { transportType?: { netexId?: string } } | null;
     expect(input?.transportType?.netexId).toBe(EXPECTED_REF);
+  });
+
+  // Create commits but the list reload 500s, so the URL stays ?selected=new and
+  // there is no record yet. Cancel must restore the saved form (with its new
+  // id), not blank it — a blank id would make the next save mint a duplicate.
+  test('after a create whose list reload fails, Cancel keeps the saved form', async ({ page }) => {
+    test.skip(IS_LIVE, 'fault injection: the list reload must 500 after the create');
+    let saved = false;
+    await interceptVehicleTypesQuery(page);
+    await interceptStatefulVehicleListQuery(page);
+    await interceptVehicleByIdQuery(page, id => (id === NEW_ID ? vehicleRow(id) : null));
+    interceptVehicleSaveMutation(page, NEW_ID, () => (saved = true));
+    // Registered last → first look (LIFO): 500 the list query once the write has landed.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      const isList = post?.query?.includes('vehicles(') && !post?.variables?.filter?.netexIds;
+      if (!saved || !isList) return route.fallback();
+      return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+    });
+    await page.goto('/vehicles?selected=new');
+
+    await page.getByLabel('Registration Number').fill('NEW-001');
+    await page.getByRole('combobox', { name: 'Vehicle Type' }).click();
+    await page.getByRole('option', { name: PICKED_VT_NAME }).click();
+    await page.getByTestId('editor-rail-save').click();
+    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.getByTestId('editor-rail-cancel').click();
+    await expect(page.getByLabel('Registration Number')).toHaveValue('NEW-001');
   });
 
   test('sidebar edit: an existing non-numeric TransportTypeRef stays selectable via picker', async ({

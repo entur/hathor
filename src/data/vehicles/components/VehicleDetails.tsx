@@ -259,7 +259,12 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
         onCancelEdit={() => {
-          dispatch({ type: 'hydrate', xmlVehicle: record });
+          // Restore the committed baseline, not `record`: after a create whose
+          // list reload failed there is no record yet, and re-hydrating from
+          // null would drop the assigned id (the next save would mint a duplicate).
+          // shortcut: baseline read back from `hydratedKey`; #238 adds a real restore.
+          const baseline = JSON.parse(formState.hydratedKey) as VehicleEditFormValue;
+          dispatch({ type: 'hydrate', xmlVehicle: baseline.vehicle });
           setMode('view');
         }}
         onSave={() => {
