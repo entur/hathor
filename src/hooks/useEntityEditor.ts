@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EditorRailProps } from '../components/sidebar/EditorRail.tsx';
+import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { runDeactivate, runSave, type FlowCtx, type WriteResult } from './entityEditorFlow.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 import { useEntityDeactivate, type DeactivateRequest } from './useEntityDeactivate.ts';
@@ -68,8 +69,7 @@ export interface EntityEditor<T, F> {
  * cancel / deactivate ({@link runSave}, {@link runDeactivate}). Host-agnostic:
  * router I/O arrives as `onClose` / `onCreated`.
  *
- * A save or deactivate that outlives its editor publishes nothing; the host
- * re-mounts the editor when the selection or org changes.
+ * A save or deactivate that outlives its editor or its org publishes nothing.
  *
  * @param {EntityEditorConfig<T, F>} cfg What the feature declares.
  * @returns {EntityEditor<T, F>} Editor state plus ready-made `EditorRail` props.
@@ -109,10 +109,12 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
-  // Bumped on unmount; a run whose captured scope is gone is not live. The host
-  // re-mounts the editor on an id or org change, so unmount covers both.
+  // Bumped on unmount and org change; a run whose captured scope is gone is not
+  // live. The create pane survives an org switch (its draft stays), so unmount
+  // alone would let a create started under the old org publish into the new one.
+  const orgId = useOrganisationsContext().currentOrganisation?.id;
   const scope = useRef(0);
-  useEffect(() => () => void scope.current++, []);
+  useEffect(() => () => void scope.current++, [orgId]);
 
   const flow = (): FlowCtx => {
     const started = scope.current;
@@ -184,9 +186,12 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
       mode,
       isDirty,
       saving,
-      // No record (first read failed) → nothing to edit or deactivate.
+      // No record (first read failed) → nothing to edit or deactivate. While a
+      // read is pending or failed, its eventual hydrate would overwrite edits.
       onEnterEdit:
-        (isCreate || record) && !settling ? () => !deactivated && setMode('edit') : undefined,
+        (isCreate || record) && !settling && !loading && !fetchError
+          ? () => !deactivated && setMode('edit')
+          : undefined,
       // Once deactivated, a second click would re-send the mutation.
       onDeactivate: record && !deactivated ? onDeactivate(record) : undefined,
       onCancelEdit: () => {

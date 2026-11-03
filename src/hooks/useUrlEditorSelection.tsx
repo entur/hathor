@@ -81,7 +81,8 @@ export function useUrlEditorSelection<T>({
       id: selected,
       // Keyed on the org: an org switch re-mounts a record's editor, so nothing
       // from the previous org's record, form or in-flight save carries over.
-      // The create pane has no record to lose, so its unsaved draft stays.
+      // The create pane has no record to lose, so its unsaved draft stays
+      // (useEntityEditor still invalidates its in-flight create on the switch).
       EditorComponent: function SelectedEditor() {
         const orgId = useOrganisationsContext().currentOrganisation?.id;
         return (
