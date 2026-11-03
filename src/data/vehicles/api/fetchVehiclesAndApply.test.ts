@@ -57,17 +57,19 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
     expect(setError).toHaveBeenNthCalledWith(1, null);
   });
 
-  it('skips setData when fetch throws', async () => {
+  it('skips setData and rejects when fetch throws', async () => {
     const setData = vi.fn();
-    await fetchVehiclesAndApply({
-      applicationBaseUrl: 'http://x/',
-      getAccessToken: async () => 'tok',
-      setData,
-      setError: noop,
-      fetchVehiclesImpl: async () => {
-        throw new Error('boom');
-      },
-    });
+    await expect(
+      fetchVehiclesAndApply({
+        applicationBaseUrl: 'http://x/',
+        getAccessToken: async () => 'tok',
+        setData,
+        setError: noop,
+        fetchVehiclesImpl: async () => {
+          throw new Error('boom');
+        },
+      })
+    ).rejects.toThrow('boom');
     expect(setData).not.toHaveBeenCalled();
   });
 
@@ -75,15 +77,17 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
   // pinned once in `graphqlErrMsg.test.ts`.
   it('routes errors through graphqlErrMsg', async () => {
     const setError = vi.fn();
-    await fetchVehiclesAndApply({
-      applicationBaseUrl: 'http://x/',
-      getAccessToken: async () => 'tok',
-      setData: noop,
-      setError,
-      fetchVehiclesImpl: async () => {
-        throw new Error('boom');
-      },
-    });
+    await expect(
+      fetchVehiclesAndApply({
+        applicationBaseUrl: 'http://x/',
+        getAccessToken: async () => 'tok',
+        setData: noop,
+        setError,
+        fetchVehiclesImpl: async () => {
+          throw new Error('boom');
+        },
+      })
+    ).rejects.toThrow('boom');
     expect(setError).toHaveBeenLastCalledWith('boom');
   });
 });

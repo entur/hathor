@@ -2,6 +2,7 @@ import {
   fetchVehicleTypesRequest,
   type VehicleTypesQuery,
 } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
+import { fetchVehicleTypeRequest } from '../../../graphql/vehicles/queries/fetchVehicleType.ts';
 import type {
   VehicleTypeContext,
   VehicleType,
@@ -166,4 +167,24 @@ export const fetchVehicleTypes = async (
     filter: { dataOwnerRef },
   });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
+};
+
+/**
+ * Fetch one VehicleType by NeTEx id — the `vehicleTypes(...)` query filtered
+ * to `netexIds: [id]`.
+ *
+ * @param netexId Full NeTEx id.
+ * @param applicationBaseUrl Sobek base URL.
+ * @param dataOwnerRef Current organisation ref.
+ * @param token OIDC access token (bearer).
+ * @returns The vehicle type, or `null` when Sobek returns none for the id.
+ */
+export const fetchVehicleType = async (
+  netexId: string,
+  applicationBaseUrl: string,
+  dataOwnerRef: string,
+  token: AccessToken
+): Promise<VehicleType | null> => {
+  const raw = await fetchVehicleTypeRequest(applicationBaseUrl, netexId, dataOwnerRef, token);
+  return raw.vehicleTypes.content.map(projectVehicleType).find(vt => vt.id === netexId) ?? null;
 };

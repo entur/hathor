@@ -56,3 +56,27 @@ export const fetchDeckPlans = async (
   });
   return { deckPlans: raw.deckPlans.content.map(projectDeckPlan) };
 };
+
+/**
+ * Fetch one DeckPlan's identity fields by NeTEx id — the `deckPlans(...)`
+ * query filtered to `netexIds: [id]`. The NeTEx body is a separate read
+ * (`fetchDeckPlanDetails`).
+ *
+ * @param netexId Full NeTEx id.
+ * @param applicationBaseUrl Sobek base URL.
+ * @param dataOwnerRef Current organisation ref.
+ * @param token OIDC access token (bearer).
+ * @returns The deck plan, or `null` when Sobek returns none for the id.
+ */
+export const fetchDeckPlan = async (
+  netexId: string,
+  applicationBaseUrl: string,
+  dataOwnerRef: string,
+  token: AccessToken
+): Promise<DeckPlan | null> => {
+  const raw = await fetchDeckPlansRequest(applicationBaseUrl, token, {
+    size: 1,
+    filter: { netexIds: [netexId], dataOwnerRef },
+  });
+  return raw.deckPlans.content.map(projectDeckPlan).find(dp => dp.id === netexId) ?? null;
+};

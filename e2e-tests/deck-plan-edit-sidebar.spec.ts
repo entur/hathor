@@ -24,8 +24,8 @@ import { IS_LIVE, seedAuth } from './live-auth-helpers';
  *   - keyList is stripped before POST so Sobek does not double it (sobek#180)
  *   - save is gated until the XML body has loaded (an edit patches it)
  *   - a failed post-save list refresh warns but still re-baselines the form
- *   - cancelling a second edit restores the saved baseline, not the stale
- *     `deckPlan` prop useUrlEditorSelection never re-commits
+ *   - cancelling a second edit restores the re-read record, not the stale
+ *     list row
  *   - the stored `lang` on <Name> survives a save round-trip
  *   - a failed post-save body refetch blocks a second save on the stale document
  *   - Retry re-runs the deck parse, not just the body fetch, so a transient
@@ -226,9 +226,13 @@ test.describe('/deck-plans — sidebar editor', () => {
     // so the override below gets first look and falls back to this one.
     await interceptDeckPlansQuery(page);
     const { saved } = await interceptDeckPlanSave(page, xml());
+    // Only the list refresh fails; the editor's by-id re-read still answers.
     await page.route('**/graphql', async route => {
-      const body = route.request().postDataJSON() as { query?: string };
-      if (body?.query?.includes('deckPlans') && saved()) {
+      const body = route.request().postDataJSON() as {
+        query?: string;
+        variables?: { filter?: { netexIds?: string[] } };
+      };
+      if (body?.query?.includes('deckPlans') && !body.variables?.filter?.netexIds && saved()) {
         return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
       }
       return route.fallback();
@@ -254,16 +258,34 @@ test.describe('/deck-plans — sidebar editor', () => {
     page,
   }) => {
     await openFirstRow(page);
-    await interceptDeckPlanSave(page, xml());
+    const { saved } = await interceptDeckPlanSave(page, xml());
+    // As Sobek does: once the write lands, the by-id re-read returns the new name.
+    await page.route('**/graphql', async route => {
+      const body = route.request().postDataJSON() as {
+        query?: string;
+        variables?: { filter?: { netexIds?: string[] } };
+      };
+      if (!body?.query?.includes('deckPlans') || !body.variables?.filter?.netexIds || !saved())
+        return route.fallback();
+      const row = {
+        netexId: 'NMR:DeckPlan:5',
+        name: { value: 'Plan Alpha renamed', lang: 'nb' },
+        description: { value: 'Alpha lower-deck variant' },
+      };
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { deckPlans: { content: [row], totalElements: 1 } } }),
+      });
+    });
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
     await page.getByTestId('editor-rail-save').click();
     await expect(page.getByTestId('deck-plan-details-title')).toHaveText('Plan Alpha renamed');
 
-    // useUrlEditorSelection does not re-commit the editor for an unchanged id,
-    // so the `deckPlan` prop still holds the pre-save row. Cancel must restore
-    // the last saved baseline, not that stale prop.
+    // The list fixture still holds the pre-save row. Cancel must restore the
+    // re-read record, not that stale row.
     await page.getByTestId('editor-rail-edit').click();
     await page.getByTestId('editor-rail-cancel').click();
 

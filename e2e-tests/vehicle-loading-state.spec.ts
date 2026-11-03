@@ -3,11 +3,12 @@ import { interceptVehicleByIdQuery, vehicleRow } from './vehicle-list-helpers';
 import { IS_LIVE, seedAuth } from './live-auth-helpers';
 
 const SELECTED_ID = 'NMR:Vehicle:bus-1';
-const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
 
 /**
- * /vehicles slider loading guards — useVehicle must resolve a not-found single-
- * vehicle fetch to a visible error, never a stuck spinner (PR #74 B1).
+ * /vehicles slider loading guards — the editor's by-id read must resolve a
+ * not-found vehicle to the not-found body, never a stuck spinner (PR #74 B1).
+ * The by-id read is the editor's source of truth (#237): a row the list still
+ * holds does not keep the editor open on it.
  *
  * The companion "save with no applicationBaseUrl" describe was retired with
  * PR #121: the standalone `/vehicles/new` route is gone and the sidebar create
@@ -20,35 +21,26 @@ const NOT_FOUND_ERROR = `Vehicle "${SELECTED_ID}" not found`;
  *   NOT-FOUND: copy config-no-auth → intercept list `vehicles(` (no
  *   filter.netexIds) to return the row → intercept by-id
  *   `vehicles(filter:{netexIds})` to return empty → goto /vehicles?selected=<id>
- *   → slider opens with title → "Loading vehicle…" hides → "<id> not found"
- *   shown → form field absent.
+ *   → "Loading vehicle…" hides → "Vehicle not found" shown → form field absent.
  * Covers:
- *   - useVehicle not-found branch sets error + loading=false (spinner
- *     disappears, reason surfaced, form stays hidden).
+ *   - by-id not-found resolves loading=false (spinner disappears, not-found
+ *     body shown, form stays hidden) even though the list has the row.
  * Modes:
  *   - mock (E2E_BACKEND unset): seedAuth provides a synthetic user + org so
  *     the list resolves; intercepts the `/graphql` route for the list + by-id
  *     queries; stages list-has-row vs byid-empty.
  *   - live (E2E_BACKEND=true): no live path — the describe skips.
- *   - skip-live: "useVehicle — single-vehicle fetch with no match" needs a
+ *   - skip-live: "by-id read with no match" needs a
  *     list-has-row + byid-empty mismatch a real backend cannot produce.
  */
 
 /**
- * Regression test for B1 (PR #74 review): `useVehicle` must never hang on the
- * "Loading vehicle…" spinner — it must resolve `loading=false` and surface a
- * user-visible error.
- *
- * Realigned to the GraphQL read path after #101 retired the NeTEx-XML single
- * fetch. The obsolete trigger (missing `applicationImportBaseUrl`) no longer
- * applies: `useVehicle` now reads `applicationBaseUrl`, shared with the list,
- * so a missing-config scenario can't isolate the slider. The surviving
- * equivalent — a `vehicles(filter:{netexIds})` fetch that resolves to no row —
- * is exercised here: the list query still returns the row (so the slider opens
- * with a title), while the single-vehicle query returns empty `content`,
- * driving `useVehicle` into its not-found error branch.
+ * Regression test for B1 (PR #74 review): the editor must never hang on the
+ * "Loading vehicle…" spinner — the by-id read must resolve `loading=false`
+ * and show the not-found body. The list query still returns the row, while
+ * the single-vehicle query returns empty `content`.
  */
-test.describe('useVehicle — a single-vehicle fetch with no match errors, never hangs (no-auth)', () => {
+test.describe('by-id read with no match shows not-found, never hangs (no-auth)', () => {
   // Stages a row that the LIST returns but the by-id fetch does not — a
   // contradiction only a mock can produce (a live row found in the list is
   // always fetchable by id). The not-found error branch is therefore mock-only.
@@ -58,8 +50,7 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
     if (process.env.E2E_BACKEND === 'true') return;
     await seedAuth(context);
 
-    // List query (no `filter.netexIds`) → the row exists, so the slider opens
-    // on a found row and renders a title.
+    // List query (no `filter.netexIds`) → the row exists in the table.
     await page.route('**/graphql', async route => {
       const body = route.request().postDataJSON();
       const q: string = body?.query ?? '';
@@ -97,21 +88,17 @@ test.describe('useVehicle — a single-vehicle fetch with no match errors, never
     await interceptVehicleByIdQuery(page, () => null);
   });
 
-  test('a single-vehicle fetch that returns no row surfaces an error, not a stuck spinner', async ({
+  test('a by-id read that returns no row shows not-found, not a stuck spinner', async ({
     page,
   }) => {
     await page.goto(`/vehicles?selected=${SELECTED_ID}`);
 
-    await expect(page.getByTestId('vehicle-details-title')).toBeVisible();
-
-    // Loading resolves — the not-found branch sets error + loading=false, so
-    // the spinner disappears. Auto-wait to its default disappearance timeout.
+    // Loading resolves to loading=false, so the spinner disappears.
     await expect(page.getByText('Loading vehicle…')).toBeHidden();
 
-    // User sees the actual reason.
-    await expect(page.getByText(NOT_FOUND_ERROR)).toBeVisible();
+    await expect(page.getByText('Vehicle not found')).toBeVisible();
 
-    // Form area stays hidden because the fetch errored.
+    // No record, no form.
     await expect(page.locator('#vehicle-registration-number')).toHaveCount(0);
   });
 });

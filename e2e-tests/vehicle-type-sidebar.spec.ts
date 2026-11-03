@@ -30,12 +30,12 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *
  * Workflow (describe 1 — deep-link sidebar):
  *   /vehicle-types → row click writes ?selected=<vtId> → tabbed VehicleTypeForm
- *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the resolved row →
+ *   (Edit · Propulsion/perf. · Environment · Vehicles) hydrates from the by-id read →
  *   navigate tabs → editor-rail collapse drops ?selected= and hides the sidebar.
  * Workflow (describe 2 — sidebar save):
  *   ?selected=<vtId> → editor-rail Edit → edit name → editor-rail Save fires
  *   createOrUpdateVehicleType (full-document serialize) → success snackbar →
- *   list refetch re-resolves + re-hydrates row → back to read-only view (re-baselined).
+ *   by-id re-read re-hydrates the form + list refetch → back to read-only view (re-baselined).
  * Covers:
  *   - describe 1: row click writes ?selected=; tabs group fields + are reachable; in-row
  *     number fields render at 2/3 of a text field's width, and at full width once the
@@ -47,7 +47,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *   - describe 2: save fires the mutation + success + returns to view; re-baseline
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
- *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early).
+ *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early);
+ *     a failed post-deactivate list refresh shows only the warning, no green (#237).
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -289,7 +290,7 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.getByTestId('editor-rail-save').click();
 
     await expect(page.getByText('Vehicle type saved')).toBeVisible();
-    // Refetch re-resolves the row → re-hydrate → back to read-only view.
+    // The by-id re-read re-hydrates the form → back to read-only view.
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha X');
     await expect(page.locator('#vtype-name')).toBeDisabled();
   });
@@ -361,5 +362,20 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     await expect(page.getByText(/list could not refresh/i)).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
+
+  // #237: deactivate used to show green before the list refresh, so a failed
+  // refresh showed green + amber together. Only the warning may show.
+  test('a failed post-deactivate list refresh shows only the stale-list warning', async ({
+    page,
+  }) => {
+    await interceptVehicleTypesWithSave(page, { failRefetch: true });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-deactivate').click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Deactivate' }).click();
+
+    await expect(page.getByText(/list could not refresh/i)).toBeVisible();
+    await expect(page.getByText('Vehicle type deactivated')).toHaveCount(0);
   });
 });
