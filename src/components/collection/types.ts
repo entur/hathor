@@ -38,7 +38,8 @@ export interface FieldEntry<K extends string = string, E = unknown> {
   label?: string;
   /** Draws the value wherever the field shows (grid cell, card field or title) —
    *  e.g. an icon plus its text. Display only: sort, filter and search still read
-   *  the field's text. A field shown only on an explicit `card` (not in `columns`)
+   *  the field's text. Read only this field: a filter option is drawn from a row
+   *  holding just its value. A field shown only on an explicit `card` (not in `columns`)
    *  has no entry, so no `render`. Hathor's addition to the sandbox interface. */
   render?(row: E): ReactNode;
 }
@@ -109,6 +110,17 @@ export interface CollectionLabels {
   empty: string;
   /** The Edit link's text; its accessible name adds the record's title. */
   edit: string;
+  /** The pager (after Linje's `Pagination`): its landmark name, the rows shown,
+   *  the rows-per-page menu and the page buttons' names. */
+  pagination: string;
+  showingRows: (from: number, to: number, total: number) => string;
+  rowsPerPage: string;
+  rowsPerPageMenu: (size: number) => string;
+  goToPage: (page: number) => string;
+  lastPage: string;
+  previousPage: string;
+  nextPage: string;
+  currentPage: string;
   yes: string;
   no: string;
 }
@@ -274,6 +286,15 @@ export const DEFAULT_LABELS: CollectionLabels = {
   views: { grid: 'Table', 'cards-sm': 'Small cards', 'cards-big': 'Large cards' },
   empty: 'No rows',
   edit: 'Edit',
+  pagination: 'Pagination',
+  showingRows: (from, to, total) => `Showing rows ${from}–${to} of ${total}`,
+  rowsPerPage: 'Show',
+  rowsPerPageMenu: size => `${size} rows per page, change`,
+  goToPage: page => `Go to page ${page}`,
+  lastPage: ', last page',
+  previousPage: 'Go to previous page',
+  nextPage: 'Go to next page',
+  currentPage: 'Current page:',
   yes: 'Yes',
   no: 'No',
 };

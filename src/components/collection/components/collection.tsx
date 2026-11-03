@@ -5,12 +5,11 @@
  * pipeline once, and hands the same keyed page to whichever view is active.
  */
 import { useMemo, useState, type ReactNode } from 'react';
-import { Box, TablePagination, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import type { GridDensity } from '@mui/x-data-grid';
 import {
   ALL_TOOLS,
   DEFAULT_LABELS,
-  pageSizesFor,
   usablePageSize,
   defaultCollectionQuery,
   type CollectionOptions,
@@ -26,6 +25,7 @@ import { matchRows, pageRows, sortRows } from '../utils/applyQuery.ts';
 import { resolveCard, resolveColumns } from '../utils/columns.ts';
 import { displayValue, keyRows } from '../utils/values.ts';
 import { CardsView } from './CardsView.tsx';
+import { CollectionPager } from './CollectionPager.tsx';
 import { CollectionToolbar } from './CollectionToolbar.tsx';
 import { GridView } from './GridView.tsx';
 
@@ -207,35 +207,30 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
             dataGrid={slotProps?.dataGrid}
             edit={edit}
           />
+        ) : result.total === 0 ? (
+          <Typography variant="body2" color="text.secondary">
+            {L.empty}
+          </Typography>
         ) : (
-          <>
-            {result.total === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                {L.empty}
-              </Typography>
-            ) : (
-              <CardsView
-                rows={keyed}
-                card={resolvedCard}
-                labels={L}
-                size={view === 'cards-big' ? 'big' : 'sm'}
-                media={cardMedia as ((row: unknown) => ReactNode) | undefined}
-                reservedHeightForImg={reservedHeightForImg}
-                cardProps={slotProps?.card}
-                edit={edit}
-              />
-            )}
-            <TablePagination
-              component="div"
-              count={result.total}
-              page={result.page}
-              rowsPerPage={query.pageSize}
-              rowsPerPageOptions={pageSizesFor(query.pageSize)}
-              onPageChange={(_e, page) => onQuery({ page })}
-              onRowsPerPageChange={e => onQuery({ pageSize: Number(e.target.value) })}
-            />
-          </>
+          <CardsView
+            rows={keyed}
+            card={resolvedCard}
+            labels={L}
+            size={view === 'cards-big' ? 'big' : 'sm'}
+            media={cardMedia as ((row: unknown) => ReactNode) | undefined}
+            reservedHeightForImg={reservedHeightForImg}
+            cardProps={slotProps?.card}
+            edit={edit}
+          />
         )}
+        {/* One pager under either view (Linje's Pagination; the grid's own footer is off). */}
+        <CollectionPager
+          total={result.total}
+          page={result.page}
+          pageSize={query.pageSize}
+          onQuery={onQuery}
+          labels={L}
+        />
       </Box>
     );
   };

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../icons/MenuIcon.tsx';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 import { useIsFeatureOn } from '../../config/featureFlags.ts';
+import { SR_ONLY } from '../../utils/srOnly.ts';
 
 /**
  * SiteNavCards — the Home dashboard's per-type navigation cards. Two layouts:
@@ -30,18 +31,6 @@ const COUNT_SKELETON_W = 96; // px; placeholder width while a count is pending
 const CARD_GAP = 2; // ×theme.spacing; combo-strip gutter (also feeds the bus-slice offset)
 const HALO_BLUR = [2, 4]; // px; stacked card-coloured text-shadows that knock the bus out behind glyphs
 const HOVER_MS = 150; // hover background-colour transition
-// Screen-reader-only text (same as @mui/utils visuallyHidden — a transitive dep, not ours).
-const SR_ONLY = {
-  border: 0,
-  clip: 'rect(0 0 0 0)',
-  height: '1px',
-  margin: '-1px',
-  overflow: 'hidden',
-  padding: 0,
-  position: 'absolute',
-  whiteSpace: 'nowrap',
-  width: '1px',
-} as const;
 
 // Combo backdrop — one pencil-sketch bus sliced across the cards.
 /** Bundled backdrop for `bgURL`: black ink on transparent (paper keyed out). */

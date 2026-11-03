@@ -225,11 +225,11 @@ describe('compact id', () => {
 });
 
 describe('owned grid props', () => {
-  it('keeps its own page sizes and filtering off whatever the host passes', async () => {
+  it('keeps its footer and filtering off whatever the host passes', async () => {
     await renderGrid(ROWS, {
       total: 40,
       dataGrid: {
-        pageSizeOptions: [500],
+        hideFooter: false,
         disableColumnFilter: false,
         // A host filter model must not filter the page: the pipeline already did.
         filterModel: {
@@ -239,14 +239,8 @@ describe('owned grid props', () => {
     });
     await screen.findByText('Flirt');
     expect(screen.getAllByRole('row', { hidden: true })).toHaveLength(ROWS.length + 1);
-    fireEvent.mouseDown(
-      await screen.findByRole('combobox', { name: /rows per page/i, hidden: true })
-    );
-    expect(
-      within(screen.getByRole('listbox'))
-        .getAllByRole('option')
-        .map(o => o.textContent)
-    ).toEqual(['10', '25', '50', '100']);
+    // The collection's own pager sits under the grid; the grid draws none.
+    expect(screen.queryByRole('combobox', { name: /rows per page/i, hidden: true })).toBeNull();
   });
 });
 

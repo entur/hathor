@@ -287,7 +287,7 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     cleanup();
     await mount({ view: 'cards-sm', query: { ...defaultCollectionQuery, pageSize: 0 } });
     expect(screen.getAllByRole('listitem')).toHaveLength(ROW_COUNT);
-    expect(screen.getByText(`1–${ROW_COUNT} of ${ROW_COUNT}`)).toBeTruthy();
+    expect(screen.getByText(`Showing rows 1–${ROW_COUNT} of ${ROW_COUNT}`)).toBeTruthy();
   });
 
   it('reorders the grid when a header is clicked', async () => {
@@ -301,7 +301,7 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     expect(firstCell()).toContain(`${textCol.key}-${ROW_COUNT - 1}`);
   });
 
-  it('emits a grid page-size change once, keeping the page the grid reports', async () => {
+  it('emits a page-size change once from the pager under the grid, back on page 1', async () => {
     const onQueryChange = vi.fn();
     const many = makeRows(fields, 30);
     await mount({
@@ -311,14 +311,9 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
       query: { ...defaultCollectionQuery, page: 1 },
     });
     await gridRows();
-    // jsdom: the grid may still hold its footer hidden while it measures, so
-    // the pager's select is looked up including hidden elements. This test is
-    // about what is emitted, not about the select's accessibility.
-    fireEvent.mouseDown(
-      await screen.findByRole('combobox', { name: /rows per page/i, hidden: true })
-    );
-    fireEvent.click(within(screen.getByRole('listbox')).getByRole('option', { name: '10' }));
-    expect(onQueryChange.mock.calls.map(([q]) => [q.page, q.pageSize])).toEqual([[1, 10]]);
+    fireEvent.click(screen.getByRole('button', { name: '25 rows per page, change' }));
+    fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: '10' }));
+    expect(onQueryChange.mock.calls.map(([q]) => [q.page, q.pageSize])).toEqual([[0, 10]]);
   });
 
   it('does not find a row by a field its card does not show', async () => {
