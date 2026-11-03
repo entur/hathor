@@ -42,8 +42,9 @@ const dataFor = <T>(s: Slot<T>, key: string) => (s.key === key ? s.data : null);
  *
  * Render values are derived from the slot keyed on org + id: a slot written
  * for another key reads as empty, so a switch never shows the previous
- * record under the new id. Only the latest request may write the slot; an
- * earlier one that lands late is dropped. A failed re-read keeps the last
+ * record under the new id. Only the latest request for the key on screen may
+ * write the slot; an earlier one that lands late is dropped, and a read for
+ * a key no longer on screen is refused. A failed re-read keeps the last
  * record and sets `error`.
  *
  * Reads only when org + id change — not when the access token renews, which
@@ -60,6 +61,8 @@ export function useEntityRecord<T>(id: string | null, fetchById: FetchById<T>): 
   const key = id && applicationBaseUrl && dataOwnerRef ? `${dataOwnerRef}|${id}` : null;
   const [slot, setSlot] = useState<Slot<T>>({ key: null, data: null, error: null, loading: false });
   const latest = useRef(0);
+  const activeKey = useRef(key);
+  activeKey.current = key;
   const getAccessTokenRef = useRef(getAccessToken);
   getAccessTokenRef.current = getAccessToken;
   const fetchByIdRef = useRef(fetchById);
@@ -67,15 +70,19 @@ export function useEntityRecord<T>(id: string | null, fetchById: FetchById<T>): 
 
   const load = useCallback(async (): Promise<T | null> => {
     if (!key) return null;
+    // A stale closure (e.g. a save that outlived an org switch) must not
+    // supersede the current key's read, nor publish into its slot.
+    if (key !== activeKey.current) throw new Error('Read for an org + id no longer shown');
     const request = ++latest.current;
+    const live = () => request === latest.current && key === activeKey.current;
     setSlot(s => ({ key, data: dataFor(s, key), error: null, loading: true }));
     try {
       const token = await getAccessTokenRef.current();
       const data = await fetchByIdRef.current(id!, applicationBaseUrl!, dataOwnerRef!, token);
-      if (request === latest.current) setSlot({ key, data, error: null, loading: false });
+      if (live()) setSlot({ key, data, error: null, loading: false });
       return data;
     } catch (err) {
-      if (request === latest.current)
+      if (live())
         setSlot(s => ({ key, data: dataFor(s, key), error: graphqlErrMsg(err), loading: false }));
       throw err;
     }

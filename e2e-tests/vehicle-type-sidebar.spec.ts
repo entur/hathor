@@ -51,7 +51,7 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     a failed post-deactivate list refresh shows only the warning, no green (#237);
  *     a failed first by-id read offers no Edit or Deactivate; Edit stays hidden until
  *     the post-save re-read lands; Edit is blocked while the post-deactivate list
- *     reload is pending.
+ *     reload is pending; an org switch during save leaves the editor on the new org.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -392,6 +392,55 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     release();
     await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toBeVisible();
+  });
+
+  // A save that outlives an org switch must not re-read under the old org and
+  // leave the editor stuck on its skeleton.
+  test('an org switch during save leaves the editor on the new org, not loading', async ({
+    page,
+  }) => {
+    const org = (n: number, type: string) => ({
+      netexId: `NMR:Organisation:${n}`,
+      name: { value: n === 1 ? 'First Org' : 'Second Org' },
+      type,
+    });
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): two orgs; hold the save mutation.
+    await page.route('**/graphql', async route => {
+      const query: string = route.request().postDataJSON()?.query ?? '';
+      if (query.includes('createOrUpdateVehicleType')) await gate;
+      if (!query.includes('organisations(')) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            organisations: {
+              content: [org(1, 'AUTHORITY'), org(2, 'OPERATOR')],
+              totalElements: 2,
+              page: 0,
+              size: 10000,
+            },
+          },
+        }),
+      });
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+
+    const orgPicker = page.getByRole('banner').getByRole('combobox').first();
+    await orgPicker.click();
+    await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+    release();
+
+    await expect(page.getByLabel(/loading/i)).toHaveCount(0);
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
   });
 
   // A failed first read leaves no record: Edit / Deactivate must not act on an
