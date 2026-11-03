@@ -110,12 +110,27 @@ describe('matchesFilter on the identity field', () => {
 
 describe('isEmptyCondition', () => {
   it('treats blank text and lists of blanks as empty', () => {
-    expect(isEmptyCondition(undefined)).toBe(true);
-    expect(isEmptyCondition('  ')).toBe(true);
-    expect(isEmptyCondition([])).toBe(true);
-    expect(isEmptyCondition(['', ' '])).toBe(true);
-    expect(isEmptyCondition(['a'])).toBe(false);
-    expect(isEmptyCondition('a')).toBe(false);
+    expect(isEmptyCondition(undefined, 'contains')).toBe(true);
+    expect(isEmptyCondition('  ', 'contains')).toBe(true);
+    expect(isEmptyCondition([], 'anyOf')).toBe(true);
+    expect(isEmptyCondition(['', ' '], 'anyOf')).toBe(true);
+    expect(isEmptyCondition(['a'], 'anyOf')).toBe(false);
+    expect(isEmptyCondition('a', 'contains')).toBe(false);
+  });
+
+  it('reads a condition the way its op parses it: anyOf splits, contains does not', () => {
+    expect(isEmptyCondition(' , ', 'anyOf')).toBe(true);
+    expect(matchesFilter(row, MODE, 'anyOf', ' , ')).toBe(true);
+    expect(isEmptyCondition(',', 'contains')).toBe(false);
+  });
+
+  it('keeps a comma as text: it filters, chips and goes to sobek', () => {
+    const comma = { name: { value: 'Volvo 8900, LE' } };
+    expect(matchesFilter(comma, NAME, 'contains', ',')).toBe(true);
+    expect(matchesFilter(row, NAME, 'contains', ',')).toBe(false);
+    expect(toSobekFilter({ name: ',' }, { name: { arg: 'name', op: 'contains' } })).toEqual({
+      name: ',',
+    });
   });
 
   it('keeps a list of blanks out of the sobek filter, as chips and matching already do', () => {

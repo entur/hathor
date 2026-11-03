@@ -35,15 +35,17 @@ export const asText = (value: FilterValue | undefined): string =>
   value == null ? '' : typeof value === 'string' ? value : value.join(' ');
 
 /**
- * Does a condition restrict nothing? Blank text, or a list of only blank
- * entries. The one rule for "is this filter active" — matching, chips and
- * the sobek translation all use it.
+ * Does a condition restrict nothing? Read the way its op reads it: `anyOf`
+ * splits into entries (a list of only blanks, or " , ", is empty), `contains`
+ * takes the trimmed text (a lone "," still looks for a comma). The one rule for
+ * "is this filter active" — matching, chips and the sobek translation all use it.
  *
  * @param value the condition
+ * @param op    the field's operator
  * @returns whether it is empty
  */
-export const isEmptyCondition = (value: FilterValue | undefined): boolean =>
-  asList(value).every(v => v.trim() === '');
+export const isEmptyCondition = (value: FilterValue | undefined, op: FilterOp): boolean =>
+  op === 'anyOf' ? asList(value).every(v => v.trim() === '') : asText(value).trim() === '';
 
 /**
  * Does `row` satisfy one condition? An empty condition matches every row.
@@ -63,7 +65,7 @@ export const matchesFilter = (
   op: FilterOp,
   value: FilterValue
 ): boolean => {
-  if (isEmptyCondition(value)) return true;
+  if (isEmptyCondition(value, op)) return true;
   if (op === 'contains')
     return formatValue(row, col.spec).toLowerCase().includes(asText(value).trim().toLowerCase());
   const wanted = asList(value);
@@ -126,7 +128,10 @@ export const activeFilterColumns = (
   columns: readonly Column[],
   filterFields: FilterFields,
   filters: CollectionFilters
-): Column[] => columns.filter(c => filterFields[c.key] && !isEmptyCondition(filters[c.key]));
+): Column[] =>
+  columns.filter(
+    c => filterFields[c.key] && !isEmptyCondition(filters[c.key], filterFields[c.key].op)
+  );
 
 /**
  * Translate the query's filters into the object sobek's list query takes as
@@ -143,7 +148,7 @@ export const toSobekFilter = (
   Object.fromEntries(
     Object.entries(filters).flatMap(([field, value]): [string, string | string[]][] => {
       const target = filterFields[field];
-      if (!target || isEmptyCondition(value)) return [];
+      if (!target || isEmptyCondition(value, target.op)) return [];
       return [
         [target.arg, target.op === 'anyOf' ? cleanList(asList(value)) : asText(value).trim()],
       ];
