@@ -1,0 +1,159 @@
+/**
+ * Grid view: a MUI X DataGrid that only displays. Sorting and paging run in
+ * server mode and the grid's own filtering is off — the rows it gets are the
+ * shared pipeline's output, already keyed, and header clicks / page changes
+ * are reported back as query patches.
+ */
+import { useMemo } from 'react';
+import { Box } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import type {
+  DataGridProps,
+  GridColDef,
+  GridDensity,
+  GridSortModel,
+  GridValidRowModel,
+} from '@mui/x-data-grid';
+import { LazyDataGrid } from '../LazyDataGrid.tsx';
+import {
+  pageSizesFor,
+  type CollectionLabels,
+  type CollectionQuery,
+  type Column,
+  type KeyedRow,
+} from '../types.ts';
+import { displayValue, EMPTY_TEXT, fullTitle, rawValue } from '../utils/values.ts';
+
+const COL_MIN_W = 120;
+const FALLBACK_H = 240;
+const NO_SORT: GridSortModel = [];
+
+/** The lazily loaded grid is untyped in its rows, so the getters narrow here. */
+const entityOf = (row: GridValidRowModel): unknown => (row as KeyedRow).entity;
+/** Module-level, so its identity never changes: the grid rebuilds its row cache when it does. */
+const getRowId = (row: GridValidRowModel): string => (row as KeyedRow).key;
+
+const toColDef = (col: Column, labels: Pick<CollectionLabels, 'yes' | 'no'>): GridColDef => {
+  const base = { field: col.key, headerName: col.label, flex: 1, minWidth: COL_MIN_W } as const;
+  if (col.spec.kind === 'number') {
+    return {
+      ...base,
+      type: 'number',
+      valueGetter: (_v, row) => (rawValue(entityOf(row), col.spec) as number | null) ?? null,
+    };
+  }
+  if (col.spec.kind === 'switch') {
+    // Missing reads as a dash, as on a card — not as "no".
+    return {
+      ...base,
+      type: 'boolean',
+      valueGetter: (_v, row) => {
+        const v = rawValue(entityOf(row), col.spec);
+        return v == null ? null : Boolean(v);
+      },
+      renderCell: p =>
+        p.value == null ? (
+          EMPTY_TEXT
+        ) : p.value ? (
+          <CheckIcon fontSize="small" color="success" titleAccess={labels.yes} />
+        ) : (
+          <CloseIcon fontSize="small" sx={{ color: 'text.disabled' }} titleAccess={labels.no} />
+        ),
+    };
+  }
+  return {
+    ...base,
+    valueGetter: (_v, row) => displayValue(entityOf(row), col),
+    // Shortened text (a compact id) keeps the full value on hover — the cards' rule too.
+    renderCell: p => <span title={fullTitle(entityOf(p.row), col)}>{p.value}</span>,
+  };
+};
+
+export interface GridViewProps {
+  /** The visible page, keyed (`keyRows`). */
+  rows: readonly KeyedRow[];
+  columns: readonly Column[];
+  total: number;
+  page: number;
+  /** The effective query: its sort names a real column, its page size is usable. */
+  query: CollectionQuery;
+  onQuery: (patch: Partial<CollectionQuery>) => void;
+  density: GridDensity;
+  /** Column key → `false` when hidden (the DataGrid's visibility model). */
+  hidden: Readonly<Record<string, boolean>>;
+  labels: CollectionLabels;
+  dataGrid?: Partial<DataGridProps>;
+}
+
+/**
+ * Render the visible page as a DataGrid.
+ *
+ * @param rows     the visible page, keyed
+ * @param columns  resolved columns
+ * @param total    unpaged row count, for the pager
+ * @param page     clamped page index
+ * @param query    effective query (sort + page size are read from it)
+ * @param onQuery  receives sort / page / pageSize patches
+ * @param density  grid density
+ * @param hidden   column visibility model
+ * @param labels   UI strings
+ * @param dataGrid host passthrough, applied before the owned props
+ * @returns the grid
+ */
+export function GridView({
+  rows,
+  columns,
+  total,
+  page,
+  query,
+  onQuery,
+  density,
+  hidden,
+  labels,
+  dataGrid,
+}: GridViewProps): React.ReactNode {
+  const { yes, no } = labels;
+  const colDefs = useMemo(() => columns.map(c => toColDef(c, { yes, no })), [columns, yes, no]);
+  const { sort, pageSize } = query;
+  // Stable models: the grid re-applies sorting / paging whenever their identity changes.
+  const sortModel = useMemo<GridSortModel>(
+    () => (sort ? [{ field: sort.field, sort: sort.dir }] : NO_SORT),
+    [sort]
+  );
+  const paginationModel = useMemo(() => ({ page, pageSize }), [page, pageSize]);
+
+  return (
+    // Flex column parent → the grid sizes to its content instead of needing a fixed height.
+    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <LazyDataGrid
+        fallbackHeight={FALLBACK_H}
+        disableColumnMenu
+        disableRowSelectionOnClick
+        {...dataGrid}
+        // Owned, after the host's props: the grid's own filter would run a
+        // second filter over just this page (`filterMode="server"` stops a host
+        // `filterModel` too, not only the UI), and a page size the pager doesn't
+        // list (or above 100) breaks the community grid.
+        disableColumnFilter
+        filterMode="server"
+        pageSizeOptions={pageSizesFor(pageSize)}
+        rows={rows as KeyedRow[]}
+        columns={colDefs}
+        getRowId={getRowId}
+        density={density}
+        columnVisibilityModel={hidden}
+        sortingMode="server"
+        sortModel={sortModel}
+        onSortModelChange={model =>
+          onQuery({ sort: model[0]?.sort ? { field: model[0].field, dir: model[0].sort } : null })
+        }
+        paginationMode="server"
+        rowCount={total}
+        paginationModel={paginationModel}
+        onPaginationModelChange={m => onQuery({ page: m.page, pageSize: m.pageSize })}
+        localeText={{ noRowsLabel: labels.empty, ...dataGrid?.localeText }}
+      />
+    </Box>
+  );
+}
