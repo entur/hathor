@@ -23,6 +23,7 @@ import {
   hydrate,
   initialFormState,
   isDirty as isFormDirty,
+  restore,
   canSubmit,
   type FormState,
 } from '../stores/vehicleFormState.ts';
@@ -262,9 +263,7 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
           // Restore the committed baseline, not `record`: after a create whose
           // list reload failed there is no record yet, and re-hydrating from
           // null would drop the assigned id (the next save would mint a duplicate).
-          // shortcut: baseline read back from `hydratedKey`; #238 adds a real restore.
-          const baseline = JSON.parse(formState.hydratedKey) as VehicleEditFormValue;
-          dispatch({ type: 'hydrate', xmlVehicle: baseline.vehicle });
+          dispatch({ type: 'restore' });
           setMode('view');
         }}
         onSave={() => {
@@ -284,8 +283,16 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
 
 type FormAction =
   | { type: 'hydrate'; xmlVehicle: Partial<Vehicle> | null | undefined }
-  | { type: 'edit'; form: VehicleEditFormValue };
+  | { type: 'edit'; form: VehicleEditFormValue }
+  | { type: 'restore' };
 
 function formReducer(state: FormState, action: FormAction): FormState {
-  return action.type === 'hydrate' ? hydrate(state, action.xmlVehicle) : edit(state, action.form);
+  switch (action.type) {
+    case 'hydrate':
+      return hydrate(state, action.xmlVehicle);
+    case 'edit':
+      return edit(state, action.form);
+    case 'restore':
+      return restore(state);
+  }
 }
