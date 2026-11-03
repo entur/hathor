@@ -46,8 +46,13 @@ const PAGE_SX = {
     outlineColor: 'primary.main',
     outlineOffset: FOCUS_PX,
   },
-  '&[aria-current="page"]': { bgcolor: 'action.active', borderColor: 'primary.main' },
-  '&:disabled:not([aria-current])': { opacity: 0.5, cursor: 'default' },
+  // As Linje: no hover on the current page (it stays focusable by keyboard).
+  '&[aria-current="page"]': {
+    bgcolor: 'action.active',
+    borderColor: 'primary.main',
+    pointerEvents: 'none',
+  },
+  '&[aria-disabled="true"]': { opacity: 0.5, cursor: 'default' },
 } as const;
 
 const ELLIPSIS_SX = {
@@ -142,7 +147,8 @@ export function CollectionPager({ total, page, pageSize, onQuery, labels }: Coll
               selected={size === pageSize}
               onClick={() => {
                 setMenuAnchor(null);
-                onQuery({ pageSize: size });
+                // A size change starts over on page 1; the same size keeps the page.
+                if (size !== pageSize) onQuery({ pageSize: size });
               }}
             >
               {size}
@@ -165,14 +171,16 @@ export function CollectionPager({ total, page, pageSize, onQuery, labels }: Coll
           const arrow = type === 'previous' || type === 'next' ? arrows[type] : undefined;
           return (
             <Box
-              key={`${type}-${n}`}
+              // An arrow keeps one node as its target page moves, so focus stays on it.
+              key={arrow ? type : `${type}-${n}`}
               component="button"
               type="button"
               aria-label={arrow ? arrow.name : pageName(n ?? 0)}
               aria-current={selected ? 'page' : undefined}
               aria-describedby={selected ? undefined : currentId}
-              disabled={selected || disabled}
-              onClick={onClick}
+              // Never `disabled` (unlike Linje): browsers blur a button that turns disabled.
+              aria-disabled={disabled || undefined}
+              onClick={selected || disabled ? undefined : onClick}
               sx={PAGE_SX}
             >
               {arrow ? arrow.icon : n}

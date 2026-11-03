@@ -50,13 +50,14 @@ describe('CollectionPager', () => {
   });
 
   it('marks the current page, and stops at the ends', () => {
-    mount(50, 0);
+    const onQuery = mount(50, 0);
     const current = screen.getByRole('button', { name: 'Go to page 1' });
     expect(current.getAttribute('aria-current')).toBe('page');
-    expect((current as HTMLButtonElement).disabled).toBe(true);
-    expect(
-      (screen.getByRole('button', { name: 'Go to previous page' }) as HTMLButtonElement).disabled
-    ).toBe(true);
+    const previous = screen.getByRole('button', { name: 'Go to previous page' });
+    expect(previous.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(current);
+    fireEvent.click(previous);
+    expect(onQuery).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Go to page 5, last page' })).toBeTruthy();
   });
 
@@ -65,6 +66,45 @@ describe('CollectionPager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Go to page 4' }));
     fireEvent.click(screen.getByRole('button', { name: 'Go to next page' }));
     expect(onQuery.mock.calls).toEqual([[{ page: 3 }], [{ page: 2 }]]);
+  });
+
+  // Browsers blur a button that turns disabled (jsdom does not): no pager button ever
+  // does, and each keeps its node across the re-render, so focus stays put.
+  it('keeps focus on a page button, or Next, once it reaches its end', () => {
+    const onQuery = vi.fn();
+    const pager = (page: number) => (
+      <CollectionPager
+        total={50}
+        page={page}
+        pageSize={10}
+        onQuery={onQuery}
+        labels={DEFAULT_LABELS}
+      />
+    );
+    const { rerender } = render(pager(0));
+    const third = screen.getByRole('button', { name: 'Go to page 3' });
+    third.focus();
+    fireEvent.click(third);
+    rerender(pager(onQuery.mock.calls[0][0].page));
+    expect(third.getAttribute('aria-current')).toBe('page');
+    expect((third as HTMLButtonElement).disabled).toBe(false);
+    expect(document.activeElement).toBe(third);
+
+    rerender(pager(3));
+    const next = screen.getByRole('button', { name: 'Go to next page' });
+    next.focus();
+    fireEvent.click(next);
+    rerender(pager(onQuery.mock.calls[1][0].page));
+    expect(next.getAttribute('aria-disabled')).toBe('true');
+    expect((next as HTMLButtonElement).disabled).toBe(false);
+    expect(document.activeElement).toBe(next);
+  });
+
+  it('keeps the page when the current size is picked again', () => {
+    const onQuery = mount(120, 2, 25);
+    fireEvent.click(screen.getByRole('button', { name: '25 rows per page, change' }));
+    fireEvent.click(within(screen.getByRole('menu')).getByRole('menuitem', { name: '25' }));
+    expect(onQuery).not.toHaveBeenCalled();
   });
 
   it('changes the rows per page from its menu', () => {
