@@ -335,5 +335,7 @@
   "common.deactivateConfirmTitle": "Deactivate this item?",
   "common.deactivateConfirmMessage": "This action deactivates the selected item. Do you want to continue?",
   "common.deactivate": "Deactivate",
-  "common.retry": "Retry"
+  "common.retry": "Retry",
+  "common.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
+  "common.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale."
 }

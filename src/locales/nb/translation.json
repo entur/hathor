@@ -334,5 +334,7 @@
   "common.deactivateConfirmTitle": "Deaktivere dette elementet?",
   "common.deactivateConfirmMessage": "Denne handlingen deaktiverer det valgte elementet. Vil du fortsette?",
   "common.deactivate": "Deaktiver",
-  "common.retry": "Prøv igjen"
+  "common.retry": "Prøv igjen",
+  "common.saveStaleList": "Lagret — men listen kunne ikke oppdateres; den kan være utdatert.",
+  "common.deactivateStaleList": "Deaktivert — men listen kunne ikke oppdateres; den kan være utdatert."
 }
