@@ -48,7 +48,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     after save → no discard on collapse; save error stays in edit mode; editing name text
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
  *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early);
- *     a failed post-deactivate list refresh shows only the warning, no green (#237).
+ *     a failed post-deactivate list refresh shows only the warning, no green (#237);
+ *     a failed first by-id read offers no Edit or Deactivate.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -362,6 +363,24 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     await expect(page.getByText(/list could not refresh/i)).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
+
+  // A failed first read leaves no record: Edit / Deactivate must not act on an
+  // empty form (Deactivate would send a blank netexId).
+  test('a failed first by-id read offers no Edit or Deactivate', async ({ page }) => {
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): 500 the by-id read only.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      const isById = post?.query?.includes('vehicleTypes') && !!post?.variables?.filter?.netexIds;
+      if (!isById) return route.fallback();
+      return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await expect(page.getByTestId('editor-rail-collapse')).toBeVisible();
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-deactivate')).toHaveCount(0);
   });
 
   // #237: deactivate used to show green before the list refresh, so a failed

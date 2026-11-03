@@ -305,8 +305,9 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => !deactivated && setMode('edit')}
-        onDeactivate={isCreate ? undefined : handleDeactivate}
+        // No record (first read failed) → nothing to edit or deactivate.
+        onEnterEdit={isCreate || deckPlan ? () => !deactivated && setMode('edit') : undefined}
+        onDeactivate={deckPlan ? handleDeactivate : undefined}
         deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('deckPlan.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}

@@ -247,8 +247,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         side={RAIL_SIDE}
         onCollapse={closeSlider}
         mode={mode}
-        onEnterEdit={() => !deactivated && setMode('edit')}
-        onDeactivate={handleDeactivate}
+        // No record (first read failed) → nothing to edit or deactivate.
+        onEnterEdit={isCreate || record ? () => !deactivated && setMode('edit') : undefined}
+        onDeactivate={record ? handleDeactivate : undefined}
         deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
         deactivateConfirmActionLabel={t('common.deactivate')}
