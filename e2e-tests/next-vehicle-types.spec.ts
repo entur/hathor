@@ -15,7 +15,8 @@ const MOBILE_VIEWPORT = { width: 390, height: 844 };
  *   /next/vehicle-types → list with an Edit link per row → Edit opens
  *   /next/vehicle-types/<id> in edit mode → editor-rail collapse returns to the list.
  * Covers:
- *   - the header search is hidden on shell routes (still shown on the legacy list)
+ *   - the header search is hidden on shell routes (still shown on the legacy list), incl.
+ *     browser Back from a legacy list with the mobile search open
  *   - Edit → details page in edit mode; collapse → back on the list
  *   - a deep link to /next/vehicle-types/<id> opens in view mode
  *   - `Collections` flag off → /next/* redirects to /
@@ -30,17 +31,30 @@ test.describe('/next/vehicle-types page shell', () => {
     if (!IS_LIVE) await interceptVehicleTypesQuery(page);
   });
 
-  test('hides the header search on shell routes only', async ({ page }) => {
+  test('hides the header search on shell routes, also after Back from an open mobile search', async ({
+    page,
+  }) => {
     // Mobile: the header's search icon is the part a shell route must drop (desktop
     // renders the filter button only when a legacy list registers filters).
     await page.setViewportSize(MOBILE_VIEWPORT);
-    const searchIcon = page.getByRole('banner').getByRole('button', { name: 'search' });
-    await page.goto('/vehicle-types');
-    await selectFirstOrg(page);
-    await expect(searchIcon).toBeVisible();
-
+    const banner = page.getByRole('banner');
+    const searchIcon = banner.getByRole('button', { name: 'search', exact: true });
+    // Header actions marker: hidden while the mobile search bar is open.
+    const settings = banner.getByRole('button', { name: 'settings', exact: true });
     await page.goto(LIST);
+    await selectFirstOrg(page);
     await expect(page.getByTestId('collection-list')).toBeVisible();
+    expect(await searchIcon.count()).toBe(0);
+
+    // In-app to the legacy list (header state survives), open the search, then Back.
+    await banner.getByRole('button', { name: 'Expand menu' }).click();
+    await page.getByRole('link', { name: 'Vehicle Types' }).click();
+    await expect(page).toHaveURL(/\/vehicle-types$/);
+    await searchIcon.click();
+    await expect(settings).toBeHidden(); // the open search bar replaces the header actions
+    await page.goBack();
+    await expect(page.getByTestId('collection-list')).toBeVisible();
+    await expect(settings).toBeVisible();
     expect(await searchIcon.count()).toBe(0);
   });
 

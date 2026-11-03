@@ -10,7 +10,7 @@ import HeaderBranding from './HeaderBranding.tsx';
 import DesktopSearchBar from '../search/DesktopSearchBar.tsx';
 import MobileSearchBar from '../search/MobileSearchBar.tsx';
 import HeaderActions from './HeaderActions.tsx';
-import { useLocation } from 'react-router-dom';
+import { matchPath, useLocation } from 'react-router-dom';
 
 // Routes whose page registers into the header search (the legacy list views, #252).
 const SEARCH_ROUTES = ['/vehicle-types', '/vehicles', '/deck-plans'];
@@ -28,7 +28,8 @@ export default function Header() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
-  const hideSearch = !SEARCH_ROUTES.includes(location.pathname);
+  // matchPath, like the router: trailing slash and case don't matter.
+  const hideSearch = !SEARCH_ROUTES.some(path => matchPath(path, location.pathname));
 
   // const handleMobileSearchUIClose = () => {
   //   setSearchActive(false);
@@ -45,7 +46,7 @@ export default function Header() {
             minHeight: { xs: '64px' },
           }}
         >
-          {isMobile && searchActive ? (
+          {isMobile && searchActive && !hideSearch ? (
             <MobileSearchBar
             // onCloseRequest={handleMobileSearchUIClose}
             // placeholder={t('search.searchPlaceholder')}
