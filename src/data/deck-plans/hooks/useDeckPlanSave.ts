@@ -7,6 +7,7 @@ import { saveDeckPlanAsNetexToBackend } from '../api/deckPlanDetailsService';
 import type { DeckPlan } from '../types/deckPlanTypes';
 import { createOrUpdateDeckPlanRequest } from '../../../graphql/vehicles/mutations/createOrUpdateDeckPlan';
 import { serializeDeckPlan } from '../api/fetchDeckPlans';
+import { graphqlErrMsg } from '../../graphqlErrMsg';
 
 interface SaveResult {
   error: string | null;
@@ -80,7 +81,7 @@ export function useDeckPlanSave(): UseDeckPlanSaveResult {
         );
         return { newId: body.createOrUpdateDeckPlan, error: null };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = graphqlErrMsg(err);
         return { newId: null, error: message };
       }
     },

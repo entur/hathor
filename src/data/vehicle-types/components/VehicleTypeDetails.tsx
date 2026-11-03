@@ -43,7 +43,8 @@ const vehicleTypeForm = createFormState<VehicleType, VehicleType>({
  * {@link VehicleTypeForm}. Save fires `createOrUpdateVehicleType` via
  * {@link useVehicleTypeSave}.
  *
- * @param host Id, initial mode and the host's list reload / URL writes.
+ * @param {EntityEditorHostProps} host Id, initial mode and the host's list reload / URL writes.
+ * @returns {JSX.Element} The vehicle-type editor pane.
  */
 export default function VehicleTypeDetails(host: EntityEditorHostProps) {
   const { save } = useVehicleTypeSave();

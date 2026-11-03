@@ -71,8 +71,8 @@ export interface EntityEditor<T, F> {
  * A save or deactivate that outlives its editor publishes nothing; the host
  * re-mounts the editor when the selection or org changes.
  *
- * @param cfg What the feature declares; see {@link EntityEditorConfig}.
- * @returns Editor state plus ready-made `EditorRail` props.
+ * @param {EntityEditorConfig<T, F>} cfg What the feature declares.
+ * @returns {EntityEditor<T, F>} Editor state plus ready-made `EditorRail` props.
  */
 export function useEntityEditor<T extends { id: string; version?: number | string }, F>(
   cfg: EntityEditorConfig<T, F>
@@ -187,7 +187,8 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
       // No record (first read failed) → nothing to edit or deactivate.
       onEnterEdit:
         (isCreate || record) && !settling ? () => !deactivated && setMode('edit') : undefined,
-      onDeactivate: record ? onDeactivate(record) : undefined,
+      // Once deactivated, a second click would re-send the mutation.
+      onDeactivate: record && !deactivated ? onDeactivate(record) : undefined,
       onCancelEdit: () => {
         // The committed baseline, not `record`: after a create whose list
         // reload failed there is no record yet, and the baseline holds the new id.

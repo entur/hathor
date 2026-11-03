@@ -18,8 +18,9 @@ export type DeactivateRequest = (
  * Deactivate an entity through the feature's `deactivate*` GraphQL mutation,
  * stamped now. Never throws.
  *
- * @param request The feature's mutation, e.g. `deactivateVehicleRequest`.
- * @returns `deactivate(entity)` → `{ error }` (`null` on success).
+ * @param {DeactivateRequest} request The feature's mutation, e.g. `deactivateVehicleRequest`.
+ * @returns {(entity: { id: string; version?: number | string }) => Promise<{ error: string | null }>}
+ *   `deactivate(entity)` → `{ error }` (`null` on success).
  */
 export function useEntityDeactivate(
   request: DeactivateRequest

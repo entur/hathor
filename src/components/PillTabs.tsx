@@ -25,8 +25,8 @@ const PILL_SX = {
 /**
  * MUI `Tabs` with the rail-safe pill styling shared by the sidebar editors.
  *
- * @param props MUI `TabsProps` (minus `sx`); pass `<Tab>` children as usual.
- * @returns The styled tab strip.
+ * @param {Omit<TabsProps, 'sx'>} props MUI tab props; pass `<Tab>` children as usual.
+ * @returns {JSX.Element} The styled tab strip.
  */
 export default function PillTabs(props: Omit<TabsProps, 'sx'>) {
   return <Tabs {...props} sx={PILL_SX} />;

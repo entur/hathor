@@ -42,8 +42,8 @@ interface EditorFrameProps<T, F> {
  * {@link NetexId}, the read-error body, the save / deactivate snackbars and the
  * {@link EditorRail}. The feature supplies only its body.
  *
- * @param props {@link EditorFrameProps}
- * @returns The editor pane.
+ * @param {EditorFrameProps<T, F>} props Editor state, entity, copy keys, skeleton and body.
+ * @returns {JSX.Element} The editor pane.
  */
 export default function EditorFrame<T, F>({
   editor,

@@ -27,7 +27,8 @@ const COPY: EditorCopy = {
  * with the vehicle's context rows (parent type, transport mode) and
  * {@link VehicleEditForm} as the body.
  *
- * @param host Id, initial mode and the host's list reload / URL writes.
+ * @param {EntityEditorHostProps} host Id, initial mode and the host's list reload / URL writes.
+ * @returns {JSX.Element} The vehicle editor pane.
  */
 export default function VehicleDetails(host: EntityEditorHostProps) {
   const { t } = useTranslation();

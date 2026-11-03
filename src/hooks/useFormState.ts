@@ -31,8 +31,8 @@ export interface CreateFormStateOpts<T, S> {
  * both atomically so a load never produces a brief dirty frame; `edit` keeps
  * the baseline so divergence is the only dirty signal.
  *
- * @param opts `blank`, `formFromSource`, optional `normalise`.
- * @returns `{ initial, hydrate, rebase, edit, restore, isDirty }`.
+ * @param {CreateFormStateOpts<T, S>} opts `blank`, `formFromSource`, optional `normalise`.
+ * @returns {FormStateActions<T, S>} `{ initial, hydrate, rebase, edit, restore, isDirty }`.
  */
 export function createFormState<T, S>({
   blank,

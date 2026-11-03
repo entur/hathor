@@ -35,7 +35,8 @@ const COPY: EditorCopy = {
  * the whole body to the import endpoint — the only write path that preserves
  * deck geometry, which `DeckPlanInput` cannot carry.
  *
- * @param host Id, initial mode and the host's list reload / URL writes.
+ * @param {EntityEditorHostProps} host Id, initial mode and the host's list reload / URL writes.
+ * @returns {JSX.Element} The deck-plan editor pane.
  */
 export default function DeckPlanDetails(host: EntityEditorHostProps) {
   const { t } = useTranslation();

@@ -48,8 +48,8 @@ export interface DeactivateCtx extends FlowCtx {
  * over a persisted save. "Saved" means the record was re-read (edit) or the
  * list holds the new row (create). `live()` is checked after every await.
  *
- * @param c Save context; see {@link SaveCtx}.
- * @returns Resolves once the run has published its outcome (or stopped).
+ * @param {SaveCtx<F>} c Save context.
+ * @returns {Promise<void>} Resolves once the run has published its outcome (or stopped).
  */
 export async function runSave<F>(c: SaveCtx<F>): Promise<void> {
   const { error, newId } = await c.write(c.form);
@@ -86,8 +86,8 @@ export async function runSave<F>(c: SaveCtx<F>): Promise<void> {
  * The one deactivate sequence: green only after the list reload, Edit blocked
  * (`stale`) in between. `live()` is checked after every await.
  *
- * @param c Deactivate context; see {@link DeactivateCtx}.
- * @returns Resolves once the run has published its outcome (or stopped).
+ * @param {DeactivateCtx} c Deactivate context.
+ * @returns {Promise<void>} Resolves once the run has published its outcome (or stopped).
  */
 export async function runDeactivate(c: DeactivateCtx): Promise<void> {
   const { error } = await c.deactivate();

@@ -6,6 +6,7 @@ import { serializeVehicleType } from '../api/fetchVehicleTypes.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { createOrUpdateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicleType';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
+import { graphqlErrMsg } from '../../graphqlErrMsg';
 
 interface SaveResult {
   newId: string | null;
@@ -50,7 +51,7 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         );
         return { newId: body.createOrUpdateVehicleType, error: null };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = graphqlErrMsg(err);
         return { newId: null, error: message };
       }
     },

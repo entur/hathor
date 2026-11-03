@@ -79,12 +79,13 @@ export function useUrlEditorSelection<T>({
     const isNew = selected === NEW_SELECTION;
     setEditingItem({
       id: selected,
-      // Keyed on the org: an org switch re-mounts the editor, so nothing from
-      // the previous org's record, form or in-flight save carries over.
+      // Keyed on the org: an org switch re-mounts a record's editor, so nothing
+      // from the previous org's record, form or in-flight save carries over.
+      // The create pane has no record to lose, so its unsaved draft stays.
       EditorComponent: function SelectedEditor() {
         const orgId = useOrganisationsContext().currentOrganisation?.id;
         return (
-          <Fragment key={orgId}>
+          <Fragment key={isNew ? NEW_SELECTION : orgId}>
             {renderEditorRef.current({
               id: isNew ? '' : selected,
               initialMode: isNew ? 'edit' : 'view',

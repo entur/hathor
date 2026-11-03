@@ -5,6 +5,7 @@ import { useConfig } from '../../../contexts/configContext';
 import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
+import { graphqlErrMsg } from '../../graphqlErrMsg';
 
 const orUndef = <T>(s: string | undefined, value: T): T | undefined =>
   s && s.length > 0 ? value : undefined;
@@ -61,7 +62,7 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         const body = await createOrUpdateVehicleRequest(applicationBaseUrl, token, wireVehicle);
         return { newId: body.createOrUpdateVehicle, error: null };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = graphqlErrMsg(err);
         return { newId: null, error: message };
       }
     },

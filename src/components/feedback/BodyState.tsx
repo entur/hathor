@@ -17,8 +17,8 @@ interface BodyStateProps {
  * Loading / fetch-error chrome around a fetched body: spinner while loading,
  * an error alert with Retry on failure, otherwise the children.
  *
- * @param props {@link BodyStateProps}
- * @returns The body, or its loading / error state.
+ * @param {BodyStateProps} props Loading / error flags, retry handler, test-id prefix, body.
+ * @returns {ReactNode} The body, or its loading / error state.
  */
 export default function BodyState({
   loading,
