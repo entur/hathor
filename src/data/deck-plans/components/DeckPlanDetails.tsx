@@ -92,10 +92,11 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
     loading: recordLoading,
     error: recordError,
     refetch: refetchRecord,
-  } = useEntityRecord(isCreate ? null : id, fetchDeckPlan);
-  const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(isCreate ? null : id);
+  } = useEntityRecord(id, fetchDeckPlan);
+  const { xml, loading, error: fetchError, refetch } = useDeckPlanXml(id);
   const { save, saveGQL, saving, error, clearError } = useDeckPlanSave();
   const { deactivate } = useDeckPlanDeactivate();
+  // 'stale' = deactivated but the list didn't refresh: edit stays blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
 
   // Re-baseline on every read of the record — the first one and each post-save

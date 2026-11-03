@@ -3,6 +3,7 @@ import type { AccessToken } from '../auth';
 import { useAuth } from '../auth/authUtils.ts';
 import { useConfig } from '../contexts/configContext.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
+import { graphqlErrMsg } from '../data/graphqlErrMsg.ts';
 
 /** By-id fetcher a feature's `api/` exports; resolves `null` for an unknown id. */
 export type FetchById<T> = (
@@ -28,7 +29,8 @@ interface Slot<T> {
   loading: boolean;
 }
 
-const errMsg = (err: unknown) => (err instanceof Error ? err.message : String(err));
+/** The slot's record if it was written for `key`, else nothing. */
+const dataFor = <T>(s: Slot<T>, key: string) => (s.key === key ? s.data : null);
 
 /**
  * Read one entity from Sobek by NeTEx id — the editor's single source of
@@ -40,8 +42,11 @@ const errMsg = (err: unknown) => (err instanceof Error ? err.message : String(er
  * earlier one that lands late is dropped. A failed re-read keeps the last
  * record and sets `error`.
  *
- * @param id NeTEx id to read; `null` pauses (e.g. the create pane).
- * @param fetchById Feature fetcher, e.g. `fetchVehicle`. Should be module-level (stable).
+ * Reads only when org + id change — not when the access token renews, which
+ * would re-baseline an open form mid-edit.
+ *
+ * @param id NeTEx id to read; `''` or `null` pauses (e.g. the create pane).
+ * @param fetchById Feature fetcher, e.g. `fetchVehicle`.
  * @returns `{ data, loading, error, refetch }`.
  */
 export function useEntityRecord<T>(id: string | null, fetchById: FetchById<T>): EntityRecord<T> {
@@ -51,23 +56,26 @@ export function useEntityRecord<T>(id: string | null, fetchById: FetchById<T>): 
   const key = id && applicationBaseUrl && dataOwnerRef ? `${dataOwnerRef}|${id}` : null;
   const [slot, setSlot] = useState<Slot<T>>({ key: null, data: null, error: null, loading: false });
   const latest = useRef(0);
+  const getAccessTokenRef = useRef(getAccessToken);
+  getAccessTokenRef.current = getAccessToken;
+  const fetchByIdRef = useRef(fetchById);
+  fetchByIdRef.current = fetchById;
 
   const refetch = useCallback(async (): Promise<T | null> => {
     if (!key) return null;
     const request = ++latest.current;
-    const keep = (s: Slot<T>) => (s.key === key ? s.data : null);
-    setSlot(s => ({ key, data: keep(s), error: null, loading: true }));
+    setSlot(s => ({ key, data: dataFor(s, key), error: null, loading: true }));
     try {
-      const token = await getAccessToken();
-      const data = await fetchById(id!, applicationBaseUrl!, dataOwnerRef!, token);
+      const token = await getAccessTokenRef.current();
+      const data = await fetchByIdRef.current(id!, applicationBaseUrl!, dataOwnerRef!, token);
       if (request === latest.current) setSlot({ key, data, error: null, loading: false });
       return data;
     } catch (err) {
       if (request === latest.current)
-        setSlot(s => ({ key, data: keep(s), error: errMsg(err), loading: false }));
+        setSlot(s => ({ key, data: dataFor(s, key), error: graphqlErrMsg(err), loading: false }));
       throw err;
     }
-  }, [key, id, applicationBaseUrl, dataOwnerRef, getAccessToken, fetchById]);
+  }, [key, id, applicationBaseUrl, dataOwnerRef]);
 
   useEffect(() => {
     refetch().catch(() => {}); // surfaced through `error`

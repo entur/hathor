@@ -55,14 +55,10 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
   const { deactivate } = useVehicleDeactivate();
+  // 'stale' = deactivated but the list didn't refresh: edit stays blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
 
-  const {
-    data: record,
-    loading,
-    error: fetchError,
-    refetch,
-  } = useEntityRecord(isCreate ? null : id, fetchVehicle);
+  const { data: record, loading, error: fetchError, refetch } = useEntityRecord(id, fetchVehicle);
 
   // Re-baseline on every read of the record — the first one and each post-save re-read.
   useEffect(() => {

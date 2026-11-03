@@ -84,13 +84,14 @@ export default function VehicleTypeDetails({
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
   const { save, saving, error, clearError } = useVehicleTypeSave();
   const { deactivate } = useVehicleTypeDeactivate();
+  // 'stale' = deactivated but the list didn't refresh: edit stays blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
   const {
     data: record,
     loading,
     error: fetchError,
     refetch,
-  } = useEntityRecord(isCreate ? null : id, fetchVehicleType);
+  } = useEntityRecord(id, fetchVehicleType);
   // Fetched on the first editor open of the session, cached for every later one.
   const euroClasses = useCodeValues(EMISSION_STANDARD);
 
