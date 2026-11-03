@@ -1,16 +1,5 @@
-import { useState, type ReactNode } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  Stack,
-  Tab,
-  Tabs,
-  TextareaAutosize,
-  Typography,
-} from '@mui/material';
+import { useState } from 'react';
+import { Box, Divider, Stack, Tab, TextareaAutosize, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { FormStack } from '../../../components/FormLayout.tsx';
 import { FormTextField } from '../../../components/FormFields.tsx';
@@ -18,27 +7,11 @@ import { mergeNameText, netexText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { useDeckRenderer } from '../hooks/useDeckRenderer.ts';
 import DeckRendering from './DeckRendering.tsx';
+import PillTabs from '../../../components/PillTabs.tsx';
+import BodyState from '../../../components/feedback/BodyState.tsx';
 
 /** Editor tabs — Edit (the editable fields) first, then the NeTEx source. */
 type TabKey = 'edit' | 'xml';
-
-/** Pill/segmented tab styling, matching the VehicleType editor's rail-safe tabs. */
-const TAB_SX = {
-  mb: 1.5,
-  minHeight: 0,
-  '& .MuiTabs-indicator': { display: 'none' },
-  '& .MuiTabs-flexContainer': { flexWrap: 'wrap', gap: 0.75 },
-  '& .MuiTab-root': {
-    minHeight: 30,
-    px: 1.25,
-    py: 0.25,
-    borderRadius: 1,
-    textTransform: 'none',
-    bgcolor: 'action.hover',
-    color: 'text.secondary',
-  },
-  '& .MuiTab-root.Mui-selected': { bgcolor: 'primary.main', color: 'primary.contrastText' },
-};
 
 const TEXTAREA_STYLE = {
   width: '100%',
@@ -124,10 +97,10 @@ export default function DeckPlanForm({
 
   return (
     <Box>
-      <Tabs value={tab} onChange={(_e, v: TabKey) => setTab(v)} sx={TAB_SX}>
+      <PillTabs value={tab} onChange={(_e, v: TabKey) => setTab(v)}>
         <Tab value="edit" label={t('deckPlans.tab.general')} />
         <Tab value="xml" label={t('deckPlans.tab.xml')} />
-      </Tabs>
+      </PillTabs>
 
       {tab === 'edit' && (
         <Box>
@@ -166,46 +139,6 @@ export default function DeckPlanForm({
       )}
     </Box>
   );
-}
-
-/**
- * Loading / fetch-error chrome around whatever renders the fetched NeTEx body.
- * Both tabs read the same fetch, so both share these states.
- */
-function BodyState({
-  loading,
-  error,
-  onRetry,
-  testIdPrefix,
-  children,
-}: Pick<DeckPlanFormProps, 'loading' | 'onRetry'> & {
-  error?: string | null;
-  testIdPrefix: string;
-  children: ReactNode;
-}) {
-  const { t } = useTranslation();
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress data-testid={`${testIdPrefix}-loading`} />
-      </Box>
-    );
-  }
-  if (error) {
-    return (
-      <Stack spacing={1}>
-        <Alert severity="error" data-testid={`${testIdPrefix}-fetch-error`}>
-          {error}
-        </Alert>
-        <Box>
-          <Button onClick={onRetry} size="small" variant="outlined">
-            {t('common.retry')}
-          </Button>
-        </Box>
-      </Stack>
-    );
-  }
-  return children;
 }
 
 /**
