@@ -69,6 +69,26 @@ describe('identity under `id`', () => {
 });
 
 describe('render', () => {
+  it.each(['grid', 'cards-sm'] as const)(
+    'takes a replaced render on the next render (%s)',
+    async view => {
+      const ui = (mark: string) => (
+        <MemoryRouter>
+          <Collection
+            rows={ROWS}
+            slotProps={GRID_SLOT}
+            view={view}
+            columns={[{ field: 'transportMode', render: (r: Row) => `${mark}${r.transportMode}` }]}
+          />
+        </MemoryRouter>
+      );
+      const { rerender } = await act(async () => render(ui('A:')));
+      expect(await screen.findByText('A:rail')).toBeTruthy();
+      await act(async () => rerender(ui('B:')));
+      expect(await screen.findByText('B:rail')).toBeTruthy();
+    }
+  );
+
   it('fills the grid cell, while search still reads the text', async () => {
     await mount({
       view: 'grid',

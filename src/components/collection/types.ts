@@ -134,7 +134,8 @@ export interface EntityCollectionProps<E, K extends string = string> {
   view?: CollectionView;
   /** Fired with the view picked on the toolbar's switch. */
   onViewChange?: (view: CollectionView) => void;
-  /** Whitelist, order and labels. Omit → every eligible field. */
+  /** Whitelist, order, labels and renders. Omit → every eligible field. Keep it stable
+   *  (module level or `useMemo`): a new array rebuilds the grid's columns. */
   columns?: readonly (K | FieldEntry<K, E>)[];
   /** Omit → `name` as title plus the first columns. */
   card?: CardSpec<K>;

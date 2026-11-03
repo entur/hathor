@@ -23,7 +23,7 @@ import {
   type RowEdit,
 } from '../types.ts';
 import { matchRows, pageRows, sortRows } from '../utils/applyQuery.ts';
-import { norm, resolveCard, resolveColumns } from '../utils/columns.ts';
+import { resolveCard, resolveColumns } from '../utils/columns.ts';
 import { displayValue, keyRows } from '../utils/values.ts';
 import { CardsView } from './CardsView.tsx';
 import { CollectionToolbar } from './CollectionToolbar.tsx';
@@ -87,15 +87,8 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     const [hidden, setHidden] = useState<Record<string, boolean>>({});
 
     const L = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
-    // Keyed on content, not identity: a host writing `columns={[...]}` inline
-    // would otherwise rebuild every column, and the grid's column defs, each render.
-    const columnsKey = columns
-      ? JSON.stringify(columns.map(norm).map(e => [e.field, e.label]))
-      : '';
-    // shortcut: `render` is not in the key, so the first one per field is kept; a render that
-    // closes over changing host state goes stale — key it in when a host needs that.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `columnsKey` stands for `columns`
-    const cols = useMemo(() => resolveColumns(fields, columns, L.id), [columnsKey, L.id]);
+    // Keyed on identity, so a replaced `render` takes effect; hosts keep `columns` stable.
+    const cols = useMemo(() => resolveColumns(fields, columns, L.id), [columns, L.id]);
     const resolvedCard = useMemo(() => resolveCard(fields, cols, card, L.id), [cols, card, L.id]);
     // Named by the card's title (e.g. "Edit Flirt") in both views.
     // Keyed on what it reads, so an inline `card` or `labels` doesn't rebuild the grid's columns.

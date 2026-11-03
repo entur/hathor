@@ -14,7 +14,7 @@ import {
 import { compactId, compactIdEntry, idMatches, isIdSpec, withVersion } from './values.ts';
 
 /** A bare key as an entry, so every column reads alike. */
-export const norm = (item: string | FieldEntry): FieldEntry =>
+const norm = (item: string | FieldEntry): FieldEntry =>
   typeof item === 'string' ? { field: item } : item;
 
 const TITLE_KEY = 'name'; // default card title when the entity has one
