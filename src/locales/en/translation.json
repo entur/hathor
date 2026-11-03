@@ -336,6 +336,7 @@
   "common.deactivateConfirmMessage": "This action deactivates the selected item. Do you want to continue?",
   "common.deactivate": "Deactivate",
   "common.retry": "Retry",
+  "common.unnamed": "unnamed",
   "common.deactivate.noOrganisation": "No organisation selected — cannot deactivate",
   "common.saveStaleList": "Saved — but the list could not refresh; it may be stale.",
   "common.deactivateStaleList": "Deactivated — but the list could not refresh; it may be stale."

@@ -11,7 +11,7 @@ import type { VehicleEditFormValue } from '../components/VehicleEditForm';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
 import type { Vehicle } from '../types/vehicle';
 
-const vehicleForm = createFormState<VehicleEditFormValue, Partial<Vehicle>>({
+export const vehicleForm = createFormState<VehicleEditFormValue, Partial<Vehicle>>({
   blank: BLANK_FORM,
   formFromSource: src => (src ? { vehicle: src as Vehicle } : BLANK_FORM),
 });

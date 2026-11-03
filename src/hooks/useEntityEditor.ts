@@ -32,6 +32,8 @@ export interface EntityEditorConfig<T, F> {
 }
 
 export interface EntityEditor<T, F> {
+  /** The id being edited; `''` is the create pane. */
+  id: string;
   isCreate: boolean;
   record: T | null;
   loading: boolean;
@@ -168,6 +170,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     });
 
   return {
+    id: cfg.id,
     isCreate,
     record,
     loading,
