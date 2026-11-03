@@ -80,6 +80,9 @@ export default function VehicleTypeDetails({
   const isCreate = id === '';
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? 'view');
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  // True from Save until the post-save re-read + list refresh land; Edit stays
+  // hidden so typing can't be overwritten by the re-read's re-baseline.
+  const [settling, setSettling] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, { form: EMPTY_VTYPE, baseline: EMPTY_VTYPE });
   const { save, saving, error, clearError } = useVehicleTypeSave();
@@ -282,7 +285,9 @@ export default function VehicleTypeDetails({
         onCollapse={closeSlider}
         mode={mode}
         // No record (first read failed) → nothing to edit or deactivate.
-        onEnterEdit={isCreate || record ? () => !deactivated && setMode('edit') : undefined}
+        onEnterEdit={
+          (isCreate || record) && !settling ? () => !deactivated && setMode('edit') : undefined
+        }
         onDeactivate={record ? handleDeactivate : undefined}
         deactivateConfirmTitle={t('vehicleType.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicleType.deactivateConfirmMessage')}
@@ -292,7 +297,10 @@ export default function VehicleTypeDetails({
           dispatch({ type: 'hydrate', row: state.baseline });
           setMode('view');
         }}
-        onSave={handleSave}
+        onSave={() => {
+          setSettling(true);
+          return handleSave().finally(() => setSettling(false));
+        }}
         isDirty={isDirty}
         saving={saving}
       />

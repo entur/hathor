@@ -52,6 +52,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
   const { form } = formState;
   const setForm = (next: VehicleEditFormValue) => dispatch({ type: 'edit', form: next });
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  // True from Save until the post-save re-read + list refresh land; Edit stays
+  // hidden so typing can't be overwritten by the re-read's re-baseline.
+  const [settling, setSettling] = useState(false);
   const [commitError, setCommitError] = useState<string | null>(null);
   const { save, saving, error, clearError } = useVehiclePairSave();
   const { deactivate } = useVehicleDeactivate();
@@ -248,7 +251,9 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
         onCollapse={closeSlider}
         mode={mode}
         // No record (first read failed) → nothing to edit or deactivate.
-        onEnterEdit={isCreate || record ? () => !deactivated && setMode('edit') : undefined}
+        onEnterEdit={
+          (isCreate || record) && !settling ? () => !deactivated && setMode('edit') : undefined
+        }
         onDeactivate={record ? handleDeactivate : undefined}
         deactivateConfirmTitle={t('vehicle.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('vehicle.deactivateConfirmMessage')}
@@ -257,7 +262,10 @@ export default function VehicleDetails({ id, onSaved, mode: initialMode }: Vehic
           dispatch({ type: 'hydrate', xmlVehicle: record });
           setMode('view');
         }}
-        onSave={handleSave}
+        onSave={() => {
+          setSettling(true);
+          return handleSave().finally(() => setSettling(false));
+        }}
         isDirty={isDirty}
         saving={saving}
         // Block create-with-no-TransportTypeRef: Sobek's vehicles() resolver

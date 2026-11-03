@@ -83,6 +83,9 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
   const isCreate = id === '';
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode ?? (isCreate ? 'edit' : 'view'));
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  // True from Save until the post-save re-read + list refresh land; Edit stays
+  // hidden so typing can't be overwritten by the re-read's re-baseline.
+  const [settling, setSettling] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [state, dispatch] = useReducer(formReducer, initialFormState);
   const { form } = state;
@@ -306,7 +309,9 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
         onCollapse={closeSlider}
         mode={mode}
         // No record (first read failed) → nothing to edit or deactivate.
-        onEnterEdit={isCreate || deckPlan ? () => !deactivated && setMode('edit') : undefined}
+        onEnterEdit={
+          (isCreate || deckPlan) && !settling ? () => !deactivated && setMode('edit') : undefined
+        }
         onDeactivate={deckPlan ? handleDeactivate : undefined}
         deactivateConfirmTitle={t('deckPlan.deactivateConfirmTitle')}
         deactivateConfirmMessage={t('deckPlan.deactivateConfirmMessage')}
@@ -316,7 +321,10 @@ export default function DeckPlanDetails({ id, onSaved, mode: initialMode }: Deck
           dispatch({ type: 'restore' });
           setMode('view');
         }}
-        onSave={handleSave}
+        onSave={() => {
+          setSettling(true);
+          return handleSave().finally(() => setSettling(false));
+        }}
         isDirty={isDirty}
         saving={saving}
         // An edit patches the fetched document, so block save until the body is

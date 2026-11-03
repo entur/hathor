@@ -49,7 +49,8 @@ async function openFirstVtype(page: import('@playwright/test').Page): Promise<st
  *     preserves the existing lang tag; failed post-save list refresh surfaces a stale-list
  *     warning (guards the #117 doFetch return — a failed refetch must reject, not resolve early);
  *     a failed post-deactivate list refresh shows only the warning, no green (#237);
- *     a failed first by-id read offers no Edit or Deactivate.
+ *     a failed first by-id read offers no Edit or Deactivate; Edit stays hidden until
+ *     the post-save re-read lands.
  *     (Full-document WIRE SHAPE is unit-tested in serializeVehicleType.test.ts, not spied here.)
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery / interceptVehicleTypesWithSave;
@@ -363,6 +364,33 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
     await expect(page.getByText(/list could not refresh/i)).toBeVisible();
     await expect(page.getByText('Vehicle type saved')).toHaveCount(0);
+  });
+
+  // Edit stays hidden until the post-save re-read lands, so typing can't be
+  // overwritten by the re-read's re-baseline.
+  test('Edit stays hidden until the post-save re-read lands', async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>(r => (release = r));
+    let saved = false;
+    await interceptVehicleTypesWithSave(page);
+    // Registered last → first look (LIFO): hold the by-id read once the write has landed.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      if (post?.query?.includes('createOrUpdateVehicleType')) saved = true;
+      else if (saved && post?.variables?.filter?.netexIds) await gate;
+      return route.fallback();
+    });
+    await page.goto('/vehicle-types?selected=NMR:VehicleType:1');
+
+    await page.getByTestId('editor-rail-edit').click();
+    await page.locator('#vtype-name').fill('Type Alpha X');
+    await page.getByTestId('editor-rail-save').click();
+
+    await expect(page.getByTestId('editor-rail-save')).toHaveCount(0);
+    await expect(page.getByTestId('editor-rail-edit')).toHaveCount(0);
+    release();
+    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+    await expect(page.getByText('Vehicle type saved')).toBeVisible();
   });
 
   // A failed first read leaves no record: Edit / Deactivate must not act on an
