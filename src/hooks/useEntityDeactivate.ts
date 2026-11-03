@@ -5,6 +5,7 @@ import { useAuth } from '../auth/authUtils.ts';
 import { useConfig } from '../contexts/configContext.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import type { DeactivateInput } from '../graphql/vehicles/mutations/deactivateInput.ts';
+import { graphqlErrMsg } from '../data/graphqlErrMsg.ts';
 
 /** One of the `deactivate*Request` mutations in `src/graphql/vehicles/mutations/`. */
 export type DeactivateRequest = (
@@ -41,7 +42,7 @@ export function useEntityDeactivate(
         });
         return { error: null };
       } catch (err) {
-        return { error: err instanceof Error ? err.message : String(err) };
+        return { error: graphqlErrMsg(err) };
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, request, t]

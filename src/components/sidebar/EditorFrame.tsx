@@ -3,6 +3,7 @@ import { Box, Divider, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
 import { FormLayout } from '../FormLayout.tsx';
+import FormLayoutSkeleton from '../FormLayoutSkeleton.tsx';
 import BodyState from '../feedback/BodyState.tsx';
 import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
@@ -23,14 +24,13 @@ export interface EditorCopy {
 
 interface EditorFrameProps<T, F> {
   editor: EntityEditor<T, F>;
-  /** The typed name; blank shows `[ unnamed ]`. */
-  name?: string;
-  netexId?: { id: string; version?: number };
+  /** The form's entity: its typed name heads the pane (blank → `[ unnamed ]`), its id the NetexId badge. */
+  entity: { id?: string; version?: number; name?: { value?: string } };
   /** Test-id stem: `<testId>-details-title`, `<testId>-record-fetch-error`. */
   testId: string;
   copy: EditorCopy;
-  /** Shown while the first read is in flight. */
-  skeleton: ReactNode;
+  /** Shown while the first read is in flight: a node, or a stacked-row count for the default. */
+  skeleton: ReactNode | number;
   /** Extra Save gate, AND'd with dirty + not saving. */
   canSubmit?: boolean;
   /** The feature's form (and any context rows above it). */
@@ -47,8 +47,7 @@ interface EditorFrameProps<T, F> {
  */
 export default function EditorFrame<T, F>({
   editor,
-  name,
-  netexId,
+  entity,
   testId,
   copy,
   skeleton,
@@ -61,7 +60,15 @@ export default function EditorFrame<T, F>({
   if (editor.loading && !editor.record) {
     return (
       <>
-        {skeleton}
+        {typeof skeleton === 'number' ? (
+          <FormLayoutSkeleton
+            ariaLabel={t('data.loading')}
+            showTitle
+            sections={[{ rowCount: skeleton, stacked: true }]}
+          />
+        ) : (
+          skeleton
+        )}
         <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />
       </>
     );
@@ -87,7 +94,7 @@ export default function EditorFrame<T, F>({
     );
   }
 
-  const trimmed = name?.trim();
+  const trimmed = entity.name?.value?.trim();
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
@@ -117,10 +124,10 @@ export default function EditorFrame<T, F>({
             </>
           )}
         </Typography>
-        {netexId?.id && (
+        {entity.id && (
           <NetexId
-            id={netexId.id}
-            version={netexId.version}
+            id={entity.id}
+            version={entity.version}
             copy="onHover"
             size="small"
             sx={{ justifySelf: 'start' }}

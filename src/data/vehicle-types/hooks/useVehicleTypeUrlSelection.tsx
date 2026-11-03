@@ -1,6 +1,4 @@
 import { useUrlEditorSelection } from '../../../hooks/useUrlEditorSelection.tsx';
-import { useCloseSliderParam } from '../../../hooks/useCloseSliderParam.ts';
-import { useSidebarCreateAdvance } from '../../../hooks/useSidebarCreateAdvance.ts';
 import VehicleTypeDetails from '../components/VehicleTypeDetails.tsx';
 import { VEHICLE_TYPE_SELECTED_PARAM } from '../utils/vehicleTypeUrlParams.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
@@ -33,8 +31,6 @@ export function useVehicleTypeUrlSelection({
   setPage,
   refetch,
 }: UrlSelectionParams): void {
-  const onClose = useCloseSliderParam(VEHICLE_TYPE_SELECTED_PARAM);
-  const onCreated = useSidebarCreateAdvance(VEHICLE_TYPE_SELECTED_PARAM);
   useUrlEditorSelection<VehicleType>({
     paramKey: VEHICLE_TYPE_SELECTED_PARAM,
     allData,
@@ -42,14 +38,6 @@ export function useVehicleTypeUrlSelection({
     rowsPerPage,
     setPage,
     getId: vt => vt.id,
-    renderEditor: (id, mode) => (
-      <VehicleTypeDetails
-        id={id}
-        onSaved={refetch}
-        mode={mode}
-        onClose={onClose}
-        onCreated={onCreated}
-      />
-    ),
+    renderEditor: host => <VehicleTypeDetails {...host} onSaved={refetch} />,
   });
 }

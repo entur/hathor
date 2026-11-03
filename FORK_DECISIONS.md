@@ -740,8 +740,8 @@ The vehicle, vehicle-type and deck-plan editors each carried a copy of the same 
 ### Decision
 
 - **One flow**: `runSave` / `runDeactivate` (`src/hooks/entityEditorFlow.ts`) are plain async functions over injected callbacks, with `live()` checked after every await. They are vitest-tested without a React harness.
-- **One hook**: `useEntityEditor` (`src/hooks/useEntityEditor.ts`) wires `useEntityRecord`, the feature's `createFormState` binding (`baseline`, `rebase`, `restore`, `normalise`) and the flow, and returns ready-made `EditorRail` props. `live()` goes false on unmount (the selection moved on) or an org switch, which also resets mode and snackbars.
-- **Host-agnostic**: router I/O arrives as `onClose` / `onCreated`, wired by each `use*UrlSelection`. The hook and `*Details` never touch `useSearchParams`.
+- **One hook**: `useEntityEditor` (`src/hooks/useEntityEditor.ts`) wires `useEntityRecord`, the feature's `createFormState` binding (`baseline`, `rebase`, `restore`, `normalise`) and the flow, and returns ready-made `EditorRail` props. `live()` goes false on unmount; `useUrlEditorSelection` re-mounts the editor when the selection or the org changes.
+- **Host-agnostic**: router I/O arrives as `onClose` / `onCreated` (`EntityEditorHostProps`), built by `useUrlEditorSelection` from its `paramKey`. The hook and `*Details` never touch `useSearchParams`.
 - **One frame**: `EditorFrame` (`src/components/sidebar/EditorFrame.tsx`) draws the skeleton, the not-found view, title + `NetexId`, the read-error `BodyState` with Retry, the four snackbars and the rail.
 - Each feature declares only `fetchById`, `formState`, `write`, `withNewId`, `deactivateRequest`, its copy keys, its body and `canSubmit`.
 
@@ -756,4 +756,4 @@ The vehicle, vehicle-type and deck-plan editors each carried a copy of the same 
 
 - A standalone `/<entity>/:id` page needs only a host that supplies `onClose` / `onCreated`. `EditorFrame` still renders the sidebar `EditorRail`.
 - Visible changes: blank names read `common.unnamed`, a failed record read offers Retry, DeckPlan's badge shows the version, and a DeckPlan patch or stale-body refusal shows as a save error (red), no longer a warning.
-- The three per-feature save hooks keep their own `saving` / `error` state, which the editor no longer reads; the hook owns both.
+- The per-feature save hooks are now stateless request wrappers; `useEntityEditor` owns `saving` and the save error.

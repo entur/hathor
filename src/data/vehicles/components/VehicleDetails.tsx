@@ -4,7 +4,7 @@ import NetexId from '../../../components/NetexId.tsx';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
 import { FormLayout, MetaRow } from '../../../components/FormLayout.tsx';
-import { useEntityEditor, type EditorMode } from '../../../hooks/useEntityEditor.ts';
+import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import { deactivateVehicleRequest } from '../../../graphql/vehicles/mutations/deactivateVehicle.ts';
 import { vehicleMode } from '../types/vehicle.ts';
 import VehicleEditForm from './VehicleEditForm.tsx';
@@ -22,57 +22,30 @@ const COPY: EditorCopy = {
   deactivateMessage: 'vehicle.deactivateConfirmMessage',
 };
 
-interface VehicleDetailsProps {
-  /** NeTEx id to edit; `''` is the create pane. The editor reads the record itself. */
-  id: string;
-  /**
-   * List-side refetch fired after a successful save or deactivate so the row
-   * on `/vehicles` is fresh before the success snackbar appears; a rejection
-   * shows a stale-list warning instead. Optional — hosts without a list omit it.
-   */
-  onSaved?: () => Promise<void>;
-  mode?: EditorMode;
-  /** Host: collapse the editor. */
-  onClose: () => void;
-  /** Host: move the selection from the create pane to the new id. */
-  onCreated: (newId: string) => void;
-}
-
 /**
  * Vehicle editor: the shared {@link useEntityEditor} + {@link EditorFrame}
  * with the vehicle's context rows (parent type, transport mode) and
  * {@link VehicleEditForm} as the body.
  *
- * @param props {@link VehicleDetailsProps}
+ * @param host Id, initial mode and the host's list reload / URL writes.
  */
-export default function VehicleDetails({
-  id,
-  onSaved,
-  mode,
-  onClose,
-  onCreated,
-}: VehicleDetailsProps) {
+export default function VehicleDetails(host: EntityEditorHostProps) {
   const { t } = useTranslation();
   const { save } = useVehiclePairSave();
   const editor = useEntityEditor({
-    id,
-    initialMode: mode,
+    ...host,
     fetchById: fetchVehicle,
     formState: vehicleForm,
     write: form => save(form),
     withNewId: (form, newId) => ({ vehicle: { ...form.vehicle, id: newId, version: 1 } }),
     deactivateRequest: deactivateVehicleRequest,
-    onSaved,
-    onClose,
-    onCreated,
   });
   const { form, record } = editor;
 
   return (
     <EditorFrame
       editor={editor}
-      name={form.vehicle.name?.value}
-      netexId={form.vehicle.id ? { id: form.vehicle.id, version: form.vehicle.version } : undefined}
+      entity={form.vehicle}
       testId="vehicle"
       copy={COPY}
       skeleton={<VehicleDetailsSkeleton />}

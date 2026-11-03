@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EditorRailProps } from '../components/sidebar/EditorRail.tsx';
-import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { runDeactivate, runSave, type FlowCtx, type WriteResult } from './entityEditorFlow.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
 import { useEntityDeactivate, type DeactivateRequest } from './useEntityDeactivate.ts';
@@ -30,6 +29,12 @@ export interface EntityEditorConfig<T, F> {
   /** Host: move the selection from the create pane to the new id. */
   onCreated: (newId: string) => void;
 }
+
+/** What a host (e.g. `useUrlEditorSelection`) hands an entity editor. */
+export type EntityEditorHostProps = Pick<
+  EntityEditorConfig<unknown, unknown>,
+  'id' | 'initialMode' | 'onSaved' | 'onClose' | 'onCreated'
+>;
 
 export interface EntityEditor<T, F> {
   /** The id being edited; `''` is the create pane. */
@@ -63,9 +68,8 @@ export interface EntityEditor<T, F> {
  * cancel / deactivate ({@link runSave}, {@link runDeactivate}). Host-agnostic:
  * router I/O arrives as `onClose` / `onCreated`.
  *
- * A save or deactivate that outlives its editor (unmount = the selection moved
- * on) or its org publishes nothing. An org switch also resets mode and
- * snackbars to their initial state.
+ * A save or deactivate that outlives its editor publishes nothing; the host
+ * re-mounts the editor when the selection or org changes.
  *
  * @param cfg What the feature declares; see {@link EntityEditorConfig}.
  * @returns Editor state plus ready-made `EditorRail` props.
@@ -76,8 +80,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const { t } = useTranslation();
   const fs = cfg.formState;
   const isCreate = cfg.id === '';
-  const initialMode = cfg.initialMode ?? 'view';
-  const [mode, setMode] = useState<EditorMode>(initialMode);
+  const [mode, setMode] = useState<EditorMode>(cfg.initialMode ?? 'view');
   const [state, setState] = useState(fs.initial);
   const [saving, setSaving] = useState(false);
   // True from Save until the post-save reads land; Edit stays hidden so typing
@@ -106,20 +109,10 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
-  // Bumped on unmount and org switch; a run whose captured scope is gone is not live.
+  // Bumped on unmount; a run whose captured scope is gone is not live. The host
+  // re-mounts the editor on an id or org change, so unmount covers both.
   const scope = useRef(0);
   useEffect(() => () => void scope.current++, []);
-  const orgId = useOrganisationsContext().currentOrganisation?.id;
-  const shownOrg = useRef(orgId);
-  useEffect(() => {
-    if (shownOrg.current === orgId) return;
-    shownOrg.current = orgId;
-    scope.current++;
-    setMode(initialMode);
-    setDeactivated(null);
-    setSaved(false);
-    setWarning(null);
-  }, [orgId, initialMode]);
 
   const flow = (): FlowCtx => {
     const started = scope.current;

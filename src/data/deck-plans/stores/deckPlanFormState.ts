@@ -2,11 +2,9 @@
  * Form state for the DeckPlan editor: the generic `createFormState` factory
  * bound to `DeckPlan`, with name/description trimmed on both sides of the
  * dirty compare — Sobek re-pads `<Text>` on serialize (sobek#180).
+ * `deckPlanForm` is used by `DeckPlanDetails`; the named re-exports serve the tests.
  */
-import {
-  createFormState,
-  type FormState as GenericFormState,
-} from '../../../hooks/useFormState.ts';
+import { createFormState } from '../../../hooks/useFormState.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { netexName } from '../../netex/multilingualString.ts';
 
@@ -26,11 +24,8 @@ const deckPlanForm = createFormState<DeckPlan, DeckPlan>({
   normalise,
 });
 
-export type FormState = GenericFormState<DeckPlan>;
 export const initialFormState = deckPlanForm.initial;
 export const hydrate = deckPlanForm.hydrate;
-export const rebase = deckPlanForm.rebase;
 export const edit = deckPlanForm.edit;
-export const restore = deckPlanForm.restore;
 export const isDirty = deckPlanForm.isDirty;
 export { deckPlanForm };

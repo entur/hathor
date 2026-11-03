@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
@@ -14,42 +14,33 @@ interface SaveResult {
 
 interface UseVehicleTypeSaveResult {
   save: (form: VehicleType) => Promise<SaveResult>;
-  saving: boolean;
-  error: string | null;
-  clearError: () => void;
 }
 
 /**
  * Save a VehicleType via the `createOrUpdateVehicleType` GraphQL mutation,
  * serialising the editor's domain form to the full-document
  * {@link VehicleTypeInput} ({@link serializeVehicleType}). Mirrors
- * {@link useVehiclePairSave} (config base URL + bearer token, saving/error
- * state) but is a single full-document call, not an XML pair.
+ * {@link useVehiclePairSave} (config base URL + bearer token) but is a single
+ * full-document call, not an XML pair.
  *
- * @returns `save` (→ `{ newId, error }`), plus `saving`, `error`, `clearError`.
+ * @returns `save` (→ `{ newId, error }`); never throws.
  */
 export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
   const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
   const { currentOrganisation } = useOrganisationsContext();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const save = useCallback(
     async (form: VehicleType): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
         const message = t('error.noBaseUrl');
-        setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
         const message = t('vehicleType.save.noOrganisation');
-        setError(message);
         return { newId: null, error: message };
       }
-      setSaving(true);
-      setError(null);
       try {
         const token = await getAccessToken();
         const body = await createOrUpdateVehicleTypeRequest(
@@ -60,14 +51,11 @@ export function useVehicleTypeSave(): UseVehicleTypeSaveResult {
         return { newId: body.createOrUpdateVehicleType, error: null };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        setError(message);
         return { newId: null, error: message };
-      } finally {
-        setSaving(false);
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { save, saving, error, clearError: () => setError(null) };
+  return { save };
 }

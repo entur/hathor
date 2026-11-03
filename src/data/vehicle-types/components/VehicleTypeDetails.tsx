@@ -1,8 +1,6 @@
 import { Stack } from '@mui/material';
-import { useTranslation } from 'react-i18next';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
-import FormLayoutSkeleton from '../../../components/FormLayoutSkeleton.tsx';
-import { useEntityEditor, type EditorMode } from '../../../hooks/useEntityEditor.ts';
+import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import { createFormState } from '../../../hooks/useFormState.ts';
 import { deactivateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/deactivateVehicleType.ts';
 import { fetchVehicleType } from '../api/fetchVehicleTypes.ts';
@@ -39,69 +37,35 @@ const vehicleTypeForm = createFormState<VehicleType, VehicleType>({
   }),
 });
 
-interface VehicleTypeDetailsProps {
-  /** NeTEx id to edit; `''` is the create pane. The editor reads the record itself. */
-  id: string;
-  /**
-   * List-side refetch fired after a successful save or deactivate so the row
-   * on `/vehicle-types` is fresh before the success snackbar appears; a
-   * rejection shows a stale-list warning instead. Optional.
-   */
-  onSaved?: () => Promise<void>;
-  mode?: EditorMode;
-  /** Host: collapse the editor. */
-  onClose: () => void;
-  /** Host: move the selection from the create pane to the new id. */
-  onCreated: (newId: string) => void;
-}
-
 /**
  * Editable sidebar for a VehicleType, opened via `/vehicle-types?selected=<id>`:
  * the shared {@link useEntityEditor} + {@link EditorFrame} around a tabbed
  * {@link VehicleTypeForm}. Save fires `createOrUpdateVehicleType` via
  * {@link useVehicleTypeSave}.
  *
- * @param props {@link VehicleTypeDetailsProps}
+ * @param host Id, initial mode and the host's list reload / URL writes.
  */
-export default function VehicleTypeDetails({
-  id,
-  onSaved,
-  mode,
-  onClose,
-  onCreated,
-}: VehicleTypeDetailsProps) {
-  const { t } = useTranslation();
+export default function VehicleTypeDetails(host: EntityEditorHostProps) {
   const { save } = useVehicleTypeSave();
   // Fetched on the first editor open of the session, cached for every later one.
   const euroClasses = useCodeValues(EMISSION_STANDARD);
   const editor = useEntityEditor({
-    id,
-    initialMode: mode,
+    ...host,
     fetchById: fetchVehicleType,
     formState: vehicleTypeForm,
     write: form => save(form),
     withNewId: (form, newId) => ({ ...form, id: newId, version: 1 }),
     deactivateRequest: deactivateVehicleTypeRequest,
-    onSaved,
-    onClose,
-    onCreated,
   });
   const { form } = editor;
 
   return (
     <EditorFrame
       editor={editor}
-      name={form.name?.value}
-      netexId={form.id ? { id: form.id, version: form.version } : undefined}
+      entity={form}
       testId="vehicle-type"
       copy={COPY}
-      skeleton={
-        <FormLayoutSkeleton
-          ariaLabel={t('data.loading')}
-          showTitle
-          sections={[{ rowCount: SKELETON_ROWS, stacked: true }]}
-        />
-      }
+      skeleton={SKELETON_ROWS}
     >
       <Stack data-testid="vehicle-type-context">
         <VehicleTypeForm

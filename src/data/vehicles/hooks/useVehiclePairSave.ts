@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
@@ -16,33 +16,24 @@ interface SaveResult {
 
 interface UseVehiclePairSaveResult {
   save: (form: VehicleEditFormValue) => Promise<SaveResult>;
-  saving: boolean;
-  error: string | null;
-  clearError: () => void;
 }
 
 export function useVehiclePairSave(): UseVehiclePairSaveResult {
   const { t } = useTranslation();
   const { getAccessToken } = useAuth();
   const { applicationBaseUrl } = useConfig();
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { currentOrganisation } = useOrganisationsContext();
 
   const save = useCallback(
     async (form: VehicleEditFormValue): Promise<SaveResult> => {
       if (!applicationBaseUrl) {
         const message = t('error.noBaseUrl');
-        setError(message);
         return { newId: null, error: message };
       }
       if (!currentOrganisation?.id) {
         const message = t('vehicles.save.noOrganisation');
-        setError(message);
         return { newId: null, error: message };
       }
-      setSaving(true);
-      setError(null);
       try {
         const wireVehicle = {
           dataOwnerRef: currentOrganisation.id,
@@ -71,14 +62,11 @@ export function useVehiclePairSave(): UseVehiclePairSaveResult {
         return { newId: body.createOrUpdateVehicle, error: null };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        setError(message);
         return { newId: null, error: message };
-      } finally {
-        setSaving(false);
       }
     },
     [applicationBaseUrl, getAccessToken, currentOrganisation?.id, t]
   );
 
-  return { save, saving, error, clearError: () => setError(null) };
+  return { save };
 }

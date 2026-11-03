@@ -1,8 +1,7 @@
 import { Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
-import FormLayoutSkeleton from '../../../components/FormLayoutSkeleton.tsx';
-import { useEntityEditor, type EditorMode } from '../../../hooks/useEntityEditor.ts';
+import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import type { WriteResult } from '../../../hooks/entityEditorFlow.ts';
 import { deactivateDeckPlanRequest } from '../../../graphql/vehicles/mutations/deactivateDeckPlan.ts';
 import { fetchDeckPlan } from '../api/fetchDeckPlans.ts';
@@ -24,22 +23,6 @@ const COPY: EditorCopy = {
   deactivateMessage: 'deckPlan.deactivateConfirmMessage',
 };
 
-interface DeckPlanDetailsProps {
-  /** NeTEx id to edit; `''` is the create pane. The editor reads the record itself. */
-  id: string;
-  /**
-   * List-side refetch fired after a successful save or deactivate (table
-   * freshness); a rejection shows a stale-list warning instead.
-   */
-  onSaved?: () => Promise<void>;
-  /** Initial mode ('view' or 'edit'). */
-  mode?: EditorMode;
-  /** Host: collapse the editor. */
-  onClose: () => void;
-  /** Host: move the selection from the create pane to the new id. */
-  onCreated: (newId: string) => void;
-}
-
 /**
  * Editable sidebar for a DeckPlan, opened via `/deck-plans?selected=<id>`:
  * the shared {@link useEntityEditor} + {@link EditorFrame} around the
@@ -52,16 +35,11 @@ interface DeckPlanDetailsProps {
  * the whole body to the import endpoint — the only write path that preserves
  * deck geometry, which `DeckPlanInput` cannot carry.
  *
- * @param props {@link DeckPlanDetailsProps}
+ * @param host Id, initial mode and the host's list reload / URL writes.
  */
-export default function DeckPlanDetails({
-  id,
-  onSaved,
-  mode,
-  onClose,
-  onCreated,
-}: DeckPlanDetailsProps) {
+export default function DeckPlanDetails(host: EntityEditorHostProps) {
   const { t } = useTranslation();
+  const { id } = host;
   const isCreate = id === '';
   const { xml, loading, error: xmlError, refetch: refetchXml } = useDeckPlanXml(id);
   const { save, saveGQL } = useDeckPlanSave();
@@ -89,34 +67,22 @@ export default function DeckPlanDetails({
   };
 
   const editor = useEntityEditor({
-    id,
-    initialMode: mode,
+    ...host,
     fetchById: fetchDeckPlan,
     formState: deckPlanForm,
     write,
     withNewId: (form, newId) => ({ ...form, id: newId, version: 1 }),
     deactivateRequest: deactivateDeckPlanRequest,
-    onSaved,
-    onClose,
-    onCreated,
   });
   const { form } = editor;
 
   return (
     <EditorFrame
       editor={editor}
-      // The title mirrors the typed name so it updates as the user edits.
-      name={form.name?.value}
-      netexId={form.id ? { id: form.id, version: form.version } : undefined}
+      entity={form}
       testId="deck-plan"
       copy={COPY}
-      skeleton={
-        <FormLayoutSkeleton
-          ariaLabel={t('data.loading')}
-          showTitle
-          sections={[{ rowCount: SKELETON_ROWS, stacked: true }]}
-        />
-      }
+      skeleton={SKELETON_ROWS}
       // An edit patches the fetched document, so block save until the body is
       // here — otherwise patchDeckPlanXml throws a misleading "not found in
       // document" for what is really "not loaded yet". `xmlError` blocks it
