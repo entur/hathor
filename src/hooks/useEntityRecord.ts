@@ -18,8 +18,12 @@ export interface EntityRecord<T> {
   data: T | null;
   loading: boolean;
   error: string | null;
-  /** Re-read the record. Resolves to the fresh record; rejects when the read fails. */
-  refetch: () => Promise<T | null>;
+  /**
+   * Re-read the record (e.g. after a save). Resolves to the fresh record;
+   * rejects when the read fails, the record is gone, or there is no org + id
+   * to read — so a caller never takes "nothing read" for "re-read".
+   */
+  refetch: () => Promise<T>;
 }
 
 interface Slot<T> {
@@ -61,7 +65,7 @@ export function useEntityRecord<T>(id: string | null, fetchById: FetchById<T>): 
   const fetchByIdRef = useRef(fetchById);
   fetchByIdRef.current = fetchById;
 
-  const refetch = useCallback(async (): Promise<T | null> => {
+  const load = useCallback(async (): Promise<T | null> => {
     if (!key) return null;
     const request = ++latest.current;
     setSlot(s => ({ key, data: dataFor(s, key), error: null, loading: true }));
@@ -78,8 +82,15 @@ export function useEntityRecord<T>(id: string | null, fetchById: FetchById<T>): 
   }, [key, id, applicationBaseUrl, dataOwnerRef]);
 
   useEffect(() => {
-    refetch().catch(() => {}); // surfaced through `error`
-  }, [refetch]);
+    load().catch(() => {}); // surfaced through `error`; `null` is not-found
+  }, [load]);
+
+  const refetch = useCallback(async (): Promise<T> => {
+    if (!key) throw new Error('No organisation or id to re-read');
+    const data = await load();
+    if (data === null) throw new Error(`Record ${id} not found on re-read`);
+    return data;
+  }, [key, id, load]);
 
   const current = slot.key === key;
   return {
