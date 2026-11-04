@@ -59,7 +59,6 @@ export type PassengerCapacity = {
 export type VehicleType = {
   id: string;
   version: number;
-  vehicleTypeKind?: VehicleTypeKind;
   name?: MultilingualString;
   shortName?: MultilingualString;
   description?: MultilingualString;

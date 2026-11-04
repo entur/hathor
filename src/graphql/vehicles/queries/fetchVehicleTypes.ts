@@ -16,7 +16,6 @@ const vehicleTypesDocument = gql`
       content {
         netexId
         version
-        vehicleTypeKind
         name {
           value
         }
@@ -87,7 +86,8 @@ export type VehicleTypeFilter = {
 export type VehicleTypesQueryVariables = {
   page?: number;
   size?: number;
-  filter?: VehicleTypeFilter;
+  /** Required: Sobek rejects `vehicleTypes` without `dataOwnerRef` and `vehicleTypeKind`. */
+  filter: VehicleTypeFilter;
 };
 
 /** Result of the `VehicleTypes` query: one page of vehicle types, as selected above. */
@@ -96,7 +96,6 @@ export type VehicleTypesQuery = {
     content: {
       netexId: string;
       version: number;
-      vehicleTypeKind: VehicleTypeKind;
       name?: MultilingualString | null;
       shortName?: MultilingualString | null;
       description?: MultilingualString | null;

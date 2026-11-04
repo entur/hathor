@@ -26,12 +26,12 @@ describe('fetchVehicleTypes', () => {
     });
   });
 
-  it('fetch by id filters on the kind read from the id', async () => {
+  it('fetch by id filters on PHYSICAL too, matching the list', async () => {
     mockedRequest.mockResolvedValue(mkPage([]));
     await fetchVehicleType('CVT:VehicleType:9', 'http://x', 'NMR:Organisation:1', null);
     expect(mockedRequest.mock.calls[0][2]?.filter).toEqual({
       netexIds: ['CVT:VehicleType:9'],
-      vehicleTypeKind: 'CONTRACTUAL',
+      vehicleTypeKind: 'PHYSICAL',
       dataOwnerRef: 'NMR:Organisation:1',
     });
   });
@@ -48,7 +48,6 @@ describe('fetchVehicleTypes', () => {
         {
           netexId: 'NMR:VehicleType:rail',
           version: 1,
-          vehicleTypeKind: 'PHYSICAL',
           name: { value: 'Rail Type' },
           shortName: { value: 'RT' },
           transportMode: 'RAIL',
@@ -74,7 +73,6 @@ describe('fetchVehicleTypes', () => {
       {
         id: 'NMR:VehicleType:rail',
         version: 1,
-        vehicleTypeKind: 'PHYSICAL',
         name: { value: 'Rail Type' },
         shortName: { value: 'RT' },
         transportMode: 'RAIL',
