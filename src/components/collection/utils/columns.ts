@@ -10,7 +10,7 @@ import {
   type FieldSpec,
   type ResolvedCard,
 } from '../types.ts';
-import { compactId, compactIdEntry, idMatches, isIdSpec, withVersion } from './values.ts';
+import { compactId, compactIdEntry, idMatches, isIdSpec, rowWith, withVersion } from './values.ts';
 
 /** A bare key as an entry, so every column reads alike. */
 const norm = (item: string | FieldEntry): FieldEntry =>
@@ -64,14 +64,18 @@ export const resolveColumns = (
     if (!eligible(spec)) return [];
     const identity = isIdSpec(spec);
     const label = entry.label ?? (identity ? idLabel : fieldLabel(entry.field));
+    const rules = identity ? IDENTITY : PLAIN;
+    const { text } = entry;
     return [
       {
         key: entry.field,
         label,
         spec,
         render: entry.render,
-        text: entry.text,
-        ...(identity ? IDENTITY : PLAIN),
+        text,
+        ...rules,
+        // A value as the entry shows it (filter options, chips), so typing "Tog" finds RAIL.
+        ...(text && { entryLabel: (v: string) => text(rowWith(spec, v)) || rules.entryLabel(v) }),
       },
     ];
   });

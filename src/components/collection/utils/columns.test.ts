@@ -36,6 +36,18 @@ describe('resolveColumns', () => {
   it('drops keys the field mapping does not know', () => {
     expect(resolveColumns(FIELDS, ['nope', 'name']).map(c => c.key)).toEqual(['name']);
   });
+
+  it("labels a filter value through the entry's text, falling back to the value", () => {
+    const MODE_TEXT: Record<string, string> = { rail: 'Tog' };
+    const [mode] = resolveColumns(FIELDS, [
+      {
+        field: 'transportMode',
+        text: r => MODE_TEXT[(r as { transportMode: string }).transportMode] ?? '',
+      },
+    ]);
+    expect(mode.entryLabel('rail')).toBe('Tog');
+    expect(mode.entryLabel('bus')).toBe('bus');
+  });
 });
 
 describe('id caption', () => {
