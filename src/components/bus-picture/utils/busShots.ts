@@ -22,6 +22,7 @@ interface Shot {
 
 /** Every picture on the page shares one stage — a browser keeps only so many WebGL contexts. */
 let stage: Promise<Stage> | null = null;
+let stageBg = ''; // the stage's light follows the colour behind the picture
 let queue: Promise<unknown> = Promise.resolve();
 const shots = new Map<string, Shot>();
 
@@ -41,10 +42,14 @@ const closeStage = () => {
 };
 
 const shoot = async (inp: BusInput, bg: string): Promise<string> => {
-  // shortcut: the stage keeps the first picture's bg (light vs dark ground) and the cache
-  // ignores bg, so a theme switch keeps the old light until the page lets go; key on bg if seen.
+  // Shots run one at a time, so a stage for another bg (a theme switch) is idle here.
+  if (stage && stageBg !== bg) {
+    void stage.then(s => s.stage.dispose()).catch(() => undefined);
+    stage = null;
+  }
   if (!stage) {
     const opening = openStage(bg);
+    stageBg = bg;
     stage = opening;
     // A stage that failed to open (no WebGL, a chunk 404) is tried again by the next shot.
     opening.catch(() => stage === opening && (stage = null));
@@ -68,7 +73,7 @@ const shoot = async (inp: BusInput, bg: string): Promise<string> => {
 /**
  * Holds the picture of one bus while its card is mounted (shot whether or not it
  * is scrolled into view). Shots run one at a time on the shared stage; the same
- * input gives the same picture.
+ * input on the same background gives the same picture.
  *
  * @param {BusInput} inp a valid bus input
  * @param {string} bg the colour behind the picture (hex or rgb), sets the light
@@ -77,7 +82,7 @@ const shoot = async (inp: BusInput, bg: string): Promise<string> => {
  *   queued and frees its URL
  */
 export const holdBusShot = (inp: BusInput, bg: string) => {
-  const key = JSON.stringify(inp);
+  const key = `${bg}|${JSON.stringify(inp)}`;
   let shot = shots.get(key);
   if (!shot) {
     const entry: Shot = { url: Promise.resolve(''), holders: 0 };

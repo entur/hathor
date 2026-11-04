@@ -15,9 +15,11 @@ const meta: Meta<typeof BusPicture> = {
           position: 'relative',
           width: AREA_W,
           aspectRatio: '16 / 10',
+          // As the card's area: the note places itself in `cqh`.
+          containerType: 'size',
           bgcolor: 'action.hover',
           '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
-          '&:has([data-card-media-compact])': { aspectRatio: 'auto' },
+          '&:has([data-card-media-compact])': { aspectRatio: 'auto', containerType: 'normal' },
         }}
       >
         <Story />
