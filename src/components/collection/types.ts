@@ -5,6 +5,7 @@
 import type { ReactNode } from 'react';
 import type { CardProps } from '@mui/material';
 import type { DataGridProps, GridDensity } from '@mui/x-data-grid';
+import { humanize } from './utils/humanize.ts';
 
 /** Value families a field can hold; `grid` (an array-of-objects relation) never shows in a collection. */
 type FieldKind =
@@ -89,6 +90,9 @@ export interface CollectionLabels {
   searchPlaceholder: string;
   /** Caption of the identity field (`netexId`): column, card, filter, chip. */
   id: string;
+  /** Caption of any other field no column entry names — card-only, filter-only or
+   *  default columns. Default: the key, humanized. */
+  field: (key: string) => string;
   filters: string;
   activeFilters: string;
   /** Appended to a filter chip's accessible name: it is a remove button. */
@@ -271,6 +275,7 @@ export const DEFAULT_LABELS: CollectionLabels = {
   search: 'Search',
   searchPlaceholder: 'Search these rows',
   id: 'Id',
+  field: humanize,
   filters: 'Filters',
   activeFilters: 'Active filters',
   removeFilter: 'remove filter',

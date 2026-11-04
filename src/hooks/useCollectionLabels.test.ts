@@ -2,8 +2,8 @@
 import { renderHook } from '@testing-library/react';
 import i18n from 'i18next';
 import { afterEach, describe, expect, it } from 'vitest';
-import en from '../../../locales/en/translation.json';
-import nb from '../../../locales/nb/translation.json';
+import en from '../locales/en/translation.json';
+import nb from '../locales/nb/translation.json';
 import { useCollectionLabels } from './useCollectionLabels.ts';
 
 const collectionKeys = (bundle: Record<string, string>) =>
@@ -11,9 +11,10 @@ const collectionKeys = (bundle: Record<string, string>) =>
 
 /** Every label as text — the counted ones with sample numbers. */
 const asText = () => {
-  const l = renderHook(() => useCollectionLabels()).result.current;
+  const l = renderHook(() => useCollectionLabels('vehicleType.field')).result.current;
   return JSON.stringify({
     ...l,
+    field: l.field('totalCapacity'),
     moreFilters: [l.moreFilters(1), l.moreFilters(2)],
     showingRows: l.showingRows(1, 25, 120),
     rowsPerPageMenu: l.rowsPerPageMenu(25),
@@ -35,5 +36,6 @@ describe('useCollectionLabels', () => {
     expect(text).not.toMatch(/collection\.|\{\{/);
     expect(text).toContain('Viser rad 1–25 av 120');
     expect(text).toContain('2 filtre til');
+    expect(text).toContain('Total kapasitet');
   });
 });

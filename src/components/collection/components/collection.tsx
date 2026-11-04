@@ -88,8 +88,14 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
 
     const L = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels]);
     // Keyed on identity, so a replaced `render` takes effect; hosts keep `columns` stable.
-    const cols = useMemo(() => resolveColumns(fields, columns, L.id), [columns, L.id]);
-    const resolvedCard = useMemo(() => resolveCard(fields, cols, card, L.id), [cols, card, L.id]);
+    const cols = useMemo(
+      () => resolveColumns(fields, columns, L.id, L.field),
+      [columns, L.id, L.field]
+    );
+    const resolvedCard = useMemo(
+      () => resolveCard(fields, cols, card, L.id, L.field),
+      [cols, card, L.id, L.field]
+    );
     // Named by the card's title (e.g. "Edit Flirt") in both views.
     // Keyed on what it reads, so an inline `card` or `labels` doesn't rebuild the grid's columns.
     const { title } = resolvedCard;
@@ -107,11 +113,11 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     // set on a field outside `columns` is applied here, gets a chip, and matches
     // what `toSobekFilter` sends in server mode.
     const filterCols = useMemo(() => {
-      const extra = resolveColumns(fields, Object.keys(filterFields), L.id).filter(
+      const extra = resolveColumns(fields, Object.keys(filterFields), L.id, L.field).filter(
         f => !cols.some(c => c.key === f.key)
       );
       return [...cols, ...extra];
-    }, [cols, L.id]);
+    }, [cols, L.id, L.field]);
 
     // The effective query, decided once for every reader (pipeline, toolbar,
     // grid, pager, and the next emit): a usable page size, and no sort on a

@@ -5,12 +5,8 @@ import { Typography } from '@mui/material';
 import type { PropulsionType, VehicleType } from '../../data/vehicle-types/types/vehicleTypeTypes';
 import type { VehicleTypeField } from '../../data/vehicle-types/types/vehicleTypeFields';
 import type { TransportMode } from '../../data/netex/transportMode';
-import {
-  VEHICLE_TYPE_CARD,
-  VehicleTypeCollection,
-  useVehicleTypeColumns,
-} from '../../data/vehicle-types/components/vehicleTypeCollectionConfig';
-import { useCollectionLabels, type EntityCollectionProps } from './index';
+import { VehicleTypeCollection } from '../../data/vehicle-types/components/vehicleTypeCollectionConfig';
+import type { EntityCollectionProps } from './index';
 import { ALL_TOOLS } from './types';
 
 const ROW_COUNT = 120;
@@ -43,32 +39,17 @@ const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
 
 type Props = EntityCollectionProps<VehicleType, VehicleTypeField>;
 
-const editHref = (r: VehicleType) => `${LIST}/${encodeURIComponent(r.id)}`;
-
 /** Where an Edit link lands: shows the id it opened. */
 function DetailsStandin() {
   return <Typography variant="h5">Details page for {useParams().id}</Typography>;
 }
 
-/** The vehicle-types page's collection — its mapping, columns, card and labels — under a
- *  router, so its Edit links navigate. */
+/** The vehicle-types page's own collection under a router, so its Edit links navigate. */
 function Demo(props: Props) {
-  const columns = useVehicleTypeColumns();
-  const labels = useCollectionLabels();
   return (
     <MemoryRouter initialEntries={[LIST]}>
       <Routes>
-        <Route
-          path={LIST}
-          element={
-            <VehicleTypeCollection
-              columns={columns}
-              card={VEHICLE_TYPE_CARD}
-              labels={labels}
-              {...props}
-            />
-          }
-        />
+        <Route path={LIST} element={<VehicleTypeCollection {...props} />} />
         <Route path={`${LIST}/:id`} element={<DetailsStandin />} />
       </Routes>
     </MemoryRouter>
@@ -89,8 +70,6 @@ const meta: Meta<typeof Demo> = {
   },
   args: {
     rows: ROWS,
-    editHref,
-    editState: { initialMode: 'edit' },
     tools: [...ALL_TOOLS],
     filterMode: 'client',
     onQueryChange: fn(),
@@ -101,7 +80,6 @@ const meta: Meta<typeof Demo> = {
     filterMode: { control: 'inline-radio', options: ['client', 'server'] },
     tools: { control: 'check', options: [...ALL_TOOLS] },
     rows: { control: false },
-    columns: { control: false },
   },
 };
 export default meta;

@@ -4,7 +4,6 @@
 export { createEntityCollection } from './components/collection.tsx';
 export type { EntityCollection } from './components/collection.tsx';
 export { toSobekFilter } from './utils/filters.ts';
-export { useCollectionLabels } from './hooks/useCollectionLabels.ts';
 export { defaultCollectionQuery } from './types.ts';
 export type {
   CollectionView,

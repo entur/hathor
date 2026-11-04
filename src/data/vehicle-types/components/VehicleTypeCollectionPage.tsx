@@ -1,26 +1,16 @@
 import { Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import CollectionShell from '../../../pages/shell/CollectionShell.tsx';
-import type { DetailsLinkState } from '../../../pages/shell/EntityDetailsShell.tsx';
 import { NEW_SELECTION } from '../../../hooks/useEntityEditor.ts';
 import { netexText } from '../../netex/multilingualString.ts';
 import { NEXT_BASE } from '../../../pages/shell/PageShell.tsx';
 import NewEntityFab from '../../../components/NewEntityFab.tsx';
 import { useVehicleTypes } from '../hooks/useVehicleTypes.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
-import { useCollectionLabels } from '../../../components/collection/index.ts';
-import type { VehicleType } from '../types/vehicleTypeTypes.ts';
-import {
-  VEHICLE_TYPE_CARD,
-  VehicleTypeCollection,
-  useVehicleTypeColumns,
-} from './vehicleTypeCollectionConfig.tsx';
+import { VehicleTypeCollection } from './vehicleTypeCollectionConfig.tsx';
 
 /** Collection route of vehicle types under the page shell. */
 export const VEHICLE_TYPES_NEXT_PATH = `${NEXT_BASE}/vehicle-types`;
-
-const EDIT_LINK_STATE: DetailsLinkState = { initialMode: 'edit' };
-const editHref = (vt: VehicleType) => `${VEHICLE_TYPES_NEXT_PATH}/${encodeURIComponent(vt.id)}`;
 
 /**
  * `/next/vehicle-types` — the vehicle-type collection page: {@link CollectionShell}
@@ -32,8 +22,6 @@ export default function VehicleTypeCollectionPage() {
   const { t } = useTranslation();
   const { allData, loading, error } = useVehicleTypes();
   const orgName = netexText(useOrganisationsContext().currentOrganisation?.name) ?? '';
-  const columns = useVehicleTypeColumns();
-  const labels = useCollectionLabels();
   const newAction = (
     <NewEntityFab
       label={t('vehicleTypes.actions.new')}
@@ -63,14 +51,7 @@ export default function VehicleTypeCollectionPage() {
         ) : undefined
       }
     >
-      <VehicleTypeCollection
-        rows={allData}
-        columns={columns}
-        card={VEHICLE_TYPE_CARD}
-        labels={labels}
-        editHref={editHref}
-        editState={EDIT_LINK_STATE}
-      />
+      <VehicleTypeCollection rows={allData} />
     </CollectionShell>
   );
 }

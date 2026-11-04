@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { rawValue } from '../../../components/collection/utils/values.ts';
 import type { VehicleType } from './vehicleTypeTypes.ts';
 import { vehicleTypeFields } from './vehicleTypeFields.ts';
 
@@ -41,14 +42,11 @@ const FULL: Required<VehicleType> = {
   vehicles: [],
 };
 
-const at = (row: unknown, path: readonly string[]) =>
-  path.reduce<unknown>((v, k) => (v as Record<string, unknown> | undefined)?.[k], row);
-
 describe('vehicleTypeFields', () => {
   it.each(Object.entries(vehicleTypeFields))(
     '%s reads a value off a full VehicleType',
     (_, spec) => {
-      expect(at(FULL, spec.path)).toBeDefined();
+      expect(rawValue(FULL, spec)).toBeDefined();
     }
   );
 });

@@ -64,9 +64,12 @@ export default function CollectionShell({
     };
     if (focusLink()) return;
     const observer = new MutationObserver(() => focusLink() && stop());
+    // shortcut: a row off the grid's first page is never drawn, so it waits FOCUS_WAIT_MS
+    // and lands on the h1; move to a collection-owned `focusEditId` (finds the row's page)
+    // when vehicles / deck-plans adopt the collection.
     const timer = setTimeout(() => {
       stop();
-      headingRef.current?.focus(); // not drawn, e.g. on another page of the grid
+      headingRef.current?.focus();
     }, FOCUS_WAIT_MS);
     const stop = () => {
       observer.disconnect();

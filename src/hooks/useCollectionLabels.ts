@@ -1,20 +1,23 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CollectionLabels } from '../types.ts';
+import { DEFAULT_LABELS, type CollectionLabels } from '../components/collection/types.ts';
 
 /**
  * The collection's UI strings in the current language — `collection.*` keys,
  * plus the shared `edit`. One source for every entity's collection page.
  *
+ * @param {string} [fieldKeyPrefix] i18n prefix of the entity's field captions, e.g.
+ *   `vehicleType.field` → `vehicleType.field.<key>`; omit for humanized keys
  * @returns {CollectionLabels} every label, stable until the language changes
  */
-export function useCollectionLabels(): CollectionLabels {
+export function useCollectionLabels(fieldKeyPrefix?: string): CollectionLabels {
   const { t } = useTranslation();
   return useMemo(
     () => ({
       search: t('collection.search'),
       searchPlaceholder: t('collection.searchPlaceholder'),
       id: t('collection.id'),
+      field: fieldKeyPrefix ? key => t(`${fieldKeyPrefix}.${key}`) : DEFAULT_LABELS.field,
       filters: t('collection.filters'),
       activeFilters: t('collection.activeFilters'),
       removeFilter: t('collection.removeFilter'),
@@ -50,6 +53,6 @@ export function useCollectionLabels(): CollectionLabels {
       yes: t('collection.yes'),
       no: t('collection.no'),
     }),
-    [t]
+    [t, fieldKeyPrefix]
   );
 }

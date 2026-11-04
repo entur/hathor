@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   createEntityCollection,
   type CardSpec,
   type EntityCollectionProps,
 } from '../../../components/collection/index.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
+import type { DetailsLinkState } from '../../../pages/shell/EntityDetailsShell.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import {
   vehicleTypeFields,
@@ -15,46 +15,54 @@ import {
 
 type Props = EntityCollectionProps<VehicleType, VehicleTypeField>;
 
-/** The vehicle-type collection: toolbar, grid and cards over the field mapping. */
-export const VehicleTypeCollection = createEntityCollection(vehicleTypeFields, {
+const Collection = createEntityCollection(vehicleTypeFields, {
   filterFields: vehicleTypeFilterFields,
 });
 
-/** Name first, id second (U4); then what tells two types apart at a glance. */
-const COLUMN_KEYS = [
+/** Name first, id second (U4); then what tells two types apart at a glance. Captions
+ *  come from `vehicleType.field.*` through the labels' `field`. */
+const COLUMNS: Props['columns'] = [
   'name',
   'id',
-  'transportMode',
+  {
+    field: 'transportMode',
+    // Icon + its text, not the icon alone (V4).
+    render: r =>
+      r.transportMode && <TransportModeIcon mode={r.transportMode} iconPosition="left" />,
+  },
   'deckPlan',
   'totalCapacity',
   'length',
   'lowFloor',
-] as const satisfies readonly VehicleTypeField[];
+];
 
-export const VEHICLE_TYPE_CARD: CardSpec<VehicleTypeField> = {
+const CARD: CardSpec<VehicleTypeField> = {
   title: 'name',
   subtitle: 'id',
   fields: ['transportMode', 'deckPlan', 'totalCapacity'],
 };
 
-/** Icon + its text, not the icon alone (V4). */
-const renderTransportMode = (r: VehicleType) =>
-  r.transportMode && <TransportModeIcon mode={r.transportMode} iconPosition="left" />;
+// Relative: resolves under whichever route lists the collection.
+const editHref = (vt: VehicleType) => encodeURIComponent(vt.id);
+const EDIT_LINK_STATE: DetailsLinkState = { initialMode: 'edit' };
 
 /**
- * The collection's columns, labelled from `vehicleType.field.*`.
+ * The vehicle-type collection, wired once for the page and its story: field +
+ * filter mapping, columns, card, localized labels and an Edit link per record.
  *
- * @returns {Props['columns']} the columns, stable until the language changes
+ * @param {Partial<Props> & Pick<Props, 'rows'>} props rows, plus any override
+ * @returns {JSX.Element} toolbar, grid and cards
  */
-export function useVehicleTypeColumns(): Props['columns'] {
-  const { t } = useTranslation();
-  return useMemo(
-    () =>
-      COLUMN_KEYS.map(field => ({
-        field,
-        label: t(`vehicleType.field.${field}`),
-        ...(field === 'transportMode' && { render: renderTransportMode }),
-      })),
-    [t]
+export function VehicleTypeCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
+  const labels = useCollectionLabels('vehicleType.field');
+  return (
+    <Collection
+      columns={COLUMNS}
+      card={CARD}
+      labels={labels}
+      editHref={editHref}
+      editState={EDIT_LINK_STATE}
+      {...props}
+    />
   );
 }
