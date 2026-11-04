@@ -4,6 +4,7 @@ import {
   type CardSpec,
   type EntityCollectionProps,
 } from '../../../components/collection/index.ts';
+import { BusPicture } from '../../../components/bus-picture/index.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
 import type { DetailsLinkState } from '../../../pages/shell/EntityDetailsShell.tsx';
@@ -45,13 +46,16 @@ const CARD: CardSpec<VehicleTypeField> = {
   fields: ['transportMode', 'deckPlan', 'totalCapacity'],
 };
 
+// Big cards: the type drawn as a bus, white; dims it lacks come from the standard bus.
+const busMedia = (vt: VehicleType) => <BusPicture dims={vt} paint="vehicleType" />;
+
 // Relative: resolves under whichever route lists the collection.
 const editHref = (vt: VehicleType) => encodeURIComponent(vt.id);
 const EDIT_LINK_STATE: DetailsLinkState = { initialMode: 'edit' };
 
 /**
  * The vehicle-type collection, wired once for the page and its story: field +
- * filter mapping, columns, card, localized labels and an Edit link per record.
+ * filter mapping, columns, card, bus picture, localized labels and an Edit link per record.
  *
  * @param {Partial<Props> & Pick<Props, 'rows'>} props rows, plus any override
  * @returns {JSX.Element} toolbar, grid and cards
@@ -62,6 +66,7 @@ export function VehicleTypeCollection(props: Partial<Props> & Pick<Props, 'rows'
     <Collection
       columns={COLUMNS}
       card={CARD}
+      cardMedia={busMedia}
       labels={labels}
       editHref={editHref}
       editState={EDIT_LINK_STATE}

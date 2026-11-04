@@ -367,5 +367,9 @@
   "collection.nextPage": "Go to next page",
   "collection.currentPage": "Current page:",
   "collection.yes": "Yes",
-  "collection.no": "No"
+  "collection.no": "No",
+  "busPicture.standard": "Drawn with standard {{dims}}",
+  "busPicture.dim.length": "length",
+  "busPicture.dim.width": "width",
+  "busPicture.dim.height": "height"
 }

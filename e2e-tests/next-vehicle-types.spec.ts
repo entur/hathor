@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { interceptVehicleTypesQuery } from './autosys-helpers';
+import { interceptGraphQLQuery, interceptVehicleTypesQuery, loadFixture } from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 const LIST = '/next/vehicle-types';
@@ -25,12 +25,15 @@ const FIXTURE_ROWS = 3;
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
  *     h1 on open and back to the row's Edit link on close (to New, closing the create page)
+ *   - large cards draw each type as a bus (#276); a type without a height says it is drawn
+ *     with the standard height
  *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
  *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery (vehicle-types-mock.json)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
- *   - skip-live: the deep-link test (fixture id); the empty-list test (mocked empty list)
+ *   - skip-live: the deep-link test (fixture id); the empty-list test (mocked empty list);
+ *     the bus-picture test (mocked row without a height)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -114,6 +117,20 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(empty).toContainText('No vehicle types for Mock Org yet');
     await expect(empty.getByTestId('create-vehicle-type-fab')).toBeVisible();
     await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
+  });
+
+  test('large cards draw each type as a bus; a type without a height says so', async ({ page }) => {
+    test.skip(IS_LIVE, 'mocked row without a height');
+    // A fresh read: editing it leaves the shared fixture alone.
+    const body = loadFixture('vehicle-types-mock.json') as {
+      data: { vehicleTypes: { content: { height?: number }[] } };
+    };
+    delete body.data.vehicleTypes.content[0].height;
+    await interceptGraphQLQuery(page, 'vehicleTypes', body);
+    await page.goto(LIST);
+    await page.getByRole('button', { name: 'Large cards' }).click();
+    await expect(page.locator('[data-card-media] img')).toHaveCount(FIXTURE_ROWS);
+    await expect(page.getByRole('note')).toHaveText(['Drawn with standard height']);
   });
 
   test('closing the create page returns focus to New', async ({ page }) => {

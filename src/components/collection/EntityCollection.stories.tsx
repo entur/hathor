@@ -20,6 +20,7 @@ const MODELS = ['Citea', '8900', 'Urbino', 'Lion', 'Flirt', 'Talent', 'Express']
 const PROPULSION: PropulsionType[] = ['COMBUSTION', 'ELECTRIC', 'HYBRID'];
 const CAPACITY_MIN = 40,
   CAPACITY_SPAN = 110; // a midibus to an articulated bus
+const NO_DIMS_EVERY = 4; // these rows have a length only: their bus says width and height are standard
 
 /** Varied but the same on every load: values cycle at co-prime strides. */
 const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
@@ -31,6 +32,7 @@ const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
       : { value: `${MAKES[i % MAKES.length]} ${MODELS[(i * 3) % MODELS.length]}` },
   transportMode: i % (BUS_SHARE + 1) ? 'BUS' : MODES[1 + ((i >> 2) % (MODES.length - 1))],
   length: 8 + ((i * 7) % 180) / 10,
+  ...(i % NO_DIMS_EVERY !== 3 && { width: 2.45 + (i % 3) / 10, height: 2.9 + (i % 4) / 5 }),
   lowFloor: i % 5 < 3,
   propulsionTypes: [PROPULSION[i % PROPULSION.length]],
   passengerCapacity: { totalCapacity: CAPACITY_MIN + ((i * 37) % CAPACITY_SPAN) },
@@ -91,7 +93,7 @@ export const Grid: Story = {};
 
 export const SmallCards: Story = { args: { view: 'cards-sm' } };
 
-/** No picture yet (`cardMedia` comes with the bus shot, pri 3): the area stays blank. */
+/** Each type drawn as a bus; one row in four has no width or height and says so. */
 export const BigCards: Story = { args: { view: 'cards-big' } };
 
 export const Empty: Story = { args: { rows: [] } };

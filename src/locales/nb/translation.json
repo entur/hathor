@@ -366,5 +366,9 @@
   "collection.nextPage": "Gå til neste side",
   "collection.currentPage": "Gjeldende side:",
   "collection.yes": "Ja",
-  "collection.no": "Nei"
+  "collection.no": "Nei",
+  "busPicture.standard": "Tegnet med standard {{dims}}",
+  "busPicture.dim.length": "lengde",
+  "busPicture.dim.width": "bredde",
+  "busPicture.dim.height": "høyde"
 }
