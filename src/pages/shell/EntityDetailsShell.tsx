@@ -7,8 +7,7 @@ import {
   type EditorMode,
   type EntityEditorHostProps,
 } from '../../hooks/useEntityEditor.ts';
-import { SEGMENT_SIZE as EDITOR_RAIL_WIDTH_PX } from '../../components/sidebar/EditorRail.tsx';
-import { EditorHeadingContext } from '../../components/sidebar/editorHeading.ts';
+import { EditorHostContext } from '../../components/sidebar/editorHost.ts';
 import type { CollectionLinkState } from './CollectionShell.tsx';
 
 /** Router state a link may carry to open the record straight in edit mode. */
@@ -35,7 +34,7 @@ interface EntityDetailsShellProps {
  * Focus moves to the editor's heading once it renders (after the record loads).
  *
  * @param {EntityDetailsShellProps} props The list route and the editor renderer.
- * @returns {JSX.Element} The editor, padded clear of the fixed `EditorRail`.
+ * @returns {JSX.Element} The editor, as a form page (`EditorHostContext`).
  */
 export default function EntityDetailsShell({ listPath, renderEditor }: EntityDetailsShellProps) {
   const { id = NEW_SELECTION } = useParams();
@@ -63,10 +62,10 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
   }, [id]);
 
   return (
-    <Box ref={frameRef} sx={{ height: '100%', pr: `${EDITOR_RAIL_WIDTH_PX}px` }}>
+    <Box ref={frameRef} sx={{ height: '100%' }}>
       {/* Keyed like useUrlEditorSelection: an org switch re-mounts a record's
           editor; the create pane keeps its draft. */}
-      <EditorHeadingContext.Provider value="h1">
+      <EditorHostContext.Provider value="page">
         <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
           {renderEditor({
             id: isNew ? '' : id,
@@ -82,7 +81,7 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
               }),
           })}
         </Fragment>
-      </EditorHeadingContext.Provider>
+      </EditorHostContext.Provider>
     </Box>
   );
 }

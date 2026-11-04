@@ -1,35 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mui/material';
-import { BusPicture } from './index.ts';
+import { BusPicture, BusPictureFrame } from './index.ts';
 
 const AREA_W = 360; // a card's width
 
-/** Stands in for a card's picture area: 16:10, an `<img>` child fills it. */
+/** In `BusPictureFrame`: a card's picture area, 16:10, the `<img>` filling it. */
 const meta: Meta<typeof BusPicture> = {
   title: 'components/BusPicture',
   component: BusPicture,
-  decorators: [
-    Story => (
-      <Box
-        sx={{
-          position: 'relative',
-          width: AREA_W,
-          aspectRatio: '16 / 10',
-          // As the card's area: the note places itself in `cqh`.
-          containerType: 'size',
-          bgcolor: 'action.hover',
-          '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
-          '&:has([data-card-media-compact])': {
-            aspectRatio: 'auto',
-            containerType: 'normal',
-            pt: 1.5,
-          },
-        }}
-      >
-        <Story />
-      </Box>
-    ),
-  ],
+  render: args => (
+    <Box sx={{ width: AREA_W }}>
+      <BusPictureFrame {...args} />
+    </Box>
+  ),
   args: { paint: 'vehicleType' },
   argTypes: { paint: { control: 'inline-radio', options: ['vehicleType', 'vehicle'] } },
 };

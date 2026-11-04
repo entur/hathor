@@ -1,5 +1,5 @@
-import { useContext, type ReactNode } from 'react';
-import { Box, Divider, Typography } from '@mui/material';
+import { useContext, useState, type ReactNode } from 'react';
+import { Box, Button, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
 import { FormLayout } from '../FormLayout.tsx';
@@ -8,8 +8,11 @@ import BodyState from '../feedback/BodyState.tsx';
 import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
 import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
+import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
+import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
+import { EditFooter } from '../form-layout/index.ts';
 import EditorRail from './EditorRail.tsx';
-import { EditorHeadingContext } from './editorHeading.ts';
+import { EditorHostContext } from './editorHost.ts';
 
 const RAIL_SIDE = 'right' as const;
 
@@ -40,8 +43,11 @@ interface EditorFrameProps<T, F> {
 
 /**
  * The chrome every entity editor shares: skeleton, not-found body, title +
- * {@link NetexId}, the read-error body, the save / deactivate snackbars and the
- * {@link EditorRail}. The feature supplies only its body.
+ * {@link NetexId}, the read-error body and the save / deactivate snackbars. The
+ * feature supplies only its body. In the sidebar the actions are the
+ * {@link EditorRail}; on a form page (`EditorHostContext`) they are text buttons
+ * in the title row — Edit, Close, Deactivate apart — and a sticky Save / Cancel
+ * {@link EditFooter} while editing (F5, #280). A create's Cancel leaves the page.
  *
  * @param {EditorFrameProps<T, F>} props Editor state, entity, copy keys, skeleton and body.
  * @returns {JSX.Element} The editor pane.
@@ -57,7 +63,23 @@ export default function EditorFrame<T, F>({
 }: EditorFrameProps<T, F>) {
   const { t } = useTranslation();
   const { rail } = editor;
-  const heading = useContext(EditorHeadingContext);
+  const page = useContext(EditorHostContext) === 'page';
+  const heading = page ? 'h1' : 'h6';
+  // The page's own confirms; the sidebar's live in its rail. Cancel on a create has no
+  // record to fall back to: it leaves, as Close does.
+  const discard = useDiscardConfirm(
+    rail.isDirty,
+    { close: rail.onCollapse, cancel: editor.isCreate ? rail.onCollapse : rail.onCancelEdit },
+    rail.onSave
+  );
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  // Before the record is shown, the sidebar keeps only its collapse.
+  const bareRail = !page && <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />;
+  const closeButton = (
+    <Button size="small" onClick={() => discard.ask('close')} data-testid="editor-page-close">
+      {t('close')}
+    </Button>
+  );
 
   if (editor.loading && !editor.record) {
     return (
@@ -71,7 +93,7 @@ export default function EditorFrame<T, F>({
         ) : (
           skeleton
         )}
-        <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />
+        {bareRail}
       </>
     );
   }
@@ -90,8 +112,9 @@ export default function EditorFrame<T, F>({
           <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
             {editor.id}
           </Typography>
+          {page && <Box sx={{ mt: 2 }}>{closeButton}</Box>}
         </Box>
-        <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />
+        {bareRail}
       </>
     );
   }
@@ -99,44 +122,74 @@ export default function EditorFrame<T, F>({
   const trimmed = entity.name?.value?.trim();
 
   return (
-    <Box sx={{ p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <FormLayout sx={{ mb: 1 }}>
-        <Typography
-          variant="h6"
-          component={heading}
-          noWrap
-          title={trimmed || undefined}
-          data-testid={`${testId}-details-title`}
-          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-        >
-          {trimmed || (
-            <>
-              {'[ '}
-              <Box
-                component="span"
-                sx={{
-                  color: 'text.disabled',
-                  fontStyle: 'italic',
-                  fontWeight: 400,
-                  letterSpacing: '0.02em',
-                }}
-              >
-                {t('common.unnamed')}
-              </Box>
-              {' ]'}
-            </>
+    <Box sx={{ p: page ? 0 : 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1 }}>
+        <FormLayout sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="h6"
+            component={heading}
+            noWrap
+            title={trimmed || undefined}
+            data-testid={`${testId}-details-title`}
+            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+          >
+            {trimmed || (
+              <>
+                {'[ '}
+                <Box
+                  component="span"
+                  sx={{
+                    color: 'text.disabled',
+                    fontStyle: 'italic',
+                    fontWeight: 400,
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {t('common.unnamed')}
+                </Box>
+                {' ]'}
+              </>
+            )}
+          </Typography>
+          {entity.id && (
+            <NetexId
+              id={entity.id}
+              version={entity.version}
+              copy="onHover"
+              size="small"
+              sx={{ justifySelf: 'start' }}
+            />
           )}
-        </Typography>
-        {entity.id && (
-          <NetexId
-            id={entity.id}
-            version={entity.version}
-            copy="onHover"
-            size="small"
-            sx={{ justifySelf: 'start' }}
-          />
+        </FormLayout>
+        {page && (
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+            {rail.mode === 'view' && rail.onEnterEdit && (
+              <Button
+                variant="contained"
+                size="small"
+                onClick={rail.onEnterEdit}
+                data-testid="editor-page-edit"
+              >
+                {t('edit')}
+              </Button>
+            )}
+            {closeButton}
+            {rail.mode === 'view' && rail.onDeactivate && (
+              <>
+                <Divider orientation="vertical" flexItem />
+                <Button
+                  size="small"
+                  color="error"
+                  onClick={() => setConfirmDeactivate(true)}
+                  data-testid="editor-page-deactivate"
+                >
+                  {t('common.deactivate')}
+                </Button>
+              </>
+            )}
+          </Stack>
         )}
-      </FormLayout>
+      </Box>
       <Divider sx={{ mb: 2 }} />
 
       <BodyState
@@ -159,14 +212,46 @@ export default function EditorFrame<T, F>({
         message={t(copy.deactivated)}
         onClose={rail.onCollapse}
       />
-      <EditorRail
-        side={RAIL_SIDE}
-        {...rail}
-        deactivateConfirmTitle={t(copy.deactivateTitle)}
-        deactivateConfirmMessage={t(copy.deactivateMessage)}
-        deactivateConfirmActionLabel={t('common.deactivate')}
-        canSubmit={canSubmit}
-      />
+      {page ? (
+        <>
+          {rail.mode === 'edit' && (
+            <EditFooter
+              dirty={rail.isDirty}
+              saving={rail.saving}
+              canSubmit={canSubmit}
+              onSave={() => void rail.onSave()}
+              onCancel={() => discard.ask('cancel')}
+              cancelWhenClean
+              labels={{
+                save: t('save'),
+                cancel: t('cancel'),
+                dirty: t('editFooter.dirty'),
+                saving: t('saving'),
+                missing: t('editFooter.missing'),
+              }}
+            />
+          )}
+          {discard.dialog}
+          <DeactivateDialog
+            open={confirmDeactivate}
+            onCancel={() => setConfirmDeactivate(false)}
+            onConfirm={() => {
+              setConfirmDeactivate(false);
+              rail.onDeactivate?.();
+            }}
+            title={t(copy.deactivateTitle)}
+            message={t(copy.deactivateMessage)}
+          />
+        </>
+      ) : (
+        <EditorRail
+          side={RAIL_SIDE}
+          {...rail}
+          deactivateConfirmTitle={t(copy.deactivateTitle)}
+          deactivateConfirmMessage={t(copy.deactivateMessage)}
+          canSubmit={canSubmit}
+        />
+      )}
     </Box>
   );
 }

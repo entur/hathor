@@ -28,6 +28,9 @@ export interface FormSectionsProps {
   /** Drawn above the TOC in column 3, e.g. the iteru-3dbus picture; the host sizes it.
    *  Below `lg` it sits above the form. Column 3 shows for it even without a TOC. */
   aside?: ReactNode;
+  /** The table of contents' name (its `nav` label and dropdown label); `SectionToc`'s
+   *  "Sections" when omitted. */
+  tocLabel?: string;
 }
 
 /**
@@ -38,10 +41,11 @@ export interface FormSectionsProps {
  * linked to scrolling both ways through `useSectionSpy`. An `aside` stacks above
  * the TOC in that column and scrolls with it.
  *
- * @param {FormSectionsProps} props the sections, the field renderer and the column-3 aside
+ * @param {FormSectionsProps} props the sections, the field renderer, the column-3 aside and
+ *   the TOC's label
  * @returns {JSX.Element} the laid-out form body, with its TOC and aside when it has them
  */
-export function FormSections({ sections, renderField, aside }: FormSectionsProps) {
+export function FormSections({ sections, renderField, aside, tocLabel }: FormSectionsProps) {
   const idPrefix = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const toc = tocSections(sections);
@@ -141,6 +145,7 @@ export function FormSections({ sections, renderField, aside }: FormSectionsProps
               sections={toc}
               active={shown}
               onSelect={select}
+              label={tocLabel}
               variant={wide ? 'list' : 'dropdown'}
               sx={
                 pinned

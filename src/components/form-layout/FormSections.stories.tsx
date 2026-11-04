@@ -1,68 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box, FormControlLabel, Paper, Switch, TextField, Typography } from '@mui/material';
-import type { FieldSpec } from '../collection/types.ts';
+import { CARD_MEDIA_ASPECT, type FieldSpec } from '../collection/index.ts';
+import en from '../../locales/en/translation.json';
+import {
+  vehicleTypeFields,
+  type VehicleTypeField,
+} from '../../data/vehicle-types/types/vehicleTypeFields.ts';
+import {
+  VEHICLE_TYPE_SECTION_LABEL,
+  vehicleTypeSections,
+  type VehicleTypeSection,
+} from '../../data/vehicle-types/types/vehicleTypeLayout.ts';
 import { FormSections, resolveSections, type Layout, type ResolvedField } from './index.ts';
 
 const MENU_W = 72; // the collapsed nav rail
 const FORM_MAX_W = 1140; // PageShell's `lg` container: form + its TOC column
-const MEDIA_ASPECT = '16 / 10'; // iteru-3dbus' BusView, and CardsView's card picture area
 
-/** Story-local field mappings; the real ones land with each form page (#252 pri 3–4). */
-const vehicleTypeFields = {
-  name: { kind: 'name', path: ['name'] },
-  transportMode: { kind: 'enum', path: ['transportMode'] },
-  lowFloor: { kind: 'switch', path: ['lowFloor'] },
-  length: { kind: 'number', path: ['length'] },
-  width: { kind: 'number', path: ['width'] },
-  height: { kind: 'number', path: ['height'] },
-  weight: { kind: 'number', path: ['weight'] },
-  propulsionTypes: { kind: 'enumMulti', path: ['propulsionTypes'] },
-  fuelTypes: { kind: 'enumMulti', path: ['fuelTypes'] },
-  selfPropelled: { kind: 'switch', path: ['selfPropelled'] },
-  euroClass: { kind: 'text', path: ['euroClass'] },
-  totalCapacity: { kind: 'number', path: ['passengerCapacity', 'totalCapacity'] },
-  seatingCapacity: { kind: 'number', path: ['passengerCapacity', 'seatingCapacity'] },
-  standingCapacity: { kind: 'number', path: ['passengerCapacity', 'standingCapacity'] },
-  pushchairCapacity: { kind: 'number', path: ['passengerCapacity', 'pushchairCapacity'] },
-  wheelchairPlaceCapacity: {
-    kind: 'number',
-    path: ['passengerCapacity', 'wheelchairPlaceCapacity'],
-  },
-  pramPlaceCapacity: { kind: 'number', path: ['passengerCapacity', 'pramPlaceCapacity'] },
-  bicycleRackCapacity: { kind: 'number', path: ['passengerCapacity', 'bicycleRackCapacity'] },
-  formDragCoefficient: { kind: 'number', path: ['formDragCoefficient'] },
-  rollResistanceCoefficient: { kind: 'number', path: ['rollResistanceCoefficient'] },
-  maximumEngineEffectKW: { kind: 'number', path: ['maximumEngineEffectKW'] },
-  hybridCategory: { kind: 'enum', path: ['hybridCategory'] },
-  vehicles: { kind: 'grid', path: ['vehicles'] },
-} satisfies Record<string, FieldSpec>;
-
-/** Dimensions split out of General, one row of four (plan decisions 1–2). */
-const vehicleTypeLayout: Layout<keyof typeof vehicleTypeFields> = {
-  General: ['name', 'transportMode', 'lowFloor'],
-  Dimensions: (['length', 'width', 'height', 'weight'] as const).map(field => ({
-    field,
-    width: '1/4' as const,
-  })),
-  'Propulsion and performance': ['propulsionTypes', 'fuelTypes', 'selfPropelled', 'euroClass'],
-  'Passenger capacity': [
-    'totalCapacity',
-    'seatingCapacity',
-    'standingCapacity',
-    'pushchairCapacity',
-    'wheelchairPlaceCapacity',
-    'pramPlaceCapacity',
-    'bicycleRackCapacity',
-  ],
-  Environment: [
-    'formDragCoefficient',
-    'rollResistanceCoefficient',
-    'maximumEngineEffectKW',
-    'hybridCategory',
-  ],
-  Vehicles: ['vehicles'],
-};
-
+/** The vehicle-types form page's own sections (#280), headed in English. */
+const vehicleTypeLayout: Layout<VehicleTypeField> = Object.fromEntries(
+  (Object.keys(vehicleTypeSections) as VehicleTypeSection[]).map(s => [
+    en[VEHICLE_TYPE_SECTION_LABEL[s] as keyof typeof en],
+    vehicleTypeSections[s],
+  ])
+);
+/** Story-local field mappings; the real ones land with each form page (#252 pri 4). */
 const vehicleFields = {
   name: { kind: 'text', path: ['name'] },
   registrationNumber: { kind: 'text', path: ['registrationNumber'] },
@@ -129,7 +90,7 @@ const control =
 const MediaPlaceholder = () => (
   <Box
     sx={{
-      aspectRatio: MEDIA_ASPECT,
+      aspectRatio: CARD_MEDIA_ASPECT,
       border: '1px dashed',
       borderColor: 'divider',
       borderRadius: 1,
@@ -138,7 +99,7 @@ const MediaPlaceholder = () => (
     }}
   >
     <Typography variant="caption" color="text.secondary">
-      3D bus · {MEDIA_ASPECT}
+      3D bus · {CARD_MEDIA_ASPECT}
     </Typography>
   </Box>
 );

@@ -1,19 +1,7 @@
 import { useState } from 'react';
-import {
-  Box,
-  CircularProgress,
-  Divider,
-  IconButton,
-  Tooltip,
-  useTheme,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-} from '@mui/material';
-import DiscardDialog from '../dialogs/DiscardDialog.tsx';
+import { Box, CircularProgress, Divider, IconButton, Tooltip, useTheme } from '@mui/material';
+import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
+import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
 import {
   KeyboardDoubleArrowLeft,
   KeyboardDoubleArrowRight,
@@ -26,8 +14,8 @@ import { useTranslation } from 'react-i18next';
 import { useLiftEditorClose } from '../../hooks/useLiftEditorClose.ts';
 import type { Side } from './Sidebar.tsx';
 
-/** Rail width in px; a full-page host pads its content clear of it. */
-export const SEGMENT_SIZE = 40;
+/** Rail width in px. */
+const SEGMENT_SIZE = 40;
 const SPINNER_SIZE = 18;
 const DIVIDER_OPACITY = 0.35;
 
@@ -88,7 +76,6 @@ export default function EditorRail({
 }: EditorRailProps) {
   const theme = useTheme();
   const { t } = useTranslation();
-  const [confirming, setConfirming] = useState<'collapse' | 'cancel' | null>(null);
   const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
 
   const isEdit = mode === 'edit';
@@ -99,29 +86,16 @@ export default function EditorRail({
   const collapseIcon =
     side === 'right' ? <KeyboardDoubleArrowRight /> : <KeyboardDoubleArrowLeft />;
 
-  const handleCollapseClick = () => {
-    if (isDirty) setConfirming('collapse');
-    else onCollapse();
-  };
+  const discard = useDiscardConfirm(
+    isDirty,
+    { collapse: onCollapse, cancel: onCancelEdit },
+    onSave
+  );
+  const handleCollapseClick = () => discard.ask('collapse');
   // Chrome that dismisses the pane (the mobile Drawer) closes through here too.
   useLiftEditorClose(handleCollapseClick);
 
-  const handleCancelClick = () => {
-    if (isDirty) setConfirming('cancel');
-    else onCancelEdit?.();
-  };
-
-  const handleDiscard = () => {
-    const which = confirming;
-    setConfirming(null);
-    if (which === 'collapse') onCollapse();
-    else if (which === 'cancel') onCancelEdit?.();
-  };
-
-  const handleSaveFromDialog = async () => {
-    setConfirming(null);
-    if (onSave) await onSave();
-  };
+  const handleCancelClick = () => discard.ask('cancel');
 
   const handleDeactivateClick = () => {
     if (!onDeactivate) return;
@@ -265,27 +239,16 @@ export default function EditorRail({
         )}
       </Box>
 
-      <DiscardDialog
-        open={confirming != null}
-        onCancel={() => setConfirming(null)}
-        onDiscard={handleDiscard}
-        onSave={onSave ? handleSaveFromDialog : undefined}
-      />
+      {discard.dialog}
 
-      <Dialog open={confirmDeactivateOpen} onClose={() => setConfirmDeactivateOpen(false)}>
-        <DialogTitle>{deactivateConfirmTitle ?? t('common.deactivateConfirmTitle')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {deactivateConfirmMessage ?? t('common.deactivateConfirmMessage')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDeactivateOpen(false)}>{t('cancel')}</Button>
-          <Button color="error" variant="contained" onClick={handleDeactivateConfirm}>
-            {deactivateConfirmActionLabel ?? t('common.deactivate')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeactivateDialog
+        open={confirmDeactivateOpen}
+        onCancel={() => setConfirmDeactivateOpen(false)}
+        onConfirm={handleDeactivateConfirm}
+        title={deactivateConfirmTitle}
+        message={deactivateConfirmMessage}
+        actionLabel={deactivateConfirmActionLabel}
+      />
     </>
   );
 }

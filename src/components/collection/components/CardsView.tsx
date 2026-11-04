@@ -15,16 +15,20 @@ import {
   type CardProps,
   type TypographyProps,
 } from '@mui/material';
-import type { CollectionLabels, Column, KeyedRow, ResolvedCard, RowEdit } from '../types.ts';
+import {
+  CARD_MEDIA_ASPECT,
+  type CollectionLabels,
+  type Column,
+  type KeyedRow,
+  type ResolvedCard,
+  type RowEdit,
+} from '../types.ts';
 import { displayValue, EMPTY_TEXT, fullTitle, valueList } from '../utils/values.ts';
 import { EditLink } from './EditLink.tsx';
 
 // A card never gets narrower than this (or the whole row, on a screen narrower
 // than that); the row wraps instead. A card with a picture needs more room.
 const CARD_MIN_PX = { text: 260, picture: 320 } as const;
-// The picture's shape at the card's width: the 3D preview's box. A card's
-// picture area too, unless a height is reserved for it.
-const MEDIA_ASPECT = '16 / 10';
 // The heading over a card's picture sits at its bottom edge — on the 3D
 // shot's light ground plane — over a fade of the card's own paper rising from
 // the edge, opaque enough at the text to read over any picture.
@@ -130,7 +134,7 @@ const CardMediaArea = ({
       position: 'relative',
       // Explicit, or a reserved height would size the width from the ratio.
       width: '100%',
-      aspectRatio: MEDIA_ASPECT,
+      aspectRatio: CARD_MEDIA_ASPECT,
       height: reservedHeightForImg,
       // So media can place things in the part that shows (`cqh`), not in the
       // whole picture, whose top a reserved height cuts.
@@ -172,7 +176,7 @@ const CardMediaArea = ({
         position: 'absolute',
         insetInline: 0,
         bottom: 0,
-        aspectRatio: MEDIA_ASPECT,
+        aspectRatio: CARD_MEDIA_ASPECT,
         '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
       }}
     >

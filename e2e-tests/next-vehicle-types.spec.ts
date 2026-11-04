@@ -19,6 +19,11 @@ const FULL_PAGE = 25;
 // On the first page, below the fold of the grid at the default viewport.
 const BELOW_FOLD = 20;
 
+/** The form page's sticky footer Save. */
+const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exact: true });
+/** The form page's table of contents (the list from `lg` up). */
+const toc = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
+
 /** Rail types `Type 00` … `Type n-1`, padded so the name sort keeps their order: their cards
  *  get a line of text, no WebGL shot. */
 const interceptRailRows = (page: Page, n: number) =>
@@ -38,7 +43,7 @@ const interceptRailRows = (page: Page, n: number) =>
  *
  * Workflow:
  *   /next/vehicle-types → collection grid (#271) with an Edit link per row → Edit opens
- *   /next/vehicle-types/<id> in edit mode → editor-rail collapse returns to the list.
+ *   /next/vehicle-types/<id> in edit mode → the page's Close returns to the list.
  * Covers:
  *   - the header search is hidden on shell routes (still shown on the legacy list), incl.
  *     browser Back from a legacy list with the mobile search open
@@ -55,8 +60,11 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - collection frame (#278): the page doesn't scroll; the rows scroll between the toolbar and
  *     the pager, which stay in view, in the grid and in cards, at desktop and phone width; on a
  *     phone held sideways the rows keep a floor and the page scrolls instead
- *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
- *     Cancel returning to where you came from are fixme until the form-page slice of #252
+ *   - form page (#280): sections with a table of contents that jumps to one; Edit → Save /
+ *     Cancel in a sticky footer, Cancel asks before discarding and returns to view mode;
+ *     Deactivate asks first
+ *   - create page (internal user test): no Edit, no New button, no Vehicles section; Cancel
+ *     returns to the list
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery (vehicle-types-mock.json)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
@@ -110,9 +118,9 @@ test.describe('/next/vehicle-types page shell', () => {
     const title = page.getByTestId('vehicle-type-details-title');
     await expect(title).toBeFocused();
     await expect(title).toHaveJSProperty('tagName', 'H1');
-    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
+    await expect(footerSave(page)).toBeVisible();
 
-    await page.getByTestId('editor-rail-collapse').click();
+    await page.getByTestId('editor-page-close').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
     await expect(firstEdit).toBeFocused();
   });
@@ -261,7 +269,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await page.goto(LIST);
     const edit = page.getByRole('link', { name: `Edit Type ${BELOW_FOLD}`, exact: true });
     await edit.click();
-    await page.getByTestId('editor-rail-collapse').click();
+    await page.getByTestId('editor-page-close').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
     await expect(edit).toBeFocused();
   });
@@ -271,30 +279,28 @@ test.describe('/next/vehicle-types page shell', () => {
     await selectFirstOrg(page);
     const newAction = page.getByTestId('create-vehicle-type-fab');
     await newAction.click();
-    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
-    await page.getByTestId('editor-rail-collapse').click();
+    await expect(footerSave(page)).toBeVisible();
+    await page.getByTestId('editor-page-close').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
     await expect(newAction).toBeFocused();
   });
 
-  test('the create page shows no edit pen and no New button', async ({ page }) => {
+  test('the create page shows no Edit, no New button and no Vehicles section', async ({ page }) => {
     await page.goto(`${LIST}/new`);
     await selectFirstOrg(page);
-    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
-    expect(await page.getByTestId('editor-rail-edit').count()).toBe(0);
+    await expect(footerSave(page)).toBeVisible();
+    expect(await page.getByTestId('editor-page-edit').count()).toBe(0);
     expect(await page.getByTestId('create-vehicle-type-fab').count()).toBe(0);
+    await expect(toc(page).getByRole('button', { name: 'Environment' })).toBeVisible();
+    expect(await toc(page).getByRole('button', { name: 'Vehicles' }).count()).toBe(0);
   });
 
-  test.fixme('the create page hides the Vehicles tab; Cancel returns to where you came from', async ({
-    page,
-  }) => {
-    // Internal user test, create mode: fixed in the form-page slice of #252.
+  test("the create page's Cancel returns to the list", async ({ page }) => {
     await page.goto(LIST);
     await selectFirstOrg(page);
     await page.getByTestId('create-vehicle-type-fab').click();
-    await expect(page.getByTestId('editor-rail-save')).toBeVisible();
-    expect(await page.getByRole('tab', { name: 'Vehicles' }).count()).toBe(0);
-    await page.getByTestId('editor-rail-cancel').click();
+    await expect(footerSave(page)).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
   });
 
@@ -302,7 +308,43 @@ test.describe('/next/vehicle-types page shell', () => {
     test.skip(IS_LIVE, 'fixture id');
     await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha');
-    await expect(page.getByTestId('editor-rail-edit')).toBeVisible();
+    await expect(page.getByTestId('editor-page-edit')).toBeVisible();
+    expect(await footerSave(page).count()).toBe(0);
+  });
+
+  test('the table of contents jumps to a section', async ({ page }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    const capacity = page.getByRole('heading', { name: 'Passenger Capacity' });
+    await expect(capacity).not.toBeInViewport();
+    await toc(page).getByRole('button', { name: 'Passenger Capacity' }).click();
+    await expect(capacity).toBeInViewport();
+  });
+
+  test('Edit → Cancel asks before discarding and returns to view mode', async ({ page }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    await page.getByTestId('editor-page-edit').click();
+    const name = page.locator('#vtype-name');
+    await name.fill('Type Omega');
+    await expect(page.getByText('Unsaved changes')).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
+    await expect(name).toHaveValue('Type Alpha');
+    await expect(page.getByTestId('editor-page-edit')).toBeVisible();
+    // Retried: the discard dialog's own Save lingers while it fades out.
+    await expect(footerSave(page)).toHaveCount(0);
+  });
+
+  test('Deactivate asks first', async ({ page }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    await page.getByTestId('editor-page-deactivate').click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByTestId('editor-page-deactivate')).toBeVisible();
   });
 });
 

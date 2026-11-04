@@ -371,5 +371,9 @@
   "busPicture.dim.width": "bredde",
   "busPicture.dim.height": "høyde",
   "busPicture.unsupported": "Bilde støttes ikke for {{mode}}",
-  "busPicture.unavailable": "Bilde utilgjengelig"
+  "busPicture.unavailable": "Bilde utilgjengelig",
+  "editFooter.dirty": "Ulagrede endringer",
+  "editFooter.missing": "Obligatoriske felt mangler",
+  "vehicleType.section.propulsion": "Fremdrift og ytelse",
+  "formSections.toc": "Seksjoner"
 }

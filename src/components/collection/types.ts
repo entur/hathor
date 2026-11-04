@@ -268,6 +268,10 @@ export const usablePageSize = (size: number): number =>
 export const pageSizesFor = (size: number): number[] =>
   PAGE_SIZES.includes(size) ? PAGE_SIZES : [...PAGE_SIZES, size].sort((a, b) => a - b);
 
+/** A card's picture area: the 3D bus shot's shape (iteru-3dbus' BusView), also where a
+ *  picture sits outside a card (`BusPictureFrame`). */
+export const CARD_MEDIA_ASPECT = '16 / 10';
+
 export const ALL_TOOLS: readonly CollectionTool[] = [
   'search',
   'filter',
