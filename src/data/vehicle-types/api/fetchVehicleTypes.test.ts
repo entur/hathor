@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchVehicleTypes } from './fetchVehicleTypes.ts';
+import { fetchVehicleType, fetchVehicleTypes } from './fetchVehicleTypes.ts';
 import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
 
 vi.mock('../../../graphql/vehicles/queries/fetchVehicleTypes.ts', () => ({
@@ -17,6 +17,25 @@ describe('fetchVehicleTypes', () => {
     mockedRequest.mockReset();
   });
 
+  it('filters on PHYSICAL — Sobek requires vehicleTypeKind (sobek#232)', async () => {
+    mockedRequest.mockResolvedValue(mkPage([]));
+    await fetchVehicleTypes('http://x', 'NMR:Organisation:1', null);
+    expect(mockedRequest.mock.calls[0][2]?.filter).toEqual({
+      dataOwnerRef: 'NMR:Organisation:1',
+      vehicleTypeKind: 'PHYSICAL',
+    });
+  });
+
+  it('fetch by id filters on the kind read from the id', async () => {
+    mockedRequest.mockResolvedValue(mkPage([]));
+    await fetchVehicleType('CVT:VehicleType:9', 'http://x', 'NMR:Organisation:1', null);
+    expect(mockedRequest.mock.calls[0][2]?.filter).toEqual({
+      netexIds: ['CVT:VehicleType:9'],
+      vehicleTypeKind: 'CONTRACTUAL',
+      dataOwnerRef: 'NMR:Organisation:1',
+    });
+  });
+
   it('returns an empty array when content is empty', async () => {
     mockedRequest.mockResolvedValue(mkPage([]));
     const ctx = await fetchVehicleTypes('http://x', null);
@@ -29,6 +48,7 @@ describe('fetchVehicleTypes', () => {
         {
           netexId: 'NMR:VehicleType:rail',
           version: 1,
+          vehicleTypeKind: 'PHYSICAL',
           name: { value: 'Rail Type' },
           shortName: { value: 'RT' },
           transportMode: 'RAIL',
@@ -54,6 +74,7 @@ describe('fetchVehicleTypes', () => {
       {
         id: 'NMR:VehicleType:rail',
         version: 1,
+        vehicleTypeKind: 'PHYSICAL',
         name: { value: 'Rail Type' },
         shortName: { value: 'RT' },
         transportMode: 'RAIL',

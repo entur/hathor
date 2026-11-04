@@ -5,6 +5,7 @@
         {
           "netexId": "NMR:VehicleType:1",
           "version": 1,
+          "vehicleTypeKind": "PHYSICAL",
           "name": { "value": "Type Alpha" },
           "shortName": null,
           "transportMode": "BUS",
@@ -51,6 +52,7 @@
         {
           "netexId": "NMR:VehicleType:2",
           "version": 1,
+          "vehicleTypeKind": "PHYSICAL",
           "name": { "value": "Type Beta", "lang": "nb" },
           "shortName": null,
           "transportMode": "RAIL",
@@ -97,6 +99,7 @@
         {
           "netexId": "NMR:VehicleType:3",
           "version": 1,
+          "vehicleTypeKind": "PHYSICAL",
           "name": { "value": "Type Gamma" },
           "shortName": null,
           "transportMode": null,

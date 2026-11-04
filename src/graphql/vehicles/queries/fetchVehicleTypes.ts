@@ -7,6 +7,7 @@ import type {
   HybridCategory,
   PassengerCapacity,
   PropulsionType,
+  VehicleTypeKind,
 } from '../../../data/vehicle-types/types/vehicleTypeTypes.ts';
 
 const vehicleTypesDocument = gql`
@@ -15,6 +16,7 @@ const vehicleTypesDocument = gql`
       content {
         netexId
         version
+        vehicleTypeKind
         name {
           value
         }
@@ -77,6 +79,7 @@ const vehicleTypesDocument = gql`
 export type VehicleTypeFilter = {
   netexIds?: string[];
   transportModes?: string[];
+  vehicleTypeKind: VehicleTypeKind;
   dataOwnerRef: string;
 };
 
@@ -93,6 +96,7 @@ export type VehicleTypesQuery = {
     content: {
       netexId: string;
       version: number;
+      vehicleTypeKind: VehicleTypeKind;
       name?: MultilingualString | null;
       shortName?: MultilingualString | null;
       description?: MultilingualString | null;

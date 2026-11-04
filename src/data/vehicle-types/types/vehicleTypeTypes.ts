@@ -37,9 +37,13 @@ export const FUEL_TYPES = [
 /** Sobek `HybridCategory` enum. */
 export const HYBRID_CATEGORIES = ['CHARGEABLE', 'NONCHARGEABLE'] as const;
 
+/** Sobek `VehicleTypeKind` enum — fixed at creation; vehicles may only refer to PHYSICAL. */
+export const VEHICLE_TYPE_KINDS = ['PHYSICAL', 'CONTRACTUAL'] as const;
+
 export type PropulsionType = (typeof PROPULSION_TYPES)[number];
 export type FuelType = (typeof FUEL_TYPES)[number];
 export type HybridCategory = (typeof HYBRID_CATEGORIES)[number];
+export type VehicleTypeKind = (typeof VEHICLE_TYPE_KINDS)[number];
 
 /** Sobek `PassengerCapacity` — all counts optional. */
 export type PassengerCapacity = {
@@ -55,6 +59,7 @@ export type PassengerCapacity = {
 export type VehicleType = {
   id: string;
   version: number;
+  vehicleTypeKind?: VehicleTypeKind;
   name?: MultilingualString;
   shortName?: MultilingualString;
   description?: MultilingualString;

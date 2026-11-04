@@ -86,16 +86,32 @@ describe('serializeVehicleType', () => {
     expect('vehicles' in input).toBe(false);
   });
 
+  it('sends vehicleTypeKind: the held kind, else read from the id (create → PHYSICAL)', () => {
+    // Sobek requires the kind on create and rejects a changed kind on update.
+    expect(serializeVehicleType({ id: '', version: 0 }, OWNER).vehicleTypeKind).toBe('PHYSICAL');
+    expect(
+      serializeVehicleType({ id: 'CVT:VehicleType:4', version: 1 }, OWNER).vehicleTypeKind
+    ).toBe('CONTRACTUAL');
+    expect(
+      serializeVehicleType(
+        { id: 'NMR:VehicleType:4', version: 1, vehicleTypeKind: 'CONTRACTUAL' },
+        OWNER
+      ).vehicleTypeKind
+    ).toBe('CONTRACTUAL');
+  });
+
   it('round-trips netexId through project∘serialize', () => {
     const wire: VehicleTypesQuery['vehicleTypes']['content'][number] = {
       netexId: 'NMR:VehicleType:rail',
       version: 1,
+      vehicleTypeKind: 'PHYSICAL',
       name: { value: 'Rail Type' },
       euroClass: 'EURO6',
       deckPlan: { netexId: 'NMR:DeckPlan:DP1', name: { value: 'Standard' } },
     };
     const input = serializeVehicleType(projectVehicleType(wire), OWNER);
     expect(input.netexId).toBe('NMR:VehicleType:rail');
+    expect(input.vehicleTypeKind).toBe('PHYSICAL');
     expect(input.name).toEqual({ value: 'Rail Type' });
     expect(input.deckPlan).toEqual({ netexId: 'NMR:DeckPlan:DP1' });
   });

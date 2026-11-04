@@ -1,5 +1,6 @@
 import { fetchVehicleTypesRequest } from './fetchVehicleTypes.ts';
 import type { AccessToken } from '../../../auth';
+import { vehicleTypeKindOf } from '../../../data/vehicle-types/utils/vehicleTypeKind.ts';
 
 export const fetchVehicleTypeRequest = (
   applicationBaseUrl: string,
@@ -9,5 +10,5 @@ export const fetchVehicleTypeRequest = (
 ) =>
   fetchVehicleTypesRequest(applicationBaseUrl, token, {
     size: 1,
-    filter: { netexIds: [id], dataOwnerRef },
+    filter: { netexIds: [id], vehicleTypeKind: vehicleTypeKindOf(id), dataOwnerRef },
   });

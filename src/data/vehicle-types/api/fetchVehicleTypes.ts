@@ -10,11 +10,13 @@ import type {
   PropulsionType,
   FuelType,
   HybridCategory,
+  VehicleTypeKind,
 } from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import type { MultilingualString } from '../../netex/multilingualString.ts';
 import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
+import { vehicleTypeKindOf } from '../utils/vehicleTypeKind.ts';
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
 const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
@@ -27,6 +29,7 @@ export const projectVehicleType = (
 ): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
+  vehicleTypeKind: vt.vehicleTypeKind,
   name: vt.name ?? undefined,
   shortName: vt.shortName ?? undefined,
   description: vt.description ?? undefined,
@@ -75,6 +78,8 @@ export interface VehicleTypeInput {
   netexId?: string | null;
   /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleTypeInput`. */
   dataOwnerRef: string;
+  /** Required on create; on update it must repeat the stored kind (immutable). */
+  vehicleTypeKind?: VehicleTypeKind | null;
   name?: MultilingualString | null;
   shortName?: MultilingualString | null;
   description?: MultilingualString | null;
@@ -125,6 +130,7 @@ export interface VehicleTypeInput {
 export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
   netexId: vt.id === '' ? undefined : vt.id,
   dataOwnerRef,
+  vehicleTypeKind: vt.vehicleTypeKind ?? vehicleTypeKindOf(vt.id),
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,
   description: vt.description ?? null,
@@ -164,7 +170,8 @@ export const fetchVehicleTypes = async (
 ): Promise<VehicleTypeContext> => {
   const raw = await fetchVehicleTypesRequest(applicationBaseUrl, token, {
     size: FETCH_ALL_SIZE,
-    filter: { dataOwnerRef },
+    // shortcut: PHYSICAL only (the filter has no "both"); contractual types are an open question on #274.
+    filter: { dataOwnerRef, vehicleTypeKind: 'PHYSICAL' },
   });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
 };
