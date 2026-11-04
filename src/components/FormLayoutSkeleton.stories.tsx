@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import FormLayoutSkeleton from './FormLayoutSkeleton';
 
 const meta: Meta<typeof FormLayoutSkeleton> = {
-  title: 'prev-form-layout/FormLayoutSkeleton',
+  title: 'components/prev-form-layout/FormLayoutSkeleton',
   component: FormLayoutSkeleton,
   parameters: {
     layout: 'padded',
