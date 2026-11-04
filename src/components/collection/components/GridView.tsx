@@ -169,7 +169,10 @@ export function GridView({
       // second filter over just this page (`filterMode="server"` stops a host
       // `filterModel` too, not only the UI), and a page size the pager doesn't
       // list (or above 100) breaks the community grid. The collection draws
-      // the pager under both views, so the grid's footer stays off.
+      // the pager under both views, so the grid's footer stays off. Every row of
+      // the page (at most 100) is drawn, so an Edit link below the fold is there
+      // to take focus back from the details page.
+      disableVirtualization
       disableColumnFilter
       hideFooter
       filterMode="server"
