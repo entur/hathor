@@ -201,21 +201,25 @@ test.describe('/next/vehicle-types page shell', () => {
       const view = page.getByRole('group', { name: 'View' });
       const pager = page.getByRole('navigation', { name: 'Pagination' });
       const rows = page.getByTestId('collection-rows');
-      const pageScrolls = () =>
-        page.evaluate(() => document.documentElement.scrollHeight > window.innerHeight);
+      const last = rows.getByText(`Type ${FULL_PAGE - 1}`, { exact: true });
+      // Every scroller outside the rows box: the page, the app's content, the shell's body.
+      const scrolledOutside = () =>
+        page.evaluate(
+          () =>
+            [...document.querySelectorAll('*')].filter(
+              el => el.scrollTop > 0 && !el.closest('[data-testid="collection-rows"]')
+            ).length
+        );
 
       for (const name of ['Table', 'Cards']) {
         await view.getByRole('button', { name }).click();
-        // The grid scrolls its own body under fixed headers (and draws only the rows near the
-        // view, so no row can be scrolled to); cards scroll in the rows box.
-        const scroller = name === 'Table' ? rows.locator('.MuiDataGrid-virtualScroller') : rows;
-        await expect
-          .poll(() => scroller.evaluate(el => el.scrollHeight > el.clientHeight))
-          .toBe(true);
-        await scroller.evaluate(el => el.scrollTo(0, el.scrollHeight));
+        await expect(last).not.toBeInViewport();
+        // Its nearest scroller brings it in: the grid's body, or the rows box for cards.
+        await last.scrollIntoViewIfNeeded();
+        await expect(last).toBeInViewport();
         await expect(view).toBeInViewport();
         await expect(pager).toBeInViewport();
-        expect(await pageScrolls()).toBe(false);
+        expect(await scrolledOutside()).toBe(0);
       }
     });
   }
