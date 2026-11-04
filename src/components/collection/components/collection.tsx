@@ -4,7 +4,7 @@
  * or as cards. It owns the query (or mirrors a controlled one), runs the shared
  * pipeline once, and hands the same keyed page to whichever view is active.
  */
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
 import type { GridDensity } from '@mui/x-data-grid';
 import {
@@ -179,6 +179,13 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
 
     const activeTools = tools === false ? [] : (tools ?? ALL_TOOLS);
 
+    // A new page, search, filter, sort or view starts at its first row. (The grid scrolls
+    // its own body back on a page change; this is the cards' scroller.)
+    const rowsRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      if (rowsRef.current) rowsRef.current.scrollTop = 0;
+    }, [query, view]);
+
     return (
       // In a parent of set height the toolbar and pager stay put and the rows scroll
       // between them (#278); in any other, the collection grows to its content.
@@ -211,6 +218,7 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
           />
         ) : null}
         <Box
+          ref={rowsRef}
           data-testid="collection-rows"
           sx={{
             flex: 1,

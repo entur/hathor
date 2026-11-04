@@ -17,14 +17,15 @@ const FULL_PAGE = 25;
 // On the first page, below the fold of the grid at the default viewport.
 const BELOW_FOLD = 20;
 
-/** Rail types `Type 0` … `Type n-1`: their cards get a line of text, no WebGL shot. */
+/** Rail types `Type 00` … `Type n-1`, padded so the name sort keeps their order: their cards
+ *  get a line of text, no WebGL shot. */
 const interceptRailRows = (page: Page, n: number) =>
   interceptVehicleTypeRows(
     page,
     Array.from({ length: n }, (_, i) => ({
       netexId: `NMR:VehicleType:${100 + i}`,
       version: 1,
-      name: { value: `Type ${i}` },
+      name: { value: `Type ${String(i).padStart(2, '0')}` },
       transportMode: 'RAIL',
     }))
   );
@@ -45,7 +46,7 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
  *     h1 on open and back to the row's Edit link on close, also a row below the grid's fold
- *     (to New, closing the create page)
+ *     (to New, closing the create page); a new page of cards starts at its first card
  *   - cards draw a bus or coach type as a bus (#276); a type without a height says it is
  *     drawn with the standard height; a rail type gets "Picture not supported" instead; without
  *     WebGL 2 (forced off in its own test) the drawn rows say "Picture unavailable"
@@ -218,6 +219,18 @@ test.describe('/next/vehicle-types page shell', () => {
       }
     });
   }
+
+  test('a new page of cards starts at its first card', async ({ page }) => {
+    test.skip(IS_LIVE, 'mocked pages');
+    await interceptRailRows(page, 2 * FULL_PAGE);
+    await page.goto(LIST);
+    await page.getByRole('button', { name: 'Cards' }).click();
+    const rows = page.getByTestId('collection-rows');
+    await rows.getByText(`Type ${FULL_PAGE - 1}`, { exact: true }).scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: 'Go to next page' }).click();
+    await expect(rows.getByText(`Type ${FULL_PAGE}`, { exact: true })).toBeInViewport();
+    expect(await rows.evaluate(el => el.scrollTop)).toBe(0);
+  });
 
   test('focus returns to the Edit link of a row below the fold', async ({ page }) => {
     test.skip(IS_LIVE, 'a mocked full page');
