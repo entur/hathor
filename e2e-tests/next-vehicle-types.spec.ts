@@ -136,8 +136,10 @@ test.describe('/next/vehicle-types page shell', () => {
     await page.getByRole('button', { name: 'Large cards' }).click();
     await expect(page.getByRole('note')).toHaveText(['Drawn with standard height']);
     await expect(page.getByText('Picture not supported for Rail')).toBeVisible();
-    // The pictures need WebGL, which a GPU-less CI browser may not offer: the text above doesn't.
-    const webgl = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
+    // The pictures need WebGL 2 (three.js), which a GPU-less CI browser may not offer: the text above doesn't.
+    const webgl = await page.evaluate(
+      () => !!document.createElement('canvas').getContext('webgl2')
+    );
     if (webgl)
       await expect(page.locator('[data-card-media] img')).toHaveCount(DRAWN_ROWS, {
         timeout: SHOT_TIMEOUT_MS,
