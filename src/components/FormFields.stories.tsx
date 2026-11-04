@@ -15,7 +15,7 @@ const MODES = [
 type Mode = (typeof MODES)[number]['value'];
 
 const meta: Meta = {
-  title: 'components/FormFields',
+  title: 'prev-form-layout/FormFields',
   parameters: {
     layout: 'padded',
     docs: {

@@ -3,7 +3,7 @@ import { Box, TextField } from '@mui/material';
 import { FormLayout, FormStack, MetaRow } from './FormLayout';
 
 const meta: Meta<typeof FormLayout> = {
-  title: 'components/FormLayout',
+  title: 'prev-form-layout/FormLayout',
   component: FormLayout,
   parameters: {
     layout: 'padded',

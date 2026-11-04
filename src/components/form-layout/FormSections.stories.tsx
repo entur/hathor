@@ -201,7 +201,7 @@ const Demo = ({ fields, layout }: DemoProps) => {
 };
 
 const meta: Meta<typeof Demo> = {
-  title: 'components/form-layout/FormSections',
+  title: 'next-form-layout/FormSections',
   component: Demo,
   parameters: {
     layout: 'fullscreen',
