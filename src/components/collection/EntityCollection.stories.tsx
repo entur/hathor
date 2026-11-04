@@ -22,6 +22,8 @@ const UNNAMED_EVERY = 15; // these rows have no name: the title reads as a dash
 const MAKES = ['Volvo', 'Scania', 'Solaris', 'MAN', 'Stadler', 'Bombardier', 'Ærø'];
 const MODELS = ['Citea', '8900', 'Urbino', 'Lion', 'Flirt', 'Talent', 'Express'];
 const PROPULSION: PropulsionType[] = ['COMBUSTION', 'ELECTRIC', 'HYBRID'];
+const CAPACITY_MIN = 40,
+  CAPACITY_SPAN = 110; // a midibus to an articulated bus
 
 /** Varied but the same on every load: values cycle at co-prime strides. */
 const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
@@ -35,6 +37,7 @@ const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
   length: 8 + ((i * 7) % 180) / 10,
   lowFloor: i % 5 < 3,
   propulsionTypes: [PROPULSION[i % PROPULSION.length]],
+  passengerCapacity: { totalCapacity: CAPACITY_MIN + ((i * 37) % CAPACITY_SPAN) },
   deckPlan: i % 5 === 0 ? { id: `NMR:DeckPlan:${i}`, name: { value: `Deck ${i}` } } : undefined,
 }));
 
