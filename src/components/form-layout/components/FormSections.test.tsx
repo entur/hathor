@@ -39,3 +39,19 @@ describe('FormSections', () => {
     expect(widths).toEqual(['full', '1/4', '1/2']);
   });
 });
+
+describe('FormSections table of contents', () => {
+  const MORE: Record<string, FieldSpec> = { ...FIELDS, extra: { kind: 'text', path: ['extra'] } };
+
+  it('draws its TOC from three sections up', () => {
+    const layout = { General: ['name'], Size: ['length'], Dates: ['built'] };
+    render(<FormSections sections={resolveSections(MORE, layout)} renderField={field} />);
+    expect(screen.getByRole('navigation', { name: 'Sections' })).toBeTruthy();
+  });
+
+  it('draws none below three', () => {
+    const layout = { General: ['name'], Size: ['length', 'built'] };
+    render(<FormSections sections={resolveSections(MORE, layout)} renderField={field} />);
+    expect(screen.queryByRole('navigation')).toBeNull();
+  });
+});

@@ -1,7 +1,7 @@
 /**
  * Section/field resolution — the form's *shape*, independent of rendering.
- * One source of truth: the stacked form, its skeleton and its table of contents
- * derive from the same call, so they can never disagree.
+ * One source of truth: the stacked form and its table of contents derive from
+ * the same call, so they can never disagree.
  */
 import { humanize } from '../../collection/utils/humanize.ts';
 import type { FieldSpec } from '../../collection/types.ts';
@@ -51,7 +51,7 @@ const WIDTH_SPAN: Record<FieldWidth, number> = { full: 12, '1/2': 6, '1/3': 4, '
 
 /**
  * The responsive `Grid` `size` for a width: full below `sm`, the fraction from
- * there up. Shared so a skeleton places a row exactly as the form will.
+ * there up.
  *
  * @param {FieldWidth} width the field's resolved width
  * @returns {{ xs: number, sm: number }} a `size` prop for an MUI `Grid` item

@@ -1,30 +1,10 @@
-import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import {
-  Box,
-  FormControlLabel,
-  Paper,
-  Switch,
-  TextField,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, FormControlLabel, Paper, Switch, TextField, Typography } from '@mui/material';
 import type { FieldSpec } from '../collection/types.ts';
-import { SectionToc } from '../SectionToc.tsx';
-import {
-  FormSections,
-  resolveSections,
-  tocSections,
-  type Layout,
-  type ResolvedField,
-} from './index.ts';
+import { FormSections, resolveSections, type Layout, type ResolvedField } from './index.ts';
 
-// Linje docs TOC: `max-width: 15rem`, sticky with a 2rem gap.
-const TOC_WIDTH = '15rem',
-  TOC_TOP = '2rem';
 const MENU_W = 72; // the collapsed nav rail
-const FORM_MAX_W = 900; // inside PageShell's `lg` container, beside the TOC
+const FORM_MAX_W = 1140; // PageShell's `lg` container: form + its TOC column
 
 /** Story-local registries; the real ones land with each form page (#252 pri 3–4). */
 const vehicleTypeFields = {
@@ -94,16 +74,15 @@ const vehicleFields = {
 } satisfies Record<string, FieldSpec>;
 
 /** One flat section; short codes at half width, regrouped to pack in pairs (decisions 3–4). */
-const HALF = '1/2' as const;
 const vehicleLayout: Layout<keyof typeof vehicleFields> = {
   Vehicle: [
     'name',
-    { field: 'registrationNumber', width: HALF },
-    { field: 'operationalNumber', width: HALF },
+    { field: 'registrationNumber', width: '1/2' },
+    { field: 'operationalNumber', width: '1/2' },
     'transportType',
     'buildDate',
     'registrationDate',
-    { field: 'chassisNumber', width: HALF },
+    { field: 'chassisNumber', width: '1/2' },
     'description',
   ],
 };
@@ -150,55 +129,21 @@ interface DemoProps {
   layout: Layout;
 }
 
-/** Menu | form | TOC, as the form page will place it; the TOC column only when
- *  `tocSections` lists something. Below `lg` the TOC is a dropdown above the form. */
-const Demo = ({ fields, layout }: DemoProps) => {
-  const sections = resolveSections(fields, layout);
-  const toc = tocSections(sections);
-  const [active, setActive] = useState(toc[0]);
-  const wide = useMediaQuery(useTheme().breakpoints.up('lg'));
-  const nav = toc.length > 0 && (
-    <SectionToc
-      sections={toc}
-      active={active}
-      onSelect={setActive}
-      variant={wide ? 'list' : 'dropdown'}
-      sx={{
-        position: 'sticky',
-        top: wide ? TOC_TOP : 0,
-        pt: wide ? 0 : 1, // room for the dropdown's floating label
-        zIndex: 1,
-        bgcolor: 'background.default',
-      }}
-    />
-  );
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns:
-          wide && nav
-            ? `${MENU_W}px minmax(0, ${FORM_MAX_W}px) ${TOC_WIDTH}`
-            : `${MENU_W}px minmax(0, ${FORM_MAX_W}px)`,
-        gap: 3,
-        alignItems: 'start',
-        p: 2,
-      }}
-    >
-      <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
-      <Box sx={{ minWidth: 0, pb: '60vh' /* lets the last section reach the reading band */ }}>
-        {!wide && nav}
-        <FormSections
-          sections={sections}
-          renderField={control(fields)}
-          active={active}
-          onActiveChange={setActive}
-        />
-      </Box>
-      {wide && nav}
-    </Box>
-  );
-};
+/** Menu | form (| TOC), as the form page will place it; `FormSections` draws the TOC itself. */
+const Demo = ({ fields, layout }: DemoProps) => (
+  <Box
+    sx={{
+      display: 'grid',
+      gridTemplateColumns: `${MENU_W}px minmax(0, ${FORM_MAX_W}px)`,
+      gap: 3,
+      alignItems: 'start',
+      p: 2,
+    }}
+  >
+    <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
+    <FormSections sections={resolveSections(fields, layout)} renderField={control(fields)} />
+  </Box>
+);
 
 const meta: Meta<typeof Demo> = {
   title: 'components/FormSections',
