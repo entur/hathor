@@ -5,6 +5,7 @@ import { FormSections, resolveSections, type Layout, type ResolvedField } from '
 
 const MENU_W = 72; // the collapsed nav rail
 const FORM_MAX_W = 1140; // PageShell's `lg` container: form + its TOC column
+const MEDIA_ASPECT = '16 / 10'; // iteru-3dbus' BusView, and CardsView's big-card media
 
 /** Story-local registries; the real ones land with each form page (#252 pri 3–4). */
 const vehicleTypeFields = {
@@ -124,13 +125,33 @@ const control =
     );
   };
 
+/** Stand-in for the iteru-3dbus picture the form pages will put in column 3. */
+const MediaPlaceholder = () => (
+  <Box
+    sx={{
+      aspectRatio: MEDIA_ASPECT,
+      border: '1px dashed',
+      borderColor: 'divider',
+      borderRadius: 1,
+      display: 'grid',
+      placeItems: 'center',
+    }}
+  >
+    <Typography variant="caption" color="text.secondary">
+      3D bus · {MEDIA_ASPECT}
+    </Typography>
+  </Box>
+);
+
 interface DemoProps {
   fields: Record<string, FieldSpec>;
   layout: Layout;
+  /** Reserve the column-3 picture slot above the TOC. */
+  media: boolean;
 }
 
-/** Menu | form (| TOC), as the form page will place it; `FormSections` draws the TOC itself. */
-const Demo = ({ fields, layout }: DemoProps) => (
+/** Menu | form (| picture + TOC), as the form page will place it; `FormSections` draws column 3. */
+const Demo = ({ fields, layout, media }: DemoProps) => (
   <Box
     sx={{
       display: 'grid',
@@ -141,19 +162,25 @@ const Demo = ({ fields, layout }: DemoProps) => (
     }}
   >
     <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
-    <FormSections sections={resolveSections(fields, layout)} renderField={control(fields)} />
+    <FormSections
+      sections={resolveSections(fields, layout)}
+      renderField={control(fields)}
+      aside={media && <MediaPlaceholder />}
+    />
   </Box>
 );
 
 const meta: Meta<typeof Demo> = {
   title: 'components/FormSections',
   component: Demo,
+  args: { media: true },
+  argTypes: { media: { control: 'boolean' } },
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component:
-          'A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways.',
+          'A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways, and a picture slot above it (`aside`, toggle `media`).',
       },
     },
   },
@@ -167,7 +194,7 @@ export const VehicleType: Story = {
   args: { fields: vehicleTypeFields, layout: vehicleTypeLayout },
 };
 
-/** One section → flat, no heading, no TOC. */
+/** One section → flat, no heading, no TOC; column 3 still holds the picture when `media` is on. */
 export const Vehicle: Story = { args: { fields: vehicleFields, layout: vehicleLayout } };
 
 /** Two sections → stacked with headings, below the TOC threshold. */

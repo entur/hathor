@@ -55,3 +55,27 @@ describe('FormSections table of contents', () => {
     expect(screen.queryByRole('navigation')).toBeNull();
   });
 });
+
+describe('FormSections aside', () => {
+  const picture = <figure data-testid="picture" />;
+
+  it('draws the aside before the TOC', () => {
+    const layout = { General: ['name'], Size: ['length'], Dates: ['built'] };
+    render(
+      <FormSections
+        sections={resolveSections(FIELDS, layout)}
+        renderField={field}
+        aside={picture}
+      />
+    );
+    const nav = screen.getByRole('navigation');
+    const pic = screen.getByTestId('picture');
+    expect(pic.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the aside on a form too small for a TOC', () => {
+    render(<FormSections sections={resolveSections(FIELDS)} renderField={field} aside={picture} />);
+    expect(screen.getByTestId('picture')).toBeTruthy();
+    expect(screen.queryByRole('navigation')).toBeNull();
+  });
+});
