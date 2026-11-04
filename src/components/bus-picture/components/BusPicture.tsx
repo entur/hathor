@@ -114,8 +114,9 @@ export function BusPicture({ mode, ...bus }: BusPictureProps) {
         data-card-media-compact=""
         variant="body2"
         color="text.secondary"
-        sx={{ px: 2, pt: 1.5 }}
+        sx={{ px: 2, pt: 1.5, display: 'flex', alignItems: 'center', gap: 0.75 }}
       >
+        <WarningAmberRounded fontSize="small" sx={{ color: 'warning.main' }} aria-hidden />
         {t('busPicture.unsupported', { mode: t(transportModeLabelKey(mode)) })}
       </Typography>
     );
