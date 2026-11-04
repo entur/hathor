@@ -86,6 +86,14 @@ describe('serializeVehicleType', () => {
     expect('vehicles' in input).toBe(false);
   });
 
+  it('sends vehicleTypeKind PHYSICAL on create and update (hathor handles PHYSICAL only)', () => {
+    // Sobek requires the kind on create and rejects a changed kind on update.
+    expect(serializeVehicleType({ id: '', version: 0 }, OWNER).vehicleTypeKind).toBe('PHYSICAL');
+    expect(
+      serializeVehicleType({ id: 'NMR:VehicleType:4', version: 1 }, OWNER).vehicleTypeKind
+    ).toBe('PHYSICAL');
+  });
+
   it('round-trips netexId through project∘serialize', () => {
     const wire: VehicleTypesQuery['vehicleTypes']['content'][number] = {
       netexId: 'NMR:VehicleType:rail',
