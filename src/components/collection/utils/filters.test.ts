@@ -14,7 +14,7 @@ import {
   withFilter,
 } from './filters.ts';
 
-/** The column a collection would build for one registry entry. */
+/** The column a collection would build for one field mapping entry. */
 const col = (key: string, spec: FieldSpec): Column => resolveColumns({ [key]: spec })[0];
 
 const NAME = col('name', { kind: 'name', path: ['name'] });

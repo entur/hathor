@@ -1,6 +1,6 @@
 /**
  * `createEntityCollection` — builds a typed, presentational list component for
- * one entity from its `FIELDS` registry: a toolbar, and the rows as a DataGrid
+ * one entity from its `FIELDS` field mapping: a toolbar, and the rows as a DataGrid
  * or as cards. It owns the query (or mirrors a controlled one), runs the shared
  * pipeline once, and hands the same keyed page to whichever view is active.
  */
@@ -32,7 +32,7 @@ import { GridView } from './GridView.tsx';
 const NO_FILTER_FIELDS: FilterFields = {};
 
 /** The component `createEntityCollection` returns: generic over the row type
- *  (inferred from `rows`), with column and card keys fixed to the registry's. */
+ *  (inferred from `rows`), with column and card keys fixed to the field mapping's. */
 export type EntityCollection<K extends string> = (<E>(
   props: EntityCollectionProps<E, K>
 ) => ReactNode) & {
@@ -44,7 +44,7 @@ const DEFAULT_VIEW: CollectionView = 'grid';
 /**
  * Build a collection component for one entity.
  *
- * @param fields  the entity's `FIELDS` registry (e.g. `vehicleTypeFields`);
+ * @param fields  the entity's `FIELDS` field mapping (e.g. `vehicleTypeFields`);
  *                its keys become the only valid `columns` / `card` keys
  * @param options `filterFields`: the entity's `<Entity>FilterFields`;
  *                omit and no field is filterable

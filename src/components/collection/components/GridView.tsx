@@ -84,7 +84,7 @@ const toColDef = (col: Column, labels: Pick<CollectionLabels, 'yes' | 'no'>): Gr
 const withRender = (def: GridColDef, { render }: Column): GridColDef =>
   render ? { ...def, renderCell: p => render(entityOf(p.row)) } : def;
 
-const EDIT_FIELD = '__edit'; // never a registry key: the registry's keys are field names
+const EDIT_FIELD = '__edit'; // never a mapped key: the field mapping keys are field names
 const EDIT_COL_W = 96;
 
 /** The trailing Edit-link column: not sortable, not in the Columns chooser. */

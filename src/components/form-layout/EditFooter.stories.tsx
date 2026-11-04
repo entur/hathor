@@ -8,7 +8,7 @@ import { EditFooter, FormSections, resolveSections, type Layout } from './index.
 const FORM_MAX_W = 1140; // PageShell's `lg` container
 const SAVE_MS = 900; // fake round trip, long enough to see the Saving state
 
-/** Story-local registry: enough sections that the form outgrows the viewport. */
+/** Story-local field mapping: enough sections that the form outgrows the viewport. */
 const fields = Object.fromEntries(
   Array.from({ length: 24 }, (_, i) => [`field${i + 1}`, { kind: 'text', path: [`field${i + 1}`] }])
 ) as Record<string, FieldSpec>;

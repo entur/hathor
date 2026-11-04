@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
- * Contract tests for `createEntityCollection`, run per fixture registry.
- * Rows, labels and filterable fields are derived from the registry and its
- * filter map, so another entity's registry is covered by adding it to `ENTITIES`.
+ * Contract tests for `createEntityCollection`, run per fixture field mapping.
+ * Rows, labels and filterable fields are derived from the field mapping and its
+ * filter mapping, so another entity's field mapping is covered by adding it to `ENTITIES`.
  */
 import { beforeAll, describe, it, expect, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
@@ -26,7 +26,7 @@ beforeAll(async () => {
 const ROW_COUNT = 3;
 const GRID_SLOT = { dataGrid: { disableVirtualization: true } };
 
-/** A VehicleType-shaped registry: two top-level text fields, a nested name, and
+/** A VehicleType-shaped field mapping: two top-level text fields, a nested name, and
  *  a patched and a grid field the collection must never show. */
 const VEHICLE_TYPE_FIELDS: Record<string, FieldSpec> = {
   netexId: { kind: 'text', path: ['netexId'] },
@@ -54,7 +54,7 @@ const ENTITIES = [
   { entity: 'VehicleType', fields: VEHICLE_TYPE_FIELDS, filterFields: VEHICLE_TYPE_FILTER_FIELDS },
 ];
 
-/** Rows built from the registry: every top-level text / name field gets a
+/** Rows built from the field mapping: every top-level text / name field gets a
  *  value unique to its row, so any of them can serve as a search needle. */
 const makeRows = (fields: Record<string, FieldSpec>, n: number): Record<string, unknown>[] =>
   Array.from({ length: n }, (_, i) =>
@@ -78,15 +78,15 @@ describe('typed keys', () => {
   });
   type Props = Parameters<typeof _TYPED>[0];
 
-  it('checks column and card keys against the registry at compile time', () => {
+  it('checks column and card keys against the field mapping at compile time', () => {
     const ok: Props = {
       rows: [],
       columns: ['a', { field: 'b', label: 'B' }],
       card: { title: 'a', fields: ['b'] },
     };
-    // @ts-expect-error — 'c' is not a field of the registry
+    // @ts-expect-error — 'c' is not a field of the field mapping
     const badColumn: Props = { rows: [], columns: ['c'] };
-    // @ts-expect-error — 'c' is not a field of the registry
+    // @ts-expect-error — 'c' is not a field of the field mapping
     const badCard: Props = { rows: [], card: { title: 'c', fields: [] } };
     expect([ok, badColumn, badCard]).toHaveLength(3);
   });

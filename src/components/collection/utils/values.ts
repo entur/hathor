@@ -36,7 +36,7 @@ const getPath = (obj: unknown, path: readonly string[]): unknown =>
  * its `value` leaf.
  *
  * @param row  one entity
- * @param spec the field's registry entry
+ * @param spec the field's mapping entry
  * @returns the raw value; `undefined` when any path segment is missing
  */
 export const rawValue = (row: unknown, spec: FieldSpec): unknown => {
@@ -51,7 +51,7 @@ export const rawValue = (row: unknown, spec: FieldSpec): unknown => {
  * `enumMulti`), so the field's `render` can draw a value that has no row — a
  * filter option, say.
  *
- * @param spec  the field's registry entry
+ * @param spec  the field's mapping entry
  * @param value one value
  * @returns the one-field row
  */
@@ -66,7 +66,7 @@ export const rowWith = (spec: FieldSpec, value: string): unknown =>
  * members, a single value as a one-item list, nothing as an empty list.
  *
  * @param row  one entity
- * @param spec the field's registry entry
+ * @param spec the field's mapping entry
  * @returns the values
  */
 export const valueList = (row: unknown, spec: FieldSpec): string[] => {
@@ -79,7 +79,7 @@ export const valueList = (row: unknown, spec: FieldSpec): string[] => {
  * stay visible.
  *
  * @param row    one entity
- * @param spec   the field's registry entry
+ * @param spec   the field's mapping entry
  * @param labels yes/no wording for `switch` fields (English default)
  * @returns display text
  */
@@ -155,7 +155,7 @@ export const keyRows = (rows: readonly unknown[], offset = 0): KeyedRow[] => {
  * Is this the entity's identity field (top-level `netexId`)? Hoisted relation
  * ids such as `deckPlan.netexId` are not — they name another entity.
  *
- * @param spec a registry entry
+ * @param spec a field mapping entry
  * @returns whether it is the identity field
  */
 export const isIdSpec = (spec: FieldSpec): boolean =>

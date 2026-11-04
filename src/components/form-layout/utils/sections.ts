@@ -18,7 +18,7 @@ import type {
  *  headings already in view. */
 const TOC_MIN_SECTIONS = 3;
 
-/** A field resolved for rendering: its registry key, display label and share of the row. */
+/** A field resolved for rendering: its mapped key, display label and share of the row. */
 export interface ResolvedField {
   key: string;
   label: string;
@@ -64,16 +64,16 @@ export const gridSize = (width: FieldWidth): { xs: number; sm: number } => ({
 const norm = (item: LayoutItem): LayoutEntry => (typeof item === 'string' ? { field: item } : item);
 
 /**
- * Resolve a registry + optional layout into the sections to render.
+ * Resolve a field mapping + optional layout into the sections to render.
  *
- * No layout → one unnamed section holding every registry field, in registry
+ * No layout → one unnamed section holding every mapped field, in mapping
  * order. With a layout it is a whitelist: unknown keys are dropped, a key
  * repeated across sections lands only in the first, and empty sections are
  * removed so no heading is drawn over nothing. `patched: 'hide'` drops patched
  * fields on both paths, before the empty-section rule. Each field's width is
  * the layout entry's, else `widths` for its kind, else `KIND_WIDTH`.
  *
- * @param {Record<string, FieldSpec>} fields the entity's field registry
+ * @param {Record<string, FieldSpec>} fields the entity's field mapping
  * @param {Layout} [layout] optional section whitelist
  * @param {PatchedDisplay} [patched] how patched fields are shown; only `hide` changes the shape
  * @param {KindWidths} [widths] form-level width per kind, over `KIND_WIDTH`

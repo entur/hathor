@@ -19,7 +19,7 @@ type FieldKind =
   | 'date'
   | 'datetime';
 
-/** One field of an entity's hand-written registry (`<entity>Fields`). */
+/** One field of an entity's hand-written field mapping (`<entity>Fields`). */
 export interface FieldSpec {
   kind: FieldKind;
   /** Access path into the row (length 1 = top-level; >1 = flattened leaf). */
@@ -30,7 +30,7 @@ export interface FieldSpec {
   patched?: boolean;
 }
 
-/** A column or card entry: a registry key plus overrides. `K` is the registry's key
+/** A column or card entry: a field mapping key plus overrides. `K` is the field mapping's key
  *  union, `E` the row type. */
 export interface FieldEntry<K extends string = string, E = unknown> {
   field: K;
@@ -137,7 +137,7 @@ export interface CollectionOptions {
   filterFields?: FilterFields;
 }
 
-/** `K` is the entity's field-key union, inferred from the registry by
+/** `K` is the entity's field-key union, inferred from the field mapping by
  *  `createEntityCollection`, so a misspelt column or card key fails to compile. */
 export interface EntityCollectionProps<E, K extends string = string> {
   rows: readonly E[];
@@ -191,7 +191,7 @@ export interface RowEdit {
 }
 
 /**
- * A resolved, renderable field: registry key, display label, registry spec,
+ * A resolved, renderable field: mapped key, display label, its `FieldSpec`,
  * and the field's own display and match rules. `resolveColumns` decides those
  * rules once (the identity field compacts and matches on its last segment;
  * every other field shows and matches its text as is), so no view or filter

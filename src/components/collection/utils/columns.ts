@@ -1,5 +1,5 @@
 /**
- * Which registry fields a collection may show, and what a card shows by default.
+ * Which mapped fields a collection may show, and what a card shows by default.
  * Pure — both views and the toolbar call it, so they can never disagree.
  */
 import { humanize } from './humanize.ts';
@@ -47,9 +47,9 @@ const IDENTITY: Rules = {
 /**
  * Resolve the columns a collection shows.
  *
- * @param fields  the entity's `FIELDS` registry
+ * @param fields  the entity's `FIELDS` field mapping
  * @param columns whitelist with order and optional labels; omit for every
- *                eligible field in registry order
+ *                eligible field in field mapping order
  * @param idLabel caption of the identity field, unless its entry names one
  * @returns columns in display order; ineligible or unknown keys are dropped
  */
@@ -70,10 +70,10 @@ export const resolveColumns = (
 
 /**
  * Resolve what a card shows. An explicit `card` is looked up against the whole
- * registry (a card may show a field the grid hides), a shown column as resolved —
+ * field mapping (a card may show a field the grid hides), a shown column as resolved —
  * its label and `render`; the default derives from the resolved columns.
  *
- * @param fields the entity's `FIELDS` registry
+ * @param fields the entity's `FIELDS` field mapping
  * @param cols   the resolved columns
  * @param card    explicit card spec; omit for the default
  * @param idLabel caption of the identity field on an explicit card
@@ -86,7 +86,7 @@ export const resolveCard = (
   idLabel: string = DEFAULT_LABELS.id
 ): ResolvedCard => {
   if (card) {
-    // A shown column comes as resolved (its label and render); any other field from the registry.
+    // A shown column comes as resolved (its label and render); any other field from the field mapping.
     const pick = (keys: readonly string[]): Column[] =>
       keys.flatMap(k => cols.find(c => c.key === k) ?? resolveColumns(fields, [k], idLabel));
     return {

@@ -18,7 +18,7 @@ const MAKES = ['Volvo', 'Scania', 'Solaris', 'MAN', 'Stadler', 'Bombardier', 'Æ
 const MODELS = ['Citea', '8900', 'Urbino', 'Lion', 'Flirt', 'Talent', 'Express'];
 const PROPULSION: PropulsionType[] = ['COMBUSTION', 'ELECTRIC', 'HYBRID'];
 
-/** Story-local registry; the real one lands with the vehicle-types page (#252 pri 3). */
+/** Story-local field mapping; the real one lands with the vehicle-types page (#252 pri 3). */
 const vehicleTypeFields = {
   id: { kind: 'text', path: ['id'] },
   name: { kind: 'name', path: ['name'] },
@@ -95,7 +95,7 @@ const meta: Meta<typeof Demo> = {
     docs: {
       description: {
         component:
-          "Embedded port of the sandbox `EntityCollection` (#261, epic #252): toolbar (search · filter · sort · columns · density · view), grid / small cards / big cards. Hathor additions: a field's `render` (transport mode as icon + text), an Edit link per record (`editHref`), the id muted. 120 seeded VehicleType rows; the registry is story-local.",
+          "Embedded port of the sandbox `EntityCollection` (#261, epic #252): toolbar (search · filter · sort · columns · density · view), grid / small cards / big cards. Hathor additions: a field's `render` (transport mode as icon + text), an Edit link per record (`editHref`), the id muted. 120 seeded VehicleType rows; the field mapping is story-local.",
       },
     },
   },

@@ -12,7 +12,7 @@ const FIELDS: Record<string, FieldSpec> = {
 };
 
 describe('resolveColumns', () => {
-  it('defaults to every eligible field in registry order, humanized', () => {
+  it('defaults to every eligible field in field mapping order, humanized', () => {
     expect(resolveColumns(FIELDS).map(c => [c.key, c.label])).toEqual([
       ['netexId', 'Id'],
       ['name', 'Name'],
@@ -33,7 +33,7 @@ describe('resolveColumns', () => {
     ]);
   });
 
-  it('drops keys the registry does not know', () => {
+  it('drops keys the field mapping does not know', () => {
     expect(resolveColumns(FIELDS, ['nope', 'name']).map(c => c.key)).toEqual(['name']);
   });
 });
@@ -67,7 +67,7 @@ describe('resolveCard', () => {
     expect(resolveCard(FIELDS, noName).title?.key).toBe('netexId');
   });
 
-  it('resolves an explicit card against the registry, not the column whitelist', () => {
+  it('resolves an explicit card against the field mapping, not the column whitelist', () => {
     const card = resolveCard(FIELDS, resolveColumns(FIELDS, ['name']), {
       title: 'name',
       subtitle: 'netexId',
