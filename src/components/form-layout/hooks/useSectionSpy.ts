@@ -43,8 +43,8 @@ export interface SectionSpyOptions {
  * muted until the scroll settles, and an `active` the hook itself reported is
  * never scrolled to.
  *
- * @param options labels, the enabled flag, and the controlled pair
- * @returns `register(label)` — the ref callback for that section's element
+ * @param {SectionSpyOptions} options labels, the enabled flag, and the controlled pair
+ * @returns {(label: string) => RefCallback<HTMLElement>} `register(label)` — the ref callback for that section's element
  */
 export function useSectionSpy({
   labels,
@@ -57,6 +57,8 @@ export function useSectionSpy({
   // prop is a request only once it *changes*.
   const reported = useRef(active);
   const muted = useRef(false);
+  // Set by the live observer, so a settled requested scroll can re-check the band.
+  const reconcile = useRef<() => void>(() => {});
   const onActiveChangeRef = useRef(onActiveChange);
   useEffect(() => {
     onActiveChangeRef.current = onActiveChange;
@@ -85,6 +87,11 @@ export function useSectionSpy({
       reported.current = next;
       onActiveChangeRef.current?.(next);
     };
+    // Only when the reader left the requested section: a pick that stays in the band
+    // (say, near the page end, where the at-end rule would pick the last) is kept.
+    reconcile.current = () => {
+      if (!inBand.has(reported.current ?? '')) report();
+    };
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(e => {
@@ -103,6 +110,7 @@ export function useSectionSpy({
     return () => {
       observer.disconnect();
       window.removeEventListener('scroll', report, { capture: true });
+      reconcile.current = () => {};
     };
   }, [enabled, order]);
 
@@ -115,16 +123,21 @@ export function useSectionSpy({
     const release = () => {
       muted.current = false;
     };
+    // Settled: the reader may have stopped the scroll elsewhere, so report what is in view now.
+    const settle = () => {
+      release();
+      reconcile.current();
+    };
     // Capture: `scrollend` does not bubble out of a nested scroll container.
-    window.addEventListener('scrollend', release, { capture: true, once: true });
-    const timer = setTimeout(release, SCROLL_SETTLE_MS);
+    window.addEventListener('scrollend', settle, { capture: true, once: true });
+    const timer = setTimeout(settle, SCROLL_SETTLE_MS);
     node.scrollIntoView?.({
       behavior: window.matchMedia?.(REDUCED_MOTION_QUERY).matches ? 'auto' : 'smooth',
       block: 'start',
     });
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('scrollend', release, { capture: true });
+      window.removeEventListener('scrollend', settle, { capture: true });
       // Torn down mid-scroll (a second request, or StrictMode's replay): forget
       // the claim, so whatever `active` holds next is honoured rather than
       // mistaken for something already in view.

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FieldSpec } from '../../collection/types.ts';
 import { resolveSections } from '../utils/sections.ts';
 import { FormSections } from './FormSections.tsx';
@@ -77,5 +77,67 @@ describe('FormSections aside', () => {
     render(<FormSections sections={resolveSections(FIELDS)} renderField={field} aside={picture} />);
     expect(screen.getByTestId('picture')).toBeTruthy();
     expect(screen.queryByRole('navigation')).toBeNull();
+  });
+});
+
+describe('FormSections across widths and changes', () => {
+  const ABC = { General: ['name'], Size: ['length'], Dates: ['built'] };
+  const MORE: Record<string, FieldSpec> = { ...FIELDS, extra: { kind: 'text', path: ['extra'] } };
+  let wide = false;
+  const listeners = new Set<() => void>();
+  const pick = (label: string) => {
+    fireEvent.mouseDown(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByRole('option', { name: label }));
+  };
+
+  beforeEach(() => {
+    wide = false;
+    listeners.clear();
+    // MUI's useMediaQuery reads `matchMedia`; only the `lg` query (min-width) follows `wide`.
+    vi.stubGlobal('matchMedia', (media: string) => ({
+      media,
+      get matches() {
+        return media.includes('min-width') && wide; // live: MUI re-reads the list it kept
+      },
+      addEventListener: (_: string, l: () => void) => listeners.add(l),
+      removeEventListener: (_: string, l: () => void) => listeners.delete(l),
+    }));
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('keeps the form mounted when the viewport crosses lg', () => {
+    render(<FormSections sections={resolveSections(FIELDS, ABC)} renderField={field} />);
+    const size = screen.getByRole('region', { name: 'Size' });
+    expect(screen.getByRole('combobox')).toBeTruthy(); // narrow: the dropdown
+    wide = true;
+    act(() => listeners.forEach(l => l()));
+    expect(screen.queryByRole('combobox')).toBeNull(); // wide: the list
+    expect(screen.getByRole('region', { name: 'Size' })).toBe(size);
+  });
+
+  it('keeps the form mounted when the aside comes and goes', () => {
+    const sections = resolveSections(FIELDS, { General: ['name'], Size: ['length'] });
+    const { rerender } = render(<FormSections sections={sections} renderField={field} />);
+    const size = screen.getByRole('region', { name: 'Size' });
+    rerender(<FormSections sections={sections} renderField={field} aside={<figure />} />);
+    expect(screen.getByRole('region', { name: 'Size' })).toBe(size);
+  });
+
+  it('marks the first section when the picked one is gone', () => {
+    const { rerender } = render(
+      <FormSections sections={resolveSections(MORE, ABC)} renderField={field} />
+    );
+    pick('Dates');
+    expect(screen.getByRole('combobox').textContent).toContain('Dates');
+    const swapped = { General: ['name'], Size: ['length'], Extra: ['extra'] };
+    rerender(<FormSections sections={resolveSections(MORE, swapped)} renderField={field} />);
+    expect(screen.getByRole('combobox').textContent).toContain('General');
+  });
+
+  it('scrolls back to the marked section when it is picked again', () => {
+    render(<FormSections sections={resolveSections(FIELDS, ABC)} renderField={field} />);
+    pick('General');
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalledOnce();
   });
 });

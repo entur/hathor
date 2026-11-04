@@ -80,6 +80,26 @@ describe('useSectionSpy', () => {
     expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
+  it('reports where the reader stopped an interrupted requested scroll', () => {
+    const onActiveChange = vi.fn();
+    const { rerender } = render(<Sections active="General" onActiveChange={onActiveChange} />);
+    rerender(<Sections active="Capacity" onActiveChange={onActiveChange} />);
+    cross('Dimensions', true); // muted: the requested scroll is still running
+    expect(onActiveChange).not.toHaveBeenCalled();
+    act(() => void window.dispatchEvent(new Event('scrollend')));
+    expect(onActiveChange).toHaveBeenCalledExactlyOnceWith('Dimensions');
+  });
+
+  it('keeps a requested section that is still in view when the scroll settles', () => {
+    const onActiveChange = vi.fn();
+    const { rerender } = render(<Sections active="General" onActiveChange={onActiveChange} />);
+    rerender(<Sections active="Capacity" onActiveChange={onActiveChange} />);
+    cross('Capacity', true);
+    cross('Dimensions', true);
+    act(() => void window.dispatchEvent(new Event('scrollend')));
+    expect(onActiveChange).not.toHaveBeenCalled();
+  });
+
   it('observes nothing while disabled', () => {
     render(<Sections enabled={false} />);
     expect(observer).toBeUndefined();
