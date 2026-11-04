@@ -1,3 +1,5 @@
+export { EditFooter } from './components/EditFooter.tsx';
+export type { EditFooterProps } from './components/EditFooter.tsx';
 export { FormSections } from './components/FormSections.tsx';
 export type { FormSectionsProps } from './components/FormSections.tsx';
 export { resolveSections } from './utils/sections.ts';
