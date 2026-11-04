@@ -7,6 +7,8 @@ const LIST = '/next/vehicle-types';
 // Fixture row (vehicle-types-mock.json): Type Alpha.
 const FIXTURE_ID = 'NMR:VehicleType:1';
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
+const LANDSCAPE_VIEWPORT = { width: 844, height: 390 };
+const ROWS_MIN_PX = 240; // collection.tsx: the rows' floor
 // Rows in vehicle-types-mock.json.
 const FIXTURE_ROWS = 3;
 // Of those, drawn as a bus: BUS and no mode (the RAIL row gets a line of text).
@@ -51,7 +53,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *     drawn with the standard height; a rail type gets "Picture not supported" instead; without
  *     WebGL 2 (forced off in its own test) the drawn rows say "Picture unavailable"
  *   - collection frame (#278): the page doesn't scroll; the rows scroll between the toolbar and
- *     the pager, which stay in view, in the grid and in cards, at desktop and phone width
+ *     the pager, which stay in view, in the grid and in cards, at desktop and phone width; on a
+ *     phone held sideways the rows keep a floor and the page scrolls instead
  *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
  *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
@@ -223,6 +226,22 @@ test.describe('/next/vehicle-types page shell', () => {
       }
     });
   }
+
+  test('on a phone held sideways the rows keep their floor and the page scrolls to the pager', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'a mocked full page');
+    await interceptRailRows(page, FULL_PAGE);
+    await page.setViewportSize(LANDSCAPE_VIEWPORT);
+    await page.goto(LIST);
+    const rows = page.getByTestId('collection-rows');
+    await expect(rows).toBeVisible();
+    // Rounded: Firefox measures the floor a sub-pixel short.
+    expect(Math.round((await rows.boundingBox())!.height)).toBeGreaterThanOrEqual(ROWS_MIN_PX);
+    const pager = page.getByRole('navigation', { name: 'Pagination' });
+    await pager.scrollIntoViewIfNeeded();
+    await expect(pager).toBeInViewport();
+  });
 
   test('a new page of cards starts at its first card', async ({ page }) => {
     test.skip(IS_LIVE, 'mocked pages');

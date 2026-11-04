@@ -40,6 +40,9 @@ export type EntityCollection<K extends string> = (<E>(
 };
 const DEFAULT_DENSITY: GridDensity = 'standard';
 const DEFAULT_VIEW: CollectionView = 'grid';
+// The rows never get less than this (a grid header and about three rows): on a screen too
+// short for it, e.g. a phone held sideways, the page scrolls instead.
+const ROWS_MIN_PX = 240;
 
 /**
  * Build a collection component for one entity.
@@ -222,7 +225,7 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
           data-testid="collection-rows"
           sx={{
             flex: 1,
-            minHeight: 0,
+            minHeight: ROWS_MIN_PX,
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
