@@ -19,7 +19,11 @@ const meta: Meta<typeof BusPicture> = {
           containerType: 'size',
           bgcolor: 'action.hover',
           '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
-          '&:has([data-card-media-compact])': { aspectRatio: 'auto', containerType: 'normal' },
+          '&:has([data-card-media-compact])': {
+            aspectRatio: 'auto',
+            containerType: 'normal',
+            pt: 1.5,
+          },
         }}
       >
         <Story />

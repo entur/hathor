@@ -371,5 +371,6 @@
   "busPicture.dim.length": "lengde",
   "busPicture.dim.width": "bredde",
   "busPicture.dim.height": "høyde",
-  "busPicture.unsupported": "Bilde støttes ikke for {{mode}}"
+  "busPicture.unsupported": "Bilde støttes ikke for {{mode}}",
+  "busPicture.unavailable": "Bilde utilgjengelig"
 }

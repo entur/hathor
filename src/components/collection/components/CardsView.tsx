@@ -119,7 +119,8 @@ const CardHeading = ({ row, card, labels }: HeadingProps) => (
 /**
  * The top of a big card: the picture area, always there so every card has the
  * same shape whether or not the host fills it, with the card's heading laid
- * over its bottom edge. The heading comes first in reading order; an unfilled
+ * over its bottom edge — unless the host fills it with a compact line of text
+ * (`data-card-media-compact`): then the area is just the heading and that line. The heading comes first in reading order; an unfilled
  * picture is hidden from assistive tech, the heading never is. The picture
  * stands on the area's bottom edge: a reserved height (which overrides the
  * area's own 16:10) cuts its top.
@@ -144,13 +145,11 @@ const CardMediaArea = ({
       borderColor: 'divider',
       overflow: 'hidden',
       // Media marked `data-card-media-compact` (a line of text, no picture): the area
-      // shrinks to it, the text above the heading, both in flow.
+      // shrinks to the heading and that line under it, both in flow, as they are read.
       [`&:has(${COMPACT})`]: {
         aspectRatio: 'auto',
         height: 'auto',
         containerType: 'normal',
-        display: 'flex',
-        flexDirection: 'column-reverse',
         '& > *': { position: 'static', aspectRatio: 'auto', background: 'none' },
       },
     }}

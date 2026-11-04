@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, decomposeColor, useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import WarningAmberRounded from '@mui/icons-material/WarningAmberRounded';
 import { useTranslation } from 'react-i18next';
 import { transportModeLabelKey, type TransportMode } from '../../../data/netex/transportMode.ts';
+import { over } from '../../../utils/colorOver.ts';
 import { holdBusShot } from '../utils/busShots.ts';
 import { toBusInput, type BusDims, type BusInput, type BusPaint } from '../utils/standardBus.ts';
 
@@ -19,27 +20,22 @@ export interface BusPictureProps {
   mode?: TransportMode | null;
 }
 
-/** `top` over the `bottom` paper, as one opaque `rgb()` (the stage reads it for its light). */
-const onPaper = (top: string, bottom: string): string => {
-  const t = decomposeColor(top).values,
-    b = decomposeColor(bottom).values;
-  const a = t[3] ?? 1;
-  return `rgb(${[0, 1, 2].map(i => Math.round(t[i] * a + b[i] * (1 - a))).join(', ')})`;
-};
+type ShotState = { inp: BusInput; bg: string } & ({ url: string } | { failed: true });
 
-/** The shot, once it is the shot of the current input. */
-function useShot(inp: BusInput): string | undefined {
+/** The shot of the current input on the current background: its URL, `'failed'`, or
+ *  `undefined` while it is queued. */
+function useShot(inp: BusInput): string | 'failed' | undefined {
   const { palette } = useTheme();
   // What shows behind the picture: a big card's picture area is `action.hover` on paper.
-  const bg = onPaper(palette.action.hover, palette.background.paper);
-  const [shot, setShot] = useState<{ inp: BusInput; url: string }>();
+  const bg = over(palette.background.paper, palette.action.hover);
+  const [shot, setShot] = useState<ShotState>();
 
   useEffect(() => {
     const { url, release } = holdBusShot(inp, bg);
     let live = true;
     url.then(
-      u => live && setShot({ inp, url: u }),
-      () => live && setShot(undefined)
+      u => live && setShot({ inp, bg, url: u }),
+      () => live && setShot({ inp, bg, failed: true })
     );
     return () => {
       live = false;
@@ -47,9 +43,24 @@ function useShot(inp: BusInput): string | undefined {
     };
   }, [inp, bg]);
 
-  // A changed input drops the old shot at once: its URL is about to be revoked.
-  return shot?.inp === inp ? shot.url : undefined;
+  // A changed input or background drops the old shot at once: its URL is about to be revoked.
+  if (shot?.inp !== inp || shot.bg !== bg) return undefined;
+  return 'url' in shot ? shot.url : 'failed';
 }
+
+/** A line of text in place of the picture; `data-card-media-compact` shrinks a big card's
+ *  picture area to it. */
+const CompactLine = ({ children }: { children: string }) => (
+  <Typography
+    data-card-media-compact=""
+    variant="body2"
+    color="text.secondary"
+    sx={{ px: 2, pb: 1.5, display: 'flex', alignItems: 'center', gap: 0.75 }}
+  >
+    <WarningAmberRounded fontSize="small" sx={{ color: 'warning.main' }} aria-hidden />
+    {children}
+  </Typography>
+);
 
 function DrawnBus({ dims, paint }: Omit<BusPictureProps, 'mode'>) {
   const { t } = useTranslation();
@@ -59,6 +70,8 @@ function DrawnBus({ dims, paint }: Omit<BusPictureProps, 'mode'>) {
     [length, width, height, paint]
   );
   const src = useShot(inp);
+  // Nothing drawn (no WebGL, a failed shot): say so, not which dims a drawing would have used.
+  if (src === 'failed') return <CompactLine>{t('busPicture.unavailable')}</CompactLine>;
   const note =
     fallback.length > 0 &&
     t('busPicture.standard', {
@@ -99,8 +112,8 @@ function DrawnBus({ dims, paint }: Omit<BusPictureProps, 'mode'>) {
 /**
  * A record drawn as a 3D bus, for a big card's picture area: an `<img>` shot on
  * the page's shared stage, and a note over it naming each dim drawn as the
- * standard bus's (shown also when the picture can't be drawn). A mode the
- * package can't draw gets a line of text instead, and the area shrinks to it.
+ * standard bus's. A mode the package can't draw, or a picture that can't be
+ * shot (no WebGL), gets a line of text instead, and the area shrinks to it.
  *
  * @param {BusPictureProps} props dims, paint and mode
  * @returns {JSX.Element} the picture and its note, or the unsupported text
@@ -109,16 +122,9 @@ export function BusPicture({ mode, ...bus }: BusPictureProps) {
   const { t } = useTranslation();
   if (mode && !DRAWN_MODES.has(mode))
     return (
-      // `data-card-media-compact`: the big card's picture area shrinks to this text.
-      <Typography
-        data-card-media-compact=""
-        variant="body2"
-        color="text.secondary"
-        sx={{ px: 2, pt: 1.5, display: 'flex', alignItems: 'center', gap: 0.75 }}
-      >
-        <WarningAmberRounded fontSize="small" sx={{ color: 'warning.main' }} aria-hidden />
+      <CompactLine>
         {t('busPicture.unsupported', { mode: t(transportModeLabelKey(mode)) })}
-      </Typography>
+      </CompactLine>
     );
   return <DrawnBus {...bus} />;
 }

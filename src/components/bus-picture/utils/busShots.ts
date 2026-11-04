@@ -9,8 +9,11 @@ const SHOT_W = 400,
   CLOSER = 0.3,
   DETAIL = 0.35;
 
+type Lib = typeof import('@entur/iteru-3dbus');
 interface Stage {
+  lib: Lib;
   stage: ShotStage;
+  bg: string;
   go: (view: string, instant?: boolean) => void;
   /** What the camera views frame: the bus on stage now. */
   cur: { group: BusGroup | null; len: number };
@@ -20,41 +23,45 @@ interface Shot {
   holders: number;
 }
 
-/** Every picture on the page shares one stage — a browser keeps only so many WebGL contexts. */
+/** One stage for every picture on the page — a browser keeps only so many WebGL contexts —
+ *  open only while shots are queued. */
 let stage: Promise<Stage> | null = null;
-let stageBg = ''; // the stage's light follows the colour behind the picture
 let queue: Promise<unknown> = Promise.resolve();
+let pending = 0;
+/** Set once the browser has refused a WebGL context: no card tries again on this page load. */
+let noWebGL = false;
 const shots = new Map<string, Shot>();
 
 const openStage = async (bg: string): Promise<Stage> => {
   const lib = await import('@entur/iteru-3dbus');
-  const s = lib.mkStageShot({ w: SHOT_W, h: SHOT_H, bg });
-  const cur: Stage['cur'] = { group: null, len: 0 };
-  return { stage: s, go: lib.mkViews(s, () => cur), cur };
+  try {
+    const s = lib.mkStageShot({ w: SHOT_W, h: SHOT_H, bg });
+    const cur: Stage['cur'] = { group: null, len: 0 };
+    return { lib, stage: s, bg, go: lib.mkViews(s, () => cur), cur };
+  } catch (e) {
+    noWebGL = true;
+    throw e;
+  }
 };
 
-/** Gives the WebGL context back once no picture is held or queued. */
-const closeStage = () => {
-  if (shots.size > 0 || !stage) return;
+/** Gives the WebGL context back. */
+const dropStage = () => {
   const done = stage;
   stage = null;
-  void done.then(s => s.stage.dispose()).catch(() => undefined);
+  void done?.then(s => s.stage.dispose()).catch(() => undefined);
 };
 
 const shoot = async (inp: BusInput, bg: string): Promise<string> => {
-  // Shots run one at a time, so a stage for another bg (a theme switch) is idle here.
-  if (stage && stageBg !== bg) {
-    void stage.then(s => s.stage.dispose()).catch(() => undefined);
-    stage = null;
-  }
+  if (noWebGL) throw new Error('no WebGL');
+  // A theme switch: the stage's light follows the colour behind the picture.
+  if (stage && (await stage.catch(() => null))?.bg !== bg) dropStage();
   if (!stage) {
     const opening = openStage(bg);
-    stageBg = bg;
     stage = opening;
-    // A stage that failed to open (no WebGL, a chunk 404) is tried again by the next shot.
+    // A stage that failed to load (a chunk 404) is tried again by the next shot.
     opening.catch(() => stage === opening && (stage = null));
   }
-  const [lib, { stage: s, go, cur }] = await Promise.all([import('@entur/iteru-3dbus'), stage]);
+  const { lib, stage: s, go, cur } = await stage;
   const group = lib.mkBus(inp, lib.faces(inp), { detail: DETAIL });
   cur.len = lib.total(inp) * lib.MM;
   group.position.x = -cur.len / 2;
@@ -72,8 +79,9 @@ const shoot = async (inp: BusInput, bg: string): Promise<string> => {
 
 /**
  * Holds the picture of one bus while its card is mounted (shot whether or not it
- * is scrolled into view). Shots run one at a time on the shared stage; the same
- * input on the same background gives the same picture.
+ * is scrolled into view). Shots run one at a time on the shared stage, which
+ * closes when the queue drains; the same input on the same background gives the
+ * same picture.
  *
  * @param {BusInput} inp a valid bus input
  * @param {string} bg the colour behind the picture (hex or rgb), sets the light
@@ -86,9 +94,15 @@ export const holdBusShot = (inp: BusInput, bg: string) => {
   let shot = shots.get(key);
   if (!shot) {
     const entry: Shot = { url: Promise.resolve(''), holders: 0 };
-    entry.url = queue.then(() => {
-      if (shots.get(key) !== entry) throw new Error('released before its turn');
-      return shoot(inp, bg);
+    pending += 1;
+    entry.url = queue.then(async () => {
+      try {
+        if (shots.get(key) !== entry) throw new Error('released before its turn');
+        return await shoot(inp, bg);
+      } finally {
+        pending -= 1;
+        if (pending === 0) dropStage();
+      }
     });
     // A failed shot is not kept: the next picture of this bus tries again.
     queue = entry.url.catch(() => shots.get(key) === entry && shots.delete(key));
@@ -101,12 +115,9 @@ export const holdBusShot = (inp: BusInput, bg: string) => {
     held.holders -= 1;
     // A tick later: a remount (StrictMode, a view switch) keeps the picture.
     setTimeout(() => {
-      if (held.holders > 0) return;
-      if (shots.get(key) === held) {
-        shots.delete(key);
-        void held.url.then(URL.revokeObjectURL, () => undefined);
-      }
-      void queue.then(closeStage);
+      if (held.holders > 0 || shots.get(key) !== held) return;
+      shots.delete(key);
+      void held.url.then(URL.revokeObjectURL, () => undefined);
     });
   };
   return { url: held.url, release };

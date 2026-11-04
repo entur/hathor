@@ -1,5 +1,5 @@
 import { Box, Divider, Skeleton, Typography, useTheme, type Theme } from '@mui/material';
-import { alpha, decomposeColor, recomposeColor } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import MenuIcon, { type MenuIconName } from '../icons/MenuIcon.tsx';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 import { useIsFeatureOn } from '../../config/featureFlags.ts';
 import { SR_ONLY } from '../../utils/srOnly.ts';
+import { over } from '../../utils/colorOver.ts';
 
 /**
  * SiteNavCards — the Home dashboard's per-type navigation cards. Two layouts:
@@ -60,19 +61,6 @@ const paint = (theme: Theme, p: Paint): string => {
   const [k, v] = p.split('.');
   const hit = v && (theme.palette as unknown as Record<string, Record<string, unknown>>)[k]?.[v];
   return typeof hit === 'string' ? hit : p;
-};
-
-/** Composites colour `c` (maybe translucent) over opaque `under`; non-parsable `c` passes through. */
-const over = (under: string, c: string): string => {
-  try {
-    const u = decomposeColor(under).values;
-    const o = decomposeColor(c).values;
-    const a = o[3] ?? 1;
-    const rgb = [0, 1, 2].map(i => Math.round(u[i] * (1 - a) + o[i] * a));
-    return recomposeColor({ type: 'rgb', values: rgb as [number, number, number] });
-  } catch {
-    return c;
-  }
 };
 
 /** `?selected=new` opens the list view's sidebar editor in create mode. */

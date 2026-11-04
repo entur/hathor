@@ -372,5 +372,6 @@
   "busPicture.dim.length": "length",
   "busPicture.dim.width": "width",
   "busPicture.dim.height": "height",
-  "busPicture.unsupported": "Picture not supported for {{mode}}"
+  "busPicture.unsupported": "Picture not supported for {{mode}}",
+  "busPicture.unavailable": "Picture unavailable"
 }

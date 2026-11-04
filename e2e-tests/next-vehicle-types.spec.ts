@@ -29,14 +29,15 @@ const SHOT_TIMEOUT_MS = 15_000; // software WebGL shoots slowly
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
  *     h1 on open and back to the row's Edit link on close (to New, closing the create page)
  *   - large cards draw a bus or coach type as a bus (#276); a type without a height says it is
- *     drawn with the standard height; a rail type gets "Picture not supported" instead
+ *     drawn with the standard height; a rail type gets "Picture not supported" instead; without
+ *     WebGL 2 (forced off in its own test) the drawn rows say "Picture unavailable"
  *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
  *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery (vehicle-types-mock.json)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
  *   - skip-live: the deep-link test (fixture id); the empty-list test (mocked empty list);
- *     the bus-picture test (mocked row without a height)
+ *     the two bus-picture tests (mocked rows)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -134,16 +135,35 @@ test.describe('/next/vehicle-types page shell', () => {
     await interceptGraphQLQuery(page, 'vehicleTypes', body);
     await page.goto(LIST);
     await page.getByRole('button', { name: 'Large cards' }).click();
-    await expect(page.getByRole('note')).toHaveText(['Drawn with standard height']);
     await expect(page.getByText('Picture not supported for Rail')).toBeVisible();
-    // The pictures need WebGL 2 (three.js), which a GPU-less CI browser may not offer: the text above doesn't.
+    // The pictures need WebGL 2 (three.js), which a GPU-less CI browser may not offer:
+    // there the drawn rows say "Picture unavailable" instead.
     const webgl = await page.evaluate(
       () => !!document.createElement('canvas').getContext('webgl2')
     );
-    if (webgl)
+    if (webgl) {
       await expect(page.locator('[data-card-media] img')).toHaveCount(DRAWN_ROWS, {
         timeout: SHOT_TIMEOUT_MS,
       });
+      await expect(page.getByRole('note')).toHaveText(['Drawn with standard height']);
+    } else {
+      await expect(page.getByText('Picture unavailable')).toHaveCount(DRAWN_ROWS);
+    }
+  });
+
+  test('without WebGL 2 a bus says its picture is unavailable', async ({ page }) => {
+    test.skip(IS_LIVE, 'mocked rows');
+    await page.addInitScript(() => {
+      const getContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, id, ...rest) {
+        return id === 'webgl2' ? null : getContext.call(this, id, ...rest);
+      } as typeof getContext;
+    });
+    await page.goto(LIST);
+    await page.getByRole('button', { name: 'Large cards' }).click();
+    await expect(page.getByText('Picture unavailable')).toHaveCount(DRAWN_ROWS);
+    await expect(page.getByText('Picture not supported for Rail')).toBeVisible();
+    await expect(page.locator('[data-card-media] img')).toHaveCount(0);
   });
 
   test('closing the create page returns focus to New', async ({ page }) => {
