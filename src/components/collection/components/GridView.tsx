@@ -158,38 +158,37 @@ export function GridView({
   const paginationModel = useMemo(() => ({ page, pageSize }), [page, pageSize]);
 
   return (
-    // Flex column parent → the grid sizes to its content instead of needing a fixed height.
-    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-      <LazyDataGrid
-        fallbackHeight={FALLBACK_H}
-        disableColumnMenu
-        disableRowSelectionOnClick
-        {...dataGrid}
-        // Owned, after the host's props: the grid's own filter would run a
-        // second filter over just this page (`filterMode="server"` stops a host
-        // `filterModel` too, not only the UI), and a page size the pager doesn't
-        // list (or above 100) breaks the community grid. The collection draws
-        // the pager under both views, so the grid's footer stays off.
-        disableColumnFilter
-        hideFooter
-        filterMode="server"
-        pageSizeOptions={pageSizesFor(pageSize)}
-        rows={rows as KeyedRow[]}
-        columns={colDefs}
-        getRowId={getRowId}
-        density={density}
-        columnVisibilityModel={hidden}
-        sortingMode="server"
-        sortModel={sortModel}
-        onSortModelChange={model =>
-          onQuery({ sort: model[0]?.sort ? { field: model[0].field, dir: model[0].sort } : null })
-        }
-        paginationMode="server"
-        rowCount={total}
-        paginationModel={paginationModel}
-        onPaginationModelChange={m => onQuery({ page: m.page, pageSize: m.pageSize })}
-        localeText={{ noRowsLabel: labels.empty, ...dataGrid?.localeText }}
-      />
-    </Box>
+    // In the collection's rows box (a flex column) the grid fills a box of set height, its
+    // body scrolling under fixed headers, or sizes to its content in any other.
+    <LazyDataGrid
+      fallbackHeight={FALLBACK_H}
+      disableColumnMenu
+      disableRowSelectionOnClick
+      {...dataGrid}
+      // Owned, after the host's props: the grid's own filter would run a
+      // second filter over just this page (`filterMode="server"` stops a host
+      // `filterModel` too, not only the UI), and a page size the pager doesn't
+      // list (or above 100) breaks the community grid. The collection draws
+      // the pager under both views, so the grid's footer stays off.
+      disableColumnFilter
+      hideFooter
+      filterMode="server"
+      pageSizeOptions={pageSizesFor(pageSize)}
+      rows={rows as KeyedRow[]}
+      columns={colDefs}
+      getRowId={getRowId}
+      density={density}
+      columnVisibilityModel={hidden}
+      sortingMode="server"
+      sortModel={sortModel}
+      onSortModelChange={model =>
+        onQuery({ sort: model[0]?.sort ? { field: model[0].field, dir: model[0].sort } : null })
+      }
+      paginationMode="server"
+      rowCount={total}
+      paginationModel={paginationModel}
+      onPaginationModelChange={m => onQuery({ page: m.page, pageSize: m.pageSize })}
+      localeText={{ noRowsLabel: labels.empty, ...dataGrid?.localeText }}
+    />
   );
 }

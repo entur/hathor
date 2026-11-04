@@ -36,8 +36,7 @@ export function useCollectionLabels(fieldKeyPrefix?: string): CollectionLabels {
       view: t('collection.view'),
       views: {
         grid: t('collection.view.grid'),
-        'cards-sm': t('collection.view.cards-sm'),
-        'cards-big': t('collection.view.cards-big'),
+        cards: t('collection.view.cards'),
       },
       empty: t('collection.empty'),
       edit: t('edit'),

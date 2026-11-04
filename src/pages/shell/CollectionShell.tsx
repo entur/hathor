@@ -102,7 +102,16 @@ export default function CollectionShell({
         </Box>
         {!showEmpty && actions}
       </Box>
-      <Box sx={{ flexGrow: 1, minHeight: 0, overflowY: 'auto' }}>
+      {/* A flex column, so the collection fills it and scrolls its own rows (#278). */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         {error ? (
           <ErrorPage message={error} />
         ) : loading ? (

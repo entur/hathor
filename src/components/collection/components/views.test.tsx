@@ -79,13 +79,13 @@ const renderGrid = async (
 describe('CardsView', () => {
   const mount = () => renderCards(ROWS);
 
-  it('leaves no picture area on a small card', () => {
+  it('leaves no picture area on a card without media', () => {
     const { container } = mount();
     expect(mediaAreas(container)).toHaveLength(0);
   });
 
-  it('leaves a picture area at the top of every big card, blank and hidden when unfilled', () => {
-    const { container } = renderCards(ROWS, { size: 'big' });
+  it('leaves a picture area at the top of every card with media, blank and hidden when unfilled', () => {
+    const { container } = renderCards(ROWS, { media: () => null });
     const items = screen.getAllByRole('listitem');
     expect(mediaAreas(container)).toHaveLength(items.length);
     for (const item of items) {
@@ -96,13 +96,13 @@ describe('CardsView', () => {
     }
   });
 
-  it("lays a big card's title and subtitle over its picture, outside the hidden media", () => {
+  it("lays a card's title and subtitle over its picture, outside the hidden media", () => {
     const card = resolveCard(FIELDS, COLS, {
       title: 'name',
       subtitle: 'transportMode',
       fields: ['lowFloor'],
     });
-    renderCards(ROWS, { size: 'big', card });
+    renderCards(ROWS, { media: () => null, card });
     const first = screen.getAllByRole('listitem')[0];
     const top = first.firstElementChild!;
     const heading = top.querySelector('[data-card-heading]')!;
@@ -114,7 +114,7 @@ describe('CardsView', () => {
     expect(first.querySelector('.MuiCardContent-root')?.firstElementChild?.tagName).toBe('DL');
   });
 
-  it("keeps a small card's heading in its text", () => {
+  it("keeps a text card's heading in its text", () => {
     renderCards(ROWS);
     const first = screen.getAllByRole('listitem')[0];
     expect(first.querySelector('[data-card-heading]')).toBeNull();
@@ -123,9 +123,8 @@ describe('CardsView', () => {
     ).toBeTruthy();
   });
 
-  it("puts the host's media in a big card's picture area, exposed", () => {
+  it("puts the host's media in a card's picture area, exposed", () => {
     renderCards(ROWS, {
-      size: 'big',
       media: row => <img alt={(row as { netexId: string }).netexId} />,
     });
     const [first, second] = screen.getAllByRole('listitem');
@@ -135,8 +134,8 @@ describe('CardsView', () => {
     expect(within(second).getByRole('img', { name: 'T:2' })).toBeTruthy();
   });
 
-  it("gives a big card's picture only the reserved height, standing on its bottom edge, the top cut", () => {
-    renderCards(ROWS, { size: 'big', reservedHeightForImg: 120 });
+  it("gives a card's picture only the reserved height, standing on its bottom edge, the top cut", () => {
+    renderCards(ROWS, { media: () => null, reservedHeightForImg: 120 });
     for (const item of screen.getAllByRole('listitem')) {
       const area = item.firstElementChild as HTMLElement;
       expect(getComputedStyle(area).height).toBe('120px');
@@ -152,8 +151,8 @@ describe('CardsView', () => {
     }
   });
 
-  it("sizes a big card's picture area by the picture's shape when no height is reserved", () => {
-    renderCards(ROWS, { size: 'big' });
+  it("sizes a card's picture area by the picture's shape when no height is reserved", () => {
+    renderCards(ROWS, { media: () => null });
     const area = getComputedStyle(screen.getAllByRole('listitem')[0].firstElementChild!);
     expect(area.getPropertyValue('aspect-ratio')).toBe('16/10');
     expect(area.height).not.toMatch(/px$/); // no height reserved

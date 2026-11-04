@@ -63,13 +63,13 @@ describe('identity under `id`', () => {
     const cell = within((await gridRows())[0]).getByText('::1');
     expect(getComputedStyle(cell).color).toBe(MUTED);
     cleanup();
-    await mount({ view: 'cards-sm' });
+    await mount({ view: 'cards' });
     expect(getComputedStyle(screen.getByText('::1/ver2')).color).toBe(MUTED);
   });
 });
 
 describe('render', () => {
-  it.each(['grid', 'cards-sm'] as const)(
+  it.each(['grid', 'cards'] as const)(
     'takes a replaced render on the next render (%s)',
     async view => {
       const ui = (mark: string) => (
@@ -102,7 +102,7 @@ describe('render', () => {
 
   it('fills a card field and an explicit card title', async () => {
     await mount({
-      view: 'cards-sm',
+      view: 'cards',
       columns: [
         { field: 'name', render: r => <i data-testid="title">{r.name?.value}!</i> },
         MODE_BADGE,
@@ -137,7 +137,7 @@ describe('Edit link', () => {
               element={
                 <Collection
                   rows={ROWS}
-                  view="cards-sm"
+                  view="cards"
                   editHref={editHref}
                   editState={{ initialMode: 'edit' }}
                 />
@@ -153,7 +153,7 @@ describe('Edit link', () => {
   });
 
   it('is on every card', async () => {
-    await mount({ view: 'cards-big', editHref });
+    await mount({ view: 'cards', editHref });
     const links = screen.getAllByRole('link', { name: /^Edit / });
     expect(links.map(l => l.getAttribute('data-edit-id'))).toEqual(ROWS.map(r => r.id));
   });
@@ -180,7 +180,7 @@ describe('filter dropdown', () => {
       { filterFields: { transportMode: { arg: 'transportModes', op: 'anyOf' } } }
     );
     await act(async () => {
-      render(<Filterable rows={ROWS} view="cards-sm" columns={['name', MODE_BADGE]} />);
+      render(<Filterable rows={ROWS} view="cards" columns={['name', MODE_BADGE]} />);
     });
     fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
     const modes = within(screen.getByRole('dialog', { name: 'Filters' })).getByRole('combobox', {

@@ -26,7 +26,7 @@ type ShotState = { inp: BusInput; bg: string } & ({ url: string } | { failed: tr
  *  `undefined` while it is queued. */
 function useShot(inp: BusInput): string | 'failed' | undefined {
   const { palette } = useTheme();
-  // What shows behind the picture: a big card's picture area is `action.hover` on paper.
+  // What shows behind the picture: a card's picture area is `action.hover` on paper.
   const bg = over(palette.background.paper, palette.action.hover);
   const [shot, setShot] = useState<ShotState>();
 
@@ -48,7 +48,7 @@ function useShot(inp: BusInput): string | 'failed' | undefined {
   return 'url' in shot ? shot.url : 'failed';
 }
 
-/** A line of text in place of the picture; `data-card-media-compact` shrinks a big card's
+/** A line of text in place of the picture; `data-card-media-compact` shrinks a card's
  *  picture area to it. */
 const CompactLine = ({ children }: { children: string }) => (
   <Typography
@@ -110,7 +110,7 @@ function DrawnBus({ dims, paint }: Omit<BusPictureProps, 'mode'>) {
 }
 
 /**
- * A record drawn as a 3D bus, for a big card's picture area: an `<img>` shot on
+ * A record drawn as a 3D bus, for a card's picture area: an `<img>` shot on
  * the page's shared stage, and a note over it naming each dim drawn as the
  * standard bus's. A mode the package can't draw, or a picture that can't be
  * shot (no WebGL), gets a line of text instead, and the area shrinks to it.

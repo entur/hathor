@@ -48,10 +48,9 @@ export interface FieldEntry<K extends string = string, E = unknown> {
   text?(row: E): string;
 }
 
-/** `cards-sm`: compact text cards. `cards-big`: wider cards with room for a
- *  picture at the top (`cardMedia`). */
-export type CollectionView = 'grid' | 'cards-sm' | 'cards-big';
-/** `view` is the grid / small cards / large cards switch. */
+/** `cards`: one card per row, a picture at the top when the host gives `cardMedia`. */
+export type CollectionView = 'grid' | 'cards';
+/** `view` is the grid / cards switch. */
 export type CollectionTool = 'search' | 'filter' | 'sort' | 'columns' | 'density' | 'view';
 export type FilterOp = 'contains' | 'anyOf';
 
@@ -158,16 +157,16 @@ export interface EntityCollectionProps<E, K extends string = string> {
   columns?: readonly (K | FieldEntry<K, E>)[];
   /** Omit → `name` as title plus the first columns. */
   card?: CardSpec<K>;
-  /** `cards-big` only: what fills the picture area at the top of a row's card
-   *  (an `<img>` fills it, scaled to fit). Omit, or return nothing, and the
-   *  area is left blank, so every card keeps the same height. The area is a
+  /** `cards` only: what fills the picture area at the top of a row's card
+   *  (an `<img>` fills it, scaled to fit). Omit, and cards have no picture area;
+   *  return nothing, and the area is left blank, so every card keeps the same height. The area is a
    *  size container: `cqh` / `cqw` in the media measure the part that shows,
    *  which a `reservedHeightForImg` cuts from the picture's top. Media with a
    *  `data-card-media-compact` element (a line of text instead of a picture)
    *  shrinks the area to it instead. */
   cardMedia?: (row: E) => ReactNode;
-  /** `cards-big` only: the picture area's height in px — all the room the
-   *  picture gets, so it sets how tall a big card is. The picture keeps its
+  /** `cards` only: the picture area's height in px — all the room the
+   *  picture gets, so it sets how tall a card is. The picture keeps its
    *  16:10 shape at the card's width and stands on the area's bottom edge;
    *  what doesn't fit is cut from its top (a 3D shot's empty sky first).
    *  Omit → the area is the full 16:10. */
@@ -295,7 +294,7 @@ export const DEFAULT_LABELS: CollectionLabels = {
   density: 'Density',
   densities: { compact: 'Compact', standard: 'Standard', comfortable: 'Comfortable' },
   view: 'View',
-  views: { grid: 'Table', 'cards-sm': 'Small cards', 'cards-big': 'Large cards' },
+  views: { grid: 'Table', cards: 'Cards' },
   empty: 'No rows',
   edit: 'Edit',
   pagination: 'Pagination',

@@ -2,7 +2,7 @@
  * The collection's own toolbar, rendered above either view (so it cannot use
  * the DataGrid's toolbar primitives, which need a mounted grid). Which tools
  * show is the host's whitelist; `columns` and `density` exist in grid view only.
- * The view switch (grid / small cards / large cards) sits at the end, before
+ * The view switch (grid / cards) sits at the end, before
  * the host's actions.
  *
  * One row when it fits; on narrower screens the tools after the query field
@@ -27,7 +27,6 @@ import {
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DensityMediumIcon from '@mui/icons-material/DensityMedium';
-import GridViewIcon from '@mui/icons-material/GridView';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
@@ -46,11 +45,10 @@ const DENSITIES: GridDensity[] = ['compact', 'standard', 'comfortable'];
 const GRID_ONLY: readonly CollectionTool[] = ['columns', 'density'];
 const SORT_W = 180;
 const NO_SORT = ''; // select value for "unsorted"
-// The view switch, in its order: rows, many small tiles, fewer big ones.
+// The view switch, in its order: rows, then cards.
 const VIEW_ICONS: Record<CollectionView, ReactNode> = {
   grid: <TableRowsIcon fontSize="small" />,
-  'cards-sm': <ViewModuleIcon fontSize="small" />,
-  'cards-big': <GridViewIcon fontSize="small" />,
+  cards: <ViewModuleIcon fontSize="small" />,
 };
 const VIEWS = Object.keys(VIEW_ICONS) as CollectionView[];
 

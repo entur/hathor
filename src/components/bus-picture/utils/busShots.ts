@@ -1,7 +1,7 @@
 import type { BusGroup, ShotStage } from '@entur/iteru-3dbus';
 import type { BusInput } from './standardBus.ts';
 
-// One picture, in css px, at the card's 16:10 and about a big card's width. The rest as the
+// One picture, in css px, at the card's 16:10 and about a card's width. The rest as the
 // package's own gallery (`src/gallery.js`): its card view, eye pulled in, textures at a third.
 const SHOT_W = 400,
   SHOT_H = 250,

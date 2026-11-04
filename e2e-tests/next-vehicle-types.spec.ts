@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { interceptGraphQLQuery, interceptVehicleTypesQuery, loadFixture } from './autosys-helpers';
 import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { interceptVehicleTypesQuery as interceptVehicleTypeRows } from './vehicle-list-helpers';
 
 const LIST = '/next/vehicle-types';
 // Fixture row (vehicle-types-mock.json): Type Alpha.
@@ -11,6 +12,8 @@ const FIXTURE_ROWS = 3;
 // Of those, drawn as a bus: BUS and no mode (the RAIL row gets a line of text).
 const DRAWN_ROWS = 2;
 const SHOT_TIMEOUT_MS = 15_000; // software WebGL shoots slowly
+// A full page of rows (the default page size): more than fits between toolbar and pager.
+const FULL_PAGE = 25;
 
 /**
  * /next/vehicle-types — the page shell (#253, epic #252) beside the legacy list:
@@ -28,16 +31,18 @@ const SHOT_TIMEOUT_MS = 15_000; // software WebGL shoots slowly
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
  *     h1 on open and back to the row's Edit link on close (to New, closing the create page)
- *   - large cards draw a bus or coach type as a bus (#276); a type without a height says it is
+ *   - cards draw a bus or coach type as a bus (#276); a type without a height says it is
  *     drawn with the standard height; a rail type gets "Picture not supported" instead; without
  *     WebGL 2 (forced off in its own test) the drawn rows say "Picture unavailable"
+ *   - collection frame (#278): the page doesn't scroll; the rows scroll between the toolbar and
+ *     the pager, which stay in view, in the grid and in cards, at desktop and phone width
  *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
  *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery (vehicle-types-mock.json)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
  *   - skip-live: the deep-link test (fixture id); the empty-list test (mocked empty list);
- *     the two bus-picture tests (mocked rows)
+ *     the two bus-picture tests and the frame test (mocked rows)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -123,7 +128,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
   });
 
-  test('large cards draw buses and coaches; a type without a height says so, a train is unsupported', async ({
+  test('cards draw buses and coaches; a type without a height says so, a train is unsupported', async ({
     page,
   }) => {
     test.skip(IS_LIVE, 'mocked row without a height');
@@ -134,7 +139,7 @@ test.describe('/next/vehicle-types page shell', () => {
     delete body.data.vehicleTypes.content[0].height;
     await interceptGraphQLQuery(page, 'vehicleTypes', body);
     await page.goto(LIST);
-    await page.getByRole('button', { name: 'Large cards' }).click();
+    await page.getByRole('button', { name: 'Cards' }).click();
     await expect(page.getByText('Picture not supported for Rail')).toBeVisible();
     // The pictures need WebGL 2 (three.js), which a GPU-less CI browser may not offer:
     // there the drawn rows say "Picture unavailable" instead.
@@ -160,11 +165,53 @@ test.describe('/next/vehicle-types page shell', () => {
       } as typeof getContext;
     });
     await page.goto(LIST);
-    await page.getByRole('button', { name: 'Large cards' }).click();
+    await page.getByRole('button', { name: 'Cards' }).click();
     await expect(page.getByText('Picture unavailable')).toHaveCount(DRAWN_ROWS);
     await expect(page.getByText('Picture not supported for Rail')).toBeVisible();
     await expect(page.locator('[data-card-media] img')).toHaveCount(0);
   });
+
+  for (const [size, viewport] of [
+    ['desktop', null], // the project's own viewport
+    ['phone', MOBILE_VIEWPORT],
+  ] as const) {
+    test(`the rows scroll between a fixed toolbar and pager, not the page (${size})`, async ({
+      page,
+    }) => {
+      test.skip(IS_LIVE, 'a mocked full page');
+      // A full page of rail types: their cards get a line of text, no WebGL shot.
+      await interceptVehicleTypeRows(
+        page,
+        Array.from({ length: FULL_PAGE }, (_, i) => ({
+          netexId: `NMR:VehicleType:${100 + i}`,
+          version: 1,
+          name: { value: `Type ${i}` },
+          transportMode: 'RAIL',
+        }))
+      );
+      if (viewport) await page.setViewportSize(viewport);
+      await page.goto(LIST);
+      const view = page.getByRole('group', { name: 'View' });
+      const pager = page.getByRole('navigation', { name: 'Pagination' });
+      const rows = page.getByTestId('collection-rows');
+      const pageScrolls = () =>
+        page.evaluate(() => document.documentElement.scrollHeight > window.innerHeight);
+
+      for (const name of ['Table', 'Cards']) {
+        await view.getByRole('button', { name }).click();
+        // The grid scrolls its own body under fixed headers (and draws only the rows near the
+        // view, so no row can be scrolled to); cards scroll in the rows box.
+        const scroller = name === 'Table' ? rows.locator('.MuiDataGrid-virtualScroller') : rows;
+        await expect
+          .poll(() => scroller.evaluate(el => el.scrollHeight > el.clientHeight))
+          .toBe(true);
+        await scroller.evaluate(el => el.scrollTo(0, el.scrollHeight));
+        await expect(view).toBeInViewport();
+        await expect(pager).toBeInViewport();
+        expect(await pageScrolls()).toBe(false);
+      }
+    });
+  }
 
   test('closing the create page returns focus to New', async ({ page }) => {
     await page.goto(LIST);

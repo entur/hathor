@@ -46,7 +46,7 @@ const CARD: CardSpec<VehicleTypeField> = {
   fields: ['transportMode', 'deckPlan', 'totalCapacity'],
 };
 
-// Big cards: the type drawn as a bus, white; dims it lacks come from the standard bus.
+// Cards: the type drawn as a bus, white; dims it lacks come from the standard bus.
 // Not a bus or coach: a line of text instead.
 const busMedia = (vt: VehicleType) => (
   <BusPicture dims={vt} paint="vehicleType" mode={vt.transportMode} />

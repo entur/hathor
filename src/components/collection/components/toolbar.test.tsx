@@ -78,8 +78,8 @@ describe('CollectionToolbar', () => {
     expect(screen.getByRole('button', { name: 'Host action' })).toBeTruthy();
   });
 
-  it.each(['cards-sm', 'cards-big'] as const)('drops the grid-only tools in %s view', view => {
-    mount({ view });
+  it('drops the grid-only tools in cards view', () => {
+    mount({ view: 'cards' });
     expect(screen.queryByRole('button', { name: 'Columns' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Density' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Filters' })).toBeTruthy();
@@ -171,17 +171,13 @@ describe('CollectionToolbar', () => {
     expect(onDensity).toHaveBeenCalledWith('compact');
   });
 
-  it.each(['grid', 'cards-sm', 'cards-big'] as const)(
-    'offers the three views in %s view, the current one pressed',
+  it.each(['grid', 'cards'] as const)(
+    'offers the two views in %s view, the current one pressed',
     view => {
       mount({ view });
       const group = screen.getByRole('group', { name: 'View' });
       const buttons = within(group).getAllByRole('button');
-      expect(buttons.map(b => b.getAttribute('aria-label'))).toEqual([
-        'Table',
-        'Small cards',
-        'Large cards',
-      ]);
+      expect(buttons.map(b => b.getAttribute('aria-label'))).toEqual(['Table', 'Cards']);
       expect(
         buttons
           .filter(b => b.getAttribute('aria-pressed') === 'true')
@@ -192,8 +188,8 @@ describe('CollectionToolbar', () => {
 
   it('reports a picked view, and nothing for a click on the current one', () => {
     const { onView } = mount({ view: 'grid' });
-    fireEvent.click(screen.getByRole('button', { name: 'Large cards' }));
-    expect(onView).toHaveBeenCalledWith('cards-big');
+    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
+    expect(onView).toHaveBeenCalledWith('cards');
     onView.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'Table' }));
     expect(onView).not.toHaveBeenCalled();

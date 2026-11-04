@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mui/material';
 import { BusPicture } from './index.ts';
 
-const AREA_W = 360; // a big card's width
+const AREA_W = 360; // a card's width
 
-/** Stands in for a big card's picture area: 16:10, an `<img>` child fills it. */
+/** Stands in for a card's picture area: 16:10, an `<img>` child fills it. */
 const meta: Meta<typeof BusPicture> = {
   title: 'components/BusPicture',
   component: BusPicture,

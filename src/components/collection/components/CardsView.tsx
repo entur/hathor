@@ -19,13 +19,13 @@ import type { CollectionLabels, Column, KeyedRow, ResolvedCard, RowEdit } from '
 import { displayValue, EMPTY_TEXT, fullTitle, valueList } from '../utils/values.ts';
 import { EditLink } from './EditLink.tsx';
 
-// A card never gets narrower than its size's minimum (or the whole row, on a
-// screen narrower than that); the row wraps instead.
-const CARD_MIN_PX = { sm: 260, big: 320 } as const;
-// The picture's shape at the card's width: the 3D preview's box. A big card's
+// A card never gets narrower than this (or the whole row, on a screen narrower
+// than that); the row wraps instead. A card with a picture needs more room.
+const CARD_MIN_PX = { text: 260, picture: 320 } as const;
+// The picture's shape at the card's width: the 3D preview's box. A card's
 // picture area too, unless a height is reserved for it.
 const MEDIA_ASPECT = '16 / 10';
-// The heading over a big card's picture sits at its bottom edge — on the 3D
+// The heading over a card's picture sits at its bottom edge — on the 3D
 // shot's light ground plane — over a fade of the card's own paper rising from
 // the edge, opaque enough at the text to read over any picture.
 const SCRIM_ALPHA = 0.85;
@@ -72,20 +72,15 @@ const CardValue = ({
   );
 };
 
-/** `sm`: text only. `big`: wider, with a picture area above the text and
- *  the title and subtitle laid over the picture's bottom edge. */
-export type CardSize = keyof typeof CARD_MIN_PX;
-
 export interface CardsViewProps {
   /** The visible page, keyed (`keyRows`). */
   rows: readonly KeyedRow[];
   card: ResolvedCard;
   labels: CollectionLabels;
-  /** Default `sm`. */
-  size?: CardSize;
-  /** `big` only: what fills a row's picture area; blank when omitted. */
+  /** Set → a picture area on every card, filled with what it returns, the heading laid
+   *  over its bottom edge. Omitted → text cards. */
   media?: (row: unknown) => ReactNode;
-  /** `big` only: the picture area's height in px (`EntityCollectionProps`). */
+  /** With `media`: the picture area's height in px (`EntityCollectionProps`). */
   reservedHeightForImg?: number;
   cardProps?: CardProps;
   /** Set → an Edit link at the foot of every card. */
@@ -117,7 +112,7 @@ const CardHeading = ({ row, card, labels }: HeadingProps) => (
 );
 
 /**
- * The top of a big card: the picture area, always there so every card has the
+ * The top of a card with media: the picture area, always there so every card has the
  * same shape whether or not the host fills it, with the card's heading laid
  * over its bottom edge — unless the host fills it with a compact line of text
  * (`data-card-media-compact`): then the area is just the heading and that line. The heading comes first in reading order; an unfilled
@@ -192,9 +187,8 @@ const CardMediaArea = ({
  * @param rows      the visible page, keyed
  * @param card      resolved title, subtitle and body fields
  * @param labels    yes/no wording for switches
- * @param size      `sm` (default) or `big`: wider, the heading over a picture on top
- * @param media     `big` only: fills a row's picture area
- * @param reservedHeightForImg `big` only: the picture area's height in px
+ * @param media     set → a picture area on every card, filled with what it returns
+ * @param reservedHeightForImg with `media`: the picture area's height in px
  * @param cardProps spread onto every `Card`
  * @param edit      set → an Edit link on every card
  * @returns the card list
@@ -203,36 +197,35 @@ export function CardsView({
   rows,
   card,
   labels,
-  size = 'sm',
   media,
   reservedHeightForImg,
   cardProps,
   edit,
 }: CardsViewProps): React.ReactNode {
-  const big = size === 'big';
+  const pictured = media !== undefined;
+  const minPx = pictured ? CARD_MIN_PX.picture : CARD_MIN_PX.text;
   return (
     <Box
       role="list"
-      data-card-size={size}
       sx={{
         display: 'grid',
-        gridTemplateColumns: `repeat(auto-fill, minmax(min(${CARD_MIN_PX[size]}px, 100%), 1fr))`,
+        gridTemplateColumns: `repeat(auto-fill, minmax(min(${minPx}px, 100%), 1fr))`,
         gap: 2,
       }}
     >
       {rows.map(({ key, entity: row }) => (
         <Card key={key} role="listitem" variant="outlined" {...cardProps}>
-          {big ? (
+          {pictured ? (
             <CardMediaArea
               row={row}
               card={card}
               labels={labels}
-              media={media?.(row)}
+              media={media(row)}
               reservedHeightForImg={reservedHeightForImg}
             />
           ) : null}
           <CardContent>
-            {big ? null : <CardHeading row={row} card={card} labels={labels} />}
+            {pictured ? null : <CardHeading row={row} card={card} labels={labels} />}
             <Box
               component="dl"
               sx={{
@@ -241,7 +234,7 @@ export function CardsView({
                 columnGap: 1.5,
                 rowGap: 0.5,
                 m: 0,
-                mt: big ? 0 : 1,
+                mt: pictured ? 0 : 1,
               }}
             >
               {card.fields.map(col => (

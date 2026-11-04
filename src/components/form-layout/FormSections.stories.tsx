@@ -5,7 +5,7 @@ import { FormSections, resolveSections, type Layout, type ResolvedField } from '
 
 const MENU_W = 72; // the collapsed nav rail
 const FORM_MAX_W = 1140; // PageShell's `lg` container: form + its TOC column
-const MEDIA_ASPECT = '16 / 10'; // iteru-3dbus' BusView, and CardsView's big-card media
+const MEDIA_ASPECT = '16 / 10'; // iteru-3dbus' BusView, and CardsView's card picture area
 
 /** Story-local field mappings; the real ones land with each form page (#252 pri 3–4). */
 const vehicleTypeFields = {

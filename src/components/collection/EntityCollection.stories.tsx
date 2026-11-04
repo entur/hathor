@@ -12,6 +12,7 @@ import { ALL_TOOLS } from './types';
 const ROW_COUNT = 120;
 const LIST = '/next/vehicle-types';
 const NARROW_W = 360; // a phone: the toolbar wraps, the Columns tool trims the grid (U5)
+const FRAME_H = 560; // a page-shell height: the toolbar and pager stay, the rows scroll (#278)
 const MODES: TransportMode[] = ['BUS', 'COACH', 'RAIL', 'TRAM', 'WATER'];
 const BUS_SHARE = 3; // of every 4 rows a bus, like a bus operator's fleet
 const UNNAMED_EVERY = 15; // these rows have no name: the title reads as a dash
@@ -73,7 +74,7 @@ const meta: Meta<typeof Demo> = {
     docs: {
       description: {
         component:
-          "Embedded port of the sandbox `EntityCollection` (#261, epic #252): toolbar (search · filter · sort · columns · density · view), grid / small cards / big cards. Hathor additions: a field's `render` (transport mode as icon + text), an Edit link per record (`editHref`), the id muted. Drawn with the vehicle-types page's own collection config (`vehicleTypeFields`, `vehicleTypeCollectionConfig.tsx`, #271) over 120 seeded rows.",
+          "Embedded port of the sandbox `EntityCollection` (#261, epic #252): toolbar (search · filter · sort · columns · density · view), grid / cards. Hathor additions: a field's `render` (transport mode as icon + text), an Edit link per record (`editHref`), the id muted. Drawn with the vehicle-types page's own collection config (`vehicleTypeFields`, `vehicleTypeCollectionConfig.tsx`, #271) over 120 seeded rows.",
       },
     },
   },
@@ -85,7 +86,7 @@ const meta: Meta<typeof Demo> = {
     onViewChange: fn(),
   },
   argTypes: {
-    view: { control: 'inline-radio', options: ['grid', 'cards-sm', 'cards-big'] },
+    view: { control: 'inline-radio', options: ['grid', 'cards'] },
     filterMode: { control: 'inline-radio', options: ['client', 'server'] },
     tools: { control: 'check', options: [...ALL_TOOLS] },
     rows: { control: false },
@@ -98,10 +99,8 @@ type Story = StoryObj<typeof Demo>;
 /** Uncontrolled: starts on the grid; the toolbar's view switch changes it. */
 export const Grid: Story = {};
 
-export const SmallCards: Story = { args: { view: 'cards-sm' } };
-
 /** Each type drawn as a bus; one row in four has no width or height and says so. */
-export const BigCards: Story = { args: { view: 'cards-big' } };
+export const Cards: Story = { args: { view: 'cards' } };
 
 export const Empty: Story = { args: { rows: [] } };
 
@@ -110,6 +109,18 @@ export const Narrow: Story = {
   decorators: [
     Story => (
       <div style={{ width: NARROW_W }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+/** In a frame of set height, as the page shell gives it: the toolbar and the pager stay put
+ *  and the rows scroll between them — the grid under its fixed headers (#278). */
+export const Framed: Story = {
+  decorators: [
+    Story => (
+      <div style={{ height: FRAME_H, display: 'flex', flexDirection: 'column' }}>
         <Story />
       </div>
     ),

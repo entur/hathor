@@ -180,7 +180,18 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     const activeTools = tools === false ? [] : (tools ?? ALL_TOOLS);
 
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, minWidth: 0 }}>
+      // In a parent of set height the toolbar and pager stay put and the rows scroll
+      // between them (#278); in any other, the collection grows to its content.
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+          minWidth: 0,
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         {activeTools.length || actions ? (
           <CollectionToolbar
             tools={activeTools}
@@ -199,36 +210,46 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
             actions={actions}
           />
         ) : null}
-        {view === 'grid' ? (
-          <GridView
-            rows={keyed}
-            columns={cols}
-            total={result.total}
-            page={result.page}
-            query={query}
-            onQuery={onQuery}
-            density={density}
-            hidden={hidden}
-            labels={L}
-            dataGrid={slotProps?.dataGrid}
-            edit={edit}
-          />
-        ) : result.total === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            {L.empty}
-          </Typography>
-        ) : (
-          <CardsView
-            rows={keyed}
-            card={resolvedCard}
-            labels={L}
-            size={view === 'cards-big' ? 'big' : 'sm'}
-            media={cardMedia as ((row: unknown) => ReactNode) | undefined}
-            reservedHeightForImg={reservedHeightForImg}
-            cardProps={slotProps?.card}
-            edit={edit}
-          />
-        )}
+        <Box
+          data-testid="collection-rows"
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {view === 'grid' ? (
+            <GridView
+              rows={keyed}
+              columns={cols}
+              total={result.total}
+              page={result.page}
+              query={query}
+              onQuery={onQuery}
+              density={density}
+              hidden={hidden}
+              labels={L}
+              dataGrid={slotProps?.dataGrid}
+              edit={edit}
+            />
+          ) : result.total === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              {L.empty}
+            </Typography>
+          ) : (
+            <CardsView
+              rows={keyed}
+              card={resolvedCard}
+              labels={L}
+              media={cardMedia as ((row: unknown) => ReactNode) | undefined}
+              reservedHeightForImg={reservedHeightForImg}
+              cardProps={slotProps?.card}
+              edit={edit}
+            />
+          )}
+        </Box>
         {/* One pager under either view (Linje's Pagination; the grid's own footer is off). */}
         <CollectionPager
           total={result.total}
