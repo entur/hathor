@@ -14,7 +14,7 @@ const FIXTURE_ROWS = 3;
  * PageShell layout route → CollectionShell list · EntityDetailsShell editor page.
  *
  * Workflow:
- *   /next/vehicle-types → list with an Edit link per row → Edit opens
+ *   /next/vehicle-types → collection grid (#271) with an Edit link per row → Edit opens
  *   /next/vehicle-types/<id> in edit mode → editor-rail collapse returns to the list.
  * Covers:
  *   - the header search is hidden on shell routes (still shown on the legacy list), incl.
@@ -50,7 +50,7 @@ test.describe('/next/vehicle-types page shell', () => {
     const settings = banner.getByRole('button', { name: 'settings', exact: true });
     await page.goto(LIST);
     await selectFirstOrg(page);
-    await expect(page.getByTestId('collection-list')).toBeVisible();
+    await expect(page.getByRole('grid')).toBeVisible();
     expect(await searchIcon.count()).toBe(0);
     // innerText skips the hidden long label (textContent would include both).
     await expect.poll(() => page.getByTestId('create-vehicle-type-fab').innerText()).toBe('New');
@@ -62,7 +62,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await searchIcon.click();
     await expect(settings).toBeHidden(); // the open search bar replaces the header actions
     await page.goBack();
-    await expect(page.getByTestId('collection-list')).toBeVisible();
+    await expect(page.getByRole('grid')).toBeVisible();
     await expect(settings).toBeVisible();
     expect(await searchIcon.count()).toBe(0);
   });
@@ -72,7 +72,7 @@ test.describe('/next/vehicle-types page shell', () => {
   }) => {
     await page.goto(LIST);
     await selectFirstOrg(page);
-    const firstEdit = page.getByTestId('collection-edit').first();
+    const firstEdit = page.getByRole('link', { name: /^Edit / }).first();
     await firstEdit.click();
 
     await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));

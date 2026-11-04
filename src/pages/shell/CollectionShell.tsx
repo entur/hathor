@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import LoadingPage from '../../components/common/LoadingPage.tsx';
 import ErrorPage from '../../components/common/ErrorPage.tsx';
 
+// How long focus waits for the Edit link to be drawn (the grid loads lazily) before the h1 takes it.
+const FOCUS_WAIT_MS = 2000;
+
 /** Router state the details page hands back on close: the record whose Edit link regains focus
  *  (`new` = the New action). */
 export interface CollectionLinkState {
@@ -51,11 +54,26 @@ export default function CollectionShell({
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    if (loading || !focusEditId) return;
-    const link = rootRef.current?.querySelector<HTMLElement>(
-      `[data-edit-id="${CSS.escape(focusEditId)}"]`
-    );
-    (link ?? headingRef.current)?.focus();
+    const root = rootRef.current;
+    if (loading || !focusEditId || !root) return;
+    const selector = `[data-edit-id="${CSS.escape(focusEditId)}"]`;
+    const focusLink = () => {
+      const link = root.querySelector<HTMLElement>(selector);
+      link?.focus();
+      return !!link;
+    };
+    if (focusLink()) return;
+    const observer = new MutationObserver(() => focusLink() && stop());
+    const timer = setTimeout(() => {
+      stop();
+      headingRef.current?.focus(); // not drawn, e.g. on another page of the grid
+    }, FOCUS_WAIT_MS);
+    const stop = () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
+    observer.observe(root, { childList: true, subtree: true });
+    return stop;
   }, [loading, focusEditId]);
 
   const loaded = !loading && !error;
