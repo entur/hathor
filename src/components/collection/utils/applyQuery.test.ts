@@ -97,6 +97,18 @@ describe('applyQuery', () => {
     expect(matchRows(rows, COLS, FF, {}, 'flirt', 'client', visible)).toEqual(rows);
   });
 
+  it('also matches the text an entry shows, e.g. a localized enum label', () => {
+    const cols = resolveColumns(FIELDS, [
+      {
+        field: 'transportMode',
+        text: r => ((r as { transportMode: string }).transportMode === 'bus' ? 'Buss' : ''),
+      },
+    ]);
+    const rows = [ROWS[0], ROWS[1]];
+    expect(matchRows(rows, cols, FF, {}, 'buss', 'client')).toEqual([ROWS[1]]);
+    expect(matchRows(rows, cols, FF, {}, 'bus', 'client')).toEqual([ROWS[1]]); // stored value still matches
+  });
+
   it('does not search numbers or switches', () => {
     expect(ids({ search: '74' })).toEqual([]);
     expect(ids({ search: 'yes' })).toEqual([]);

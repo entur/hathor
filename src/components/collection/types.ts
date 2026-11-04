@@ -43,6 +43,9 @@ export interface FieldEntry<K extends string = string, E = unknown> {
    *  holding just its value. A field shown only on an explicit `card` (not in `columns`)
    *  has no entry, so no `render`. Hathor's addition to the sandbox interface. */
   render?(row: E): ReactNode;
+  /** Text a search also matches, beside the stored value — what `render` shows when it
+   *  differs (e.g. a localized enum label). Hathor's addition, with `render`. */
+  text?(row: E): string;
 }
 
 /** `cards-sm`: compact text cards. `cards-big`: wider cards with room for a
@@ -218,6 +221,8 @@ export interface Column {
   muted: boolean;
   /** The entry's `render`, when it has one. */
   render?: (row: unknown) => ReactNode;
+  /** The entry's `text`, when it has one: matched by search. */
+  text?: (row: unknown) => string;
 }
 
 /** A visible row with the unique key both views identify it by. */

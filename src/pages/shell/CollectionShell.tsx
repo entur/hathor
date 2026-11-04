@@ -57,9 +57,14 @@ export default function CollectionShell({
     const root = rootRef.current;
     if (loading || !focusEditId || !root) return;
     const selector = `[data-edit-id="${CSS.escape(focusEditId)}"]`;
+    // Late focus must not pull the user out of where they went meanwhile (e.g. Search).
+    const unclaimed = () => {
+      const active = document.activeElement;
+      return active == null || active === document.body;
+    };
     const focusLink = () => {
       const link = root.querySelector<HTMLElement>(selector);
-      link?.focus();
+      if (link && unclaimed()) link.focus();
       return !!link;
     };
     if (focusLink()) return;
@@ -69,7 +74,7 @@ export default function CollectionShell({
     // when vehicles / deck-plans adopt the collection.
     const timer = setTimeout(() => {
       stop();
-      headingRef.current?.focus();
+      if (unclaimed()) headingRef.current?.focus();
     }, FOCUS_WAIT_MS);
     const stop = () => {
       observer.disconnect();

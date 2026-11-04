@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import {
   createEntityCollection,
   type CardSpec,
@@ -6,6 +7,7 @@ import {
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
 import type { DetailsLinkState } from '../../../pages/shell/EntityDetailsShell.tsx';
+import { transportModeLabelKey } from '../../netex/transportMode.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import {
   vehicleTypeFields,
@@ -26,9 +28,10 @@ const COLUMNS: Props['columns'] = [
   'id',
   {
     field: 'transportMode',
-    // Icon + its text, not the icon alone (V4).
+    // Icon + its text, not the icon alone (V4); search matches that text too.
     render: r =>
       r.transportMode && <TransportModeIcon mode={r.transportMode} iconPosition="left" />,
+    text: r => (r.transportMode ? i18next.t(transportModeLabelKey(r.transportMode)) : ''),
   },
   'deckPlan',
   'totalCapacity',

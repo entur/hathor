@@ -70,6 +70,7 @@ export const resolveColumns = (
         label,
         spec,
         render: entry.render,
+        text: entry.text,
         ...(identity ? IDENTITY : PLAIN),
       },
     ];

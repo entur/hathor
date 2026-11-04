@@ -49,10 +49,12 @@ const sortKey = (row: unknown, spec: FieldSpec): SortKey => {
 const compare = (a: SortKey, b: SortKey): number =>
   typeof a === 'number' && typeof b === 'number' ? a - b : COLLATOR.compare(String(a), String(b));
 
-/** Does the search needle appear in the cell, as stored or as shown (a compact id)? */
+/** Does the search needle appear in the cell — as stored, as `text` shows it, or as
+ *  displayed (a compact id)? */
 const cellHas = (row: unknown, col: Column, needle: string): boolean => {
   const text = formatValue(row, col.spec);
   if (text.toLowerCase().includes(needle)) return true;
+  if (col.text?.(row).toLowerCase().includes(needle)) return true;
   const shown = col.display(text);
   return shown !== text && shown.toLowerCase().includes(needle);
 };
