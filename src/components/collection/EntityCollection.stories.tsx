@@ -21,6 +21,10 @@ const PROPULSION: PropulsionType[] = ['COMBUSTION', 'ELECTRIC', 'HYBRID'];
 const CAPACITY_MIN = 40,
   CAPACITY_SPAN = 110; // a midibus to an articulated bus
 const NO_DIMS_EVERY = 4; // these rows have a length only: their bus says width and height are standard
+const WIDTH_MIN = 2.45,
+  WIDTH_STEP = 0.1, // 2.45–2.65 m
+  HEIGHT_MIN = 2.9,
+  HEIGHT_STEP = 0.2; // 2.9–3.5 m
 
 /** Varied but the same on every load: values cycle at co-prime strides. */
 const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
@@ -32,7 +36,10 @@ const ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({
       : { value: `${MAKES[i % MAKES.length]} ${MODELS[(i * 3) % MODELS.length]}` },
   transportMode: i % (BUS_SHARE + 1) ? 'BUS' : MODES[1 + ((i >> 2) % (MODES.length - 1))],
   length: 8 + ((i * 7) % 180) / 10,
-  ...(i % NO_DIMS_EVERY !== 3 && { width: 2.45 + (i % 3) / 10, height: 2.9 + (i % 4) / 5 }),
+  ...(i % NO_DIMS_EVERY !== NO_DIMS_EVERY - 1 && {
+    width: WIDTH_MIN + (i % 3) * WIDTH_STEP,
+    height: HEIGHT_MIN + (i % 4) * HEIGHT_STEP,
+  }),
   lowFloor: i % 5 < 3,
   propulsionTypes: [PROPULSION[i % PROPULSION.length]],
   passengerCapacity: { totalCapacity: CAPACITY_MIN + ((i * 37) % CAPACITY_SPAN) },

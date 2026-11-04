@@ -43,7 +43,12 @@ const closeStage = () => {
 const shoot = async (inp: BusInput, bg: string): Promise<string> => {
   // shortcut: the stage keeps the first picture's bg (light vs dark ground) and the cache
   // ignores bg, so a theme switch keeps the old light until the page lets go; key on bg if seen.
-  stage ??= openStage(bg);
+  if (!stage) {
+    const opening = openStage(bg);
+    stage = opening;
+    // A stage that failed to open (no WebGL, a chunk 404) is tried again by the next shot.
+    opening.catch(() => stage === opening && (stage = null));
+  }
   const [lib, { stage: s, go, cur }] = await Promise.all([import('@entur/iteru-3dbus'), stage]);
   const group = lib.mkBus(inp, lib.faces(inp), { detail: DETAIL });
   cur.len = lib.total(inp) * lib.MM;
@@ -61,8 +66,9 @@ const shoot = async (inp: BusInput, bg: string): Promise<string> => {
 };
 
 /**
- * Holds the picture of one bus while it is on screen. Shots run one at a time
- * on the shared stage; the same input gives the same picture.
+ * Holds the picture of one bus while its card is mounted (shot whether or not it
+ * is scrolled into view). Shots run one at a time on the shared stage; the same
+ * input gives the same picture.
  *
  * @param {BusInput} inp a valid bus input
  * @param {string} bg the colour behind the picture (hex or rgb), sets the light
@@ -79,7 +85,8 @@ export const holdBusShot = (inp: BusInput, bg: string) => {
       if (shots.get(key) !== entry) throw new Error('released before its turn');
       return shoot(inp, bg);
     });
-    queue = entry.url.catch(() => undefined);
+    // A failed shot is not kept: the next picture of this bus tries again.
+    queue = entry.url.catch(() => shots.get(key) === entry && shots.delete(key));
     shots.set(key, entry);
     shot = entry;
   }
@@ -89,9 +96,11 @@ export const holdBusShot = (inp: BusInput, bg: string) => {
     held.holders -= 1;
     // A tick later: a remount (StrictMode, a view switch) keeps the picture.
     setTimeout(() => {
-      if (held.holders > 0 || shots.get(key) !== held) return;
-      shots.delete(key);
-      void held.url.then(URL.revokeObjectURL, () => undefined);
+      if (held.holders > 0) return;
+      if (shots.get(key) === held) {
+        shots.delete(key);
+        void held.url.then(URL.revokeObjectURL, () => undefined);
+      }
       void queue.then(closeStage);
     });
   };

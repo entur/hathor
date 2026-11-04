@@ -371,5 +371,6 @@
   "busPicture.standard": "Drawn with standard {{dims}}",
   "busPicture.dim.length": "length",
   "busPicture.dim.width": "width",
-  "busPicture.dim.height": "height"
+  "busPicture.dim.height": "height",
+  "busPicture.unsupported": "Picture not supported for {{mode}}"
 }

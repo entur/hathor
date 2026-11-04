@@ -17,6 +17,7 @@ const meta: Meta<typeof BusPicture> = {
           aspectRatio: '16 / 10',
           bgcolor: 'action.hover',
           '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },
+          '&:has([data-card-media-compact])': { aspectRatio: 'auto' },
         }}
       >
         <Story />
@@ -45,4 +46,9 @@ export const OutOfRange: Story = { args: { dims: { length: 74, width: 2.9, heigh
 /** A vehicle is red. */
 export const Vehicle: Story = {
   args: { paint: 'vehicle', dims: { length: 12, width: 2.55, height: 3.2 } },
+};
+
+/** Not a bus or coach: a line of text, and the area shrinks to it. */
+export const Unsupported: Story = {
+  args: { mode: 'RAIL', dims: { length: 74, width: 2.9, height: 4.2 } },
 };

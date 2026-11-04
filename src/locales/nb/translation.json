@@ -370,5 +370,6 @@
   "busPicture.standard": "Tegnet med standard {{dims}}",
   "busPicture.dim.length": "lengde",
   "busPicture.dim.width": "bredde",
-  "busPicture.dim.height": "høyde"
+  "busPicture.dim.height": "høyde",
+  "busPicture.unsupported": "Bilde støttes ikke for {{mode}}"
 }

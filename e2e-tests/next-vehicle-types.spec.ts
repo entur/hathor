@@ -8,6 +8,9 @@ const FIXTURE_ID = 'NMR:VehicleType:1';
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 // Rows in vehicle-types-mock.json.
 const FIXTURE_ROWS = 3;
+// Of those, drawn as a bus: BUS and no mode (the RAIL row gets a line of text).
+const DRAWN_ROWS = 2;
+const SHOT_TIMEOUT_MS = 15_000; // software WebGL shoots slowly
 
 /**
  * /next/vehicle-types — the page shell (#253, epic #252) beside the legacy list:
@@ -25,8 +28,8 @@ const FIXTURE_ROWS = 3;
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
  *     h1 on open and back to the row's Edit link on close (to New, closing the create page)
- *   - large cards draw each type as a bus (#276); a type without a height says it is drawn
- *     with the standard height
+ *   - large cards draw a bus or coach type as a bus (#276); a type without a height says it is
+ *     drawn with the standard height; a rail type gets "Picture not supported" instead
  *   - create page (internal user test): no edit pen, no New button; Vehicles tab hidden and
  *     Cancel returning to where you came from are fixme until the form-page slice of #252
  * Modes:
@@ -119,7 +122,9 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
   });
 
-  test('large cards draw each type as a bus; a type without a height says so', async ({ page }) => {
+  test('large cards draw buses and coaches; a type without a height says so, a train is unsupported', async ({
+    page,
+  }) => {
     test.skip(IS_LIVE, 'mocked row without a height');
     // A fresh read: editing it leaves the shared fixture alone.
     const body = loadFixture('vehicle-types-mock.json') as {
@@ -129,8 +134,14 @@ test.describe('/next/vehicle-types page shell', () => {
     await interceptGraphQLQuery(page, 'vehicleTypes', body);
     await page.goto(LIST);
     await page.getByRole('button', { name: 'Large cards' }).click();
-    await expect(page.locator('[data-card-media] img')).toHaveCount(FIXTURE_ROWS);
     await expect(page.getByRole('note')).toHaveText(['Drawn with standard height']);
+    await expect(page.getByText('Picture not supported for Rail')).toBeVisible();
+    // The pictures need WebGL, which a GPU-less CI browser may not offer: the text above doesn't.
+    const webgl = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
+    if (webgl)
+      await expect(page.locator('[data-card-media] img')).toHaveCount(DRAWN_ROWS, {
+        timeout: SHOT_TIMEOUT_MS,
+      });
   });
 
   test('closing the create page returns focus to New', async ({ page }) => {

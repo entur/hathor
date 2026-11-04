@@ -29,6 +29,8 @@ const MEDIA_ASPECT = '16 / 10';
 // shot's light ground plane — over a fade of the card's own paper rising from
 // the edge, opaque enough at the text to read over any picture.
 const SCRIM_ALPHA = 0.85;
+// Media that is a line of text rather than a picture marks itself with this.
+const COMPACT = '[data-card-media-compact]';
 const CHIP_KINDS: readonly Column['spec']['kind'][] = ['enum', 'enumMulti'];
 
 /** One value as text: the shown form as a card reads it, the full one on hover, a dash when
@@ -141,6 +143,16 @@ const CardMediaArea = ({
       borderBottom: 1,
       borderColor: 'divider',
       overflow: 'hidden',
+      // Media marked `data-card-media-compact` (a line of text, no picture): the area
+      // shrinks to it, the text above the heading, both in flow.
+      [`&:has(${COMPACT})`]: {
+        aspectRatio: 'auto',
+        height: 'auto',
+        containerType: 'normal',
+        display: 'flex',
+        flexDirection: 'column-reverse',
+        '& > *': { position: 'static', aspectRatio: 'auto', background: 'none' },
+      },
     }}
   >
     <Box

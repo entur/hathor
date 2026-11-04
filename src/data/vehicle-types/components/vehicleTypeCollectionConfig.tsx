@@ -47,7 +47,10 @@ const CARD: CardSpec<VehicleTypeField> = {
 };
 
 // Big cards: the type drawn as a bus, white; dims it lacks come from the standard bus.
-const busMedia = (vt: VehicleType) => <BusPicture dims={vt} paint="vehicleType" />;
+// Not a bus or coach: a line of text instead.
+const busMedia = (vt: VehicleType) => (
+  <BusPicture dims={vt} paint="vehicleType" mode={vt.transportMode} />
+);
 
 // Relative: resolves under whichever route lists the collection.
 const editHref = (vt: VehicleType) => encodeURIComponent(vt.id);
