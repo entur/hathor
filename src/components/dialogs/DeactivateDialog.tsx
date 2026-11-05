@@ -19,8 +19,6 @@ interface DeactivateDialogProps {
   title?: string;
   /** Body text; defaults to `common.deactivateConfirmMessage`. */
   message?: string;
-  /** The confirm button's label; defaults to `common.deactivate`. */
-  actionLabel?: string;
 }
 
 /**
@@ -36,7 +34,6 @@ export default function DeactivateDialog({
   onConfirm,
   title,
   message,
-  actionLabel,
 }: DeactivateDialogProps) {
   const { t } = useTranslation();
   return (
@@ -48,7 +45,7 @@ export default function DeactivateDialog({
       <DialogActions>
         <Button onClick={onCancel}>{t('cancel')}</Button>
         <Button color="error" variant="contained" onClick={onConfirm}>
-          {actionLabel ?? t('common.deactivate')}
+          {t('common.deactivate')}
         </Button>
       </DialogActions>
     </Dialog>

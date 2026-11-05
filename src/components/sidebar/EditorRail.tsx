@@ -34,8 +34,6 @@ export interface EditorRailProps {
   deactivateConfirmTitle?: string;
   /** Optional body text for the deactivate confirmation dialog. */
   deactivateConfirmMessage?: string;
-  /** Optional primary action label in the deactivate confirmation dialog. */
-  deactivateConfirmActionLabel?: string;
   /** Omit to hide the Save segment. Save is also hidden when `mode !== 'edit'`. */
   onSave?: () => void | Promise<void>;
   isDirty?: boolean;
@@ -66,7 +64,6 @@ export default function EditorRail({
   onDeactivate,
   deactivateConfirmTitle,
   deactivateConfirmMessage,
-  deactivateConfirmActionLabel,
   onCancelEdit,
   onSave,
   isDirty = false,
@@ -94,8 +91,6 @@ export default function EditorRail({
   const handleCollapseClick = () => discard.ask('collapse');
   // Chrome that dismisses the pane (the mobile Drawer) closes through here too.
   useLiftEditorClose(handleCollapseClick);
-
-  const handleCancelClick = () => discard.ask('cancel');
 
   const handleDeactivateClick = () => {
     if (!onDeactivate) return;
@@ -196,7 +191,7 @@ export default function EditorRail({
             <Divider sx={{ opacity: DIVIDER_OPACITY }} />
             <Tooltip title={t('editorRail.cancelTooltip')} placement="left" arrow>
               <IconButton
-                onClick={handleCancelClick}
+                onClick={() => discard.ask('cancel')}
                 aria-label={t('editorRail.cancelAria')}
                 data-testid="editor-rail-cancel"
                 sx={{
@@ -247,7 +242,6 @@ export default function EditorRail({
         onConfirm={handleDeactivateConfirm}
         title={deactivateConfirmTitle}
         message={deactivateConfirmMessage}
-        actionLabel={deactivateConfirmActionLabel}
       />
     </>
   );

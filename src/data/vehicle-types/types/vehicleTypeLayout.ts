@@ -1,4 +1,4 @@
-import type { LayoutItem } from '../../../components/form-layout/index.ts';
+import { layoutEntry, type LayoutItem } from '../../../components/form-layout/index.ts';
 import type { VehicleTypeField } from './vehicleTypeFields.ts';
 
 /**
@@ -50,6 +50,9 @@ export const VEHICLE_TYPE_SECTION_LABEL: Record<VehicleTypeSection, string> = {
   vehicles: 'vehicleType.tab.vehicles',
 };
 
+/** The sections in order. */
+export const VEHICLE_TYPE_SECTION_IDS = Object.keys(vehicleTypeSections) as VehicleTypeSection[];
+
 /** A section's field keys, whether listed bare or with a width. */
 export const sectionFields = (s: VehicleTypeSection): VehicleTypeField[] =>
-  vehicleTypeSections[s].map(item => (typeof item === 'string' ? item : item.field));
+  vehicleTypeSections[s].map(item => layoutEntry(item).field);

@@ -61,7 +61,9 @@ export const gridSize = (width: FieldWidth): { xs: number; sm: number } => ({
   sm: WIDTH_SPAN[width],
 });
 
-const norm = (item: LayoutItem): LayoutEntry => (typeof item === 'string' ? { field: item } : item);
+/** A layout item as an entry: a bare key becomes `{ field }`. */
+export const layoutEntry = <K extends string>(item: LayoutItem<K>): LayoutEntry<K> =>
+  typeof item === 'string' ? { field: item } : item;
 
 /**
  * Resolve a field mapping + optional layout into the sections to render.
@@ -99,7 +101,7 @@ export function resolveSections(
     .map(([label, items]) => ({
       label,
       fields: items
-        .map(norm)
+        .map(layoutEntry)
         .filter(e => shown(e.field) && !seen.has(e.field) && (seen.add(e.field), true))
         .map(e => ({
           key: e.field,

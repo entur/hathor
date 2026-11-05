@@ -43,7 +43,6 @@ export default function VehicleTypeForm(props: VehicleTypeFormProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<TabKey>('general');
   const control = useVehicleTypeControls(props);
-  const tabSections = TAB_SECTIONS[tab];
 
   return (
     <Box>
@@ -56,7 +55,7 @@ export default function VehicleTypeForm(props: VehicleTypeFormProps) {
         <Box data-testid="vtype-tab-vehicles">{control('vehicles')}</Box>
       ) : (
         <FormStack data-testid={`vtype-tab-${tab}`}>
-          {tabSections.map((section, i) => [
+          {TAB_SECTIONS[tab].map((section, i) => [
             i > 0 && <Divider key={`divider-${section}`} />,
             ...sectionFields(section).map(key => <Fragment key={key}>{control(key)}</Fragment>),
           ])}

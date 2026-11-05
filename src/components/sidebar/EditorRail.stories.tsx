@@ -29,7 +29,6 @@ const meta: Meta<typeof EditorRail> = {
     onSave: fn(),
     deactivateConfirmTitle: 'Deactivate vehicle?',
     deactivateConfirmMessage: 'The vehicle is hidden from lists.',
-    deactivateConfirmActionLabel: 'Deactivate',
   },
   decorators: [
     Story => (

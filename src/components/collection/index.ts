@@ -4,6 +4,7 @@
 export { createEntityCollection } from './components/collection.tsx';
 export type { EntityCollection } from './components/collection.tsx';
 export { toSobekFilter } from './utils/filters.ts';
+export { rawValue } from './utils/values.ts';
 export { CARD_MEDIA_ASPECT, defaultCollectionQuery } from './types.ts';
 export type {
   CollectionView,

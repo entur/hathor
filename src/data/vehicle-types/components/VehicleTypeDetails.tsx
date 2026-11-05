@@ -1,7 +1,6 @@
-import { useContext } from 'react';
 import { Stack } from '@mui/material';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
-import { EditorHostContext } from '../../../components/sidebar/editorHost.ts';
+import { useEditorOnPage } from '../../../components/sidebar/editorHost.ts';
 import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import { createFormState } from '../../../hooks/useFormState.ts';
 import { deactivateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/deactivateVehicleType.ts';
@@ -63,7 +62,7 @@ export default function VehicleTypeDetails(host: EntityEditorHostProps) {
     deactivateRequest: deactivateVehicleTypeRequest,
   });
   const { form } = editor;
-  const page = useContext(EditorHostContext) === 'page';
+  const page = useEditorOnPage();
   const body = {
     value: form,
     onChange: editor.setForm,

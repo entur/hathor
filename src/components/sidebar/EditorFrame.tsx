@@ -1,4 +1,4 @@
-import { useContext, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Box, Button, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
@@ -12,7 +12,7 @@ import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
 import { EditFooter } from '../form-layout/index.ts';
 import EditorRail from './EditorRail.tsx';
-import { EditorHostContext } from './editorHost.ts';
+import { useEditorOnPage } from './editorHost.ts';
 
 const RAIL_SIDE = 'right' as const;
 
@@ -63,7 +63,7 @@ export default function EditorFrame<T, F>({
 }: EditorFrameProps<T, F>) {
   const { t } = useTranslation();
   const { rail } = editor;
-  const page = useContext(EditorHostContext) === 'page';
+  const page = useEditorOnPage();
   const heading = page ? 'h1' : 'h6';
   // The page's own confirms; the sidebar's live in its rail. Cancel on a create has no
   // record to fall back to: it leaves, as Close does.

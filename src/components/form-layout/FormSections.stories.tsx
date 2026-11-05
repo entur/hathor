@@ -7,9 +7,9 @@ import {
   type VehicleTypeField,
 } from '../../data/vehicle-types/types/vehicleTypeFields.ts';
 import {
+  VEHICLE_TYPE_SECTION_IDS,
   VEHICLE_TYPE_SECTION_LABEL,
   vehicleTypeSections,
-  type VehicleTypeSection,
 } from '../../data/vehicle-types/types/vehicleTypeLayout.ts';
 import { FormSections, resolveSections, type Layout, type ResolvedField } from './index.ts';
 
@@ -18,7 +18,7 @@ const FORM_MAX_W = 1140; // PageShell's `lg` container: form + its TOC column
 
 /** The vehicle-types form page's own sections (#280), headed in English. */
 const vehicleTypeLayout: Layout<VehicleTypeField> = Object.fromEntries(
-  (Object.keys(vehicleTypeSections) as VehicleTypeSection[]).map(s => [
+  VEHICLE_TYPE_SECTION_IDS.map(s => [
     en[VEHICLE_TYPE_SECTION_LABEL[s] as keyof typeof en],
     vehicleTypeSections[s],
   ])

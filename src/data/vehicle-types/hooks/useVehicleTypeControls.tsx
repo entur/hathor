@@ -18,7 +18,7 @@ import { vehicleSelectedHref } from '../../vehicles/utils/vehicleUrlParams.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import type { VehicleType, PassengerCapacity } from '../types/vehicleTypeTypes.ts';
 import { vehicleTypeFields, type VehicleTypeField } from '../types/vehicleTypeFields.ts';
-import type { FieldSpec } from '../../../components/collection/index.ts';
+import { rawValue, type FieldSpec } from '../../../components/collection/index.ts';
 import type { CodeValue } from '../../code-values/types/codeValueTypes.ts';
 import { codeValueOpts } from '../../code-values/utils/codeValueOpts.ts';
 
@@ -146,27 +146,21 @@ export function useVehicleTypeControls({
     }
     // The rest by the field mapping's kind and path.
     const spec: FieldSpec = vehicleTypeFields[key];
-    const own = value[key as keyof VehicleType];
+    const own = rawValue(value, spec);
     const set = (v: unknown) => setField({ [key]: v } as Partial<VehicleType>);
     switch (spec.kind) {
-      case 'number':
-        return spec.path[0] === 'passengerCapacity' ? (
+      case 'number': {
+        const cap = spec.path[0] === 'passengerCapacity';
+        return (
           <FormNumberField
-            id={`vtype-cap-${key}`}
-            label={label(key)}
-            value={value.passengerCapacity?.[key as keyof PassengerCapacity]}
-            onChange={n => setCapacity({ [key]: n })}
-            {...locked}
-          />
-        ) : (
-          <FormNumberField
-            id={`vtype-${key}`}
+            id={cap ? `vtype-cap-${key}` : `vtype-${key}`}
             label={label(key)}
             value={own as number | undefined}
-            onChange={set}
+            onChange={cap ? n => setCapacity({ [key]: n }) : set}
             {...locked}
           />
         );
+      }
       case 'switch':
         return (
           <FormSwitchField
