@@ -140,7 +140,7 @@ const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
         renderField={control(fields)}
         aside={media && <MediaPlaceholder />}
       />
-      {footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} cancelWhenClean />}
+      {footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
     </Box>
   </Box>
 );

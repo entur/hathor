@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { expect, screen, userEvent, within } from 'storybook/test';
+import { Typography } from '@mui/material';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import EditorFrame from './EditorFrame.tsx';
 import PageShell from '../../pages/shell/PageShell.tsx';
-import EntityDetailsShell, {
-  type DetailsLinkState,
-} from '../../pages/shell/EntityDetailsShell.tsx';
+import EntityDetailsShell from '../../pages/shell/EntityDetailsShell.tsx';
 import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
 import { ConfigContext, useConfig } from '../../contexts/configContext.ts';
 import { EditingProvider } from '../../contexts/EditingContext.tsx';
@@ -35,7 +35,6 @@ const meta: Meta = {
 export default meta;
 
 type Story = StoryObj;
-type Entry = string | { pathname: string; state: DetailsLinkState };
 
 const VT: VehicleType = {
   id: 'NMR:VehicleType:1',
@@ -112,36 +111,56 @@ function WithBaseUrl({ children }: { children: ReactNode }) {
   );
 }
 
-/** The `/next/things/:id` route under the real page shell, at `entry`. */
-const formPage = (entry: Entry) => (
-  <WithBaseUrl>
-    <EditingProvider>
-      <MemoryRouter initialEntries={[entry]}>
-        <Routes>
-          <Route path="/next" element={<PageShell />}>
-            <Route
-              path="things/:id"
-              element={
+/** `/next/things/:id` under the real page shell, in a data router (the page's
+ *  `LeaveGuard` needs one); `/next/things` stands in for the collection Back returns to. */
+function FormPage({ entry }: { entry: string }) {
+  const [router] = useState(() =>
+    createMemoryRouter(
+      [
+        {
+          path: '/next',
+          element: <PageShell />,
+          children: [
+            { path: 'things', element: <Typography>Collection page</Typography> },
+            {
+              path: 'things/:id',
+              element: (
                 <EntityDetailsShell
                   listPath={LIST}
                   renderEditor={host => <StoryVehicleTypeDetails {...host} />}
                 />
-              }
-            />
-          </Route>
-        </Routes>
-      </MemoryRouter>
-    </EditingProvider>
-  </WithBaseUrl>
-);
+              ),
+            },
+          ],
+        },
+      ],
+      { initialEntries: [entry] }
+    )
+  );
+  return (
+    <WithBaseUrl>
+      <EditingProvider>
+        <RouterProvider router={router} />
+      </EditingProvider>
+    </WithBaseUrl>
+  );
+}
 
-/** The vehicle-type form page in view mode: header with Edit / Close / Deactivate, sections, picture, TOC. */
-export const View: Story = { render: () => formPage(`${LIST}/${VT.id}`) };
+/** A record opens ready to edit: Back / Deactivate in the title row, Save / Cancel inert in the
+ *  sticky footer until a field changes; Save settles after a beat and keeps editing. */
+export const Edit: Story = { render: () => <FormPage entry={`${LIST}/${VT.id}`} /> };
 
-/** Opened for editing: the sticky Save / Cancel footer; type to dirty it, Save settles after a beat. */
-export const Edit: Story = {
-  render: () => formPage({ pathname: `${LIST}/${VT.id}`, state: { initialMode: 'edit' } }),
+/** After a confirmed Deactivate: red "Deactivated" in the title row, fields frozen, no footer. */
+export const Deactivated: Story = {
+  render: () => <FormPage entry={`${LIST}/${VT.id}`} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByTestId('editor-page-deactivate'));
+    const dialog = within(await screen.findByRole('dialog'));
+    await userEvent.click(dialog.getByRole('button', { name: 'Deactivate' }));
+    await expect(await canvas.findByTestId('editor-page-deactivated')).toBeVisible();
+  },
 };
 
 /** A create at `/new`: blank form, no Vehicles section, no NetexId; Save redirects to the new id. */
-export const Create: Story = { render: () => formPage(`${LIST}/new`) };
+export const Create: Story = { render: () => <FormPage entry={`${LIST}/new`} /> };

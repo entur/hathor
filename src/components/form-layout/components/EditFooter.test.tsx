@@ -20,16 +20,6 @@ describe('EditFooter', () => {
     expect(cancel().disabled).toBe(true);
   });
 
-  it('keeps Cancel live on a clean form with cancelWhenClean, Save still inert', () => {
-    const onCancel = vi.fn();
-    render(<EditFooter dirty={false} cancelWhenClean onSave={vi.fn()} onCancel={onCancel} />);
-
-    fireEvent.click(cancel());
-
-    expect(onCancel).toHaveBeenCalledOnce();
-    expect(save().disabled).toBe(true);
-  });
-
   it('wakes both actions once dirty and reports the click', () => {
     const onSave = vi.fn(),
       onCancel = vi.fn();

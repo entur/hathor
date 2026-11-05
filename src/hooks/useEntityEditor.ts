@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EditorRailProps } from '../components/sidebar/EditorRail.tsx';
+import { useEditorOnPage } from '../components/sidebar/editorHost.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { runDeactivate, runSave, type FlowCtx, type WriteResult } from './entityEditorFlow.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
@@ -85,6 +86,8 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const { t } = useTranslation();
   const fs = cfg.formState;
   const isCreate = cfg.id === '';
+  // A form page has no View for the reader: a save or a Cancel keeps editing (#282).
+  const page = useEditorOnPage();
   const [mode, setMode] = useState<EditorMode>(cfg.initialMode ?? 'view');
   const [state, setState] = useState(fs.initial);
   const [saving, setSaving] = useState(false);
@@ -139,6 +142,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     try {
       await runSave<F>({
         ...flow(),
+        ...(page && { toView: () => {} }),
         isCreate,
         form: state.form,
         write: async form => {
@@ -203,7 +207,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
         // The committed baseline, not `record`: after a create whose list
         // reload failed there is no record yet, and the baseline holds the new id.
         setState(fs.restore);
-        setMode('view');
+        if (!page) setMode('view');
       },
       onSave,
     },

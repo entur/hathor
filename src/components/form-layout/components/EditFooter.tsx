@@ -66,11 +66,8 @@ export interface EditFooterProps {
    *  Without it a clean form stays silent: no status on entering a form. */
   saved?: boolean;
   onSave: () => void;
-  /** Discard edits. Fired only when there is something to discard, unless `cancelWhenClean`. */
+  /** Discard edits. Fired only when there is something to discard. */
   onCancel: () => void;
-  /** Cancel stays live on a clean form too: it leaves edit mode, not just discards (a form
-   *  page, where the footer is the only way out of editing). Default `false`. */
-  cancelWhenClean?: boolean;
   labels?: EditFooterLabels;
   /** Per-button MUI overrides (variant, colour, size…). */
   slotProps?: EditFooterSlotProps;
@@ -94,7 +91,6 @@ export function EditFooter({
   saved = false,
   onSave,
   onCancel,
-  cancelWhenClean = false,
   labels,
   slotProps,
   sx,
@@ -201,7 +197,7 @@ export function EditFooter({
           color="inherit"
           size="small"
           {...slotProps?.cancel}
-          disabled={cancelWhenClean ? saving || disabled : inert}
+          disabled={inert}
           onClick={onCancel}
         >
           {l.cancel}

@@ -2,18 +2,13 @@ import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useOrganisationsContext } from '../../contexts/useOrganisationsContext.ts';
-import {
-  NEW_SELECTION,
-  type EditorMode,
-  type EntityEditorHostProps,
-} from '../../hooks/useEntityEditor.ts';
+import { NEW_SELECTION, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
 import { EditorHostContext } from '../../components/sidebar/editorHost.ts';
 import type { CollectionLinkState } from './CollectionShell.tsx';
 
-/** Router state a link may carry to open the record straight in edit mode. */
+/** Router state a create's own redirect carries. */
 export interface DetailsLinkState {
-  initialMode?: EditorMode;
-  /** Set by a create's own redirect: the re-mounted editor shows its "saved" toast. */
+  /** The re-mounted editor shows its "saved" toast. */
   created?: boolean;
 }
 
@@ -27,8 +22,7 @@ interface EntityDetailsShellProps {
 /**
  * Full-page host for one entity editor at `<listPath>/:id` — the route
  * counterpart of the sidebar's `useUrlEditorSelection`. `:id` = `new` is the
- * create pane (edit mode); a record opens in view mode unless the link's
- * {@link DetailsLinkState} says `edit`. Close navigates to `listPath` and asks it
+ * create pane; a record, like it, opens ready to edit (#282). Back navigates to `listPath` and asks it
  * to refocus this record's Edit link (New, from the create pane); a create
  * replaces the URL with the minted id and hands its "saved" toast across the re-mount.
  * Focus moves to the editor's heading once it renders (after the record loads).
@@ -69,7 +63,7 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
         <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
           {renderEditor({
             id: isNew ? '' : id,
-            initialMode: isNew ? 'edit' : (state?.initialMode ?? 'view'),
+            initialMode: 'edit', // a form page opens ready to edit (#282)
             // shortcut: the flag stays in this history entry, so a reload re-shows the toast; clear it if that bothers.
             initialSaved: state?.created,
             onClose: () =>

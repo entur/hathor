@@ -7,7 +7,6 @@ import {
 import { BusPicture } from '../../../components/bus-picture/index.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
-import type { DetailsLinkState } from '../../../pages/shell/EntityDetailsShell.tsx';
 import { transportModeLabelKey } from '../../netex/transportMode.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import {
@@ -54,7 +53,6 @@ const busMedia = (vt: VehicleType) => (
 
 // Relative: resolves under whichever route lists the collection.
 const editHref = (vt: VehicleType) => encodeURIComponent(vt.id);
-const EDIT_LINK_STATE: DetailsLinkState = { initialMode: 'edit' };
 
 /**
  * The vehicle-type collection, wired once for the page and its story: field +
@@ -72,7 +70,6 @@ export function VehicleTypeCollection(props: Partial<Props> & Pick<Props, 'rows'
       cardMedia={busMedia}
       labels={labels}
       editHref={editHref}
-      editState={EDIT_LINK_STATE}
       {...props}
     />
   );

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useBlocker } from 'react-router-dom';
 import { Box, Button, Divider, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
@@ -10,6 +11,7 @@ import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
 import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
+import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import { EditFooter } from '../form-layout/index.ts';
 import EditorRail from './EditorRail.tsx';
 import { useEditorOnPage } from './editorHost.ts';
@@ -42,12 +44,38 @@ interface EditorFrameProps<T, F> {
 }
 
 /**
+ * Holds an in-app navigation away from a dirty form page (Menu, browser Back, the page's
+ * own Back) for the {@link DiscardDialog}: Discard lets it through, Cancel stays, Save
+ * saves and stays. A replace is the app re-addressing the record (a create's redirect to
+ * its minted id), not the reader leaving, so it passes. Needs the data router (#282).
+ */
+function LeaveGuard({ dirty, onSave }: { dirty: boolean; onSave: () => void | Promise<void> }) {
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation, historyAction }) =>
+      dirty && historyAction !== 'REPLACE' && currentLocation.pathname !== nextLocation.pathname
+  );
+  return (
+    <DiscardDialog
+      open={blocker.state === 'blocked'}
+      onCancel={() => blocker.reset?.()}
+      onDiscard={() => blocker.proceed?.()}
+      onSave={async () => {
+        blocker.reset?.();
+        await onSave();
+      }}
+    />
+  );
+}
+
+/**
  * The chrome every entity editor shares: skeleton, not-found body, title +
  * {@link NetexId}, the read-error body and the save / deactivate snackbars. The
  * feature supplies only its body. In the sidebar the actions are the
- * {@link EditorRail}; on a form page (`EditorHostContext`) they are text buttons
- * in the title row — Edit, Close, Deactivate apart — and a sticky Save / Cancel
- * {@link EditFooter} while editing (F5, #280). A create's Cancel leaves the page.
+ * {@link EditorRail}. On a form page (`EditorHostContext`, #282) the form opens
+ * ready to edit: Back and Deactivate are text buttons in the title row, Save /
+ * Cancel a sticky {@link EditFooter}, and a {@link LeaveGuard} asks before
+ * unsaved edits are left behind. A confirmed Deactivate freezes the page under a
+ * red "Deactivated" for the rest of the visit.
  *
  * @param {EditorFrameProps<T, F>} props Editor state, entity, copy keys, skeleton and body.
  * @returns {JSX.Element} The editor pane.
@@ -65,19 +93,17 @@ export default function EditorFrame<T, F>({
   const { rail } = editor;
   const page = useEditorOnPage();
   const heading = page ? 'h1' : 'h6';
-  // The page's own confirms; the sidebar's live in its rail. Cancel on a create has no
-  // record to fall back to: it leaves, as Close does.
-  const discard = useDiscardConfirm(
-    rail.isDirty,
-    { close: rail.onCollapse, cancel: editor.isCreate ? rail.onCollapse : rail.onCancelEdit },
-    rail.onSave
-  );
+  // The page's Cancel reverts in place; the sidebar's confirms live in its rail.
+  const discard = useDiscardConfirm(rail.isDirty, { cancel: rail.onCancelEdit }, rail.onSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  // On a page, View mode only follows a confirmed Deactivate.
+  const frozen = page && rail.mode === 'view';
   // Before the record is shown, the sidebar keeps only its collapse.
   const bareRail = !page && <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />;
-  const closeButton = (
-    <Button size="small" onClick={() => discard.ask('close')} data-testid="editor-page-close">
-      {t('close')}
+  // Leaves outright: with unsaved edits the LeaveGuard asks first.
+  const backButton = (
+    <Button size="small" onClick={rail.onCollapse} data-testid="editor-page-back">
+      {t('back')}
     </Button>
   );
 
@@ -112,7 +138,7 @@ export default function EditorFrame<T, F>({
           <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
             {editor.id}
           </Typography>
-          {page && <Box sx={{ mt: 2 }}>{closeButton}</Box>}
+          {page && <Box sx={{ mt: 2 }}>{backButton}</Box>}
         </Box>
         {bareRail}
       </>
@@ -163,23 +189,25 @@ export default function EditorFrame<T, F>({
         </FormLayout>
         {page && (
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
-            {rail.mode === 'view' && rail.onEnterEdit && (
-              <Button
-                variant="contained"
-                size="small"
-                onClick={rail.onEnterEdit}
-                data-testid="editor-page-edit"
+            {frozen && (
+              <Typography
+                variant="subtitle2"
+                color="error"
+                sx={{ fontWeight: 700, textTransform: 'uppercase' }}
+                data-testid="editor-page-deactivated"
               >
-                {t('edit')}
-              </Button>
+                {t('common.deactivated')}
+              </Typography>
             )}
-            {closeButton}
-            {rail.mode === 'view' && rail.onDeactivate && (
+            {backButton}
+            {!frozen && rail.onDeactivate && (
               <>
                 <Divider orientation="vertical" flexItem />
                 <Button
                   size="small"
                   color="error"
+                  // Unsaved edits first: a deactivate would leave them in limbo.
+                  disabled={rail.isDirty || rail.saving}
                   onClick={() => setConfirmDeactivate(true)}
                   data-testid="editor-page-deactivate"
                 >
@@ -207,11 +235,6 @@ export default function EditorFrame<T, F>({
         message={t(copy.saved)}
         onClose={editor.clearSaved}
       />
-      <SaveSuccessSnackbar
-        open={editor.deactivated}
-        message={t(copy.deactivated)}
-        onClose={rail.onCollapse}
-      />
       {page ? (
         <>
           {rail.mode === 'edit' && (
@@ -220,8 +243,8 @@ export default function EditorFrame<T, F>({
               saving={rail.saving}
               canSubmit={canSubmit}
               onSave={() => void rail.onSave()}
-              onCancel={() => discard.ask('cancel')}
-              cancelWhenClean
+              // A create has no baseline to revert to: it leaves, and the LeaveGuard asks.
+              onCancel={editor.isCreate ? rail.onCollapse : () => discard.ask('cancel')}
               labels={{
                 save: t('save'),
                 cancel: t('cancel'),
@@ -232,6 +255,7 @@ export default function EditorFrame<T, F>({
             />
           )}
           {discard.dialog}
+          <LeaveGuard dirty={rail.isDirty} onSave={rail.onSave} />
           <DeactivateDialog
             open={confirmDeactivate}
             onCancel={() => setConfirmDeactivate(false)}
@@ -244,13 +268,21 @@ export default function EditorFrame<T, F>({
           />
         </>
       ) : (
-        <EditorRail
-          side={RAIL_SIDE}
-          {...rail}
-          deactivateConfirmTitle={t(copy.deactivateTitle)}
-          deactivateConfirmMessage={t(copy.deactivateMessage)}
-          canSubmit={canSubmit}
-        />
+        <>
+          {/* The page says "Deactivated" in its title row and stays; the sidebar toasts and closes. */}
+          <SaveSuccessSnackbar
+            open={editor.deactivated}
+            message={t(copy.deactivated)}
+            onClose={rail.onCollapse}
+          />
+          <EditorRail
+            side={RAIL_SIDE}
+            {...rail}
+            deactivateConfirmTitle={t(copy.deactivateTitle)}
+            deactivateConfirmMessage={t(copy.deactivateMessage)}
+            canSubmit={canSubmit}
+          />
+        </>
       )}
     </Box>
   );

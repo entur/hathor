@@ -61,16 +61,8 @@ describe('EntityDetailsShell', () => {
     expect(last()).toMatchObject({ id: '', initialMode: 'edit' });
   });
 
-  it('opens a deep-linked record in view mode', () => {
+  it('opens a deep-linked record in edit mode too: a form page has no View (#282)', () => {
     const { last } = renderAt(`${LIST}/NMR:VehicleType:1`);
-    expect(last()).toMatchObject({ id: 'NMR:VehicleType:1', initialMode: 'view' });
-  });
-
-  it('opens in edit mode when the link asks for it', () => {
-    const { last } = renderAt({
-      pathname: `${LIST}/NMR:VehicleType:1`,
-      state: { initialMode: 'edit' },
-    });
     expect(last()).toMatchObject({ id: 'NMR:VehicleType:1', initialMode: 'edit' });
   });
 
@@ -94,6 +86,6 @@ describe('EntityDetailsShell', () => {
     expect(screen.getAllByTestId('where')[0].textContent).toBe(
       `${LIST}/${encodeURIComponent(MINTED_ID)}`
     );
-    expect(last()).toMatchObject({ id: MINTED_ID, initialMode: 'view', initialSaved: true });
+    expect(last()).toMatchObject({ id: MINTED_ID, initialMode: 'edit', initialSaved: true });
   });
 });

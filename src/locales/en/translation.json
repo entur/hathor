@@ -1,6 +1,7 @@
 {
   "app.title": "National Vehicle Registry",
   "close": "Close",
+  "back": "Back",
   "save": "Save",
   "cancel": "Cancel",
   "details": "Details",
@@ -328,6 +329,7 @@
   "common.deactivateConfirmTitle": "Deactivate this item?",
   "common.deactivateConfirmMessage": "This action deactivates the selected item. Do you want to continue?",
   "common.deactivate": "Deactivate",
+  "common.deactivated": "Deactivated",
   "common.retry": "Retry",
   "common.unnamed": "unnamed",
   "common.new": "New",

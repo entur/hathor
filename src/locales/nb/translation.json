@@ -1,6 +1,7 @@
 {
   "app.title": "Nasjonalt Materiellregister",
   "close": "Lukk",
+  "back": "Tilbake",
   "save": "Lagre",
   "cancel": "Avbryt",
   "details": "Detaljer",
@@ -327,6 +328,7 @@
   "common.deactivateConfirmTitle": "Deaktivere dette elementet?",
   "common.deactivateConfirmMessage": "Denne handlingen deaktiverer det valgte elementet. Vil du fortsette?",
   "common.deactivate": "Deaktiver",
+  "common.deactivated": "Deaktivert",
   "common.retry": "Prøv igjen",
   "common.unnamed": "uten navn",
   "common.new": "Ny",
