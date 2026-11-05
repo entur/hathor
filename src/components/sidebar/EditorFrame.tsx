@@ -12,7 +12,7 @@ import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
 import DiscardDialog from '../dialogs/DiscardDialog.tsx';
-import { EditFooter } from '../form-layout/index.ts';
+import { EditFooter, FormFooterContext } from '../form-layout/index.ts';
 import EditorRail from './EditorRail.tsx';
 import { useEditorOnPage } from './editorHost.ts';
 
@@ -153,10 +153,43 @@ export default function EditorFrame<T, F>({
   }
 
   const trimmed = entity.name?.value?.trim();
+  // Drawn by the body's `FormSections`, last in its form column.
+  const footer = (
+    <EditFooter
+      dirty={rail.isDirty}
+      saving={rail.saving}
+      saved={editor.saved}
+      canSubmit={canSubmit}
+      onSave={() => void rail.onSave()}
+      // A create has no baseline to revert to: it leaves, and the LeaveGuard asks.
+      onCancel={editor.isCreate ? rail.onCollapse : () => discard.ask('cancel')}
+      labels={{
+        save: t('save'),
+        cancel: t('cancel'),
+        dirty: t('editFooter.dirty'),
+        saving: t('saving'),
+        missing: t('editFooter.missing'),
+        nothing: t('editFooter.nothing'),
+        saved: t('editFooter.saved'),
+      }}
+    />
+  );
 
   return (
-    <Box sx={{ p: page ? 0 : 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1 }}>
+    <Box
+      sx={
+        page
+          ? // From `lg` the page stays put; the form column scrolls itself (`FormSections`, #293).
+            {
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: { xs: 'auto', lg: 'hidden' },
+            }
+          : { p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }
+      }
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1, flexShrink: 0 }}>
         <FormLayout sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant="h6"
@@ -228,13 +261,29 @@ export default function EditorFrame<T, F>({
       </Box>
       <Divider sx={{ mb: 2 }} />
 
-      <BodyState
-        error={editor.fetchError}
-        onRetry={() => void editor.refetch().catch(() => {})}
-        testIdPrefix={`${testId}-record`}
-      >
-        {children}
-      </BodyState>
+      <FormFooterContext.Provider value={page && !frozen ? footer : null}>
+        {/* A page's body fills the rest from `lg`, so the form column can scroll inside it. */}
+        <Box
+          sx={
+            page
+              ? {
+                  flex: { lg: '1 1 0' },
+                  minHeight: { lg: 0 },
+                  display: { lg: 'flex' },
+                  flexDirection: 'column',
+                }
+              : undefined
+          }
+        >
+          <BodyState
+            error={editor.fetchError}
+            onRetry={() => void editor.refetch().catch(() => {})}
+            testIdPrefix={`${testId}-record`}
+          >
+            {children}
+          </BodyState>
+        </Box>
+      </FormFooterContext.Provider>
 
       <SaveErrorSnackbar error={editor.saveError} onClose={editor.clearSaveError} />
       <SaveErrorSnackbar error={editor.warning} severity="warning" onClose={editor.clearWarning} />
@@ -245,25 +294,6 @@ export default function EditorFrame<T, F>({
       />
       {page ? (
         <>
-          {!frozen && (
-            <EditFooter
-              dirty={rail.isDirty}
-              saving={rail.saving}
-              saved={editor.saved}
-              canSubmit={canSubmit}
-              onSave={() => void rail.onSave()}
-              // A create has no baseline to revert to: it leaves, and the LeaveGuard asks.
-              onCancel={editor.isCreate ? rail.onCollapse : () => discard.ask('cancel')}
-              labels={{
-                save: t('save'),
-                cancel: t('cancel'),
-                dirty: t('editFooter.dirty'),
-                saving: t('saving'),
-                missing: t('editFooter.missing'),
-                saved: t('editFooter.saved'),
-              }}
-            />
-          )}
           {discard.dialog}
           <LeaveGuard dirty={rail.isDirty} onSave={dialogSave} />
           <DeactivateDialog

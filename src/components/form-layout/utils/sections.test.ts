@@ -9,7 +9,7 @@ const FIELDS: Record<string, FieldSpec> = {
 };
 
 const keys = (sections: ReturnType<typeof resolveSections>) =>
-  sections.map(s => [s.label, s.fields.map(f => f.key)]);
+  sections.map(s => [s.id, s.fields.map(f => f.key)]);
 
 describe('resolveSections — patched display', () => {
   it('keeps patched fields unless told to hide them', () => {

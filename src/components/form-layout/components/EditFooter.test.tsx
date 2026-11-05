@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 /**
  * `EditFooter` is presentational — it holds no state and knows nothing about
- * saving. These pin the two things a host actually depends on: the buttons are
- * inert unless there is something to act on, and every string is overridable
- * (the library carries no i18n).
+ * saving. These pin what a host depends on: Save reaches the host only with
+ * something to save and nothing missing (and says why otherwise), Cancel is inert
+ * unless there is something to discard, and every string is overridable (the
+ * library carries no i18n).
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -13,11 +14,20 @@ const save = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Save' 
 const cancel = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Cancel' });
 
 describe('EditFooter', () => {
-  it('renders both actions inert while the form is clean', () => {
-    render(<EditFooter dirty={false} onSave={vi.fn()} onCancel={vi.fn()} />);
+  it('while clean: Cancel inert, Save says there is nothing to save until the form changes', () => {
+    const onSave = vi.fn();
+    const { rerender } = render(<EditFooter dirty={false} onSave={onSave} onCancel={vi.fn()} />);
 
-    expect(save().disabled).toBe(true);
     expect(cancel().disabled).toBe(true);
+    expect(save().disabled).toBe(false);
+    fireEvent.click(save());
+    expect(onSave).not.toHaveBeenCalled();
+    expect(screen.getByRole('status').textContent).toBe('No changes to save');
+
+    rerender(<EditFooter dirty onSave={onSave} onCancel={vi.fn()} />);
+    expect(screen.getByRole('status').textContent).toBe('Unsaved changes');
+    rerender(<EditFooter dirty={false} saved onSave={onSave} onCancel={vi.fn()} />);
+    expect(screen.getByRole('status').textContent).toBe('All changes saved');
   });
 
   it('wakes both actions once dirty and reports the click', () => {
@@ -50,21 +60,22 @@ describe('EditFooter', () => {
     expect(cancel().disabled).toBe(true);
   });
 
-  it('locks only Save while a required field is missing, and says why', () => {
-    const onCancel = vi.fn();
-    render(<EditFooter dirty canSubmit={false} onSave={vi.fn()} onCancel={onCancel} />);
+  it('with a required field missing, Save says why instead of saving; Cancel still discards', () => {
+    const onSave = vi.fn(),
+      onCancel = vi.fn();
+    render(<EditFooter dirty canSubmit={false} onSave={onSave} onCancel={onCancel} />);
 
+    fireEvent.click(save());
     fireEvent.click(cancel());
 
-    expect(save().disabled).toBe(true);
+    expect(onSave).not.toHaveBeenCalled();
     expect(onCancel).toHaveBeenCalledOnce();
     expect(screen.getByText('Required fields missing')).toBeTruthy();
   });
 
-  it('keeps the band opaque when dirty, so the form cannot scroll through it', () => {
-    // The footer is sticky: an `alpha()` tint as the background colour leaves it
-    // 92% see-through, and the fields scroll visibly under the buttons. The tint
-    // has to composite over the surface, not replace it.
+  it('tints the band when dirty over its surface, not in place of it', () => {
+    // An `alpha()` tint as the background colour would replace the surface; it
+    // composites over it instead.
     const { container, rerender } = render(
       <EditFooter dirty={false} onSave={vi.fn()} onCancel={vi.fn()} />
     );
@@ -110,12 +121,13 @@ describe('EditFooter', () => {
         dirty={false}
         onSave={onSave}
         onCancel={vi.fn()}
-        slotProps={{ save: { disabled: false } }}
+        slotProps={{ save: { onClick: onSave } }}
       />
     );
 
-    // Inert-while-clean is the component's contract, not a default to override.
-    expect(save().disabled).toBe(true);
+    // Nothing to save is the component's call, not a default to override.
+    fireEvent.click(save());
+    expect(onSave).not.toHaveBeenCalled();
   });
 
   it('states the session status, and takes localized strings for every word', () => {

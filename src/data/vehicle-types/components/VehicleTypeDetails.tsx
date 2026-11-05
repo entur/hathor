@@ -78,13 +78,14 @@ export default function VehicleTypeDetails(host: EntityEditorHostProps) {
       copy={COPY}
       skeleton={SKELETON_ROWS}
     >
-      <Stack data-testid="vehicle-type-context">
-        {page ? (
-          <VehicleTypeSections {...body} isCreate={editor.isCreate} />
-        ) : (
+      {page ? (
+        // Bare: from `lg` its columns fill the page's height (#293).
+        <VehicleTypeSections {...body} isCreate={editor.isCreate} />
+      ) : (
+        <Stack data-testid="vehicle-type-context">
           <VehicleTypeForm {...body} />
-        )}
-      </Stack>
+        </Stack>
+      )}
     </EditorFrame>
   );
 }

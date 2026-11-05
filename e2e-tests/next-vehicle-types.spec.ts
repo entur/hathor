@@ -13,6 +13,8 @@ const LIST = '/next/vehicle-types';
 const FIXTURE_ID = 'NMR:VehicleType:1';
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const LANDSCAPE_VIEWPORT = { width: 844, height: 390 };
+// Above MUI's `lg` (1200): the form page's fixed picture + contents column (#293).
+const WIDE_VIEWPORT = { width: 1440, height: 900 };
 const ROWS_MIN_PX = 240; // collection.tsx: the rows' floor
 // Rows in vehicle-types-mock.json.
 const FIXTURE_ROWS = 3;
@@ -24,9 +26,9 @@ const FULL_PAGE = 25;
 // On the first page, below the fold of the grid at the default viewport.
 const BELOW_FOLD = 20;
 
-/** The form page's sticky footer Save. */
+/** The form page's footer Save. */
 const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exact: true });
-/** The form page's sticky footer Cancel. */
+/** The form page's footer Cancel. */
 const footerCancel = (page: Page) => page.getByRole('button', { name: 'Cancel', exact: true });
 /** A Menu link off the form page (the rail's Vehicles item). */
 const menuVehicles = (page: Page) => page.getByTestId('nav-rail').locator('a[href="/vehicles"]');
@@ -57,7 +59,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - the header search is hidden on shell routes (still shown on the legacy list), incl.
  *     browser Back from a legacy list with the mobile search open
  *   - Edit → details page, ready to edit; Back → back on the list
- *   - a deep link to /next/vehicle-types/<id> opens ready to edit, Save and Cancel inert
+ *   - a deep link to /next/vehicle-types/<id> opens ready to edit: Cancel inert, Save has
+ *     nothing to save
  *   - `Collections` flag off → /next/* redirects to /
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
@@ -70,7 +73,7 @@ const interceptRailRows = (page: Page, n: number) =>
  *     the pager, which stay in view, in the grid and in cards, at desktop and phone width; on a
  *     phone held sideways the rows keep a floor and the page scrolls instead
  *   - form page (#280, #282): sections with a table of contents that jumps to one; Save /
- *     Cancel in a sticky footer, Cancel asks before discarding and reverts, still editing;
+ *     Cancel at the form's end, Cancel asks before discarding and reverts, still editing;
  *     Deactivate asks first, then freezes the page under a red "Deactivated"
  *   - leaving with unsaved edits (#282): a Menu link or browser Back asks first — the dialog's
  *     Cancel stays, Discard follows; with no edits a Menu link goes straight through; a create's
@@ -323,13 +326,42 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
   });
 
-  test('a deep link opens the record ready to edit, Save and Cancel inert', async ({ page }) => {
+  test('a deep link opens the record ready to edit: Cancel inert, Save has nothing to save', async ({
+    page,
+  }) => {
     test.skip(IS_LIVE, 'fixture id');
     await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText('Type Alpha');
     await expect(page.locator('#vtype-name')).toBeEditable();
-    await expect(footerSave(page)).toBeDisabled();
     await expect(footerCancel(page)).toBeDisabled();
+    // Clean: Save stays enabled and says there is nothing to save, sending nothing (#293).
+    await footerSave(page).click();
+    await expect(page.getByText('No changes to save')).toBeVisible();
+  });
+
+  test('wide: only the form column scrolls; Save and Cancel sit at its end, not floating', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    await page.setViewportSize(WIDE_VIEWPORT);
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    const name = page.locator('#vtype-name');
+    await expect(name).toBeVisible();
+    // At the end of the form, in flow: off screen while the form starts (WCAG 2.4.11).
+    await expect(footerSave(page)).not.toBeInViewport();
+
+    await name.hover();
+    await page.mouse.wheel(0, 5000);
+    await expect(footerSave(page)).toBeInViewport();
+    await expect(toc(page)).toBeInViewport();
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeInViewport();
+    // The one scroller that moved holds the form, not the picture or the contents.
+    const moved = await page.evaluate(() =>
+      [...document.querySelectorAll('*')]
+        .filter(el => el.scrollTop > 0)
+        .map(el => !!el.querySelector('#vtype-name') && !el.querySelector('nav'))
+    );
+    expect(moved).toEqual([true]);
   });
 
   test('the table of contents jumps to a section', async ({ page }) => {
@@ -514,7 +546,7 @@ test.describe('/next/vehicle-types page shell', () => {
     // The mock mints the fixture id; the redirect is a replace, which the guard lets through.
     await expect(page).toHaveURL(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
     expect(await page.getByRole('dialog').count()).toBe(0);
-    await expect(footerSave(page)).toBeDisabled();
+    await expect(page.getByText('All changes saved')).toBeVisible();
   });
 
   test('with no unsaved edits a Menu link goes straight through', async ({ page }) => {

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FieldSpec } from '../../collection/types.ts';
 import { resolveSections } from '../utils/sections.ts';
 import { FormSections } from './FormSections.tsx';
+import { FormFooterContext } from '../formFooterContext.ts';
 
 const FIELDS: Record<string, FieldSpec> = {
   name: { kind: 'name', path: ['name'] },
@@ -133,6 +134,42 @@ describe('FormSections across widths and changes', () => {
     const swapped = { General: ['name'], Size: ['length'], Extra: ['extra'] };
     rerender(<FormSections sections={resolveSections(MORE, swapped)} renderField={field} />);
     expect(screen.getByRole('combobox').textContent).toContain('General');
+  });
+
+  it('labels sections by id; a new language keeps the marked section (#293)', () => {
+    const ids = { general: ['name'], size: ['length'], dates: ['built'] };
+    const en = { general: 'General', size: 'Size', dates: 'Dates' } as Record<string, string>;
+    const nb = { general: 'Generelt', size: 'Størrelse', dates: 'Datoer' } as Record<
+      string,
+      string
+    >;
+    const sections = resolveSections(FIELDS, ids);
+    const { rerender } = render(
+      <FormSections sections={sections} renderField={field} sectionLabel={id => en[id]} />
+    );
+    expect(screen.getByRole('region', { name: 'Size' })).toBeTruthy();
+    pick('Dates');
+    rerender(<FormSections sections={sections} renderField={field} sectionLabel={id => nb[id]} />);
+    expect(screen.getByRole('region', { name: 'Størrelse' })).toBeTruthy();
+    expect(screen.getByRole('combobox').textContent).toContain('Datoer');
+  });
+
+  it('draws the footer last in the form column: its own, else the context one', () => {
+    const sections = resolveSections(FIELDS);
+    const { rerender } = render(
+      <FormFooterContext.Provider value={<footer>context</footer>}>
+        <FormSections sections={sections} renderField={field} />
+      </FormFooterContext.Provider>
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.textContent).toBe('context');
+    expect(footer.parentElement?.lastElementChild).toBe(footer);
+    rerender(
+      <FormFooterContext.Provider value={<footer>context</footer>}>
+        <FormSections sections={sections} renderField={field} footer={<footer>own</footer>} />
+      </FormFooterContext.Provider>
+    );
+    expect(screen.getByRole('contentinfo').textContent).toBe('own');
   });
 
   it('scrolls back to the marked section when it is picked again', () => {

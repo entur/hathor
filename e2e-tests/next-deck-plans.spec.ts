@@ -26,7 +26,7 @@ const serveBody = (page: Page, file = 'deck-plan-xml-with-decks-mock.xml') =>
  *   /next/deck-plans → collection grid with an Edit link per row → /next/deck-plans/<id>,
  *   ready to edit, decks in column 3 → Back returns to the list.
  * Covers:
- *   - Edit → form page (h1 focused, Save inert); Back → focus back on the row's Edit link
+ *   - Edit → form page (h1 focused, Save has nothing to save); Back → focus back on the row's Edit link
  *   - a plan without a name shows its id (U4); search narrows the rows by name (U1)
  *   - column 3: one deck per Deck, and a "Show XML" button (a no-op in epic #252)
  *   - a rename saves through the NeTEx import POST with the patched body
@@ -58,7 +58,9 @@ test.describe('/next/deck-plans', () => {
     await expect(title).toBeFocused();
     await expect(title).toHaveJSProperty('tagName', 'H1');
     await expect(page.locator('#deckPlan-name')).toBeEditable();
-    await expect(footerSave(page)).toBeDisabled();
+    // Clean: Save stays enabled and says there is nothing to save, sending nothing (#293).
+    await footerSave(page).click();
+    await expect(page.getByText('No changes to save')).toBeVisible();
 
     await page.getByTestId('editor-page-back').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));

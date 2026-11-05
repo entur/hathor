@@ -80,7 +80,7 @@ interface DemoProps {
   layout: Layout;
   /** Reserve the column-3 picture slot above the TOC. */
   media: boolean;
-  /** Add the page's sticky Save / Cancel under the form, as `EditorFrame` does while editing. */
+  /** Add the page's Save / Cancel at the form's end, as `EditorFrame` does (#293). */
   footer: boolean;
   /** Footer state: tinted band, live Save. */
   dirty: boolean;
@@ -98,13 +98,14 @@ const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
     }}
   >
     <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
-    <Box>
+    {/* Fixed height, as the form page: from `lg` the form column scrolls on its own (#293). */}
+    <Box sx={{ height: 'calc(100vh - 32px)', display: 'flex', flexDirection: 'column' }}>
       <FormSections
         sections={resolveSections(fields, layout)}
         renderField={control(fields)}
         aside={media && <MediaPlaceholder />}
+        footer={footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
       />
-      {footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
     </Box>
   </Box>
 );
@@ -123,7 +124,7 @@ const meta: Meta<typeof Demo> = {
     docs: {
       description: {
         component:
-          "A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways, and a picture slot above it (`aside`, toggle `media`). Toggle `footer` for the form page's sticky `EditFooter`.",
+          "A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways, and a picture slot above it (`aside`, toggle `media`). Toggle `footer` for the form page's `EditFooter`, last in the form column. From `lg` (in a fixed-height host) the form column scrolls while column 3 stays put (#293).",
       },
     },
   },

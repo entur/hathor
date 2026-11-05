@@ -383,6 +383,7 @@
   "busPicture.unavailable": "Bilde utilgjengelig",
   "editFooter.dirty": "Ulagrede endringer",
   "editFooter.missing": "Obligatoriske felt mangler",
+  "editFooter.nothing": "Ingen endringer å lagre",
   "editFooter.saved": "Alle endringer er lagret",
   "vehicleType.section.propulsion": "Fremdrift og ytelse",
   "formSections.toc": "Seksjoner"

@@ -27,13 +27,13 @@ const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit / }).fir
  *   /next/vehicles → collection grid with an Edit link per row → /next/vehicles/<id>, ready
  *   to edit → Back returns to the list.
  * Covers:
- *   - Edit → form page (h1 focused, Save inert); Back → focus back on the row's Edit link
+ *   - Edit → form page (h1 focused, Save has nothing to save); Back → focus back on the row's Edit link
  *   - search narrows the rows by registration number (U1)
  *   - the vehicle's type links to its own form page (U2/F8) — not an orphan ref outside the
  *     org's types; a vehicle without a name shows its registration number (U4)
  *   - create: the picture box says "Select type" until a type is picked, then draws the
- *     type; Save, and the leave dialog's Save, stay locked without a type (Sobek hides a
- *     vehicle with none)
+ *     type; without a type Save says what is missing and the leave dialog offers no Save
+ *     (Sobek hides a vehicle with none)
  * Modes:
  *   - mock (E2E_BACKEND unset): vehicles-list-mock.json, by-id from the same fixture,
  *     vehicle-types-mock.json for the type picker
@@ -62,7 +62,9 @@ test.describe('/next/vehicles', () => {
     await expect(title).toBeFocused();
     await expect(title).toHaveJSProperty('tagName', 'H1');
     await expect(page.locator('#vehicle-name')).toBeEditable();
-    await expect(footerSave(page)).toBeDisabled();
+    // Clean: Save stays enabled and says there is nothing to save, sending nothing (#293).
+    await footerSave(page).click();
+    await expect(page.getByText('No changes to save')).toBeVisible();
 
     await page.getByTestId('editor-page-back').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
@@ -131,7 +133,7 @@ test.describe('/next/vehicles', () => {
     await expect(page.getByRole('gridcell', { name: 'NN-1' })).toHaveCount(2);
   });
 
-  test('create: "Select type" until a type is picked; no Save of any kind without one', async ({
+  test('create: "Select type" until a type is picked; without one Save says so, the dialog offers none', async ({
     page,
   }) => {
     test.skip(IS_LIVE, 'fixture type names');
@@ -140,7 +142,9 @@ test.describe('/next/vehicles', () => {
     await expect(placeholder).toHaveText('Select type');
 
     await page.locator('#vehicle-name').fill('Bus 1');
-    await expect(footerSave(page)).toBeDisabled();
+    // Save says what is missing instead of saving.
+    await footerSave(page).click();
+    await expect(page.getByText('Required fields missing')).toBeVisible();
     await page.getByTestId('editor-page-back').click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('button', { name: 'Discard' })).toBeVisible();
@@ -150,6 +154,6 @@ test.describe('/next/vehicles', () => {
     await page.locator('#vehicle-transport-type').click();
     await page.getByRole('option', { name: BUS_TYPE }).click();
     await expect(placeholder).toHaveCount(0);
-    await expect(footerSave(page)).toBeEnabled();
+    await expect(page.getByText('Unsaved changes')).toBeVisible();
   });
 });

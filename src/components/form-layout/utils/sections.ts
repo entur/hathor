@@ -25,9 +25,10 @@ export interface ResolvedField {
   width: FieldWidth;
 }
 
-/** A named group of resolved fields. `label` is `''` for the layout-less case. */
+/** A group of resolved fields. `id` is its layout key — stable, whatever its heading reads
+ *  (`FormSections`' `sectionLabel`) — and `''` for the layout-less case. */
 export interface Section {
-  label: string;
+  id: string;
   fields: ResolvedField[];
 }
 
@@ -94,12 +95,12 @@ export function resolveSections(
     const all = Object.keys(fields)
       .filter(shown)
       .map(key => ({ key, label: humanize(key), width: widthOf(key) }));
-    return all.length ? [{ label: '', fields: all }] : [];
+    return all.length ? [{ id: '', fields: all }] : [];
   }
   const seen = new Set<string>();
   return Object.entries(layout)
-    .map(([label, items]) => ({
-      label,
+    .map(([id, items]) => ({
+      id,
       fields: items
         .map(layoutEntry)
         .filter(e => shown(e.field) && !seen.has(e.field) && (seen.add(e.field), true))
@@ -113,11 +114,11 @@ export function resolveSections(
 }
 
 /**
- * The section labels a table of contents can navigate: only a stacked form with
+ * The section ids a table of contents can navigate: only a stacked form with
  * at least {@link TOC_MIN_SECTIONS} sections gets one, so anything else yields `[]`.
  *
  * @param {Section[]} sections from {@link resolveSections}
- * @returns {string[]} the labels in page order, or `[]`
+ * @returns {string[]} the ids in page order, or `[]`
  */
 export const tocSections = (sections: readonly Section[]): string[] =>
-  sections.length >= TOC_MIN_SECTIONS ? sections.map(s => s.label) : [];
+  sections.length >= TOC_MIN_SECTIONS ? sections.map(s => s.id) : [];

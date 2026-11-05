@@ -13,6 +13,7 @@ import {
   VEHICLE_TYPE_SECTION_IDS,
   VEHICLE_TYPE_SECTION_LABEL,
   vehicleTypeSections,
+  type VehicleTypeSection,
 } from '../types/vehicleTypeLayout.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import type { CodeValue } from '../../code-values/types/codeValueTypes.ts';
@@ -44,15 +45,16 @@ export default function VehicleTypeSections({ isCreate, ...form }: VehicleTypeSe
     lock: 'readOnly',
     vehicleHref: vehicleFormHref,
   });
+  // Keyed by section id: the headings follow the language, the TOC's mark stays put (#293).
   const sections = useMemo(() => {
     const layout: Layout<VehicleTypeField> = Object.fromEntries(
       VEHICLE_TYPE_SECTION_IDS.filter(s => !(isCreate && s === 'vehicles')).map(s => [
-        t(VEHICLE_TYPE_SECTION_LABEL[s]),
+        s,
         vehicleTypeSections[s],
       ])
     );
     return resolveSections(vehicleTypeFields, layout);
-  }, [isCreate, t]);
+  }, [isCreate]);
   const { value } = form;
   const { length, width, height } = value;
   // The picture follows the dims once typing pauses: each new one is a WebGL shot.
@@ -66,6 +68,7 @@ export default function VehicleTypeSections({ isCreate, ...form }: VehicleTypeSe
       sections={sections}
       renderField={f => control(f.key as VehicleTypeField)}
       tocLabel={t('formSections.toc')}
+      sectionLabel={id => t(VEHICLE_TYPE_SECTION_LABEL[id as VehicleTypeSection])}
       aside={<BusPictureFrame dims={dims} paint="vehicleType" mode={value.transportMode} />}
     />
   );

@@ -1,14 +1,17 @@
 /**
- * Sticky Save/Cancel footer for an edit session.
+ * Save/Cancel footer for an edit session, at the end of the form in normal flow
+ * (#293: sticky, it hid the focused field — WCAG 2.4.11).
  *
  * Purely presentational: it owns no state and performs no save. A host feeds it
  * from `useFormSession()`'s `footer`, or from its own state when it drives the
  * presentational form directly.
  *
- * Dormant while clean, lit when there is something to act on — the signal that
- * distinguishes "nothing to lose" from "unsaved work" without the host having
- * to read the form's internals.
+ * Lit when there is something to act on — the signal that distinguishes
+ * "nothing to lose" from "unsaved work" without the host having to read the
+ * form's internals. Save stays enabled (Linje Button): a click with nothing to
+ * save, or a required field missing, says so instead of saving.
  */
+import { useState } from 'react';
 import { Box, Button, Stack, Typography, type ButtonProps } from '@mui/material';
 import { alpha, type SxProps, type Theme } from '@mui/material/styles';
 
@@ -33,6 +36,8 @@ export interface EditFooterLabels {
   saving?: string;
   /** Status shown while dirty but `canSubmit` is false. */
   missing?: string;
+  /** Status shown after a Save click with nothing to save. */
+  nothing?: string;
 }
 
 const DEFAULT_LABELS: Required<EditFooterLabels> = {
@@ -42,11 +47,12 @@ const DEFAULT_LABELS: Required<EditFooterLabels> = {
   dirty: 'Unsaved changes',
   saving: 'Saving…',
   missing: 'Required fields missing',
+  nothing: 'No changes to save',
 };
 
 /** Per-button MUI overrides. The controlled props — `disabled`, `onClick` and
- *  the label — are applied after these, so the inert-while-clean contract holds
- *  whatever a host passes. */
+ *  the label — are applied after these, so the footer's contract holds whatever a
+ *  host passes. */
 export interface EditFooterSlotProps {
   save?: ButtonProps;
   cancel?: ButtonProps;
@@ -60,11 +66,12 @@ export interface EditFooterProps {
   /** Lock both actions regardless of `dirty` (e.g. the form is still loading). */
   disabled?: boolean;
   /** Extra Save gate, as `EditorRail.canSubmit`: false while a required field is
-   *  missing. Locks Save only — Cancel can still discard. Default `true`. */
+   *  missing. Save then says so instead of saving; Cancel can still discard. Default `true`. */
   canSubmit?: boolean;
   /** The last save succeeded and nothing changed since — e.g. `useEntityEditor().saved`.
    *  Without it a clean form stays silent: no status on entering a form. */
   saved?: boolean;
+  /** Fired only with something to save and nothing missing. */
   onSave: () => void;
   /** Discard edits. Fired only when there is something to discard. */
   onCancel: () => void;
@@ -72,8 +79,7 @@ export interface EditFooterProps {
   /** Per-button MUI overrides (variant, colour, size…). */
   slotProps?: EditFooterSlotProps;
   /** Applied after every default, so a host can restyle the band — including
-   *  `backgroundImage: 'none'` to drop the dirty tint. The default is sticky to
-   *  the bottom of the scroll container. */
+   *  `backgroundImage: 'none'` to drop the dirty tint. */
   sx?: SxProps<Theme>;
 }
 
@@ -81,7 +87,7 @@ export interface EditFooterProps {
  * Render the action footer for an edit session.
  *
  * @param props see {@link EditFooterProps}
- * @returns a status line paired with Cancel/Save, both inert unless `dirty`
+ * @returns a status line paired with Cancel (inert unless `dirty`) and Save
  */
 export function EditFooter({
   dirty,
@@ -96,26 +102,34 @@ export function EditFooter({
   sx,
 }: EditFooterProps) {
   const l = { ...DEFAULT_LABELS, ...labels };
-  // Nothing to save and nothing to discard when clean; while saving, a discard
-  // would restore a baseline the in-flight request is about to replace.
-  const inert = !dirty || saving || disabled;
+  // While saving, a discard would restore a baseline the in-flight request is about to replace.
+  const locked = saving || disabled;
+  // Nothing to discard while clean.
+  const inert = !dirty || locked;
+  // A clean Save click says "nothing to save" until the form changes.
+  const [nothing, setNothing] = useState(false);
+  if (dirty && nothing) setNothing(false);
+  const save = () => {
+    if (!dirty) setNothing(true);
+    else if (canSubmit) onSave();
+  };
   const status = saving
     ? l.saving
-    : dirty
-      ? canSubmit
-        ? l.dirty
-        : l.missing
-      : saved
-        ? l.saved
-        : '';
+    : nothing
+      ? l.nothing
+      : dirty
+        ? canSubmit
+          ? l.dirty
+          : l.missing
+        : saved
+          ? l.saved
+          : '';
 
   return (
     <Box
       sx={[
         {
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 1,
+          mt: 3,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -125,19 +139,17 @@ export function EditFooter({
           py: 1.5,
           borderTop: 1,
           borderColor: dirty ? 'warning.main' : 'divider',
-          // The band is sticky, so its own colour has to be opaque or the form
-          // scrolls through it. The dirty tint therefore rides on top as a flat
-          // gradient — the same trick MUI uses for dark-mode elevation overlays
-          // — instead of being an `alpha()` colour that replaces the surface.
+          // The dirty tint rides on the surface as a flat gradient — the same trick MUI
+          // uses for dark-mode elevation overlays — so a host's background shows through
+          // the same whatever the state.
           backgroundColor: 'background.paper',
           backgroundImage: theme => {
             if (!dirty) return 'none';
             const tint = alpha(theme.palette.warning.main, DIRTY_TINT);
             return `linear-gradient(${tint}, ${tint})`;
           },
-          boxShadow: dirty ? '0 -10px 28px -20px rgba(0,0,0,0.55)' : 'none',
           transition: theme =>
-            theme.transitions.create(['background-color', 'border-color', 'box-shadow'], {
+            theme.transitions.create(['background-color', 'border-color'], {
               duration: theme.transitions.duration.short,
             }),
         },
@@ -206,8 +218,8 @@ export function EditFooter({
           variant="contained"
           size="small"
           {...slotProps?.save}
-          disabled={inert || !canSubmit}
-          onClick={onSave}
+          disabled={locked}
+          onClick={save}
         >
           {l.save}
         </Button>

@@ -97,8 +97,8 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
 
 const vtEditor = (host: EntityEditorHostProps) => <StoryVehicleTypeDetails {...host} />;
 
-/** A record opens ready to edit: Back / Deactivate in the title row, Save / Cancel inert in the
- *  sticky footer until a field changes; Save settles after a beat and keeps editing. */
+/** A record opens ready to edit: Back / Deactivate in the title row; at the form's end Cancel inert and
+ *  Save with nothing to save until a field changes; Save settles after a beat and keeps editing. */
 export const Edit: Story = {
   render: () => <FormPage entity="vehicle-types" id={VT.id} renderEditor={vtEditor} />,
 };

@@ -53,14 +53,15 @@ const LongForm = () => {
             }}
           />
         )}
-      />
-      <EditFooter
-        dirty={dirty}
-        saving={saving}
-        saved={saved}
-        onSave={save}
-        onCancel={() => setValues(baseline)}
-        sx={{ mt: 3 }}
+        footer={
+          <EditFooter
+            dirty={dirty}
+            saving={saving}
+            saved={saved}
+            onSave={save}
+            onCancel={() => setValues(baseline)}
+          />
+        }
       />
     </Box>
   );
@@ -82,7 +83,7 @@ const meta: Meta<typeof EditFooter> = {
     docs: {
       description: {
         component:
-          'Sticky Save/Cancel for an edit session (#269). Presentational: the host owns state and the save. Both actions are inert while clean; `canSubmit` locks Save only.',
+          'Save/Cancel for an edit session (#269), at the end of the form in normal flow (#293). Presentational: the host owns state and the save. Cancel is inert while clean; Save stays enabled and says "No changes to save" or "Required fields missing" instead of saving.',
       },
     },
   },
@@ -91,7 +92,7 @@ export default meta;
 
 type Story = StoryObj<typeof EditFooter>;
 
-/** Entering a form — nothing to lose and nothing to say: both actions inert, no status. */
+/** Entering a form — nothing to lose and nothing to say: Cancel inert, no status; Save says there is nothing to save. */
 export const Clean: Story = {};
 
 /** Clean again after a successful save — green dot, "All changes saved". */
@@ -106,7 +107,7 @@ export const Saving: Story = { args: { dirty: true, saving: true } };
 /** Dirty but a required field is empty — Save locked, Cancel still discards. */
 export const MissingFields: Story = { args: { dirty: true, canSubmit: false } };
 
-/** Type in any field, scroll: the footer stays at the bottom of the viewport until the form ends. */
+/** Type in any field, scroll to the end: Save / Cancel sit after the form, in flow (#293). */
 export const OnLongForm: Story = {
   parameters: { layout: 'fullscreen' },
   render: () => <LongForm />,
