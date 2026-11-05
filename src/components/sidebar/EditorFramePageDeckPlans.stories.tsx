@@ -29,7 +29,8 @@ const DECK_PLAN: DeckPlan = {
   name: { value: 'Wagon 1' },
   description: { value: 'Regional wagon, one deck' },
 };
-const wagon1 = wagon1Raw.replace(/"DeckPlan\/id\/1"/g, `"${DECK_PLAN.id}"`);
+/** `Wagon_1.xml` under `id`, so a create's redirect to `CREATED_ID` finds its own plan. */
+const wagon1 = (id: string) => wagon1Raw.replace(/"DeckPlan\/id\/1"/g, `"${id}"`);
 /** Stands in for Sobek's deck plans: a save lands here, so a create's redirect reads it back. */
 const store = new Map([[DECK_PLAN.id, DECK_PLAN]]);
 
@@ -64,7 +65,7 @@ function StoryDeckPlanDetails(host: EntityEditorHostProps) {
         onChange={editor.setForm}
         mode={editor.rail.mode}
         isCreate={editor.isCreate}
-        xml={editor.isCreate ? '' : wagon1}
+        xml={editor.isCreate ? '' : wagon1(form.id)}
         loading={false}
         fetchError={null}
         onRetry={() => {}}
