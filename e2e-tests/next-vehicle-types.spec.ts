@@ -364,6 +364,27 @@ test.describe('/next/vehicle-types page shell', () => {
     expect(moved).toEqual([true]);
   });
 
+  test('widened past lg: scrolling the form to its end marks the last section', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    // Opened narrow, the page itself scrolls; widened, the form column takes over (#293).
+    await page.setViewportSize({ width: 1024, height: WIDE_VIEWPORT.height });
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    const name = page.locator('#vtype-name');
+    await expect(name).toBeVisible();
+    await page.setViewportSize(WIDE_VIEWPORT);
+    await expect(toc(page)).toBeVisible();
+
+    await name.hover();
+    await page.mouse.wheel(0, 5000);
+    // Too short to reach the reading band: only the at-the-end rule can mark it.
+    await expect(toc(page).getByRole('button', { name: 'Vehicles' })).toHaveAttribute(
+      'aria-current',
+      'location'
+    );
+  });
+
   test('the table of contents jumps to a section', async ({ page }) => {
     test.skip(IS_LIVE, 'fixture id');
     await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);

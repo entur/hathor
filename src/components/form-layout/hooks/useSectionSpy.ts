@@ -73,13 +73,18 @@ export function useSectionSpy({
     const ordered = JSON.parse(order) as string[];
     const inBand = new Set<string>();
     const first = nodes.current.get(ordered[0]);
-    const scroller = first && scrollerOf(first.parentElement);
     // `scrollTop > 0` keeps a view that does not scroll at all from counting as
-    // "at its end" — there the band alone decides.
-    const atEnd = (): boolean =>
-      !!scroller &&
-      scroller.scrollTop > 0 &&
-      scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - END_SLACK_PX;
+    // "at its end" — there the band alone decides. The scroller is looked up each time:
+    // a layout change (a form page crossing `lg`, #293) can move the scrolling to
+    // another element without re-mounting the sections.
+    const atEnd = (): boolean => {
+      const scroller = first && scrollerOf(first.parentElement);
+      return (
+        !!scroller &&
+        scroller.scrollTop > 0 &&
+        scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - END_SLACK_PX
+      );
+    };
     const report = (): void => {
       if (muted.current) return;
       const next = atEnd() ? ordered.at(-1) : ordered.find(l => inBand.has(l));
