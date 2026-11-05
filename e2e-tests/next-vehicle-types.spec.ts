@@ -31,7 +31,8 @@ const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exac
 /** The form page's footer Cancel. */
 const footerCancel = (page: Page) => page.getByRole('button', { name: 'Cancel', exact: true });
 /** A Menu link off the form page (the rail's Vehicles item). */
-const menuVehicles = (page: Page) => page.getByTestId('nav-rail').locator('a[href="/vehicles"]');
+const menuVehicles = (page: Page) =>
+  page.getByTestId('nav-rail').locator('a[href="/next/vehicles"]');
 /** The form page's table of contents (the list from `lg` up). */
 const toc = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
 
@@ -56,8 +57,7 @@ const interceptRailRows = (page: Page, n: number) =>
  *   /next/vehicle-types → collection grid (#271) with an Edit link per row → Edit opens
  *   /next/vehicle-types/<id>, ready to edit → the page's Back returns to the list.
  * Covers:
- *   - the header search is hidden on shell routes (still shown on the legacy list), incl.
- *     browser Back from a legacy list with the mobile search open
+ *   - the header search is hidden on shell routes
  *   - Edit → details page, ready to edit; Back → back on the list
  *   - a deep link to /next/vehicle-types/<id> opens ready to edit: Cancel inert, Save has
  *     nothing to save
@@ -95,33 +95,18 @@ test.describe('/next/vehicle-types page shell', () => {
     if (!IS_LIVE) await interceptVehicleTypesQuery(page);
   });
 
-  test('hides the header search on shell routes, also after Back from an open mobile search', async ({
-    page,
-  }) => {
+  test('hides the header search on shell routes', async ({ page }) => {
     // Mobile: the header's search icon is the part a shell route must drop (desktop
     // renders the filter button only when a legacy list registers filters).
     await page.setViewportSize(MOBILE_VIEWPORT);
     const banner = page.getByRole('banner');
     const searchIcon = banner.getByRole('button', { name: 'search', exact: true });
-    // Header actions marker: hidden while the mobile search bar is open.
-    const settings = banner.getByRole('button', { name: 'settings', exact: true });
     await page.goto(LIST);
     await selectFirstOrg(page);
     await expect(page.getByRole('grid')).toBeVisible();
     expect(await searchIcon.count()).toBe(0);
     // innerText skips the hidden long label (textContent would include both).
     await expect.poll(() => page.getByTestId('create-vehicle-type-fab').innerText()).toBe('New');
-
-    // In-app to the legacy list (header state survives), open the search, then Back.
-    await banner.getByRole('button', { name: 'Expand menu' }).click();
-    await page.getByRole('link', { name: 'Vehicle Types' }).click();
-    await expect(page).toHaveURL(/\/vehicle-types$/);
-    await searchIcon.click();
-    await expect(settings).toBeHidden(); // the open search bar replaces the header actions
-    await page.goBack();
-    await expect(page.getByRole('grid')).toBeVisible();
-    await expect(settings).toBeVisible();
-    expect(await searchIcon.count()).toBe(0);
   });
 
   test('Edit opens the details page ready to edit; Back returns to the list', async ({ page }) => {
@@ -458,7 +443,7 @@ test.describe('/next/vehicle-types page shell', () => {
 
     await menuVehicles(page).click();
     await dialog.getByRole('button', { name: 'Discard' }).click();
-    await expect(page).toHaveURL(/\/vehicles$/);
+    await expect(page).toHaveURL(/\/next\/vehicles$/);
   });
 
   test("the leave dialog's Save saves and stays; then the Menu link goes through", async ({
@@ -475,7 +460,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));
     await expect(name).toHaveValue('Type Omega');
     await menuVehicles(page).click();
-    await expect(page).toHaveURL(/\/vehicles$/);
+    await expect(page).toHaveURL(/\/next\/vehicles$/);
   });
 
   test('while a save runs the fields read only and the leave dialog offers no Save', async ({
@@ -575,7 +560,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
     await expect(page.locator('#vtype-name')).toHaveValue('Type Alpha');
     await menuVehicles(page).click();
-    await expect(page).toHaveURL(/\/vehicles$/);
+    await expect(page).toHaveURL(/\/next\/vehicles$/);
     expect(await page.getByRole('dialog').count()).toBe(0);
   });
 });

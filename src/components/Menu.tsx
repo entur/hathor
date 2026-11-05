@@ -19,6 +19,7 @@ import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRa
 import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useIsFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
+import { NEXT_BASE } from '../pages/shell/PageShell.tsx';
 
 export const APP_HEADER_HEIGHT_PX = 64;
 const MOBILE_DRAWER_W = 280;
@@ -27,6 +28,7 @@ const MOBILE_DRAWER_W = 280;
 // new entries (see feedback_i18n_reuse_keys memory).
 // iconKey values map to `#menu-<iconKey>` sprite symbols (see MenuIconSprite).
 // flag hides the item unless that sandboxFeatures key is on in config.json.
+// With `Collections` on, every item but Home goes to its `/next` page.
 type MenuItem = {
   textKey: string;
   path: string;
@@ -133,7 +135,10 @@ export default function Menu() {
   const { expanded, toggleExpanded, mobileOpen, closeMobile } = useNavRail();
   const { currentOrganisation } = useOrganisationsContext();
   const isFeatureOn = useIsFeatureOn();
-  const items = menuItems.filter(item => isFeatureOn(item.flag));
+  const next = isFeatureOn('Collections');
+  const items = menuItems
+    .filter(item => isFeatureOn(item.flag))
+    .map(item => (next && item.path !== '/' ? { ...item, path: NEXT_BASE + item.path } : item));
 
   // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
   // Mobile open state is session-only (mobileOpen), NOT the persisted

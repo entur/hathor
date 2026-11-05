@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import HomePage from './Home';
 import { withOrganisations } from '../contexts/mockOrganisations.tsx';
 import { withAuth } from '../auth/mockAuth.tsx';
-import { APP_STORY_META, AppAt } from './complete/appStory.tsx';
+import { APP_STORY_META, AppAt } from './appStory.tsx';
 
 /**
  * Stories for the Home dashboard. A MemoryRouter decorator supplies the routing

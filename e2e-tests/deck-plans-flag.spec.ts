@@ -12,7 +12,7 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  *   links present / absent; goto /deck-plans with DeckPlans off → lands on /;
  *   goto /vehicle-types → assert the "Deck Plan" column header present / absent
  * Covers:
- *   - on: nav-rail item links to /deck-plans, Home's card and create action to /next/deck-plans(/new);
+ *   - on: nav-rail item, Home's card and create action link to /next/deck-plans(/new);
  *     vehicle-type list shows the Deck Plan column
  *   - off: no link into deck plans anywhere; a direct visit redirects to /; no Deck Plan column
  *   - (the multi-import deck-plan count is covered in autosys-multi-import.spec.ts)
@@ -25,12 +25,12 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 const DECK_PLANS_OFF = { sandboxFeatures: { DeckPlans: false } };
 const DECK_PLAN_COLUMN = 'Deck Plan';
 
-/** Any link into deck plans: the nav-rail item (/deck-plans) and Home's card and create action (/next/deck-plans). */
+/** Any link into deck plans: the nav-rail item and Home's card and create action. */
 const deckPlanLinks = (page: Page) => page.locator('a[href*="/deck-plans"]');
 
-/** The nav-rail item for /deck-plans. */
+/** The nav-rail item for /next/deck-plans (`Collections` is on in the fixture config, #295). */
 const navDeckPlanLink = (page: Page) =>
-  page.getByTestId('nav-rail').locator('a[href="/deck-plans"]');
+  page.getByTestId('nav-rail').locator('a[href="/next/deck-plans"]');
 
 /** The vehicle-type list's Deck Plan column header. */
 const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DECK_PLAN_COLUMN });
@@ -39,8 +39,8 @@ const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DE
 const openHome = async (page: Page) => {
   await page.goto('/');
   await selectFirstOrg(page);
-  await expect(page.getByTestId('nav-rail').locator('a[href="/vehicles"]')).toBeVisible();
   // /next/vehicles with `Collections` on (fixture default, #295); /vehicles when an override drops it.
+  await expect(page.getByTestId('nav-rail').locator('a[href$="/vehicles"]')).toBeVisible();
   await expect(page.locator('.app-content a[href$="/vehicles"]')).toBeVisible();
 };
 

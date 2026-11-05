@@ -116,7 +116,8 @@ test.describe('#141 import filter leaks into sibling lists', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.beforeEach(async ({ context, page }) => {
-    await seedAuth(context);
+    // `Collections` off: the bug lives in the legacy lists, which the nav rail reaches only then (#295).
+    await seedAuth(context, { sandboxFeatures: { DeckPlans: true, AutosysImport: true } });
     if (!IS_LIVE) {
       await interceptVehicleListQuery(page);
       await interceptVehicleTypesQuery(page);
