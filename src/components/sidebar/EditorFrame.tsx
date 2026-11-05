@@ -12,7 +12,7 @@ import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
 import DiscardDialog from '../dialogs/DiscardDialog.tsx';
-import { EditFooter, FormFooterContext } from '../form-layout/index.ts';
+import { EditFooter, FormFooterContext, formPageWidth } from '../form-layout/index.ts';
 import EditorRail from './EditorRail.tsx';
 import { useEditorOnPage } from './editorHost.ts';
 
@@ -27,6 +27,10 @@ export interface EditorCopy {
   deactivateTitle: string;
   deactivateMessage: string;
 }
+
+// A page heading takes focus on arrival for screen readers (`EntityDetailsShell`); it is not
+// in the tab order, so it draws no ring — clipped by the frame, it showed as a stray edge.
+const HEADING_NO_RING = { '&:focus': { outline: 'none' } };
 
 interface EditorFrameProps<T, F> {
   editor: EntityEditor<T, F>;
@@ -135,7 +139,7 @@ export default function EditorFrame<T, F>({
     return (
       <>
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6" component={heading} sx={{ mb: 1 }}>
+          <Typography variant="h6" component={heading} sx={{ mb: 1, ...HEADING_NO_RING }}>
             {t(copy.title)}
           </Typography>
           <Divider sx={{ mb: 2 }} />
@@ -182,6 +186,8 @@ export default function EditorFrame<T, F>({
           ? // From `lg` the page stays put; the form column scrolls itself (`FormSections`, #293).
             {
               height: '100%',
+              // As wide as the form and column 3, so the title row's actions end above the picture.
+              maxWidth: formPageWidth,
               display: 'flex',
               flexDirection: 'column',
               overflowY: { xs: 'auto', lg: 'hidden' },
@@ -197,7 +203,7 @@ export default function EditorFrame<T, F>({
             noWrap
             title={trimmed || undefined}
             data-testid={`${testId}-details-title`}
-            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', ...HEADING_NO_RING }}
           >
             {trimmed || (
               <>

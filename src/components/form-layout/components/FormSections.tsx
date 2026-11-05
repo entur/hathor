@@ -4,15 +4,13 @@ import { SectionToc } from '../../SectionToc.tsx';
 import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useSectionSpy } from '../hooks/useSectionSpy.ts';
 import { FormFooterContext } from '../formFooterContext.ts';
+import { SCROLL_PAD, SECTION_GAP, TOC_WIDTH, formColumnWidth } from '../utils/formWidth.ts';
 import { gridSize, tocSections, type ResolvedField, type Section } from '../utils/sections.ts';
 
-// Theme spacing: between fields (room for a floating label's notch), between sections,
-// and kept above a section scrolled into view.
+// Theme spacing: between fields (room for a floating label's notch), and kept above a
+// section scrolled into view.
 const FIELD_GAP = 2,
-  SECTION_GAP = 4,
   SCROLL_MARGIN = 2;
-// Linje docs TOC: `max-width: 15rem`.
-const TOC_WIDTH = '15rem';
 // From `lg`, the form column scrolls: room at its top for the first row's floating labels.
 const FORM_TOP_PAD = 1;
 // Below `lg`: room above the dropdown for its floating label (theme spacing), and its
@@ -71,7 +69,10 @@ export function FormSections({
   const [active, setActive] = useState<string>();
   // Late-loading or reshaped sections: an unknown pick falls back to the first.
   const shown = active !== undefined && toc.includes(active) ? active : toc[0];
-  const wide = useMediaQuery(useTheme().breakpoints.up('lg'));
+  const theme = useTheme();
+  const wide = useMediaQuery(theme.breakpoints.up('lg'));
+  // Fields at most 500px (Linje, #283), at every width.
+  const formColumn = `minmax(0, ${formColumnWidth(theme)})`;
   const register = useSectionSpy({
     labels: toc,
     enabled: toc.length > 0,
@@ -144,7 +145,7 @@ export function FormSections({
       ref={rootRef}
       sx={{
         display: 'grid',
-        gridTemplateColumns: wide && column ? `minmax(0, 1fr) ${TOC_WIDTH}` : 'minmax(0, 1fr)',
+        gridTemplateColumns: wide && column ? `${formColumn} ${TOC_WIDTH}` : formColumn,
         columnGap: SECTION_GAP,
         rowGap: FIELD_GAP,
         alignItems: 'start',
@@ -193,6 +194,7 @@ export function FormSections({
       <Box
         sx={{
           minWidth: 0,
+          pr: SCROLL_PAD, // the fields keep clear of the column's own scrollbar
           ...(wide && { minHeight: 0, overflowY: 'auto', pt: FORM_TOP_PAD }),
           ...(wide && column && { gridColumn: 1, gridRow: 1 }),
         }}
