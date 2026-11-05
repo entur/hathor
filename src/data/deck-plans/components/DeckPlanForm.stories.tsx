@@ -110,7 +110,7 @@ function Editor({
 }
 
 const meta: Meta<FormArgs> = {
-  title: 'data/deck-plans/DeckPlanForm',
+  title: 'data/deck-plans/prev/DeckPlanForm',
   component: DeckPlanForm,
   parameters: {
     layout: 'padded',

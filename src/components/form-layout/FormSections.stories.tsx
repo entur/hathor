@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 import { Box, FormControlLabel, Paper, Switch, TextField, Typography } from '@mui/material';
 import { CARD_MEDIA_ASPECT, type FieldSpec } from '../collection/index.ts';
 import en from '../../locales/en/translation.json';
@@ -11,7 +12,13 @@ import {
   VEHICLE_TYPE_SECTION_LABEL,
   vehicleTypeSections,
 } from '../../data/vehicle-types/types/vehicleTypeLayout.ts';
-import { FormSections, resolveSections, type Layout, type ResolvedField } from './index.ts';
+import {
+  EditFooter,
+  FormSections,
+  resolveSections,
+  type Layout,
+  type ResolvedField,
+} from './index.ts';
 
 const MENU_W = 72; // the collapsed nav rail
 const FORM_MAX_W = 1140; // PageShell's `lg` container: form + its TOC column
@@ -109,10 +116,14 @@ interface DemoProps {
   layout: Layout;
   /** Reserve the column-3 picture slot above the TOC. */
   media: boolean;
+  /** Add the page's sticky Save / Cancel under the form, as `EditorFrame` does while editing. */
+  footer: boolean;
+  /** Footer state: tinted band, live Save. */
+  dirty: boolean;
 }
 
 /** Menu | form (| picture + TOC), as the form page will place it; `FormSections` draws column 3. */
-const Demo = ({ fields, layout, media }: DemoProps) => (
+const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
   <Box
     sx={{
       display: 'grid',
@@ -123,25 +134,32 @@ const Demo = ({ fields, layout, media }: DemoProps) => (
     }}
   >
     <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
-    <FormSections
-      sections={resolveSections(fields, layout)}
-      renderField={control(fields)}
-      aside={media && <MediaPlaceholder />}
-    />
+    <Box>
+      <FormSections
+        sections={resolveSections(fields, layout)}
+        renderField={control(fields)}
+        aside={media && <MediaPlaceholder />}
+      />
+      {footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} cancelWhenClean />}
+    </Box>
   </Box>
 );
 
 const meta: Meta<typeof Demo> = {
-  title: 'components/FormSections',
+  title: 'components/form-layout/FormSections',
   component: Demo,
-  args: { media: true },
-  argTypes: { media: { control: 'boolean' } },
+  args: { media: true, footer: false, dirty: false },
+  argTypes: {
+    media: { control: 'boolean' },
+    footer: { control: 'boolean' },
+    dirty: { control: 'boolean', if: { arg: 'footer' } },
+  },
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component:
-          'A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways, and a picture slot above it (`aside`, toggle `media`).',
+          "A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways, and a picture slot above it (`aside`, toggle `media`). Toggle `footer` for the form page's sticky `EditFooter`.",
       },
     },
   },
@@ -150,9 +168,9 @@ export default meta;
 
 type Story = StoryObj<typeof Demo>;
 
-/** Six sections → TOC in column 3; scrolling moves the mark, a pick scrolls the form. */
+/** Six sections → TOC in column 3; scrolling moves the mark, a pick scrolls the form. Footer on. */
 export const VehicleType: Story = {
-  args: { fields: vehicleTypeFields, layout: vehicleTypeLayout },
+  args: { fields: vehicleTypeFields, layout: vehicleTypeLayout, footer: true },
 };
 
 /** One section → flat, no heading, no TOC; column 3 still holds the picture when `media` is on. */

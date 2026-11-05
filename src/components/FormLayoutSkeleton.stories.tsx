@@ -3,14 +3,14 @@ import { Box } from '@mui/material';
 import FormLayoutSkeleton from './FormLayoutSkeleton';
 
 const meta: Meta<typeof FormLayoutSkeleton> = {
-  title: 'components/prev-form-layout/FormLayoutSkeleton',
+  title: 'components/form-layout/FormLayoutSkeleton',
   component: FormLayoutSkeleton,
   parameters: {
     layout: 'padded',
     docs: {
       description: {
         component:
-          'Wave-animated loading skeleton sharing the shape of `FormLayout` (label+value rows) or `FormStack` (`stacked` sections). Drop it into any sidebar editor that hasn’t loaded yet.',
+          'Wave-animated loading skeleton sharing the shape of `FormLayout` (label+value rows) or `FormStack` (`stacked` sections). `EditorFrame` shows it, on a form page or in the sidebar, until the record has loaded.',
       },
     },
   },

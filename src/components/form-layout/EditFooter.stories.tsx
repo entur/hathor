@@ -67,7 +67,7 @@ const LongForm = () => {
 };
 
 const meta: Meta<typeof EditFooter> = {
-  title: 'components/EditFooter',
+  title: 'components/form-layout/EditFooter',
   component: EditFooter,
   args: {
     dirty: false,

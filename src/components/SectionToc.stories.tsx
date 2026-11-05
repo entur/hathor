@@ -6,7 +6,7 @@ import { SectionToc } from './SectionToc';
 const SECTIONS = ['General', 'Dimensions', 'Propulsion', 'Capacity', 'Environment', 'Vehicles'];
 
 const meta: Meta<typeof SectionToc> = {
-  title: 'components/SectionToc',
+  title: 'components/form-layout/SectionToc',
   component: SectionToc,
   parameters: {
     layout: 'padded',

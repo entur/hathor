@@ -140,7 +140,7 @@ function PageContentDemo({ title, showAdd, filterCount = 0, empty }: DemoProps) 
 }
 
 const meta: Meta<typeof PageContentDemo> = {
-  title: 'components/data/DataPageContent',
+  title: 'components/prev/DataPageContent',
   component: PageContentDemo,
   parameters: {
     layout: 'padded',
