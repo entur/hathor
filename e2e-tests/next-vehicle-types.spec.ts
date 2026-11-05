@@ -75,7 +75,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - leaving with unsaved edits (#282): a Menu link or browser Back asks first — the dialog's
  *     Cancel stays, Discard follows; with no edits a Menu link goes straight through; a create's
  *     own redirect to its new id after Save never asks; the dialog's Save saves and stays,
- *     and offers no Save while a save runs, when the fields read only
+ *     and offers no Save while a save runs (or once it has landed clean), when the fields read
+ *     only — as during a Retry read
  *   - create page (internal user test): no Deactivate, no New button, no Vehicles section;
  *     Cancel stays inert until a field changes, then asks and Discard returns to the list
  * Modes:
@@ -436,10 +437,47 @@ test.describe('/next/vehicle-types page shell', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('button', { name: 'Discard' })).toBeVisible();
     expect(await dialog.getByRole('button', { name: 'Save' }).count()).toBe(0);
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
 
+    // The save lands with the dialog still open: clean now, so still no Save to send twice.
     release();
     await expect(page.getByText('All changes saved')).toBeVisible();
+    expect(await dialog.getByRole('button', { name: 'Save' }).count()).toBe(0);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(name).toBeEditable();
+  });
+
+  test('a Retry of a failed re-read reads only until the record lands', async ({ page }) => {
+    test.skip(IS_LIVE, 'fixture id; fails a read');
+    await interceptVehicleTypesWithSave(page);
+    let saved = false,
+      reads = 0,
+      release!: () => void;
+    const held = new Promise<void>(r => (release = r));
+    // Registered last, so it runs first: fails the post-save by-id read, holds the Retry.
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      const query: string = post?.query ?? '';
+      if (query.includes('createOrUpdateVehicleType')) saved = true;
+      else if (saved && query.includes('vehicleTypes') && post.variables?.filter?.netexIds) {
+        if (++reads === 1)
+          return route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ data: null, errors: [{ message: 're-read failed' }] }),
+          });
+        await held;
+      }
+      return route.fallback();
+    });
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    await page.locator('#vtype-name').fill('Type Omega');
+    await footerSave(page).click();
+    await page.getByRole('button', { name: 'Retry' }).click();
+
+    const name = page.locator('#vtype-name');
+    await expect(name).toBeVisible();
+    await expect(name).not.toBeEditable();
+    release();
     await expect(name).toBeEditable();
   });
 

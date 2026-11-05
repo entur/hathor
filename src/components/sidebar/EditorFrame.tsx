@@ -99,8 +99,9 @@ export default function EditorFrame<T, F>({
   const page = useEditorOnPage();
   const heading = page ? 'h1' : 'h6';
   // The page's Cancel reverts in place; the sidebar's confirms live in its rail.
-  // The dialogs' Save follows the footer's gates: none while a save runs or a field is missing.
-  const dialogSave = rail.saving || canSubmit === false ? undefined : rail.onSave;
+  // The dialogs' Save follows the footer's gates: none while clean (a save that landed with
+  // the leave dialog open), while a save runs, or with a required field missing.
+  const dialogSave = !rail.isDirty || rail.saving || canSubmit === false ? undefined : rail.onSave;
   const discard = useDiscardConfirm(rail.isDirty, { cancel: rail.onCancelEdit }, dialogSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const frozen = page && editor.isDeactivated;

@@ -203,8 +203,8 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     rail: {
       onCollapse: cfg.onClose,
       // Deactivated is read-only on every host; an `editOnly` one also reads only while a
-      // save or deactivate settles.
-      mode: deactivated || (cfg.editOnly && (settling || deactivating)) ? 'view' : mode,
+      // save or deactivate settles, or a read (a Retry) is in flight: its hydrate overwrites.
+      mode: deactivated || (cfg.editOnly && (settling || deactivating || loading)) ? 'view' : mode,
       isDirty,
       saving,
       // No record (first read failed) → nothing to edit or deactivate. While a
