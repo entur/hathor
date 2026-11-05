@@ -13,6 +13,7 @@ import {
   vehicleTypeSections,
 } from '../../data/vehicle-types/types/vehicleTypeLayout.ts';
 import { vehicleFields, vehicleLayout } from '../../data/vehicles/types/vehicleFields.ts';
+import { deckPlanFields, deckPlanLayout } from '../../data/deck-plans/types/deckPlanFields.ts';
 import {
   EditFooter,
   FormSections,
@@ -31,19 +32,6 @@ const vehicleTypeLayout: Layout<VehicleTypeField> = Object.fromEntries(
     vehicleTypeSections[s],
   ])
 );
-/** Story-local field mapping; the real one lands with the deck-plans form page (#252 pri 4). */
-const deckPlanFields = {
-  name: { kind: 'name', path: ['name'] },
-  description: { kind: 'text', path: ['description'] },
-  xml: { kind: 'text', path: ['xml'] },
-} satisfies Record<string, FieldSpec>;
-
-/** XML stacked under General, not a tab (decision 5): two sections, so no TOC. */
-const deckPlanLayout: Layout<keyof typeof deckPlanFields> = {
-  General: ['name', 'description'],
-  XML: ['xml'],
-};
-
 /** Story stand-in for the host's controls; real forms draw their own `FormFields`. */
 const control =
   (fields: Record<string, FieldSpec>) =>
@@ -152,5 +140,5 @@ export const VehicleType: Story = {
 /** The vehicle form page's own section (#285): one → flat, no heading, no TOC; column 3 still holds the picture when `media` is on. */
 export const Vehicle: Story = { args: { fields: vehicleFields, layout: vehicleLayout } };
 
-/** Two sections → stacked with headings, below the TOC threshold. */
+/** The deck-plan form page's own section (#287): one → flat, no heading, no TOC. */
 export const DeckPlan: Story = { args: { fields: deckPlanFields, layout: deckPlanLayout } };
