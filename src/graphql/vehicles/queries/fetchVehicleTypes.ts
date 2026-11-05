@@ -7,6 +7,7 @@ import type {
   HybridCategory,
   PassengerCapacity,
   PropulsionType,
+  VehicleTypeKind,
 } from '../../../data/vehicle-types/types/vehicleTypeTypes.ts';
 
 const vehicleTypesDocument = gql`
@@ -77,6 +78,7 @@ const vehicleTypesDocument = gql`
 export type VehicleTypeFilter = {
   netexIds?: string[];
   transportModes?: string[];
+  vehicleTypeKind: VehicleTypeKind;
   dataOwnerRef: string;
 };
 
@@ -84,7 +86,8 @@ export type VehicleTypeFilter = {
 export type VehicleTypesQueryVariables = {
   page?: number;
   size?: number;
-  filter?: VehicleTypeFilter;
+  /** Required: Sobek rejects `vehicleTypes` without `dataOwnerRef` and `vehicleTypeKind`. */
+  filter: VehicleTypeFilter;
 };
 
 /** Result of the `VehicleTypes` query: one page of vehicle types, as selected above. */

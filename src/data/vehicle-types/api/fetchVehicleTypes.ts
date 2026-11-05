@@ -10,11 +10,16 @@ import type {
   PropulsionType,
   FuelType,
   HybridCategory,
+  VehicleTypeKind,
 } from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import type { MultilingualString } from '../../netex/multilingualString.ts';
 import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
+
+// shortcut: hathor reads and writes PHYSICAL vehicle types only (vehicles may only refer to those);
+// showing CONTRACTUAL ones is the open question on #274.
+const VEHICLE_TYPE_KIND: VehicleTypeKind = 'PHYSICAL';
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
 const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
@@ -75,6 +80,8 @@ export interface VehicleTypeInput {
   netexId?: string | null;
   /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleTypeInput`. */
   dataOwnerRef: string;
+  /** Required on create; on update it must repeat the stored kind (immutable). */
+  vehicleTypeKind: VehicleTypeKind;
   name?: MultilingualString | null;
   shortName?: MultilingualString | null;
   description?: MultilingualString | null;
@@ -125,6 +132,7 @@ export interface VehicleTypeInput {
 export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
   netexId: vt.id === '' ? undefined : vt.id,
   dataOwnerRef,
+  vehicleTypeKind: VEHICLE_TYPE_KIND,
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,
   description: vt.description ?? null,
@@ -149,7 +157,9 @@ export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): Veh
 });
 
 /**
- * Fetch the full VehicleType list (plus nested deckPlan + vehicles). Sobek's
+ * Fetch the organisation's PHYSICAL vehicle types (plus nested deckPlan +
+ * vehicles) — not CONTRACTUAL ones; also feeds the vehicle form's type picker,
+ * where only PHYSICAL is valid. Sobek's
  * post-#135 schema returns `netexId` in full NeTEx form at every level, so the
  * projection just renames `netexId` → `id` and coerces server-side `null` to
  * `undefined` to match the internal optional-shape contract.
@@ -164,14 +174,15 @@ export const fetchVehicleTypes = async (
 ): Promise<VehicleTypeContext> => {
   const raw = await fetchVehicleTypesRequest(applicationBaseUrl, token, {
     size: FETCH_ALL_SIZE,
-    filter: { dataOwnerRef },
+    filter: { dataOwnerRef, vehicleTypeKind: VEHICLE_TYPE_KIND },
   });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
 };
 
 /**
  * Fetch one VehicleType by NeTEx id — the `vehicleTypes(...)` query filtered
- * to `netexIds: [id]`.
+ * to `netexIds: [id]`. PHYSICAL only, like the list: a CONTRACTUAL id reads as
+ * not found.
  *
  * @param netexId Full NeTEx id.
  * @param applicationBaseUrl Sobek base URL.
@@ -185,6 +196,12 @@ export const fetchVehicleType = async (
   dataOwnerRef: string,
   token: AccessToken
 ): Promise<VehicleType | null> => {
-  const raw = await fetchVehicleTypeRequest(applicationBaseUrl, netexId, dataOwnerRef, token);
+  const raw = await fetchVehicleTypeRequest(
+    applicationBaseUrl,
+    netexId,
+    dataOwnerRef,
+    VEHICLE_TYPE_KIND,
+    token
+  );
   return raw.vehicleTypes.content.map(projectVehicleType).find(vt => vt.id === netexId) ?? null;
 };
