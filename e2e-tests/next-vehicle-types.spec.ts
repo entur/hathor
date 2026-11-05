@@ -74,7 +74,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *     Deactivate asks first, then freezes the page under a red "Deactivated"
  *   - leaving with unsaved edits (#282): a Menu link or browser Back asks first — the dialog's
  *     Cancel stays, Discard follows; with no edits a Menu link goes straight through; a create's
- *     own redirect to its new id after Save never asks
+ *     own redirect to its new id after Save never asks; the dialog's Save saves and stays,
+ *     and offers no Save while a save runs, when the fields read only
  *   - create page (internal user test): no Deactivate, no New button, no Vehicles section;
  *     Cancel stays inert until a field changes, then asks and Discard returns to the list
  * Modes:
@@ -393,6 +394,53 @@ test.describe('/next/vehicle-types page shell', () => {
     await menuVehicles(page).click();
     await dialog.getByRole('button', { name: 'Discard' }).click();
     await expect(page).toHaveURL(/\/vehicles$/);
+  });
+
+  test("the leave dialog's Save saves and stays; then the Menu link goes through", async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'fixture id; saves');
+    await interceptVehicleTypesWithSave(page);
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    const name = page.locator('#vtype-name');
+    await name.fill('Type Omega');
+    await menuVehicles(page).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+    await expect(page.getByText('All changes saved')).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));
+    await expect(name).toHaveValue('Type Omega');
+    await menuVehicles(page).click();
+    await expect(page).toHaveURL(/\/vehicles$/);
+  });
+
+  test('while a save runs the fields read only and the leave dialog offers no Save', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'fixture id; holds a save');
+    await interceptVehicleTypesWithSave(page);
+    let release!: () => void;
+    const held = new Promise<void>(r => (release = r));
+    // Registered last, so it runs first: holds the write, then hands it to the save mock.
+    await page.route('**/graphql', async route => {
+      if (route.request().postData()?.includes('createOrUpdateVehicleType')) await held;
+      await route.fallback();
+    });
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    const name = page.locator('#vtype-name');
+    await name.fill('Type Omega');
+    await footerSave(page).click();
+    await expect(name).not.toBeEditable();
+    await expect(page.getByTestId('editor-page-deactivate')).toBeDisabled();
+
+    await menuVehicles(page).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('button', { name: 'Discard' })).toBeVisible();
+    expect(await dialog.getByRole('button', { name: 'Save' }).count()).toBe(0);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+
+    release();
+    await expect(page.getByText('All changes saved')).toBeVisible();
+    await expect(name).toBeEditable();
   });
 
   test('browser Back with unsaved edits asks first', async ({ page }) => {

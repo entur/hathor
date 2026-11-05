@@ -51,7 +51,7 @@ interface EditorFrameProps<T, F> {
  * shortcut: any replace off a dirty page skips the dialog; move a create's `onCreated` past
  * its clean re-render if another replace ever leaves a form page.
  */
-function LeaveGuard({ dirty, onSave }: { dirty: boolean; onSave: () => void | Promise<void> }) {
+function LeaveGuard({ dirty, onSave }: { dirty: boolean; onSave?: () => void | Promise<void> }) {
   const blocker = useBlocker(
     ({ currentLocation, nextLocation, historyAction }) =>
       dirty && historyAction !== 'REPLACE' && currentLocation.pathname !== nextLocation.pathname
@@ -61,10 +61,13 @@ function LeaveGuard({ dirty, onSave }: { dirty: boolean; onSave: () => void | Pr
       open={blocker.state === 'blocked'}
       onCancel={() => blocker.reset?.()}
       onDiscard={() => blocker.proceed?.()}
-      onSave={async () => {
-        blocker.reset?.();
-        await onSave();
-      }}
+      onSave={
+        onSave &&
+        (async () => {
+          blocker.reset?.();
+          await onSave();
+        })
+      }
     />
   );
 }
@@ -96,10 +99,11 @@ export default function EditorFrame<T, F>({
   const page = useEditorOnPage();
   const heading = page ? 'h1' : 'h6';
   // The page's Cancel reverts in place; the sidebar's confirms live in its rail.
-  const discard = useDiscardConfirm(rail.isDirty, { cancel: rail.onCancelEdit }, rail.onSave);
+  // The dialogs' Save follows the footer's gates: none while a save runs or a field is missing.
+  const dialogSave = rail.saving || canSubmit === false ? undefined : rail.onSave;
+  const discard = useDiscardConfirm(rail.isDirty, { cancel: rail.onCancelEdit }, dialogSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
-  // On a form page (`editOnly`), View only follows a confirmed Deactivate.
-  const frozen = page && rail.mode === 'view';
+  const frozen = page && editor.isDeactivated;
   // Before the record is shown, the sidebar keeps only its collapse.
   const bareRail = !page && <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />;
   // Leaves outright: with unsaved edits the LeaveGuard asks first.
@@ -202,14 +206,15 @@ export default function EditorFrame<T, F>({
               </Typography>
             )}
             {backButton}
-            {!frozen && rail.onDeactivate && (
+            {!frozen && editor.record && !editor.isCreate && (
               <>
                 <Divider orientation="vertical" flexItem />
                 <Button
                   size="small"
                   color="error"
-                  // Unsaved edits first: a deactivate would leave them in limbo.
-                  disabled={rail.isDirty || rail.saving}
+                  // Unsaved edits first: a deactivate would leave them in limbo. No handler
+                  // while a save or deactivate settles.
+                  disabled={!rail.onDeactivate || rail.isDirty}
                   onClick={() => setConfirmDeactivate(true)}
                   data-testid="editor-page-deactivate"
                 >
@@ -243,6 +248,7 @@ export default function EditorFrame<T, F>({
             <EditFooter
               dirty={rail.isDirty}
               saving={rail.saving}
+              saved={editor.saved}
               canSubmit={canSubmit}
               onSave={() => void rail.onSave()}
               // A create has no baseline to revert to: it leaves, and the LeaveGuard asks.
@@ -253,11 +259,12 @@ export default function EditorFrame<T, F>({
                 dirty: t('editFooter.dirty'),
                 saving: t('saving'),
                 missing: t('editFooter.missing'),
+                saved: t('editFooter.saved'),
               }}
             />
           )}
           {discard.dialog}
-          <LeaveGuard dirty={rail.isDirty} onSave={rail.onSave} />
+          <LeaveGuard dirty={rail.isDirty} onSave={dialogSave} />
           <DeactivateDialog
             open={confirmDeactivate}
             onCancel={() => setConfirmDeactivate(false)}

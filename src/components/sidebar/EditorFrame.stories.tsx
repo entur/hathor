@@ -48,6 +48,7 @@ const mkEditor = (
     saved: false,
     clearSaved: fn(),
     deactivated: false,
+    isDeactivated: false,
     ...over,
     rail: {
       onCollapse: fn(),

@@ -65,6 +65,8 @@ export interface EntityEditor<T, F> {
   clearSaved: () => void;
   /** Deactivated and the list reloaded. */
   deactivated: boolean;
+  /** Deactivated this visit, list reloaded or not: read-only for good. */
+  isDeactivated: boolean;
   rail: Required<
     Pick<EditorRailProps, 'onCollapse' | 'mode' | 'isDirty' | 'saving' | 'onCancelEdit' | 'onSave'>
   > &
@@ -91,9 +93,11 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const [mode, setMode] = useState<EditorMode>(cfg.editOnly ? 'edit' : (cfg.initialMode ?? 'view'));
   const [state, setState] = useState(fs.initial);
   const [saving, setSaving] = useState(false);
-  // True from Save until the post-save reads land; Edit stays hidden so typing
-  // can't be overwritten by the re-read's re-baseline.
+  // True from Save until the post-save reads land; Edit stays hidden (an `editOnly`
+  // host's fields read-only) so typing can't be overwritten by the re-read's re-baseline.
   const [settling, setSettling] = useState(false);
+  // True while a deactivate runs: no second send; an `editOnly` host's fields read-only.
+  const [deactivating, setDeactivating] = useState(false);
   const [saved, setSaved] = useState(cfg.initialSaved ?? false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
@@ -164,13 +168,19 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     }
   };
 
-  const onDeactivate = (current: T) => () =>
-    runDeactivate({
-      ...flow(),
-      deactivate: () => deactivate(current),
-      stale: () => setDeactivated('stale'),
-      ok: () => setDeactivated('ok'),
-    });
+  const onDeactivate = (current: T) => async () => {
+    setDeactivating(true);
+    try {
+      await runDeactivate({
+        ...flow(),
+        deactivate: () => deactivate(current),
+        stale: () => setDeactivated('stale'),
+        ok: () => setDeactivated('ok'),
+      });
+    } finally {
+      setDeactivating(false);
+    }
+  };
 
   return {
     id: cfg.id,
@@ -189,10 +199,12 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     saved,
     clearSaved: () => setSaved(false),
     deactivated: deactivated === 'ok',
+    isDeactivated: deactivated !== null,
     rail: {
       onCollapse: cfg.onClose,
-      // Deactivated is read-only on every host; on an `editOnly` one it is the only View.
-      mode: deactivated ? 'view' : mode,
+      // Deactivated is read-only on every host; an `editOnly` one also reads only while a
+      // save or deactivate settles.
+      mode: deactivated || (cfg.editOnly && (settling || deactivating)) ? 'view' : mode,
       isDirty,
       saving,
       // No record (first read failed) → nothing to edit or deactivate. While a
@@ -201,8 +213,9 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
         (isCreate || record) && !settling && !loading && !fetchError
           ? () => !deactivated && setMode('edit')
           : undefined,
-      // Once deactivated, a second click would re-send the mutation.
-      onDeactivate: record && !deactivated ? onDeactivate(record) : undefined,
+      // Once deactivated, or while one is in flight, a second click would re-send the mutation.
+      onDeactivate:
+        record && !deactivated && !settling && !deactivating ? onDeactivate(record) : undefined,
       onCancelEdit: () => {
         // The committed baseline, not `record`: after a create whose list
         // reload failed there is no record yet, and the baseline holds the new id.
