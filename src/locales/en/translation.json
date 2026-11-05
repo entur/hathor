@@ -228,6 +228,10 @@
   "vehicles.form.modelSection": "Model",
 
   "vehicles.actions.new": "New Vehicle",
+  "vehicles.field.transportMode": "Transport Mode",
+  "vehicles.empty": "No vehicles for {{org}} yet",
+  "vehicles.selectType": "Select type",
+  "vehicles.openVehicleType": "Open vehicle type",
   "common.discardTitle": "Discard unsaved changes?",
   "common.discardBody": "You have unsaved edits.",
 

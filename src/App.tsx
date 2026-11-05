@@ -22,6 +22,8 @@ import VehicleView from './data/vehicles/components/VehicleView.tsx';
 import PageShell, { NEXT_BASE } from './pages/shell/PageShell.tsx';
 import VehicleTypeCollectionPage from './data/vehicle-types/components/VehicleTypeCollectionPage.tsx';
 import VehicleTypeDetailsPage from './data/vehicle-types/components/VehicleTypeDetailsPage.tsx';
+import VehicleCollectionPage from './data/vehicles/components/VehicleCollectionPage.tsx';
+import VehicleDetailsPage from './data/vehicles/components/VehicleDetailsPage.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
 import { useIsFeatureOn } from './config/featureFlags.ts';
@@ -93,6 +95,8 @@ export default function App() {
                   >
                     <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
                     <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
+                    <Route path="vehicles" element={<VehicleCollectionPage />} />
+                    <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
                   </Route>
                 </Routes>
               </Box>

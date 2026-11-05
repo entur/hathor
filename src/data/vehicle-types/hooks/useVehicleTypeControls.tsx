@@ -33,6 +33,9 @@ export interface VehicleTypeControlsOptions {
   euroClasses: readonly CodeValue[];
   /** How view mode locks a field: `disabled` (the sidebar) or `readOnly` (the form page, #267). */
   lock?: 'disabled' | 'readOnly';
+  /** Where a Vehicles chip links: the sidebar's `?selected=` by default, the vehicle's form
+   *  page on a form page (#285). */
+  vehicleHref?: (id: string) => string;
 }
 
 /**
@@ -50,6 +53,7 @@ export function useVehicleTypeControls({
   mode,
   euroClasses,
   lock = 'disabled',
+  vehicleHref = vehicleSelectedHref,
 }: VehicleTypeControlsOptions): (key: VehicleTypeField) => ReactNode {
   const { t } = useTranslation();
   const transportModeOptions = useMemo(
@@ -120,7 +124,7 @@ export function useVehicleTypeControls({
                 <Chip
                   key={v.id}
                   component={RouterLink}
-                  to={vehicleSelectedHref(v.id)}
+                  to={vehicleHref(v.id)}
                   clickable
                   size="small"
                   variant="outlined"

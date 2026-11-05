@@ -77,6 +77,7 @@ const interceptRailRows = (page: Page, n: number) =>
  *     own redirect to its new id after Save never asks; the dialog's Save saves and stays,
  *     and offers no Save while a save runs (or once it has landed clean), when the fields read
  *     only — as during a Retry read
+ *   - a Vehicles chip links to the vehicle's form page (#285)
  *   - create page (internal user test): no Deactivate, no New button, no Vehicles section;
  *     Cancel stays inert until a field changes, then asks and Discard returns to the list
  * Modes:
@@ -338,6 +339,16 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(capacity).not.toBeInViewport();
     await toc(page).getByRole('button', { name: 'Passenger Capacity' }).click();
     await expect(capacity).toBeInViewport();
+  });
+
+  test("a Vehicles chip links to the vehicle's own form page", async ({ page }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    await page.goto(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    // vehicle-types-mock.json: Type Alpha lists NMR:Vehicle:101.
+    await expect(page.getByRole('link', { name: /AA-101/ })).toHaveAttribute(
+      'href',
+      `/next/vehicles/${encodeURIComponent('NMR:Vehicle:101')}`
+    );
   });
 
   test('Cancel asks before discarding and reverts, still editing', async ({ page }) => {

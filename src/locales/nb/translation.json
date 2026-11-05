@@ -227,6 +227,10 @@
   "vehicles.form.modelSection": "Modell",
 
   "vehicles.actions.new": "Nytt kjøretøy",
+  "vehicles.field.transportMode": "Transportform",
+  "vehicles.empty": "Ingen kjøretøy for {{org}} ennå",
+  "vehicles.selectType": "Velg type",
+  "vehicles.openVehicleType": "Åpne kjøretøytype",
   "common.discardTitle": "Forkaste ulagrede endringer?",
   "common.discardBody": "Du har ulagrede endringer.",
 

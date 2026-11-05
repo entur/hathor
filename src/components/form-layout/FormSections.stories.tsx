@@ -12,6 +12,7 @@ import {
   VEHICLE_TYPE_SECTION_LABEL,
   vehicleTypeSections,
 } from '../../data/vehicle-types/types/vehicleTypeLayout.ts';
+import { vehicleFields, vehicleLayout } from '../../data/vehicles/types/vehicleFields.ts';
 import {
   EditFooter,
   FormSections,
@@ -30,32 +31,7 @@ const vehicleTypeLayout: Layout<VehicleTypeField> = Object.fromEntries(
     vehicleTypeSections[s],
   ])
 );
-/** Story-local field mappings; the real ones land with each form page (#252 pri 4). */
-const vehicleFields = {
-  name: { kind: 'text', path: ['name'] },
-  registrationNumber: { kind: 'text', path: ['registrationNumber'] },
-  operationalNumber: { kind: 'text', path: ['operationalNumber'] },
-  transportType: { kind: 'reference', path: ['transportType', 'id'] },
-  buildDate: { kind: 'date', path: ['buildDate'] },
-  registrationDate: { kind: 'date', path: ['registrationDate'] },
-  chassisNumber: { kind: 'text', path: ['chassisNumber'] },
-  description: { kind: 'text', path: ['description'] },
-} satisfies Record<string, FieldSpec>;
-
-/** One flat section; short codes at half width, regrouped to pack in pairs (decisions 3–4). */
-const vehicleLayout: Layout<keyof typeof vehicleFields> = {
-  Vehicle: [
-    'name',
-    { field: 'registrationNumber', width: '1/2' },
-    { field: 'operationalNumber', width: '1/2' },
-    'transportType',
-    'buildDate',
-    'registrationDate',
-    { field: 'chassisNumber', width: '1/2' },
-    'description',
-  ],
-};
-
+/** Story-local field mapping; the real one lands with the deck-plans form page (#252 pri 4). */
 const deckPlanFields = {
   name: { kind: 'name', path: ['name'] },
   description: { kind: 'text', path: ['description'] },
@@ -173,7 +149,7 @@ export const VehicleType: Story = {
   args: { fields: vehicleTypeFields, layout: vehicleTypeLayout, footer: true },
 };
 
-/** One section → flat, no heading, no TOC; column 3 still holds the picture when `media` is on. */
+/** The vehicle form page's own section (#285): one → flat, no heading, no TOC; column 3 still holds the picture when `media` is on. */
 export const Vehicle: Story = { args: { fields: vehicleFields, layout: vehicleLayout } };
 
 /** Two sections → stacked with headings, below the TOC threshold. */
