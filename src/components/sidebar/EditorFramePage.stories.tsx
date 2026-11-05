@@ -1,36 +1,29 @@
-import { useState, type ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, screen, userEvent, within } from 'storybook/test';
-import { Typography } from '@mui/material';
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import EditorFrame from './EditorFrame.tsx';
-import PageShell from '../../pages/shell/PageShell.tsx';
-import EntityDetailsShell from '../../pages/shell/EntityDetailsShell.tsx';
+import { FormPage, STORY_SAVE_MS } from './formPageStory.tsx';
 import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
-import { ConfigContext, useConfig } from '../../contexts/configContext.ts';
-import { EditingProvider } from '../../contexts/EditingContext.tsx';
+import { withSobekUrl } from '../../contexts/mockSobek.tsx';
 import { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
 import { createFormState } from '../../hooks/useFormState.ts';
 import VehicleTypeSections from '../../data/vehicle-types/components/VehicleTypeSections.tsx';
 import type { VehicleType } from '../../data/vehicle-types/types/vehicleTypeTypes.ts';
 
-const LIST = '/next/things';
-const SAVE_MS = 900; // fake round trip, long enough to see the Saving state
 const CREATED_ID = 'NMR:VehicleType:2';
 
 const meta: Meta = {
-  title: 'components/editorFrame/fullpage',
+  title: 'components/editorFrame/fullpage/vehicle-types',
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component:
-          '`EditorFrame` on a form page (#280): `PageShell` → `EntityDetailsShell` (`EditorHostContext` = page) → the frame around the real `VehicleTypeSections`. The record read and save hit an in-memory store, not Sobek. The sidebar version is `components/editorFrame/modal`.',
+          '`EditorFrame` on a form page (#280): `PageShell` → `EntityDetailsShell` (`EditorHostContext` = page) → the frame around the real `VehicleTypeSections`. The record read and save hit an in-memory store, not Sobek. Vehicles: `…/fullpage/vehicles`; the sidebar version is `components/editorFrame/modal`.',
       },
     },
   },
-  // EntityDetailsShell keys its editor on the current organisation.
-  decorators: [withOrganisations()],
+  // EntityDetailsShell keys its editor on the current organisation; the read needs a base URL.
+  decorators: [withSobekUrl(), withOrganisations()],
 };
 export default meta;
 
@@ -70,7 +63,7 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
           const id = form.id || CREATED_ID;
           store.set(id, { ...form, id });
           done({ error: null, newId: id });
-        }, SAVE_MS)
+        }, STORY_SAVE_MS)
       ),
     withNewId: (form, id) => ({ ...form, id, version: 1 }),
     deactivateRequest: async () => {},
@@ -102,57 +95,17 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
   );
 }
 
-/** The record read needs a base URL; the store ignores it. */
-function WithBaseUrl({ children }: { children: ReactNode }) {
-  return (
-    <ConfigContext.Provider value={{ ...useConfig(), applicationBaseUrl: 'story://sobek' }}>
-      {children}
-    </ConfigContext.Provider>
-  );
-}
-
-/** `/next/things/:id` under the real page shell, in a data router (the page's
- *  `LeaveGuard` needs one); `/next/things` stands in for the collection Back returns to. */
-function FormPage({ entry }: { entry: string }) {
-  const [router] = useState(() =>
-    createMemoryRouter(
-      [
-        {
-          path: '/next',
-          element: <PageShell />,
-          children: [
-            { path: 'things', element: <Typography>Collection page</Typography> },
-            {
-              path: 'things/:id',
-              element: (
-                <EntityDetailsShell
-                  listPath={LIST}
-                  renderEditor={host => <StoryVehicleTypeDetails {...host} />}
-                />
-              ),
-            },
-          ],
-        },
-      ],
-      { initialEntries: [entry] }
-    )
-  );
-  return (
-    <WithBaseUrl>
-      <EditingProvider>
-        <RouterProvider router={router} />
-      </EditingProvider>
-    </WithBaseUrl>
-  );
-}
+const vtEditor = (host: EntityEditorHostProps) => <StoryVehicleTypeDetails {...host} />;
 
 /** A record opens ready to edit: Back / Deactivate in the title row, Save / Cancel inert in the
  *  sticky footer until a field changes; Save settles after a beat and keeps editing. */
-export const Edit: Story = { render: () => <FormPage entry={`${LIST}/${VT.id}`} /> };
+export const Edit: Story = {
+  render: () => <FormPage entity="vehicle-types" id={VT.id} renderEditor={vtEditor} />,
+};
 
 /** After a confirmed Deactivate: red "Deactivated" in the title row, fields frozen, no footer. */
 export const Deactivated: Story = {
-  render: () => <FormPage entry={`${LIST}/${VT.id}`} />,
+  render: () => <FormPage entity="vehicle-types" id={VT.id} renderEditor={vtEditor} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(await canvas.findByTestId('editor-page-deactivate'));
@@ -163,4 +116,6 @@ export const Deactivated: Story = {
 };
 
 /** A create at `/new`: blank form, no Vehicles section, no NetexId; Save redirects to the new id. */
-export const Create: Story = { render: () => <FormPage entry={`${LIST}/new`} /> };
+export const Create: Story = {
+  render: () => <FormPage entity="vehicle-types" id="new" renderEditor={vtEditor} />,
+};

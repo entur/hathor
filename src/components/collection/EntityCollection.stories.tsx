@@ -67,7 +67,7 @@ function Demo(props: Props) {
 }
 
 const meta: Meta<typeof Demo> = {
-  title: 'components/EntityCollection',
+  title: 'components/EntityCollection/vehicle-types',
   component: Demo,
   parameters: {
     layout: 'padded',
