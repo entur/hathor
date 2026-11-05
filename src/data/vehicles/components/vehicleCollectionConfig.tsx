@@ -21,15 +21,23 @@ const Collection = createEntityCollection(vehicleFields, { filterFields: vehicle
 /** Name first, the registration number when it has none (U4); id second; then what tells
  *  two vehicles apart at a glance. Captions come from `vehicles.field.*`. */
 const COLUMNS: Props['columns'] = [
-  { field: 'name', text: v => netexText(v.name)?.trim() || v.registrationNumber || '' },
+  // Shown, not stored: sort and search still read the name (and reg no has its own column).
+  { field: 'name', render: v => netexText(v.name)?.trim() || v.registrationNumber },
   'id',
   'registrationNumber',
   'transportType',
   {
     field: 'transportMode',
     // Icon + its text, not the icon alone (V4); search matches that text too.
-    render: v => <TransportModeIcon mode={vehicleMode(v)} iconPosition="left" />,
-    text: v => i18next.t(transportModeLabelKey(vehicleMode(v))),
+    // The stored mode, as filter and sort read it: none shows nothing, not "Unknown".
+    render: v =>
+      v.transportType?.transportMode && (
+        <TransportModeIcon mode={v.transportType.transportMode} iconPosition="left" />
+      ),
+    text: v =>
+      v.transportType?.transportMode
+        ? i18next.t(transportModeLabelKey(v.transportType.transportMode))
+        : '',
   },
   'operationalNumber',
 ];

@@ -5,6 +5,7 @@ import {
   interceptVehicleByIdQuery,
   interceptVehicleListQuery,
   mockVehicleById,
+  vehicleRow,
 } from './vehicle-list-helpers';
 
 const LIST = '/next/vehicles';
@@ -28,16 +29,17 @@ const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit / }).fir
  * Covers:
  *   - Edit → form page (h1 focused, Save inert); Back → focus back on the row's Edit link
  *   - search narrows the rows by registration number (U1)
- *   - the vehicle type picked links to its own form page (U2/F8)
+ *   - the vehicle's type links to its own form page (U2/F8) — not an orphan ref outside the
+ *     org's types; a vehicle without a name shows its registration number (U4)
  *   - create: the picture box says "Select type" until a type is picked, then draws the
  *     type; Save, and the leave dialog's Save, stay locked without a type (Sobek hides a
  *     vehicle with none)
  * Modes:
  *   - mock (E2E_BACKEND unset): vehicles-list-mock.json, by-id from the same fixture,
  *     vehicle-types-mock.json for the type picker
- *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; the first row
- *   - skip-live: the search (a fixture registration number) and the create test (fixture
- *     type names)
+ *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; Edit → Back on the first row
+ *   - skip-live: the search (a fixture registration number), the type-link and unnamed tests
+ *     (mocked rows), and the create test (fixture type names)
  */
 test.describe('/next/vehicles', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -75,12 +77,58 @@ test.describe('/next/vehicles', () => {
     await expect(page.getByText(FIXTURE_REG, { exact: true })).toBeVisible();
   });
 
-  test("the vehicle's type links to its own form page", async ({ page }) => {
-    await page.goto(LIST);
-    await selectFirstOrg(page);
-    await firstEdit(page).click();
+  test("a type from the org's list links to its form page; an orphan ref doesn't", async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'fixture types');
+    const KNOWN = 'NMR:Vehicle:known';
+    // Registered last, so it answers first: one vehicle of a type in vehicle-types-mock.json.
+    await interceptVehicleByIdQuery(page, id =>
+      id === KNOWN
+        ? vehicleRow(KNOWN, {
+            transportType: {
+              netexId: 'NMR:VehicleType:1',
+              version: 1,
+              name: { value: BUS_TYPE },
+              transportMode: 'BUS',
+            },
+          })
+        : mockVehicleById(id)
+    );
+    await page.goto(`${LIST}/${encodeURIComponent(KNOWN)}`);
     const open = page.getByRole('link', { name: 'Open vehicle type' });
-    await expect(open).toHaveAttribute('href', /^\/next\/vehicle-types\/[^/]+$/);
+    await expect(open).toHaveAttribute(
+      'href',
+      `/next/vehicle-types/${encodeURIComponent('NMR:VehicleType:1')}`
+    );
+
+    // vehicles-list-mock.json's rail type is not among the org's types: no page to open.
+    await page.goto(`${LIST}/${encodeURIComponent('NMR:Vehicle:rail-1')}`);
+    await expect(page.locator('#vehicle-name')).toHaveValue('Rail Vehicle RAIL-001');
+    expect(await open.count()).toBe(0);
+  });
+
+  test('a vehicle without a name shows its registration number', async ({ page }) => {
+    test.skip(IS_LIVE, 'a mocked row');
+    // Sobek's empty name is whitespace.
+    const row = vehicleRow('NMR:Vehicle:noname', {
+      name: { value: '  ' },
+      registrationNumber: 'NN-1',
+    });
+    await page.route('**/graphql', async route => {
+      const post = route.request().postDataJSON();
+      if (!post?.query?.includes('vehicles(') || post.variables?.filter?.netexIds)
+        return route.fallback();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: { vehicles: { content: [row], totalElements: 1, page: 0, size: 10000 } },
+        }),
+      });
+    });
+    await page.goto(LIST);
+    await expect(page.getByRole('gridcell', { name: 'NN-1' })).toHaveCount(2);
   });
 
   test('create: "Select type" until a type is picked; no Save of any kind without one', async ({

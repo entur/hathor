@@ -58,7 +58,11 @@ export function useVehicleControls({
   // One memo for the four derived bits (option list + selection) so that
   // typing in sibling fields doesn't hand `Autocomplete` a fresh `options`
   // reference each keystroke.
-  const { options: vtOptionsWithOrphan, value: currentVtOption } = useMemo(() => {
+  const {
+    options: vtOptionsWithOrphan,
+    value: currentVtOption,
+    known: knownVt,
+  } = useMemo(() => {
     const opts: VTOption[] = allData.map(vt => ({
       id: vt.id,
       name: vt.name?.value ?? vt.id,
@@ -73,6 +77,7 @@ export function useVehicleControls({
     return {
       options: orphan ? [orphan, ...opts] : opts,
       value: known ?? orphan ?? null,
+      known: !!known,
     };
   }, [allData, currentVtId, currentVtName]);
 
@@ -144,7 +149,8 @@ export function useVehicleControls({
                     {t('common.retry')}
                   </Link>
                 </>
-              ) : typeHref && currentVtId ? (
+              ) : // An orphan ref (not among the org's types) has no form page to open.
+              typeHref && currentVtId && knownVt ? (
                 <Link component={RouterLink} to={typeHref(currentVtId)}>
                   {t('vehicles.openVehicleType')}
                 </Link>
