@@ -186,7 +186,7 @@ export interface EntityCollectionProps<E, K extends string = string> {
    *  "Edit <title>" and marked `data-edit-id` (the row's id) for focus return.
    *  Keep it stable (module level): the grid rebuilds its columns when it changes. */
   editHref?: (row: E) => string;
-  /** Router state the Edit link carries (e.g. the details page's `{ initialMode: 'edit' }`). */
+  /** Router state the Edit link carries; the details page needs none today. */
   editState?: unknown;
 }
 

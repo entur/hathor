@@ -63,7 +63,7 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
         <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
           {renderEditor({
             id: isNew ? '' : id,
-            initialMode: 'edit', // a form page opens ready to edit (#282)
+            editOnly: true, // a form page opens ready to edit and stays there (#282)
             // shortcut: the flag stays in this history entry, so a reload re-shows the toast; clear it if that bothers.
             initialSaved: state?.created,
             onClose: () =>

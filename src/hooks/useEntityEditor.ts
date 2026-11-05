@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EditorRailProps } from '../components/sidebar/EditorRail.tsx';
-import { useEditorOnPage } from '../components/sidebar/editorHost.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { runDeactivate, runSave, type FlowCtx, type WriteResult } from './entityEditorFlow.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
@@ -19,6 +18,9 @@ export interface EntityEditorConfig<T, F> {
   /** NeTEx id to edit; `''` is the create pane. */
   id: string;
   initialMode?: EditorMode;
+  /** A form page's host (#282): opens in edit and stays there after a save or Cancel; only a
+   *  deactivate leaves it, into View. `initialMode` is ignored. */
+  editOnly?: boolean;
   /** Open with the "saved" toast showing — a create re-mounted on its minted id. */
   initialSaved?: boolean;
   fetchById: FetchById<T>;
@@ -40,7 +42,7 @@ export interface EntityEditorConfig<T, F> {
 /** What a host (e.g. `useUrlEditorSelection`) hands an entity editor. */
 export type EntityEditorHostProps = Pick<
   EntityEditorConfig<unknown, unknown>,
-  'id' | 'initialMode' | 'initialSaved' | 'onSaved' | 'onClose' | 'onCreated'
+  'id' | 'initialMode' | 'editOnly' | 'initialSaved' | 'onSaved' | 'onClose' | 'onCreated'
 >;
 
 export interface EntityEditor<T, F> {
@@ -70,7 +72,7 @@ export interface EntityEditor<T, F> {
 }
 
 /**
- * The entity editor state machine shared by every sidebar editor: reads the
+ * The entity editor state machine shared by every editor, sidebar or form page: reads the
  * record by id, keeps the form and its baseline, and runs the canonical save /
  * cancel / deactivate ({@link runSave}, {@link runDeactivate}). Host-agnostic:
  * router I/O arrives as `onClose` / `onCreated`.
@@ -86,9 +88,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const { t } = useTranslation();
   const fs = cfg.formState;
   const isCreate = cfg.id === '';
-  // A form page has no View for the reader: a save or a Cancel keeps editing (#282).
-  const page = useEditorOnPage();
-  const [mode, setMode] = useState<EditorMode>(cfg.initialMode ?? 'view');
+  const [mode, setMode] = useState<EditorMode>(cfg.editOnly ? 'edit' : (cfg.initialMode ?? 'view'));
   const [state, setState] = useState(fs.initial);
   const [saving, setSaving] = useState(false);
   // True from Save until the post-save reads land; Edit stays hidden so typing
@@ -129,7 +129,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     return {
       t,
       live: () => started === scope.current,
-      toView: () => setMode('view'),
+      toView: () => !cfg.editOnly && setMode('view'),
       reloadList: cfg.onSaved ?? (() => Promise.resolve()),
       warn: setWarning,
     };
@@ -142,7 +142,6 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     try {
       await runSave<F>({
         ...flow(),
-        ...(page && { toView: () => {} }),
         isCreate,
         form: state.form,
         write: async form => {
@@ -192,7 +191,8 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     deactivated: deactivated === 'ok',
     rail: {
       onCollapse: cfg.onClose,
-      mode,
+      // Deactivated is read-only on every host; on an `editOnly` one it is the only View.
+      mode: deactivated ? 'view' : mode,
       isDirty,
       saving,
       // No record (first read failed) → nothing to edit or deactivate. While a
@@ -207,7 +207,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
         // The committed baseline, not `record`: after a create whose list
         // reload failed there is no record yet, and the baseline holds the new id.
         setState(fs.restore);
-        if (!page) setMode('view');
+        if (!cfg.editOnly) setMode('view');
       },
       onSave,
     },

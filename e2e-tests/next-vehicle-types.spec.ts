@@ -29,7 +29,7 @@ const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exac
 /** The form page's sticky footer Cancel. */
 const footerCancel = (page: Page) => page.getByRole('button', { name: 'Cancel', exact: true });
 /** A Menu link off the form page (the rail's Vehicles item). */
-const menuVehicles = (page: Page) => page.locator('a[href="/vehicles"]');
+const menuVehicles = (page: Page) => page.getByTestId('nav-rail').locator('a[href="/vehicles"]');
 /** The form page's table of contents (the list from `lg` up). */
 const toc = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
 

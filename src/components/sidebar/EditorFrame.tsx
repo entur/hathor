@@ -48,6 +48,8 @@ interface EditorFrameProps<T, F> {
  * own Back) for the {@link DiscardDialog}: Discard lets it through, Cancel stays, Save
  * saves and stays. A replace is the app re-addressing the record (a create's redirect to
  * its minted id), not the reader leaving, so it passes. Needs the data router (#282).
+ * shortcut: any replace off a dirty page skips the dialog; move a create's `onCreated` past
+ * its clean re-render if another replace ever leaves a form page.
  */
 function LeaveGuard({ dirty, onSave }: { dirty: boolean; onSave: () => void | Promise<void> }) {
   const blocker = useBlocker(
@@ -96,7 +98,7 @@ export default function EditorFrame<T, F>({
   // The page's Cancel reverts in place; the sidebar's confirms live in its rail.
   const discard = useDiscardConfirm(rail.isDirty, { cancel: rail.onCancelEdit }, rail.onSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
-  // On a page, View mode only follows a confirmed Deactivate.
+  // On a form page (`editOnly`), View only follows a confirmed Deactivate.
   const frozen = page && rail.mode === 'view';
   // Before the record is shown, the sidebar keeps only its collapse.
   const bareRail = !page && <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />;
@@ -237,7 +239,7 @@ export default function EditorFrame<T, F>({
       />
       {page ? (
         <>
-          {rail.mode === 'edit' && (
+          {!frozen && (
             <EditFooter
               dirty={rail.isDirty}
               saving={rail.saving}

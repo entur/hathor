@@ -104,7 +104,7 @@ const details = (entry: string) => (
         listPath={LIST}
         renderEditor={host => (
           <Standin
-            text={`entity editor — id: ${host.id || '(create)'} · initialMode: ${host.initialMode}`}
+            text={`entity editor — id: ${host.id || '(create)'} · editOnly: ${String(host.editOnly)}`}
           />
         )}
       />
