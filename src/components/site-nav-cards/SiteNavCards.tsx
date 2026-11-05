@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../icons/MenuIcon.tsx';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 import { useIsFeatureOn } from '../../config/featureFlags.ts';
+import { NEXT_BASE } from '../../pages/shell/PageShell.tsx';
 import { SR_ONLY } from '../../utils/srOnly.ts';
 import { over } from '../../utils/colorOver.ts';
 
@@ -63,8 +64,9 @@ const paint = (theme: Theme, p: Paint): string => {
   return typeof hit === 'string' ? hit : p;
 };
 
-/** `?selected=new` opens the list view's sidebar editor in create mode. */
-const createPath = (path: string) => `${path}?selected=new`;
+/** Create mode: a `/next` form page at `/new`; else `?selected=new`, the list view's sidebar editor. */
+const createPath = (path: string) =>
+  path.startsWith(`${NEXT_BASE}/`) ? `${path}/new` : `${path}?selected=new`;
 
 type LayoutProps = { ctx: CountCtx; types?: SiteType[] };
 
@@ -235,7 +237,7 @@ export function ComboStrip({ ctx, types = TYPES, ...p }: ComboProps) {
 
 /**
  * The Home dashboard's org-gated body. Types whose feature flag is off are dropped
- * here, before any layout sees them.
+ * here, before any layout sees them; with `Collections` on, every link goes to `/next`.
  * @param {ComboProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the
  *   layout (default `combo`); look toggles apply to combo only (see {@link ComboStrip}).
  * @returns the combo strip, or the metric strip + browse grid + create row stacked.
@@ -245,7 +247,10 @@ export default function SiteNavCards({
   ...p
 }: ComboProps & { variant?: 'combo' | 'rows' }) {
   const isFeatureOn = useIsFeatureOn();
-  const types = (p.types ?? TYPES).filter(x => isFeatureOn(x.flag));
+  const next = isFeatureOn('Collections');
+  const types = (p.types ?? TYPES)
+    .filter(x => isFeatureOn(x.flag))
+    .map(x => (next ? { ...x, path: NEXT_BASE + x.path } : x));
   if (variant === 'combo') return <ComboStrip {...p} types={types} />;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>

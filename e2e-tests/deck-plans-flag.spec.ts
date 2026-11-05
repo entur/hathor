@@ -8,12 +8,13 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  *
  * Workflow:
  *   seedAuth with DeckPlans on (fixture default) or off (config override)
- *   → goto / and wait for the org-gated `/vehicles` links → assert `/deck-plans`
+ *   → goto / and wait for the org-gated vehicles links → assert deck-plan
  *   links present / absent; goto /deck-plans with DeckPlans off → lands on /;
  *   goto /vehicle-types → assert the "Deck Plan" column header present / absent
  * Covers:
- *   - on: nav-rail item and Home cards link to /deck-plans; vehicle-type list shows the Deck Plan column
- *   - off: no link into /deck-plans anywhere; a direct visit redirects to /; no Deck Plan column
+ *   - on: nav-rail item links to /deck-plans, Home's card and create action to /next/deck-plans(/new);
+ *     vehicle-type list shows the Deck Plan column
+ *   - off: no link into deck plans anywhere; a direct visit redirects to /; no Deck Plan column
  *   - (the multi-import deck-plan count is covered in autosys-multi-import.spec.ts)
  * Modes:
  *   - mock (E2E_BACKEND unset): intercepts `vehicleTypes`; orgs come from seedAuth's lookups
@@ -24,8 +25,8 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
 const DECK_PLANS_OFF = { sandboxFeatures: { DeckPlans: false } };
 const DECK_PLAN_COLUMN = 'Deck Plan';
 
-/** Any link into /deck-plans: the nav-rail item and Home's browse card and create action. */
-const deckPlanLinks = (page: Page) => page.locator('a[href^="/deck-plans"]');
+/** Any link into deck plans: the nav-rail item (/deck-plans) and Home's card and create action (/next/deck-plans). */
+const deckPlanLinks = (page: Page) => page.locator('a[href*="/deck-plans"]');
 
 /** The nav-rail item for /deck-plans. */
 const navDeckPlanLink = (page: Page) =>
@@ -34,12 +35,13 @@ const navDeckPlanLink = (page: Page) =>
 /** The vehicle-type list's Deck Plan column header. */
 const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DECK_PLAN_COLUMN });
 
-/** Home with an organisation selected — the org-gated `/vehicles` links mark the nav and cards as rendered. */
+/** Home with an organisation selected — the org-gated vehicles links mark the nav and cards as rendered. */
 const openHome = async (page: Page) => {
   await page.goto('/');
   await selectFirstOrg(page);
   await expect(page.getByTestId('nav-rail').locator('a[href="/vehicles"]')).toBeVisible();
-  await expect(page.locator('.app-content a[href="/vehicles"]')).toBeVisible();
+  // /next/vehicles with `Collections` on (fixture default, #295); /vehicles when an override drops it.
+  await expect(page.locator('.app-content a[href$="/vehicles"]')).toBeVisible();
 };
 
 /** /vehicle-types with its table rendered. */
@@ -55,7 +57,8 @@ test.describe('sandboxFeatures.DeckPlans', () => {
     await seedAuth(context);
     await openHome(page);
     await expect(navDeckPlanLink(page)).toBeVisible();
-    await expect(page.locator('.app-content a[href^="/deck-plans"]').first()).toBeVisible();
+    await expect(page.locator('.app-content a[href="/next/deck-plans"]')).toBeVisible();
+    await expect(page.locator('.app-content a[href="/next/deck-plans/new"]')).toBeVisible();
   });
 
   test('on: vehicle-type list shows the Deck Plan column', async ({ context, page }) => {
