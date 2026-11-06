@@ -14,7 +14,7 @@ export const fixturesDir = path.join(__dirname, 'fixtures');
  * @param name Fixture file name (e.g. 'vehicle-types-mock.json').
  * @returns Parsed JSON value.
  */
-const loadFixture = (name: string): unknown =>
+export const loadFixture = (name: string): unknown =>
   JSON.parse(fs.readFileSync(path.join(fixturesDir, name), 'utf-8'));
 
 /**
@@ -25,7 +25,7 @@ const loadFixture = (name: string): unknown =>
  * @param queryName Substring to match against `postData.query` (e.g. 'vehicleTypes').
  * @param body JSON payload to return; will be `JSON.stringify`ed.
  */
-const interceptGraphQLQuery = async (
+export const interceptGraphQLQuery = async (
   page: import('@playwright/test').Page,
   queryName: string,
   body: unknown

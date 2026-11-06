@@ -1,6 +1,7 @@
 import { Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
+import { useEditorOnPage } from '../../../components/sidebar/editorHost.ts';
 import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import type { WriteResult } from '../../../hooks/entityEditorFlow.ts';
 import { deactivateDeckPlanRequest } from '../../../graphql/vehicles/mutations/deactivateDeckPlan.ts';
@@ -10,6 +11,7 @@ import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { patchDeckPlanXml } from '../utils/patchDeckPlanXml.ts';
 import { deckPlanForm } from '../stores/deckPlanFormState.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
+import DeckPlanSections from './DeckPlanSections.tsx';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 
 const SKELETON_ROWS = 2; // name + description
@@ -24,10 +26,11 @@ const COPY: EditorCopy = {
 };
 
 /**
- * Editable sidebar for a DeckPlan, opened via `/deck-plans?selected=<id>`:
- * the shared {@link useEntityEditor} + {@link EditorFrame} around the
- * {@link DeckPlanForm} tab pair — Identity (name + description, editable) and
- * XML (the read-only NeTEx body, a separate by-id read).
+ * DeckPlan editor: the shared {@link useEntityEditor} + {@link EditorFrame}. In the
+ * sidebar (`/deck-plans?selected=<id>`) the {@link DeckPlanForm} tab pair — Identity
+ * (name + description, editable) and XML (the read-only NeTEx body, a separate by-id
+ * read); on the form page (`EditorHostContext`, #287) {@link DeckPlanSections}, the
+ * decks in column 3.
  *
  * Save takes one of two paths. A create fires the `createOrUpdateDeckPlan`
  * mutation, which mints the new NeTEx id the sidebar then advances to. An edit
@@ -76,6 +79,17 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
     deactivateRequest: deactivateDeckPlanRequest,
   });
   const { form } = editor;
+  const page = useEditorOnPage();
+  const body = {
+    value: form,
+    onChange: editor.setForm,
+    mode: editor.rail.mode,
+    isCreate,
+    xml,
+    loading,
+    fetchError: xmlError,
+    onRetry: refetchXml,
+  };
 
   return (
     <EditorFrame
@@ -90,18 +104,13 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
       // too: the body may be present but stale (see `write`). Create has no body.
       canSubmit={isCreate || (!loading && !xmlError && !!xml)}
     >
-      <Stack data-testid="deck-plan-context">
-        <DeckPlanForm
-          value={form}
-          onChange={editor.setForm}
-          mode={editor.rail.mode}
-          isCreate={isCreate}
-          xml={xml}
-          loading={loading}
-          fetchError={xmlError}
-          onRetry={refetchXml}
-        />
-      </Stack>
+      {page ? (
+        <DeckPlanSections {...body} />
+      ) : (
+        <Stack data-testid="deck-plan-context">
+          <DeckPlanForm {...body} />
+        </Stack>
+      )}
     </EditorFrame>
   );
 }

@@ -48,6 +48,7 @@ const mkEditor = (
     saved: false,
     clearSaved: fn(),
     deactivated: false,
+    isDeactivated: false,
     ...over,
     rail: {
       onCollapse: fn(),
@@ -70,14 +71,14 @@ const Body = () => (
 );
 
 const meta: Meta<typeof EditorFrame<Entity, Entity>> = {
-  title: 'components/sidebar/EditorFrame',
+  title: 'components/editorFrame/modal',
   component: EditorFrame,
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component:
-          'Chrome every sidebar editor shares (#238): skeleton while the first read is in flight, the not-found body, title + NetexId, the read-error body with Retry, the save / deactivate snackbars and the `EditorRail`. The feature passes only its body as children.',
+          'Chrome every entity editor shares (#238), in the sidebar; the form page is `components/editorFrame/fullpage`: skeleton while the first read is in flight, the not-found body, title + NetexId, the read-error body with Retry, the save / deactivate snackbars and the `EditorRail`. The feature passes only its body as children.',
       },
     },
   },

@@ -7,7 +7,7 @@ import SelectOrganisation from '../../data/organisations/components/SelectOrgani
 
 interface HeaderActionsProps {
   isMobile: boolean;
-  isHomePage: boolean;
+  hideSearch: boolean;
   onSearchIconClick: () => void;
   onUserIconClick: () => void;
   onSettingsIconClick: () => void;
@@ -18,7 +18,7 @@ interface HeaderActionsProps {
 
 export default function HeaderActions({
   isMobile,
-  isHomePage,
+  hideSearch,
   onSearchIconClick,
   onUserIconClick,
   onSettingsIconClick,
@@ -40,7 +40,7 @@ export default function HeaderActions({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
-      {isMobile && !isHomePage && (
+      {isMobile && !hideSearch && (
         <IconButton
           color="inherit"
           onClick={onSearchIconClick}

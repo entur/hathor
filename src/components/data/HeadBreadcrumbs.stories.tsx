@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import HeadBreadcrumbs from './HeadBreadcrumbs';
 
 const meta: Meta<typeof HeadBreadcrumbs> = {
-  title: 'components/data/HeadBreadcrumbs',
+  title: 'components/prev/HeadBreadcrumbs',
   component: HeadBreadcrumbs,
   parameters: {
     docs: {

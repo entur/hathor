@@ -13,6 +13,8 @@ export interface SandboxFeatures {
   DeckPlans?: boolean;
   /** The SVV (Autosys) bulk import on Home. */
   AutosysImport?: boolean;
+  /** The collection / entity-details pages under `/next/*`, beside the legacy views (#252). */
+  Collections?: boolean;
 }
 
 export interface Config {

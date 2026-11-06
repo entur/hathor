@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>EntityCollection in hathor — what's on screen</title>
+    <style>
+      /* Palette from hathor's theme config (.github/environments/theme-*.json):
+   primary #181C56 (Entur navy), secondary #ff5959 (Entur coral).
+   Neutrals are pulled toward the navy so none of them read as default grey. */
+      :root {
+        --ink: #141633;
+        --ink-2: #4b4e72;
+        --ink-3: #878aa6;
+        --line: #d3d5e2;
+        --line-soft: #e7e8f0;
+        --ground: #f1f2f6;
+        --surface: #ffffff;
+        --accent: #181c56;
+        --new-bg: #e6e7f3;
+        --coral: #ff5959;
+        --coral-ink: #a3222a;
+        --coral-bg: #ffecec;
+        --teal: #1f8a99;
+        --teal-ink: #135f6a;
+        --teal-bg: #e2f3f5;
+
+        --mono: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --ink: #e7e8f3;
+          --ink-2: #a8abc8;
+          --ink-3: #767a9c;
+          --line: #33376a;
+          --line-soft: #252852;
+          --ground: #0d0f29;
+          --surface: #181a3c;
+          --accent: #9ea2f2;
+          --new-bg: #262a5c;
+          --coral: #ff7a7a;
+          --coral-ink: #ffb0b0;
+          --coral-bg: #3d1c22;
+          --teal: #4fc0cf;
+          --teal-ink: #9adbe4;
+          --teal-bg: #12333a;
+        }
+      }
+      :root[data-theme='dark'] {
+        --ink: #e7e8f3;
+        --ink-2: #a8abc8;
+        --ink-3: #767a9c;
+        --line: #33376a;
+        --line-soft: #252852;
+        --ground: #0d0f29;
+        --surface: #181a3c;
+        --accent: #9ea2f2;
+        --new-bg: #262a5c;
+        --coral: #ff7a7a;
+        --coral-ink: #ffb0b0;
+        --coral-bg: #3d1c22;
+        --teal: #4fc0cf;
+        --teal-ink: #9adbe4;
+        --teal-bg: #12333a;
+      }
+
+      body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 56px 24px 88px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+      }
+
+      h1 {
+        font-family: var(--mono);
+        font-size: clamp(26px, 5vw, 38px);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.12;
+        margin: 0;
+        text-wrap: balance;
+      }
+      h1 .dim {
+        color: var(--ink-3);
+        font-weight: 400;
+        display: block;
+      }
+      .standfirst {
+        font-size: 17px;
+        color: var(--ink-2);
+        margin: 14px 0 0;
+        max-width: 62ch;
+      }
+
+      /* ── legend ─────────────────────────────────────────────────────────── */
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        font-size: 13.5px;
+        color: var(--ink-2);
+        padding: 14px 18px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      .legend .k {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .sw {
+        width: 13px;
+        height: 13px;
+        border-radius: 3px;
+        flex: none;
+      }
+      .sw.port {
+        background: var(--coral);
+      }
+      .sw.new {
+        background: var(--accent);
+      }
+      .sw.adj {
+        background: var(--teal);
+      }
+      .sw.kept {
+        background: var(--surface);
+        border: 1.5px solid var(--ink-3);
+      }
+      .sw.area {
+        background: none;
+        border: 1px dashed var(--ink-3);
+        border-radius: 2px;
+      }
+
+      /* ── tree ───────────────────────────────────────────────────────────── */
+      .tree,
+      .tree ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .tree {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .tree ul {
+        margin-left: 13px; /* puts the rail under the middle of the marker */
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 4px;
+      }
+      .tree ul > li {
+        position: relative;
+        padding-left: 26px;
+      }
+      /* the vertical rail: full height, clipped to the elbow on the last child */
+      .tree ul > li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: -4px; /* bridge the 4px flex gap to the next sibling */
+        border-left: 1px solid var(--line);
+      }
+      .tree ul > li:last-child::before {
+        bottom: auto;
+        height: 17px;
+      }
+      /* the elbow into the node */
+      .tree ul > li::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 17px;
+        width: 17px;
+        border-top: 1px solid var(--line);
+      }
+
+      /* ── nodes ──────────────────────────────────────────────────────────── */
+      .node {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--ink-3);
+        border-radius: 5px;
+        padding: 9px 14px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .node.port {
+        border-left-color: var(--coral);
+      }
+      .node.new {
+        border-left-color: var(--accent);
+      }
+      .node.adj {
+        border-left-color: var(--teal);
+      }
+      .nm {
+        font-family: var(--mono);
+        font-size: 14.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 9px;
+      }
+      .d {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ink-2);
+        line-height: 1.5;
+      }
+      .d b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      /* a region of the screen, not a component — no box, no border */
+      .area {
+        padding: 7px 0 2px;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      .area .nm {
+        font-family: var(--sans);
+        font-weight: 700;
+        font-style: italic;
+        color: var(--ink-3);
+        letter-spacing: 0;
+      }
+      .area .d {
+        font-size: 13.5px;
+      }
+
+      /* ── chips ──────────────────────────────────────────────────────────── */
+      .chip {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        padding: 2px 7px;
+        border-radius: 3px;
+        border: 1px solid var(--line);
+        color: var(--ink-3);
+        white-space: nowrap;
+      }
+      .chip.port {
+        border-color: var(--coral);
+        background: var(--coral-bg);
+        color: var(--coral-ink);
+      }
+      .chip.new {
+        border-color: var(--accent);
+        background: var(--new-bg);
+        color: var(--accent);
+      }
+      .chip.adj {
+        border-color: var(--teal);
+        background: var(--teal-bg);
+        color: var(--teal-ink);
+      }
+      .chip.when {
+        border-style: dashed;
+      }
+
+      /* ── closing notes ──────────────────────────────────────────────────── */
+      .note {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--coral);
+        border-radius: 5px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .note.left {
+        border-left-color: var(--ink-3);
+      }
+      .note h2 {
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0;
+      }
+      .note p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--ink-2);
+        line-height: 1.55;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.88em;
+      }
+      a {
+        color: inherit;
+        text-decoration-color: var(--line);
+        text-underline-offset: 2px;
+      }
+      a:hover {
+        text-decoration-color: currentColor;
+      }
+      .nm > a,
+      .chip a {
+        text-decoration: none;
+      }
+      .nm > a:hover,
+      .chip a:hover {
+        text-decoration: underline;
+      }
+      .note code {
+        color: var(--accent);
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding-top: 18px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--ink-3);
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>
+          What's on screen<span class="dim"
+            >EntityCollection in hathor (<a href="https://github.com/entur/hathor/issues/261"
+              >#261</a
+            >)</span
+          >
+        </h1>
+        <p class="standfirst">
+          The list port from the
+          <a href="https://github.com/entur/iteru-webcomps/tree/346fae4/src/EntityCollection"
+            >sandbox</a
+          >
+          (epic <a href="https://github.com/entur/hathor/issues/252">#252</a>), nested the way it
+          will appear on the <code>/next</code> pages. Each box says whether it came over from the
+          sandbox, is new in hathor, or is a hathor component kept or adjusted in this round.
+        </p>
+      </header>
+
+      <div class="legend">
+        <span class="k"><span class="sw port"></span>ported from the sandbox — logic as-is</span>
+        <span class="k"><span class="sw new"></span>new in hathor</span>
+        <span class="k"><span class="sw adj"></span>hathor's, adjusted this round</span>
+        <span class="k"><span class="sw kept"></span>hathor's, kept as it was</span>
+        <span class="k"><span class="sw area"></span>a region of the screen, not a component</span>
+      </div>
+
+      <ul class="tree">
+        <li>
+          <div class="node">
+            <span class="nm"
+              ><a href="https://github.com/entur/hathor/blob/main/src/pages/shell/PageShell.tsx"
+                >PageShell</a
+              ><span class="chip"
+                >kept · <a href="https://github.com/entur/hathor/issues/253">#253</a></span
+              ></span
+            >
+            <p class="d">
+              The <code>/next</code> layout route: full height, a left-aligned container, and the
+              routed page in its outlet. The header search is hidden here; the collection brings its
+              own.
+            </p>
+          </div>
+          <ul>
+            <li>
+              <div class="node adj">
+                <span class="nm"
+                  ><a
+                    href="https://github.com/entur/hathor/blob/main/src/pages/shell/CollectionShell.tsx"
+                    >CollectionShell</a
+                  ><span class="chip adj">adjusted</span
+                  ><span class="chip when">/next/vehicle-types</span></span
+                >
+                <p class="d">
+                  The list page's frame: an h1 title, a subtitle (organisation · total entries) and
+                  the actions. <b>Adjusted:</b> the subtitle now waits until the list has loaded; an
+                  empty list's own New replaces the title-row one; back from a record, focus lands
+                  on its Edit link, or on the h1 when that link is gone.
+                </p>
+              </div>
+              <ul>
+                <li>
+                  <div class="area">
+                    <span class="nm">Title row</span>
+                    <p class="d">Title and subtitle on the left, actions on the right.</p>
+                  </div>
+                  <ul>
+                    <li>
+                      <div class="node adj">
+                        <span class="nm"
+                          ><a
+                            href="https://github.com/entur/hathor/blob/main/src/components/NewEntityFab.tsx"
+                            >NewEntityFab</a
+                          ><span class="chip adj">adjusted</span></span
+                        >
+                        <p class="d">
+                          The New button. Reads "New" on a phone. <b>Adjusted:</b> it always marks
+                          itself <code>data-edit-id="new"</code>, so closing the create page puts
+                          focus back on it.
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
+                </li>
+
+                <li>
+                  <div class="area">
+                    <span class="nm">Body</span>
+                    <p class="d">
+                      Today it holds a stand-in list. The vehicle-types page (<a
+                        href="https://github.com/entur/hathor/issues/252"
+                        >pri 3</a
+                      >) swaps in the collection below; until then, it shows only in Storybook.
+                    </p>
+                  </div>
+                  <ul>
+                    <li>
+                      <div class="node port">
+                        <span class="nm"
+                          ><a
+                            href="https://github.com/entur/hathor/blob/main/src/components/collection/components/collection.tsx"
+                            >EntityCollection</a
+                          ><span class="chip port">ported</span
+                          ><span class="chip when"
+                            >from
+                            <a href="https://github.com/entur/hathor/issues/252">pri 3</a></span
+                          ></span
+                        >
+                        <p class="d">
+                          Built by <code>createEntityCollection(fields, {filterFields})</code> from
+                          a hand-written field mapping. Holds the query, filters, searches, sorts
+                          and pages once, and hands the same page to whichever view is showing.
+                          <b>New props:</b> <code>editHref</code> and <code>editState</code> for the
+                          Edit links.
+                        </p>
+                      </div>
+                      <ul>
+                        <li>
+                          <div class="node port">
+                            <span class="nm"
+                              ><a
+                                href="https://github.com/entur/hathor/blob/main/src/components/collection/components/CollectionToolbar.tsx"
+                                >CollectionToolbar</a
+                              ><span class="chip port">ported</span></span
+                            >
+                            <p class="d">
+                              One row of tools above either view. On a narrow screen the tools after
+                              the search box wrap onto a second line.
+                            </p>
+                          </div>
+                          <ul>
+                            <li>
+                              <div class="node port">
+                                <span class="nm"
+                                  ><a
+                                    href="https://github.com/entur/hathor/blob/main/src/components/collection/components/QueryField.tsx"
+                                    >QueryField</a
+                                  ><span class="chip port">ported</span></span
+                                >
+                                <p class="d">
+                                  Search and the active filters in one box. Filters sit as chips
+                                  before the typed text, a few at most, the rest folded into "+N".
+                                  Search reads only what is on screen: name, and the id in full or
+                                  as <code>::1004</code> (<a
+                                    href="https://github.com/entur/hathor/issues/252"
+                                    >U1</a
+                                  >).
+                                </p>
+                              </div>
+                              <ul>
+                                <li>
+                                  <div class="node port">
+                                    <span class="nm"
+                                      ><a
+                                        href="https://github.com/entur/hathor/blob/main/src/components/collection/components/FilterPanel.tsx"
+                                        >FilterPanel</a
+                                      ><span class="chip port">ported</span></span
+                                    >
+                                    <p class="d">
+                                      The filter popover. Only fields Sobek can filter on are open;
+                                      the rest are listed greyed under "Not filterable in sobek
+                                      yet".
+                                    </p>
+                                  </div>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <div class="node port">
+                                <span class="nm">Sort<span class="chip port">ported</span></span>
+                                <p class="d">
+                                  A "Sort by" select and an up / down button beside it.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="node port">
+                                <span class="nm"
+                                  >Columns<span class="chip port">ported</span
+                                  ><span class="chip when">Table</span></span
+                                >
+                                <p class="d">
+                                  Show or hide each column; the last one always stays. How a phone
+                                  keeps the table readable (<a
+                                    href="https://github.com/entur/hathor/issues/252"
+                                    >U5</a
+                                  >).
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="node port">
+                                <span class="nm"
+                                  >Density<span class="chip port">ported</span
+                                  ><span class="chip when">Table</span></span
+                                >
+                                <p class="d">Compact, standard or comfortable rows.</p>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="node port">
+                                <span class="nm"
+                                  >View switch<span class="chip port">ported</span></span
+                                >
+                                <p class="d">Table · Cards.</p>
+                              </div>
+                            </li>
+                          </ul>
+                        </li>
+
+                        <li>
+                          <div class="node port">
+                            <span class="nm"
+                              ><a
+                                href="https://github.com/entur/hathor/blob/main/src/components/collection/components/GridView.tsx"
+                                >GridView</a
+                              ><span class="chip port">ported</span
+                              ><span class="chip new">+ hathor</span
+                              ><span class="chip when">Table</span></span
+                            >
+                            <p class="d">
+                              MUI's data grid, only drawing: the rows come in already filtered,
+                              sorted and paged, and header clicks and page changes go back up as
+                              query changes. The sorted header carries <code>aria-sort</code>, which
+                              is the grid's own (<a
+                                href="https://github.com/entur/hathor/issues/252"
+                                >F4</a
+                              >). The pager sits in its footer, under the table (<a
+                                href="https://github.com/entur/hathor/issues/252"
+                                >V5</a
+                              >).
+                            </p>
+                          </div>
+                          <ul>
+                            <li>
+                              <div class="node port">
+                                <span class="nm"
+                                  ><a
+                                    href="https://github.com/entur/hathor/blob/main/src/components/collection/LazyDataGrid.tsx"
+                                    >LazyDataGrid</a
+                                  ><span class="chip port">ported</span></span
+                                >
+                                <p class="d">
+                                  Loads the grid's code only when a table shows, with a spinner of
+                                  the table's height until then.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="node new">
+                                <span class="nm">Cell render<span class="chip new">new</span></span>
+                                <p class="d">
+                                  A field's <code>render</code> draws its cell. Sort, filter and
+                                  search still read the plain text.
+                                </p>
+                              </div>
+                              <ul>
+                                <li>
+                                  <div class="node">
+                                    <span class="nm"
+                                      ><a
+                                        href="https://github.com/entur/hathor/blob/main/src/components/icons/TransportModeIcon.tsx"
+                                        >TransportModeIcon</a
+                                      ><span class="chip">kept</span></span
+                                    >
+                                    <p class="d">
+                                      Hathor's mode icon, here with its text beside it, not the icon
+                                      alone (<a href="https://github.com/entur/hathor/issues/252"
+                                        >V4</a
+                                      >).
+                                    </p>
+                                  </div>
+                                </li>
+                              </ul>
+                            </li>
+                            <li>
+                              <div class="node new">
+                                <span class="nm">Id cell<span class="chip new">new</span></span>
+                                <p class="d">
+                                  The id in the muted text colour (<a
+                                    href="https://github.com/entur/hathor/issues/252"
+                                    >U4</a
+                                  >), shown short as <code>::1004</code>, with the full id on hover.
+                                  Recognised under <code>id</code> as well as <code>netexId</code>,
+                                  because hathor's types call it <code>id</code>.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="node new">
+                                <span class="nm"
+                                  ><a
+                                    href="https://github.com/entur/hathor/blob/main/src/components/collection/components/EditLink.tsx"
+                                    >EditLink</a
+                                  ><span class="chip new">new</span
+                                  ><span class="chip when">editHref set</span></span
+                                >
+                                <p class="d">
+                                  A last column with an Edit link per row: a real link, named "Edit
+                                  Flirt", that can't be sorted or hidden (<a
+                                    href="https://github.com/entur/hathor/issues/252"
+                                    >F2</a
+                                  >).
+                                </p>
+                              </div>
+                            </li>
+                          </ul>
+                        </li>
+
+                        <li>
+                          <div class="node port">
+                            <span class="nm"
+                              ><a
+                                href="https://github.com/entur/hathor/blob/main/src/components/collection/components/CardsView.tsx"
+                                >CardsView</a
+                              ><span class="chip port">ported</span
+                              ><span class="chip new">+ hathor</span
+                              ><span class="chip when">Cards</span></span
+                            >
+                            <p class="d">
+                              One card per row, as many across as fit, with a picture area at the
+                              top when the host fills it (the 3D bus,
+                              <a href="https://github.com/entur/hathor/issues/276">#276</a>).
+                            </p>
+                          </div>
+                          <ul>
+                            <li>
+                              <div class="node new">
+                                <span class="nm"
+                                  >Title and fields<span class="chip new">new</span></span
+                                >
+                                <p class="d">
+                                  The same <code>render</code> draws a card's title and fields, and
+                                  the id is muted here too, as <code>::1004/ver2</code>.
+                                </p>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="node new">
+                                <span class="nm"
+                                  ><a
+                                    href="https://github.com/entur/hathor/blob/main/src/components/collection/components/EditLink.tsx"
+                                    >EditLink</a
+                                  ><span class="chip new">new</span
+                                  ><span class="chip when">editHref set</span></span
+                                >
+                                <p class="d">The same Edit link, at the foot of each card.</p>
+                              </div>
+                            </li>
+                          </ul>
+                        </li>
+
+                        <li>
+                          <div class="node port">
+                            <span class="nm"
+                              >TablePagination<span class="chip port">ported</span
+                              ><span class="chip when">cards</span></span
+                            >
+                            <p class="d">
+                              The pager under the cards (<a
+                                href="https://github.com/entur/hathor/issues/252"
+                                >V5</a
+                              >).
+                            </p>
+                          </div>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <div class="node adj">
+                <span class="nm"
+                  ><a
+                    href="https://github.com/entur/hathor/blob/main/src/pages/shell/EntityDetailsShell.tsx"
+                    >EntityDetailsShell</a
+                  ><span class="chip adj">adjusted</span
+                  ><span class="chip when">/next/vehicle-types/:id</span></span
+                >
+                <p class="d">
+                  Where an Edit link lands. It opens in edit mode when the link asks for it, and
+                  moves focus to the title. <b>Adjusted:</b> closing the create page asks the list
+                  to refocus New, and a new record keeps its "Saved" message after it re-opens under
+                  its new id.
+                </p>
+              </div>
+              <ul>
+                <li>
+                  <div class="node adj">
+                    <span class="nm"
+                      ><a
+                        href="https://github.com/entur/hathor/blob/main/src/components/sidebar/EditorFrame.tsx"
+                        >EditorFrame</a
+                      ><span class="chip adj">adjusted</span></span
+                    >
+                    <p class="d">
+                      The editor frame shared with the sidebar (<a
+                        href="https://github.com/entur/hathor/issues/238"
+                        >#238</a
+                      >). <b>Adjusted:</b> its title is an h1 on this page and stays an h6 in the
+                      sidebar, chosen through
+                      <a
+                        href="https://github.com/entur/hathor/blob/main/src/components/sidebar/editorHost.ts"
+                        ><code>EditorHostContext</code></a
+                      >.
+                    </p>
+                  </div>
+                  <ul>
+                    <li>
+                      <div class="node">
+                        <span class="nm"
+                          ><a
+                            href="https://github.com/entur/hathor/blob/main/src/components/sidebar/EditorRail.tsx"
+                            >EditorRail</a
+                          ><span class="chip">kept</span></span
+                        >
+                        <p class="d">Edit, Save, Cancel and Deactivate down the right edge.</p>
+                      </div>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="note">
+        <h2>Ported too, but never on screen</h2>
+        <p>
+          <b>The pipeline</b> in
+          <a href="https://github.com/entur/hathor/tree/main/src/components/collection/utils"
+            ><code>utils/</code></a
+          >
+          (values, columns, filters, applyQuery and humanize) is the
+          <a href="https://github.com/entur/iteru-webcomps/tree/346fae4/src/EntityCollection/utils"
+            >sandbox's</a
+          >, with its 72 tests. It works out the row keys, short ids, which columns show, filter
+          matching and <code>toSobekFilter</code>, the sort with Norwegian letter order, and the
+          paging.
+        </p>
+        <p>
+          <b>Types:</b>
+          <a href="https://github.com/entur/hathor/blob/main/src/components/collection/types.ts"
+            ><code>FieldSpec</code></a
+          >
+          and <code>FieldEntry</code> are cut down to what the list reads: kind, path, options and
+          patched; field, label and the new <code>render</code>.
+        </p>
+      </div>
+
+      <div class="note left">
+        <h2>Left in the sandbox</h2>
+        <p>
+          <a href="https://github.com/entur/iteru-webcomps/tree/346fae4/src/EntityDetailsForm"
+            ><b>EntityDetailsForm</b></a
+          >
+          stays there, because hathor keeps its own editor. <b>Generated field mappings</b> become
+          hand-written per feature in
+          <a href="https://github.com/entur/hathor/issues/252">pri 3</a>.
+        </p>
+      </div>
+
+      <footer>
+        <a href="https://github.com/entur/hathor/issues/261">#261</a> on
+        <a href="https://github.com/entur/hathor/tree/feat/issue261-entity-collection"
+          >feat/issue261-entity-collection</a
+        >
+        · <a href="https://github.com/entur/hathor/commit/2c710d7">2c710d7</a> ·
+        <a href="https://github.com/entur/hathor/commit/8624518">8624518</a> ·
+        <a href="https://github.com/entur/hathor/commit/03483c8">03483c8</a> ·
+        <a href="https://github.com/entur/hathor/commit/5398f8a">5398f8a</a>, on top of
+        <a href="https://github.com/entur/hathor/pull/254">PR #254</a> (<a
+          href="https://github.com/entur/hathor/commit/0f6273f"
+          >0f6273f</a
+        >)<br />
+        Ported from
+        <a href="https://github.com/entur/iteru-webcomps/commit/346fae4"
+          >entur/iteru-webcomps@346fae4</a
+        ><br />
+        12 boxes ported from the sandbox · 5 new in hathor (EditLink drawn twice) · 4 hathor
+        components adjusted · 3 kept
+      </footer>
+    </div>
+  </body>
+</html>

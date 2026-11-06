@@ -15,13 +15,13 @@ const MODES = [
 type Mode = (typeof MODES)[number]['value'];
 
 const meta: Meta = {
-  title: 'components/FormFields',
+  title: 'components/form-layout/FormFields',
   parameters: {
     layout: 'padded',
     docs: {
       description: {
         component:
-          'Field primitives for sidebar editor forms — text, number, select-with-none and switch. Each takes plain values and reports plain values; no feature types.',
+          'Field primitives for editor forms — the controls a form page draws into `FormSections` and the sidebar tabs use — text, number, select-with-none and switch. Each takes plain values and reports plain values; no feature types.',
       },
     },
   },

@@ -70,6 +70,7 @@ Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehic
 
 - **GraphQL (read)**: `graphql-request`, queries in `src/graphql/vehicles/queries/`
 - **GraphQL (write)**: `createOrUpdateVehicle` / `createOrUpdateVehicleType` mutations in `src/graphql/vehicles/mutations/`. Sobek's `createOrUpdate*` is a **full-document replace** — an absent/blank input field is nulled, so serializers must send the complete document (not omit-blank).
+- **Deactivate**: `deactivate*(DeactivateInput)` sends `deactivateAt`, but Sobek's read types expose no validity/status field — a "Deactivated" state is session-only (lost on reload). Accepted for the form pages; no Sobek issue filed yet.
 - **REST**: NeTEx XML import via `src/data/vehicle-imports/api/vehicleImportServices.ts` (Autosys bulk import). The route-based VehicleType *create-via-XML* editor was removed — VehicleType save is now the GraphQL mutation above.
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
@@ -86,7 +87,7 @@ When in doubt about whether a single hathor query has drifted, grep the canonica
 
 ### Routing
 
-React Router v6 — `<BrowserRouter>` in `src/main.tsx` (above `AuthProvider`, so the signin callback can navigate), routes in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
+React Router v7 data router — `createBrowserRouter` in `src/main.tsx` with one splat route around the providers (so the signin callback can navigate, and a form page can `useBlocker`, #282), routes as descendant `<Routes>` in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
 
 ### Internationalization
 
@@ -164,7 +165,7 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 | File | Purpose |
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
-| `src/main.tsx` | Entry point, wraps app in `BrowserRouter` + context providers |
+| `src/main.tsx` | Entry point, data router (`createBrowserRouter`) around the context providers + App |
 | `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
 | `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
 | `src/components/search/SearchContext.tsx` | Search state management |

@@ -19,9 +19,17 @@ import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx'
 import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx';
 import DeckPlanView from './data/deck-plans/components/DeckPlanView.tsx';
 import VehicleView from './data/vehicles/components/VehicleView.tsx';
+import PageShell, { NEXT_BASE } from './pages/shell/PageShell.tsx';
+import VehicleTypeCollectionPage from './data/vehicle-types/components/VehicleTypeCollectionPage.tsx';
+import VehicleTypeDetailsPage from './data/vehicle-types/components/VehicleTypeDetailsPage.tsx';
+import VehicleCollectionPage from './data/vehicles/components/VehicleCollectionPage.tsx';
+import VehicleDetailsPage from './data/vehicles/components/VehicleDetailsPage.tsx';
+import DeckPlanCollectionPage from './data/deck-plans/components/DeckPlanCollectionPage.tsx';
+import DeckPlanDetailsPage from './data/deck-plans/components/DeckPlanDetailsPage.tsx';
 import TransportModeSprite from './components/icons/TransportModeSprite.tsx';
 import MenuIconSprite from './components/icons/MenuIconSprite.tsx';
 import { useIsFeatureOn } from './config/featureFlags.ts';
+import { MAIN_CONTENT_ID } from './components/header/Header.tsx';
 import './theme/transportModeTokens.css';
 
 function AppShell({ children }: { children: ReactNode }) {
@@ -42,6 +50,8 @@ export default function App() {
 
   const { theme } = useAppTheme(useCustomFeatures);
   const isFeatureOn = useIsFeatureOn();
+  const deckPlans = (page: ReactNode) =>
+    isFeatureOn('DeckPlans') ? page : <Navigate to="/" replace />;
 
   return (
     <SearchProvider>
@@ -57,7 +67,7 @@ export default function App() {
               }}
             />
             <AppShell>
-              <Box className="app-content">
+              <Box component="main" id={MAIN_CONTENT_ID} tabIndex={-1} className="app-content">
                 <TransportModeSprite />
                 <MenuIconSprite />
                 <Routes>
@@ -69,14 +79,25 @@ export default function App() {
                   <Route path="/vehicles" element={<ProtectedRoute element={<VehicleView />} />} />
                   <Route
                     path="/deck-plans"
+                    element={deckPlans(<ProtectedRoute element={<DeckPlanView />} />)}
+                  />
+                  <Route
+                    path={NEXT_BASE}
                     element={
-                      isFeatureOn('DeckPlans') ? (
-                        <ProtectedRoute element={<DeckPlanView />} />
+                      isFeatureOn('Collections') ? (
+                        <ProtectedRoute element={<PageShell />} />
                       ) : (
                         <Navigate to="/" replace />
                       )
                     }
-                  />
+                  >
+                    <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
+                    <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
+                    <Route path="vehicles" element={<VehicleCollectionPage />} />
+                    <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
+                    <Route path="deck-plans" element={deckPlans(<DeckPlanCollectionPage />)} />
+                    <Route path="deck-plans/:id" element={deckPlans(<DeckPlanDetailsPage />)} />
+                  </Route>
                 </Routes>
               </Box>
             </AppShell>

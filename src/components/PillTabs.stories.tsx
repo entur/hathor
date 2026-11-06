@@ -20,7 +20,7 @@ const Demo = ({ tabs }: { tabs: string[] }) => {
 };
 
 const meta: Meta<typeof Demo> = {
-  title: 'components/PillTabs',
+  title: 'components/prev/PillTabs',
   component: Demo,
   parameters: {
     layout: 'padded',

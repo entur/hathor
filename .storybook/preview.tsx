@@ -9,7 +9,7 @@ import '../src/theme/transportModeTokens.css';
 const theme = createTheme();
 
 // Stories render every flag-gated feature; a missing flag would hide it (useIsFeatureOn).
-const STORY_CONFIG: Config = { sandboxFeatures: { DeckPlans: true } };
+const STORY_CONFIG: Config = { sandboxFeatures: { DeckPlans: true, Collections: true } };
 
 const preview: Preview = {
   parameters: {

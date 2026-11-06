@@ -1,11 +1,14 @@
 import { Box, Divider, Skeleton, Typography, useTheme, type Theme } from '@mui/material';
-import { alpha, decomposeColor, recomposeColor } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import MenuIcon, { type MenuIconName } from '../icons/MenuIcon.tsx';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 import { useIsFeatureOn } from '../../config/featureFlags.ts';
+import { NEXT_BASE } from '../../pages/shell/PageShell.tsx';
+import { SR_ONLY } from '../../utils/srOnly.ts';
+import { over } from '../../utils/colorOver.ts';
 
 /**
  * SiteNavCards — the Home dashboard's per-type navigation cards. Two layouts:
@@ -30,18 +33,6 @@ const COUNT_SKELETON_W = 96; // px; placeholder width while a count is pending
 const CARD_GAP = 2; // ×theme.spacing; combo-strip gutter (also feeds the bus-slice offset)
 const HALO_BLUR = [2, 4]; // px; stacked card-coloured text-shadows that knock the bus out behind glyphs
 const HOVER_MS = 150; // hover background-colour transition
-// Screen-reader-only text (same as @mui/utils visuallyHidden — a transitive dep, not ours).
-const SR_ONLY = {
-  border: 0,
-  clip: 'rect(0 0 0 0)',
-  height: '1px',
-  margin: '-1px',
-  overflow: 'hidden',
-  padding: 0,
-  position: 'absolute',
-  whiteSpace: 'nowrap',
-  width: '1px',
-} as const;
 
 // Combo backdrop — one pencil-sketch bus sliced across the cards.
 /** Bundled backdrop for `bgURL`: black ink on transparent (paper keyed out). */
@@ -73,21 +64,9 @@ const paint = (theme: Theme, p: Paint): string => {
   return typeof hit === 'string' ? hit : p;
 };
 
-/** Composites colour `c` (maybe translucent) over opaque `under`; non-parsable `c` passes through. */
-const over = (under: string, c: string): string => {
-  try {
-    const u = decomposeColor(under).values;
-    const o = decomposeColor(c).values;
-    const a = o[3] ?? 1;
-    const rgb = [0, 1, 2].map(i => Math.round(u[i] * (1 - a) + o[i] * a));
-    return recomposeColor({ type: 'rgb', values: rgb as [number, number, number] });
-  } catch {
-    return c;
-  }
-};
-
-/** `?selected=new` opens the list view's sidebar editor in create mode. */
-const createPath = (path: string) => `${path}?selected=new`;
+/** Create mode: a `/next` form page at `/new`; else `?selected=new`, the list view's sidebar editor. */
+const createPath = (path: string) =>
+  path.startsWith(`${NEXT_BASE}/`) ? `${path}/new` : `${path}?selected=new`;
 
 type LayoutProps = { ctx: CountCtx; types?: SiteType[] };
 
@@ -258,7 +237,7 @@ export function ComboStrip({ ctx, types = TYPES, ...p }: ComboProps) {
 
 /**
  * The Home dashboard's org-gated body. Types whose feature flag is off are dropped
- * here, before any layout sees them.
+ * here, before any layout sees them; with `Collections` on, every link goes to `/next`.
  * @param {ComboProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the
  *   layout (default `combo`); look toggles apply to combo only (see {@link ComboStrip}).
  * @returns the combo strip, or the metric strip + browse grid + create row stacked.
@@ -268,7 +247,10 @@ export default function SiteNavCards({
   ...p
 }: ComboProps & { variant?: 'combo' | 'rows' }) {
   const isFeatureOn = useIsFeatureOn();
-  const types = (p.types ?? TYPES).filter(x => isFeatureOn(x.flag));
+  const next = isFeatureOn('Collections');
+  const types = (p.types ?? TYPES)
+    .filter(x => isFeatureOn(x.flag))
+    .map(x => (next ? { ...x, path: NEXT_BASE + x.path } : x));
   if (variant === 'combo') return <ComboStrip {...p} types={types} />;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: ROW_GAP }}>
