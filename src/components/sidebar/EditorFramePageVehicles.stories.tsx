@@ -59,6 +59,7 @@ function StoryVehicleDetails(host: EntityEditorHostProps) {
       ),
     withNewId: (form, id) => ({ vehicle: { ...form.vehicle, id, version: 1 } }),
     deactivateRequest: async () => {},
+    canSubmit: (form, isCreate) => !isCreate || canSubmit(form),
   });
   const { form } = editor;
   return (
@@ -68,7 +69,6 @@ function StoryVehicleDetails(host: EntityEditorHostProps) {
       testId="vehicle"
       copy={COPY}
       skeleton={SKELETON_ROWS}
-      canSubmit={!editor.isCreate || canSubmit(form)}
     >
       <VehicleSections
         value={form.vehicle}

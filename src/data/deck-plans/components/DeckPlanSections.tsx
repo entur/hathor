@@ -2,7 +2,7 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { FormSections, resolveSections } from '../../../components/form-layout/index.ts';
 import { useDeckPlanControls } from '../hooks/useDeckPlanControls.tsx';
-import { deckPlanFields, deckPlanLayout, type DeckPlanField } from '../types/deckPlanFields.ts';
+import { deckPlanFields, deckPlanLayout } from '../types/deckPlanFields.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import DeckStrip from './DeckStrip.tsx';
 
@@ -41,12 +41,12 @@ export default function DeckPlanSections({
   ...form
 }: DeckPlanSectionsProps) {
   const { t } = useTranslation();
-  const control = useDeckPlanControls({ ...form, lock: 'readOnly' });
+  const control = useDeckPlanControls(form);
 
   return (
     <FormSections
       sections={SECTIONS}
-      renderField={f => control(f.key as DeckPlanField)}
+      renderField={f => control(f.key)}
       aside={
         isCreate ? (
           <Box

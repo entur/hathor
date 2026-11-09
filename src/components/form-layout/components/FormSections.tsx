@@ -20,11 +20,11 @@ const DROPDOWN_PAD = 1,
 const TOC_Z = 2; // above outlined field labels, which carry z-index 1
 const STACKED_MIN_SECTIONS = 2; // fewer → one flat group with no heading
 
-export interface FormSectionsProps {
+export interface FormSectionsProps<K extends string = string> {
   /** From `resolveSections`. */
-  sections: readonly Section[];
+  sections: readonly Section<K>[];
   /** Draws one field's control. The host owns it, view mode (`readOnly`) included. */
-  renderField: (field: ResolvedField) => ReactNode;
+  renderField: (field: ResolvedField<K>) => ReactNode;
   /** Drawn above the TOC in column 3, e.g. the iteru-3dbus picture; the host sizes it.
    *  Below `lg` it sits above the form. Column 3 shows for it even without a TOC. */
   aside?: ReactNode;
@@ -53,14 +53,14 @@ export interface FormSectionsProps {
  *   TOC's label, the section labels and the footer
  * @returns {JSX.Element} the laid-out form body, with its TOC and aside when it has them
  */
-export function FormSections({
+export function FormSections<K extends string>({
   sections,
   renderField,
   aside,
   tocLabel,
   sectionLabel = id => id,
   footer: ownFooter,
-}: FormSectionsProps) {
+}: FormSectionsProps<K>) {
   const contextFooter = useContext(FormFooterContext);
   const footer = ownFooter ?? contextFooter;
   const idPrefix = useId();
@@ -96,7 +96,7 @@ export function FormSections({
       });
   };
 
-  const rows = (fields: readonly ResolvedField[]) => (
+  const rows = (fields: readonly ResolvedField<K>[]) => (
     <Grid container spacing={FIELD_GAP}>
       {fields.map(f => (
         <Grid key={f.key} size={gridSize(f.width)} data-width={f.width} sx={{ minWidth: 0 }}>

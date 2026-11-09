@@ -58,12 +58,12 @@ describe('EntityDetailsShell', () => {
 
   it('maps `new` to the create pane, edit-only', () => {
     const { last } = renderAt(`${LIST}/new`);
-    expect(last()).toMatchObject({ id: '', editOnly: true });
+    expect(last()).toMatchObject({ id: '' });
   });
 
   it('opens a deep-linked record edit-only too: a form page has no View (#282)', () => {
     const { last } = renderAt(`${LIST}/NMR:VehicleType:1`);
-    expect(last()).toMatchObject({ id: 'NMR:VehicleType:1', editOnly: true });
+    expect(last()).toMatchObject({ id: 'NMR:VehicleType:1' });
   });
 
   it('onClose navigates to the list', () => {
@@ -86,6 +86,6 @@ describe('EntityDetailsShell', () => {
     expect(screen.getAllByTestId('where')[0].textContent).toBe(
       `${LIST}/${encodeURIComponent(MINTED_ID)}`
     );
-    expect(last()).toMatchObject({ id: MINTED_ID, editOnly: true, initialSaved: true });
+    expect(last()).toMatchObject({ id: MINTED_ID, initialSaved: true });
   });
 });

@@ -55,6 +55,7 @@ const mkEditor = (
       mode: 'view',
       isDirty: false,
       saving: false,
+      canSubmit: true,
       onCancelEdit: fn(),
       onSave: fn(),
       onEnterEdit: fn(),

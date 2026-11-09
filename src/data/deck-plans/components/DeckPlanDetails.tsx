@@ -77,6 +77,11 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
     write,
     withNewId: (form, newId) => ({ ...form, id: newId, version: 1 }),
     deactivateRequest: deactivateDeckPlanRequest,
+    // An edit patches the fetched document, so block save until the body is
+    // here — otherwise patchDeckPlanXml throws a misleading "not found in
+    // document" for what is really "not loaded yet". `xmlError` blocks it
+    // too: the body may be present but stale (see `write`). Create has no body.
+    canSubmit: () => isCreate || (!loading && !xmlError && !!xml),
   });
   const { form } = editor;
   const page = useEditorOnPage();
@@ -98,11 +103,6 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
       testId="deck-plan"
       copy={COPY}
       skeleton={SKELETON_ROWS}
-      // An edit patches the fetched document, so block save until the body is
-      // here — otherwise patchDeckPlanXml throws a misleading "not found in
-      // document" for what is really "not loaded yet". `xmlError` blocks it
-      // too: the body may be present but stale (see `write`). Create has no body.
-      canSubmit={isCreate || (!loading && !xmlError && !!xml)}
     >
       {page ? (
         <DeckPlanSections {...body} />

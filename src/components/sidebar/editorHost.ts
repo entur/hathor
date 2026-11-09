@@ -6,3 +6,15 @@ export const EditorHostContext = createContext<'sidebar' | 'page'>('sidebar');
 
 /** The editor runs on a form page of its own. */
 export const useEditorOnPage = (): boolean => useContext(EditorHostContext) === 'page';
+
+/**
+ * How a view-mode field locks: `readOnly` on a form page (#267: read, not greyed out),
+ * `disabled` in the sidebar.
+ *
+ * @param {'view' | 'edit'} mode the editor's mode
+ * @returns {{ readOnly?: true; disabled?: true }} props to spread on a field
+ */
+export const useFieldLock = (mode: 'view' | 'edit'): { readOnly?: true; disabled?: true } => {
+  const page = useEditorOnPage();
+  return mode === 'view' ? (page ? { readOnly: true } : { disabled: true }) : {};
+};

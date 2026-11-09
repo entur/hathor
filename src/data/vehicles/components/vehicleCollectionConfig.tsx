@@ -11,7 +11,7 @@ import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
 import { netexText } from '../../netex/multilingualString.ts';
 import { transportModeLabelKey } from '../../netex/transportMode.ts';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
-import { vehicleMode, type Vehicle } from '../types/vehicle.ts';
+import { vehiclePictureMode, type Vehicle } from '../types/vehicle.ts';
 import { vehicleFields, vehicleFilterFields, type VehicleField } from '../types/vehicleFields.ts';
 
 type Props = EntityCollectionProps<Vehicle, VehicleField>;
@@ -66,13 +66,10 @@ export function VehicleCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
   // carries none); dims the type lacks come from the standard bus.
   const busMedia = useMemo(() => {
     const byId = new Map(types.map(vt => [vt.id, vt]));
-    return (v: Vehicle) => (
-      <BusPicture
-        dims={byId.get(v.transportType?.id ?? '') ?? {}}
-        paint="vehicle"
-        mode={vehicleMode(v)}
-      />
-    );
+    return (v: Vehicle) => {
+      const type = byId.get(v.transportType?.id ?? '');
+      return <BusPicture dims={type ?? {}} paint="vehicle" mode={vehiclePictureMode(v, type)} />;
+    };
   }, [types]);
   return (
     <Collection

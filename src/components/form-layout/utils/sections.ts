@@ -19,17 +19,17 @@ import type {
 const TOC_MIN_SECTIONS = 3;
 
 /** A field resolved for rendering: its mapped key, display label and share of the row. */
-export interface ResolvedField {
-  key: string;
+export interface ResolvedField<K extends string = string> {
+  key: K;
   label: string;
   width: FieldWidth;
 }
 
 /** A group of resolved fields. `id` is its layout key — stable, whatever its heading reads
  *  (`FormSections`' `sectionLabel`) — and `''` for the layout-less case. */
-export interface Section {
+export interface Section<K extends string = string> {
   id: string;
-  fields: ResolvedField[];
+  fields: ResolvedField<K>[];
 }
 
 /** Default share of a row per control kind: a number or a date doesn't need a
@@ -82,22 +82,22 @@ export const layoutEntry = <K extends string>(item: LayoutItem<K>): LayoutEntry<
  * @param {KindWidths} [widths] form-level width per kind, over `KIND_WIDTH`
  * @returns {Section[]} non-empty sections, in layout order
  */
-export function resolveSections(
-  fields: Record<string, FieldSpec>,
-  layout?: Layout,
+export function resolveSections<K extends string>(
+  fields: Record<K, FieldSpec>,
+  layout?: Layout<K>,
   patched: PatchedDisplay = 'mark',
   widths?: KindWidths
-): Section[] {
-  const shown = (key: string) => !!fields[key] && !(patched === 'hide' && fields[key].patched);
-  const widthOf = (key: string, own?: FieldWidth): FieldWidth =>
+): Section<K>[] {
+  const shown = (key: K) => !!fields[key] && !(patched === 'hide' && fields[key].patched);
+  const widthOf = (key: K, own?: FieldWidth): FieldWidth =>
     own ?? widths?.[fields[key].kind] ?? KIND_WIDTH[fields[key].kind];
   if (!layout) {
-    const all = Object.keys(fields)
+    const all = (Object.keys(fields) as K[])
       .filter(shown)
       .map(key => ({ key, label: humanize(key), width: widthOf(key) }));
     return all.length ? [{ id: '', fields: all }] : [];
   }
-  const seen = new Set<string>();
+  const seen = new Set<K>();
   return Object.entries(layout)
     .map(([id, items]) => ({
       id,

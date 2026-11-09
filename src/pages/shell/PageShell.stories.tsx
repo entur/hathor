@@ -102,11 +102,7 @@ const details = (entry: string) => (
     child={
       <EntityDetailsShell
         listPath={LIST}
-        renderEditor={host => (
-          <Standin
-            text={`entity editor — id: ${host.id || '(create)'} · editOnly: ${String(host.editOnly)}`}
-          />
-        )}
+        renderEditor={host => <Standin text={`entity editor — id: ${host.id || '(create)'}`} />}
       />
     }
   />

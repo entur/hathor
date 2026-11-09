@@ -5,8 +5,8 @@ import { FormSections, resolveSections } from '../../../components/form-layout/i
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { vehicleTypeFormHref } from '../../vehicle-types/utils/vehicleTypeUrlParams.ts';
 import { useVehicleControls } from '../hooks/useVehicleControls.tsx';
-import { vehicleFields, vehicleLayout, type VehicleField } from '../types/vehicleFields.ts';
-import type { Vehicle } from '../types/vehicle.ts';
+import { vehicleFields, vehicleLayout } from '../types/vehicleFields.ts';
+import { vehiclePictureMode, type Vehicle } from '../types/vehicle.ts';
 
 const SECTIONS = resolveSections(vehicleFields, vehicleLayout);
 
@@ -31,7 +31,6 @@ export default function VehicleSections(form: VehicleSectionsProps) {
   const control = useVehicleControls({
     ...form,
     vehicleTypes,
-    lock: 'readOnly',
     typeHref: vehicleTypeFormHref,
   });
   const typeId = form.value.transportType?.id;
@@ -43,12 +42,12 @@ export default function VehicleSections(form: VehicleSectionsProps) {
   return (
     <FormSections
       sections={SECTIONS}
-      renderField={f => control(f.key as VehicleField)}
+      renderField={f => control(f.key)}
       aside={
         <BusPictureFrame
           dims={dims}
           paint="vehicle"
-          mode={type?.transportMode ?? form.value.transportType?.transportMode}
+          mode={vehiclePictureMode(form.value, type)}
           placeholder={typeId ? undefined : t('vehicles.selectType')}
         />
       }

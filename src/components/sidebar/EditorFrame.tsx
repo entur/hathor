@@ -28,8 +28,10 @@ export interface EditorCopy {
   deactivateMessage: string;
 }
 
-// A page heading takes focus on arrival for screen readers (`EntityDetailsShell`); it is not
-// in the tab order, so it draws no ring — clipped by the frame, it showed as a stray edge.
+/** A page heading takes focus as it appears (a skeleton until the record loads), so a
+ *  screen reader lands on the record. Module-level: a stable ref fires once per mount. */
+const focusOnMount = (el: HTMLElement | null) => el?.focus();
+// Not in the tab order, so no focus ring — clipped by the frame, it showed as a stray edge.
 const HEADING_NO_RING = { '&:focus': { outline: 'none' } };
 
 interface EditorFrameProps<T, F> {
@@ -41,8 +43,6 @@ interface EditorFrameProps<T, F> {
   copy: EditorCopy;
   /** Shown while the first read is in flight: a node, or a stacked-row count for the default. */
   skeleton: ReactNode | number;
-  /** Extra Save gate, AND'd with dirty + not saving. */
-  canSubmit?: boolean;
   /** The feature's form (and any context rows above it). */
   children: ReactNode;
 }
@@ -95,17 +95,17 @@ export default function EditorFrame<T, F>({
   testId,
   copy,
   skeleton,
-  canSubmit,
   children,
 }: EditorFrameProps<T, F>) {
   const { t } = useTranslation();
   const { rail } = editor;
   const page = useEditorOnPage();
   const heading = page ? 'h1' : 'h6';
+  const headingFocus = page ? { ref: focusOnMount, tabIndex: -1 } : {};
   // The page's Cancel reverts in place; the sidebar's confirms live in its rail.
   // The dialogs' Save follows the footer's gates: none while clean (a save that landed with
   // the leave dialog open), while a save runs, or with a required field missing.
-  const dialogSave = !rail.isDirty || rail.saving || canSubmit === false ? undefined : rail.onSave;
+  const dialogSave = !rail.isDirty || rail.saving || !rail.canSubmit ? undefined : rail.onSave;
   const discard = useDiscardConfirm(rail.isDirty, { cancel: rail.onCancelEdit }, dialogSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const frozen = page && editor.isDeactivated;
@@ -139,7 +139,12 @@ export default function EditorFrame<T, F>({
     return (
       <>
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6" component={heading} sx={{ mb: 1, ...HEADING_NO_RING }}>
+          <Typography
+            variant="h6"
+            component={heading}
+            {...headingFocus}
+            sx={{ mb: 1, ...HEADING_NO_RING }}
+          >
             {t(copy.title)}
           </Typography>
           <Divider sx={{ mb: 2 }} />
@@ -163,7 +168,7 @@ export default function EditorFrame<T, F>({
       dirty={rail.isDirty}
       saving={rail.saving}
       saved={editor.saved}
-      canSubmit={canSubmit}
+      canSubmit={rail.canSubmit}
       onSave={() => void rail.onSave()}
       // A create has no baseline to revert to: it leaves, and the LeaveGuard asks.
       onCancel={editor.isCreate ? rail.onCollapse : () => discard.ask('cancel')}
@@ -200,6 +205,7 @@ export default function EditorFrame<T, F>({
           <Typography
             variant="h6"
             component={heading}
+            {...headingFocus}
             noWrap
             title={trimmed || undefined}
             data-testid={`${testId}-details-title`}
@@ -326,7 +332,6 @@ export default function EditorFrame<T, F>({
             {...rail}
             deactivateConfirmTitle={t(copy.deactivateTitle)}
             deactivateConfirmMessage={t(copy.deactivateMessage)}
-            canSubmit={canSubmit}
           />
         </>
       )}

@@ -42,7 +42,6 @@ export default function VehicleTypeSections({ isCreate, ...form }: VehicleTypeSe
   const { t } = useTranslation();
   const control = useVehicleTypeControls({
     ...form,
-    lock: 'readOnly',
     vehicleHref: vehicleFormHref,
   });
   // Keyed by section id: the headings follow the language, the TOC's mark stays put (#293).
@@ -66,7 +65,7 @@ export default function VehicleTypeSections({ isCreate, ...form }: VehicleTypeSe
   return (
     <FormSections
       sections={sections}
-      renderField={f => control(f.key as VehicleTypeField)}
+      renderField={f => control(f.key)}
       tocLabel={t('formSections.toc')}
       sectionLabel={id => t(VEHICLE_TYPE_SECTION_LABEL[id as VehicleTypeSection])}
       aside={<BusPictureFrame dims={dims} paint="vehicleType" mode={value.transportMode} />}

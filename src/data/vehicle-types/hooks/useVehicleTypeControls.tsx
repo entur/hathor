@@ -9,6 +9,7 @@ import {
   FormSwitchField,
   FormTextField,
 } from '../../../components/FormFields.tsx';
+import { useFieldLock } from '../../../components/sidebar/editorHost.ts';
 import {
   TRANSPORT_MODES,
   transportModeLabelKey,
@@ -31,8 +32,6 @@ export interface VehicleTypeControlsOptions {
   mode: 'view' | 'edit';
   /** Sobek's emission-standard code list; the stored value is always offered too. */
   euroClasses: readonly CodeValue[];
-  /** How view mode locks a field: `disabled` (the sidebar) or `readOnly` (the form page, #267). */
-  lock?: 'disabled' | 'readOnly';
   /** Where a Vehicles chip links: the sidebar's `?selected=` by default, the vehicle's form
    *  page on a form page (#285). */
   vehicleHref?: (id: string) => string;
@@ -43,7 +42,7 @@ export interface VehicleTypeControlsOptions {
  * sections draw the same fields. Most follow `vehicleTypeFields` (kind, path, enum
  * values); a few are drawn by hand.
  *
- * @param {VehicleTypeControlsOptions} options value, onChange, mode, euro classes and view-mode lock
+ * @param {VehicleTypeControlsOptions} options value, onChange, mode, euro classes (the view-mode lock follows `EditorHostContext`)
  * @returns {(key: VehicleTypeField) => ReactNode} the control for a field key (nothing for
  *   a key the form doesn't edit)
  */
@@ -52,7 +51,6 @@ export function useVehicleTypeControls({
   onChange,
   mode,
   euroClasses,
-  lock = 'disabled',
   vehicleHref = vehicleSelectedHref,
 }: VehicleTypeControlsOptions): (key: VehicleTypeField) => ReactNode {
   const { t } = useTranslation();
@@ -60,7 +58,7 @@ export function useVehicleTypeControls({
     () => TRANSPORT_MODES.map(m => ({ value: m, label: t(transportModeLabelKey(m), m) })),
     [t]
   );
-  const locked = mode === 'view' ? { [lock]: true } : {};
+  const locked = useFieldLock(mode);
   const label = (key: VehicleTypeField) => t(`vehicleType.field.${key}`);
 
   const setField = (patch: Partial<VehicleType>) => onChange({ ...value, ...patch });

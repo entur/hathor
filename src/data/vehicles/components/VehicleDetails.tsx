@@ -43,6 +43,10 @@ export default function VehicleDetails(host: EntityEditorHostProps) {
     write: form => save(form),
     withNewId: (form, newId) => ({ vehicle: { ...form.vehicle, id: newId, version: 1 } }),
     deactivateRequest: deactivateVehicleRequest,
+    // Block create-with-no-TransportTypeRef: Sobek's vehicles() resolver
+    // silently excludes refless vehicles from the list (create-but-invisible).
+    // Existing rows already carry a ref, so only the create flow needs the gate.
+    canSubmit: (form, isCreate) => !isCreate || canSubmit(form),
   });
   const { form, record } = editor;
   const page = useEditorOnPage();
@@ -54,10 +58,6 @@ export default function VehicleDetails(host: EntityEditorHostProps) {
       testId="vehicle"
       copy={COPY}
       skeleton={<VehicleDetailsSkeleton />}
-      // Block create-with-no-TransportTypeRef: Sobek's vehicles() resolver
-      // silently excludes refless vehicles from the list (create-but-invisible).
-      // Existing rows already carry a ref, so only the create flow needs the gate.
-      canSubmit={!editor.isCreate || canSubmit(form)}
     >
       {page ? (
         <VehicleSections

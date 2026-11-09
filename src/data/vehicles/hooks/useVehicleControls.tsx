@@ -3,6 +3,7 @@ import { Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FormAutocompleteField, FormTextField } from '../../../components/FormFields.tsx';
+import { useFieldLock } from '../../../components/sidebar/editorHost.ts';
 import { blankToUndefined } from '../../../utils/blankToUndefined.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import type { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
@@ -20,8 +21,6 @@ export interface VehicleControlsOptions {
     ReturnType<typeof useVehicleTypes>,
     'allData' | 'loading' | 'error' | 'refetch'
   >;
-  /** How view mode locks a field: `disabled` (the sidebar) or `readOnly` (the form page, #267). */
-  lock?: 'disabled' | 'readOnly';
   /** The picked type's form page; set → a link to it under the type picker (#285). */
   typeHref?: (id: string) => string;
 }
@@ -30,7 +29,7 @@ export interface VehicleControlsOptions {
  * One control per vehicle field, so the sidebar's form and the form page's section
  * draw the same fields (#285).
  *
- * @param {VehicleControlsOptions} options value, onChange, mode, vehicle types, view-mode lock
+ * @param {VehicleControlsOptions} options value, onChange, mode, vehicle types (the view-mode lock follows `EditorHostContext`)
  *   and the type link
  * @returns {(key: VehicleField) => ReactNode} the control for a field key (nothing for a key
  *   the form doesn't edit)
@@ -40,12 +39,11 @@ export function useVehicleControls({
   onChange,
   mode,
   vehicleTypes,
-  lock = 'disabled',
   typeHref,
 }: VehicleControlsOptions): (key: VehicleField) => ReactNode {
   const { t } = useTranslation();
   const ro = mode === 'view';
-  const locked = ro ? { [lock]: true } : {};
+  const locked = useFieldLock(mode);
   const setV = (patch: Partial<Vehicle>) => onChange({ ...v, ...patch });
   const {
     allData,
