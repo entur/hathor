@@ -56,8 +56,8 @@ export default function HomePage() {
       <Box
         sx={{
           maxWidth: CONTENT_MAX,
-          mx: 'auto',
-          px: { xs: 2, sm: 3, md: 5 },
+          // Left-aligned with the page shell's gutters: Home, list and form share one edge.
+          px: { xs: 2, sm: 3 },
           py: { xs: 3, md: 5 },
         }}
       >

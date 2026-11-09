@@ -12,7 +12,7 @@ import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
 import DiscardDialog from '../dialogs/DiscardDialog.tsx';
-import { EditFooter, FormFooterContext, formPageWidth } from '../form-layout/index.ts';
+import { EditFooter, FormFooterContext } from '../form-layout/index.ts';
 import EditorRail from './EditorRail.tsx';
 import { useEditorOnPage } from './editorHost.ts';
 
@@ -113,7 +113,14 @@ export default function EditorFrame<T, F>({
   const bareRail = !page && <EditorRail onCollapse={rail.onCollapse} side={RAIL_SIDE} />;
   // Leaves outright: with unsaved edits the LeaveGuard asks first.
   const backButton = (
-    <Button size="small" onClick={rail.onCollapse} data-testid="editor-page-back">
+    // Linje secondary, as the footer's Cancel.
+    <Button
+      variant="outlined"
+      color="inherit"
+      size="small"
+      onClick={rail.onCollapse}
+      data-testid="editor-page-back"
+    >
       {t('back')}
     </Button>
   );
@@ -184,6 +191,45 @@ export default function EditorFrame<T, F>({
     />
   );
 
+  const title = (
+    <Typography
+      variant="h6"
+      component={heading}
+      {...headingFocus}
+      noWrap
+      title={trimmed || undefined}
+      data-testid={`${testId}-details-title`}
+      sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', ...HEADING_NO_RING }}
+    >
+      {trimmed || (
+        <>
+          {'[ '}
+          <Box
+            component="span"
+            sx={{
+              color: 'text.disabled',
+              fontStyle: 'italic',
+              fontWeight: 400,
+              letterSpacing: '0.02em',
+            }}
+          >
+            {t('common.unnamed')}
+          </Box>
+          {' ]'}
+        </>
+      )}
+    </Typography>
+  );
+  const netexId = entity.id && (
+    <NetexId
+      id={entity.id}
+      version={entity.version}
+      copy="onHover"
+      size="small"
+      sx={{ justifySelf: 'start' }}
+    />
+  );
+
   return (
     <Box
       sx={
@@ -191,8 +237,9 @@ export default function EditorFrame<T, F>({
           ? // From `lg` the page stays put; the form column scrolls itself (`FormSections`, #293).
             {
               height: '100%',
-              // As wide as the form and column 3, so the title row's actions end above the picture.
-              maxWidth: formPageWidth,
+              // As wide as the form grid (`FormSections`): the title row adds none (`contain`).
+              width: 'fit-content',
+              maxWidth: '100%',
               display: 'flex',
               flexDirection: 'column',
               overflowY: { xs: 'auto', lg: 'hidden' },
@@ -200,47 +247,13 @@ export default function EditorFrame<T, F>({
           : { p: 2, height: '100%', overflowY: 'auto', boxSizing: 'border-box' }
       }
     >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1, flexShrink: 0 }}>
-        <FormLayout sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="h6"
-            component={heading}
-            {...headingFocus}
-            noWrap
-            title={trimmed || undefined}
-            data-testid={`${testId}-details-title`}
-            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', ...HEADING_NO_RING }}
-          >
-            {trimmed || (
-              <>
-                {'[ '}
-                <Box
-                  component="span"
-                  sx={{
-                    color: 'text.disabled',
-                    fontStyle: 'italic',
-                    fontWeight: 400,
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  {t('common.unnamed')}
-                </Box>
-                {' ]'}
-              </>
-            )}
-          </Typography>
-          {entity.id && (
-            <NetexId
-              id={entity.id}
-              version={entity.version}
-              copy="onHover"
-              size="small"
-              sx={{ justifySelf: 'start' }}
-            />
-          )}
-        </FormLayout>
-        {page && (
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+      {page ? (
+        // The name on a line of its own; id and actions below it, ending above column 3. The
+        // row adds no width of its own (`contain`): the form grid sets the frame's.
+        <Box sx={{ mb: 1, flexShrink: 0, contain: 'inline-size' }}>
+          {title}
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>{netexId}</Box>
             {frozen && (
               <Typography
                 variant="subtitle2"
@@ -255,9 +268,11 @@ export default function EditorFrame<T, F>({
             {!frozen && editor.record && !editor.isCreate && (
               <>
                 <Divider orientation="vertical" flexItem />
+                {/* Linje negative, outlined like the footer's Cancel. */}
                 <Button
-                  size="small"
+                  variant="outlined"
                   color="error"
+                  size="small"
                   // Unsaved edits first: a deactivate would leave them in limbo. No handler
                   // while a save or deactivate settles.
                   disabled={!rail.onDeactivate || rail.isDirty}
@@ -269,8 +284,15 @@ export default function EditorFrame<T, F>({
               </>
             )}
           </Stack>
-        )}
-      </Box>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1, flexShrink: 0 }}>
+          <FormLayout sx={{ flex: 1, minWidth: 0 }}>
+            {title}
+            {netexId}
+          </FormLayout>
+        </Box>
+      )}
       <Divider sx={{ mb: 2 }} />
 
       <FormFooterContext.Provider value={page && !frozen ? footer : null}>

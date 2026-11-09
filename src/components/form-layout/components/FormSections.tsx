@@ -4,7 +4,13 @@ import { SectionToc } from '../../SectionToc.tsx';
 import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useSectionSpy } from '../hooks/useSectionSpy.ts';
 import { FormFooterContext } from '../formFooterContext.ts';
-import { SCROLL_PAD, SECTION_GAP, TOC_WIDTH, formColumnWidth } from '../utils/formWidth.ts';
+import {
+  ASIDE_WIDTH_XL,
+  SCROLL_PAD,
+  SECTION_GAP,
+  TOC_WIDTH,
+  formColumnWidth,
+} from '../utils/formWidth.ts';
 import { gridSize, tocSections, type ResolvedField, type Section } from '../utils/sections.ts';
 
 // Theme spacing: between fields (room for a floating label's notch), and kept above a
@@ -144,7 +150,10 @@ export function FormSections<K extends string>({
       ref={rootRef}
       sx={{
         display: 'grid',
-        gridTemplateColumns: wide && column ? `${formColumn} ${TOC_WIDTH}` : formColumn,
+        gridTemplateColumns:
+          wide && column
+            ? { lg: `${formColumn} ${TOC_WIDTH}`, xl: `${formColumn} ${ASIDE_WIDTH_XL}` }
+            : formColumn,
         columnGap: SECTION_GAP,
         rowGap: FIELD_GAP,
         alignItems: 'start',
@@ -167,7 +176,9 @@ export function FormSections<K extends string>({
               : { display: 'contents' }
           }
         >
-          {aside && <Box sx={{ width: '100%', maxWidth: TOC_WIDTH }}>{aside}</Box>}
+          {aside && (
+            <Box sx={{ width: '100%', maxWidth: { xs: TOC_WIDTH, xl: 'none' } }}>{aside}</Box>
+          )}
           {toc.length > 0 && (
             <SectionToc
               sections={tocLabels}
@@ -184,7 +195,7 @@ export function FormSections<K extends string>({
                       zIndex: TOC_Z,
                       bgcolor: 'background.default',
                     }
-                  : undefined
+                  : { maxWidth: TOC_WIDTH } // column 3 grows from `xl`; the TOC stays Linje's width
               }
             />
           )}
