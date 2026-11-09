@@ -71,7 +71,6 @@ export function FormSections<K extends string>({
   const shown = active !== undefined && toc.includes(active) ? active : toc[0];
   const theme = useTheme();
   const wide = useMediaQuery(theme.breakpoints.up('lg'));
-  // Fields at most 500px (Linje, #283), at every width.
   const formColumn = `minmax(0, ${formColumnWidth(theme)})`;
   const register = useSectionSpy({
     labels: toc,
