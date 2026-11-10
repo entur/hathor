@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { interceptVehicleTypesQuery } from './autosys-helpers';
-import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, firstEdit, seedAuth, selectFirstOrg } from './live-auth-helpers';
 import {
   interceptVehicleByIdQuery,
   interceptVehicleListQuery,
@@ -16,8 +16,6 @@ const BUS_TYPE = 'Type Alpha';
 
 /** The form page's sticky footer Save. */
 const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exact: true });
-/** The first row's Edit link, live or mocked. */
-const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit / }).first();
 
 /**
  * /next/vehicles — the vehicle pair (#285, epic #252): CollectionShell list ·

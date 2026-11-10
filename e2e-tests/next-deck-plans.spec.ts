@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { interceptDeckPlanSave, interceptDeckPlansQuery, loadXmlFixture } from './autosys-helpers';
-import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, firstEdit, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
 const LIST = '/next/deck-plans';
 // deck-plans-mock.json: "Plan Alpha", name padded with whitespace.
@@ -10,8 +10,6 @@ const UNNAMED = 'NMR:DeckPlan:2';
 
 /** The form page's sticky footer Save. */
 const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exact: true });
-/** The first row's Edit link, live or mocked. */
-const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit / }).first();
 /** Serve a deck plan's XML body from a fixture. */
 const serveBody = (page: Page, file = 'deck-plan-xml-with-decks-mock.xml') =>
   page.route(/\/deckplans\/[^/?#]+(\?|$)/, route =>

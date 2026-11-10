@@ -5,7 +5,7 @@ import {
   interceptVehicleTypesWithSave,
   loadFixture,
 } from './autosys-helpers';
-import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
+import { IS_LIVE, firstEdit, seedAuth, selectFirstOrg } from './live-auth-helpers';
 import { interceptVehicleTypesQuery as interceptVehicleTypeRows } from './vehicle-list-helpers';
 
 const LIST = '/next/vehicle-types';
@@ -21,7 +21,9 @@ const FIXTURE_ROWS = 3;
 // Of those, drawn as a bus: BUS and no mode (the RAIL row gets a line of text).
 const DRAWN_ROWS = 2;
 const SHOT_TIMEOUT_MS = 15_000; // software WebGL shoots slowly
-const WHEEL_WAIT_MS = 1_000; // per wheel event, before the next one
+const WHEEL_DELTA_PX = 5000, // one wheel event's ask; Firefox scrolls about a screen of it
+  WHEEL_WAIT_MS = 1_000, // per wheel event, before the next one
+  WHEEL_TIMEOUT_MS = 10_000; // all wheels: a page that never gets there fails the assertion
 // A full page of rows (the default page size): more than fits between toolbar and pager.
 const FULL_PAGE = 25;
 // On the first page, below the fold of the grid at the default viewport.
@@ -36,8 +38,6 @@ const menuVehicles = (page: Page) =>
   page.getByTestId('nav-rail').locator('a[href="/next/vehicles"]');
 /** The form page's table of contents (the list from `lg` up). */
 const toc = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
-/** The list's first Edit link (an unnamed record's reads just "Edit"). */
-const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit\b/ }).first();
 
 /** Opens the first row's form page from the list — live, a real record instead of the
  *  fixture id (mocked, Type Alpha) — and returns its name as loaded. */
@@ -50,13 +50,16 @@ const openFirstRecord = async (page: Page) => {
   return name.inputValue();
 };
 
+/** A name that differs from the loaded one, so a live record's form turns dirty. */
+const edited = (loaded: string) => `${loaded.trim()} (edited)`;
+
 /** Wheels over the form until `done` passes: Firefox scrolls about a screen per wheel event,
  *  short of the end of a long live form. */
 const wheelUntil = (page: Page, done: () => Promise<void>) =>
   expect(async () => {
-    await page.mouse.wheel(0, 5000);
+    await page.mouse.wheel(0, WHEEL_DELTA_PX);
     await done();
-  }).toPass();
+  }).toPass({ timeout: WHEEL_TIMEOUT_MS });
 
 /** Rail types `Type 00` … `Type n-1`, padded so the name sort keeps their order: their cards
  *  get a line of text, no WebGL shot. */
@@ -108,10 +111,12 @@ const interceptRailRows = (page: Page, n: number) =>
  * Modes:
  *   - mock (E2E_BACKEND unset): interceptVehicleTypesQuery (vehicle-types-mock.json)
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
- *   - live, the read-only form tests open the first row (openFirstRecord), not the fixture id
+ *   - live, the read-only form tests open the first row (openFirstRecord), not the fixture id;
+ *     the deep link reloads that row's URL; a write the clean Save might send is aborted
  *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the Vehicles
- *     chip (fixture vehicle); the empty-list test (mocked empty list); the two bus-picture
- *     tests and the frame tests (mocked rows)
+ *     chip (fixture vehicle); the last-section mark (needs a short last section); the
+ *     empty-list test (mocked empty list); the two bus-picture tests, the frame tests, the
+ *     new page of cards and the focus return below the fold (mocked rows)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -338,18 +343,27 @@ test.describe('/next/vehicle-types page shell', () => {
   test('a deep link opens the record ready to edit: Cancel inert, Save has nothing to save', async ({
     page,
   }) => {
-    await page.goto(LIST);
-    await selectFirstOrg(page);
-    await page.goto((await firstEdit(page).getAttribute('href'))!);
-    await selectFirstOrg(page);
-    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText(
-      IS_LIVE ? /\S/ : 'Type Alpha'
+    let writes = 0;
+    // Aborted, not sent: live, a write would full-replace a real record.
+    await page.route('**/graphql', route =>
+      route.request().postData()?.includes('createOrUpdate')
+        ? (writes++, route.abort())
+        : route.fallback()
     );
+    const loaded = await openFirstRecord(page);
+    const title = page.getByTestId('vehicle-type-details-title');
+    const heading = await title.innerText();
+    // The same URL, loaded fresh: the record comes from the route's id alone.
+    await page.goto(page.url());
+    await selectFirstOrg(page);
+    await expect(title).toHaveText(heading);
+    await expect(page.locator('#vtype-name')).toHaveValue(loaded);
     await expect(page.locator('#vtype-name')).toBeEditable();
     await expect(footerCancel(page)).toBeDisabled();
     // Clean: Save stays enabled and says there is nothing to save, sending nothing (#293).
     await footerSave(page).click();
     await expect(page.getByText('No changes to save')).toBeVisible();
+    expect(writes).toBe(0);
   });
 
   test('wide: only the form column scrolls; Save and Cancel sit at its end, not floating', async ({
@@ -379,6 +393,7 @@ test.describe('/next/vehicle-types page shell', () => {
   test('widened past lg: scrolling the form to its end marks the last section', async ({
     page,
   }) => {
+    test.skip(IS_LIVE, 'needs a short last section (one mocked vehicle)');
     // Opened narrow, the page itself scrolls; widened, the form column takes over (#293).
     await page.setViewportSize({ width: 1024, height: WIDE_VIEWPORT.height });
     await openFirstRecord(page);
@@ -418,7 +433,7 @@ test.describe('/next/vehicle-types page shell', () => {
   test('Cancel asks before discarding and reverts, still editing', async ({ page }) => {
     const loaded = await openFirstRecord(page);
     const name = page.locator('#vtype-name');
-    await name.fill('Type Omega');
+    await name.fill(edited(loaded));
     await expect(page.getByText('Unsaved changes')).toBeVisible();
     await expect(page.getByTestId('editor-page-deactivate')).toBeDisabled();
     await footerCancel(page).click();
@@ -454,16 +469,16 @@ test.describe('/next/vehicle-types page shell', () => {
   test('a Menu link with unsaved edits asks first: Cancel stays, Discard follows', async ({
     page,
   }) => {
-    await openFirstRecord(page);
+    const typed = edited(await openFirstRecord(page));
     const name = page.locator('#vtype-name');
-    await name.fill('Type Omega');
+    await name.fill(typed);
     const dialog = page.getByRole('dialog');
 
     await menuVehicles(page).click();
     await dialog.getByRole('button', { name: 'Cancel' }).click(); // keep editing
     await expect(dialog).toBeHidden();
     await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));
-    await expect(name).toHaveValue('Type Omega');
+    await expect(name).toHaveValue(typed);
 
     await menuVehicles(page).click();
     await dialog.getByRole('button', { name: 'Discard' }).click();
@@ -557,8 +572,8 @@ test.describe('/next/vehicle-types page shell', () => {
   test('browser Back with unsaved edits asks first', async ({ page }) => {
     // In-app from the list: a Back across two page loads would leave the app (the browser's
     // own prompt), not navigate inside it.
-    await openFirstRecord(page);
-    await page.locator('#vtype-name').fill('Type Omega');
+    const loaded = await openFirstRecord(page);
+    await page.locator('#vtype-name').fill(edited(loaded));
     await page.goBack();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Discard' }).click();

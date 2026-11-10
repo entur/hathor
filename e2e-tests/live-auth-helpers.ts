@@ -362,6 +362,10 @@ export const liveVehicleTypeInt = async (page: Page): Promise<string> => {
   return m![1];
 };
 
+/** The list's first Edit link (#252 collection pages), live or mocked; an unnamed record's
+ *  reads just "Edit". */
+export const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit\b/ }).first();
+
 /**
  * Click the first data row, assert its `?selected=` sidebar opened (title testid
  * visible), and return the decoded netexId. Assumes the page is already on the
