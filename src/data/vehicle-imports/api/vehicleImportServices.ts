@@ -1,5 +1,6 @@
 import { authHeader, type AccessToken } from '../../../auth';
 import type { ImportEntry } from '../types/importTypes';
+import { VEHICLE_TYPE_KIND } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 /**
  * Fetch NeTEx XML for many vehicles in one request to shepet's bulk endpoint.
@@ -42,13 +43,22 @@ export const fetchVehiclesFromAutosys = async (
 /**
  * Import a vehicle into Sobek by POSTing its NeTEx XML to the import endpoint.
  * Returns the response body on success.
+ *
+ * @param {string} applicationImportBaseUrl - Sobek NeTEx import URL from config.
+ * @param {string} vehicleData - The `PublicationDelivery` XML to import.
+ * @param {AccessToken} token - Bearer token.
+ * @returns {Promise<string>} The import response XML.
+ * @throws {Error} With the response body (or statusText) on a non-OK response.
  */
 export const importAsNetexToBackend = async (
   applicationImportBaseUrl: string,
   vehicleData: string,
   token: AccessToken
 ): Promise<string> => {
-  const response = await fetch(`${applicationImportBaseUrl}`, {
+  const url = new URL(applicationImportBaseUrl);
+  // Sobek requires it (400 without): NeTEx has no field for a vehicle type's kind.
+  url.searchParams.set('vehicleTypeKind', VEHICLE_TYPE_KIND);
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
@@ -57,7 +67,8 @@ export const importAsNetexToBackend = async (
     body: vehicleData,
   });
   if (!response.ok) {
-    throw new Error(`Error importing vehicle data: ${response.statusText}`);
+    const errorBody = await response.text();
+    throw new Error(errorBody || `Error importing vehicle data: ${response.statusText}`);
   }
   const data = await response.text();
   return data;

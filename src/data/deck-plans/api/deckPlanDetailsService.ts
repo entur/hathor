@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import { XMLBuilder } from 'fast-xml-parser';
 import { authHeader, type AccessToken } from '../../../auth';
 import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../../netex/xmlUtils';
+import { VEHICLE_TYPE_KIND } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 /**
  * Fetch NeTEx XML for a single deck plan from Sobek
@@ -66,7 +67,10 @@ export const saveDeckPlanAsNetexToBackend = async (
     resourceFrame,
     dataOwnerRef
   );
-  const response = await fetch(`${applicationImportBaseUrl}`, {
+  const url = new URL(applicationImportBaseUrl);
+  // Sobek requires it on every import, vehicle types in the file or not (400 without).
+  url.searchParams.set('vehicleTypeKind', VEHICLE_TYPE_KIND);
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
@@ -75,7 +79,8 @@ export const saveDeckPlanAsNetexToBackend = async (
     body: builder.build(xml),
   });
   if (!response.ok) {
-    throw new Error(`Error importing deck plan data: ${response.statusText}`);
+    const body = await response.text();
+    throw new Error(body || `Error importing deck plan data: ${response.statusText}`);
   }
   const data = await response.text();
   return data;
