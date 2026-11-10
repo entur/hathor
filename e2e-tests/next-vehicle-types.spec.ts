@@ -21,6 +21,7 @@ const FIXTURE_ROWS = 3;
 // Of those, drawn as a bus: BUS and no mode (the RAIL row gets a line of text).
 const DRAWN_ROWS = 2;
 const SHOT_TIMEOUT_MS = 15_000; // software WebGL shoots slowly
+const WHEEL_WAIT_MS = 1_000; // per wheel event, before the next one
 // A full page of rows (the default page size): more than fits between toolbar and pager.
 const FULL_PAGE = 25;
 // On the first page, below the fold of the grid at the default viewport.
@@ -48,6 +49,14 @@ const openFirstRecord = async (page: Page) => {
   await expect(name).toBeEditable();
   return name.inputValue();
 };
+
+/** Wheels over the form until `done` passes: Firefox scrolls about a screen per wheel event,
+ *  short of the end of a long live form. */
+const wheelUntil = (page: Page, done: () => Promise<void>) =>
+  expect(async () => {
+    await page.mouse.wheel(0, 5000);
+    await done();
+  }).toPass();
 
 /** Rail types `Type 00` … `Type n-1`, padded so the name sort keeps their order: their cards
  *  get a line of text, no WebGL shot. */
@@ -353,8 +362,9 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(footerSave(page)).not.toBeInViewport();
 
     await name.hover();
-    await page.mouse.wheel(0, 5000);
-    await expect(footerSave(page)).toBeInViewport();
+    await wheelUntil(page, () =>
+      expect(footerSave(page)).toBeInViewport({ timeout: WHEEL_WAIT_MS })
+    );
     await expect(toc(page)).toBeInViewport();
     await expect(page.getByTestId('vehicle-type-details-title')).toBeInViewport();
     // The one scroller that moved holds the form, not the picture or the contents.
@@ -377,11 +387,13 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(toc(page)).toBeVisible();
 
     await name.hover();
-    await page.mouse.wheel(0, 5000);
     // Too short to reach the reading band: only the at-the-end rule can mark it.
-    await expect(toc(page).getByRole('button', { name: 'Vehicles' })).toHaveAttribute(
-      'aria-current',
-      'location'
+    await wheelUntil(page, () =>
+      expect(toc(page).getByRole('button', { name: 'Vehicles' })).toHaveAttribute(
+        'aria-current',
+        'location',
+        { timeout: WHEEL_WAIT_MS }
+      )
     );
   });
 
