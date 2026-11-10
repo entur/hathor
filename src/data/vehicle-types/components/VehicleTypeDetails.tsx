@@ -11,6 +11,7 @@ import VehicleTypeSections from './VehicleTypeSections.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { useCodeValues } from '../../code-values/hooks/useCodeValues.ts';
 import { EMISSION_STANDARD } from '../../code-values/types/codeValueTypes.ts';
+import { vehicleTypeTitle } from '../utils/vehicleTypeTitle.ts';
 
 const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
 const SKELETON_ROWS = 8;
@@ -74,6 +75,7 @@ export default function VehicleTypeDetails(host: EntityEditorHostProps) {
     <EditorFrame
       editor={editor}
       entity={form}
+      title={vehicleTypeTitle(form)}
       testId="vehicle-type"
       copy={COPY}
       skeleton={SKELETON_ROWS}

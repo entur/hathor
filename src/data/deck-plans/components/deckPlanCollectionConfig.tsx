@@ -4,13 +4,13 @@ import {
   type EntityCollectionProps,
 } from '../../../components/collection/index.ts';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
-import { netexText } from '../../netex/multilingualString.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import {
   deckPlanFields,
   deckPlanFilterFields,
   type DeckPlanField,
 } from '../types/deckPlanFields.ts';
+import { deckPlanTitle } from '../utils/deckPlanTitle.ts';
 
 type Props = EntityCollectionProps<DeckPlan, DeckPlanField>;
 
@@ -20,7 +20,7 @@ const Collection = createEntityCollection(deckPlanFields, { filterFields: deckPl
  *  from `deckPlans.field.*`. */
 const COLUMNS: Props['columns'] = [
   // Shown, not stored: sort and search still read the name.
-  { field: 'name', render: dp => netexText(dp.name)?.trim() || dp.id },
+  { field: 'name', render: deckPlanTitle },
   'id',
   'description',
 ];
@@ -41,6 +41,13 @@ const editHref = (dp: DeckPlan) => encodeURIComponent(dp.id);
 export function DeckPlanCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
   const labels = useCollectionLabels('deckPlans.field');
   return (
-    <Collection columns={COLUMNS} card={CARD} labels={labels} editHref={editHref} {...props} />
+    <Collection
+      columns={COLUMNS}
+      card={CARD}
+      labels={labels}
+      editHref={editHref}
+      rowTitle={deckPlanTitle}
+      {...props}
+    />
   );
 }

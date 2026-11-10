@@ -8,11 +8,11 @@ import {
 import { BusPicture } from '../../../components/bus-picture/index.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
-import { netexText } from '../../netex/multilingualString.ts';
 import { transportModeLabelKey } from '../../netex/transportMode.ts';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { vehiclePictureMode, type Vehicle } from '../types/vehicle.ts';
 import { vehicleFields, vehicleFilterFields, type VehicleField } from '../types/vehicleFields.ts';
+import { vehicleTitle } from '../utils/vehicleTitle.ts';
 
 type Props = EntityCollectionProps<Vehicle, VehicleField>;
 
@@ -22,7 +22,7 @@ const Collection = createEntityCollection(vehicleFields, { filterFields: vehicle
  *  two vehicles apart at a glance. Captions come from `vehicles.field.*`. */
 const COLUMNS: Props['columns'] = [
   // Shown, not stored: sort and search still read the name (and reg no has its own column).
-  { field: 'name', render: v => netexText(v.name)?.trim() || v.registrationNumber },
+  { field: 'name', render: vehicleTitle },
   'id',
   'registrationNumber',
   'transportType',
@@ -78,6 +78,7 @@ export function VehicleCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
       cardMedia={busMedia}
       labels={labels}
       editHref={editHref}
+      rowTitle={vehicleTitle}
       {...props}
     />
   );

@@ -14,6 +14,7 @@ import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
 import { fetchVehicle } from '../api/fetchVehicles.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { canSubmit, vehicleForm } from '../stores/vehicleFormState.ts';
+import { vehicleTitle } from '../utils/vehicleTitle.ts';
 
 const COPY: EditorCopy = {
   title: 'vehicles.detailsTitle',
@@ -55,6 +56,7 @@ export default function VehicleDetails(host: EntityEditorHostProps) {
     <EditorFrame
       editor={editor}
       entity={form.vehicle}
+      title={vehicleTitle(form.vehicle)}
       testId="vehicle"
       copy={COPY}
       skeleton={<VehicleDetailsSkeleton />}

@@ -13,6 +13,7 @@ import { deckPlanForm } from '../stores/deckPlanFormState.ts';
 import DeckPlanForm from './DeckPlanForm.tsx';
 import DeckPlanSections from './DeckPlanSections.tsx';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
+import { deckPlanTitle } from '../utils/deckPlanTitle.ts';
 
 const SKELETON_ROWS = 2; // name + description
 
@@ -100,6 +101,7 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
     <EditorFrame
       editor={editor}
       entity={form}
+      title={deckPlanTitle(form)}
       testId="deck-plan"
       copy={COPY}
       skeleton={SKELETON_ROWS}

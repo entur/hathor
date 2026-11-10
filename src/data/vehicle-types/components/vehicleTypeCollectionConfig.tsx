@@ -14,6 +14,7 @@ import {
   vehicleTypeFilterFields,
   type VehicleTypeField,
 } from '../types/vehicleTypeFields.ts';
+import { vehicleTypeTitle } from '../utils/vehicleTypeTitle.ts';
 
 type Props = EntityCollectionProps<VehicleType, VehicleTypeField>;
 
@@ -21,10 +22,11 @@ const Collection = createEntityCollection(vehicleTypeFields, {
   filterFields: vehicleTypeFilterFields,
 });
 
-/** Name first, id second (U4); then what tells two types apart at a glance. Captions
+/** Name first, the id when it has none (U4); id second; then what tells two types apart at a glance. Captions
  *  come from `vehicleType.field.*` through the labels' `field`. */
 const COLUMNS: Props['columns'] = [
-  'name',
+  // Shown, not stored: sort and search still read the name.
+  { field: 'name', render: vehicleTypeTitle },
   'id',
   {
     field: 'transportMode',
@@ -70,6 +72,7 @@ export function VehicleTypeCollection(props: Partial<Props> & Pick<Props, 'rows'
       cardMedia={busMedia}
       labels={labels}
       editHref={editHref}
+      rowTitle={vehicleTypeTitle}
       {...props}
     />
   );

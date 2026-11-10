@@ -65,11 +65,14 @@ test.describe('/next/deck-plans', () => {
     await expect(edit).toBeFocused();
   });
 
-  test('a plan without a name shows its id; search narrows by name', async ({ page }) => {
+  test('a plan without a name shows its id, its Edit link too; search narrows by name', async ({
+    page,
+  }) => {
     test.skip(IS_LIVE, 'fixture rows');
     await page.goto(LIST);
     // The Name cell; the id column itself shows the compact `::2`.
     await expect(page.getByRole('gridcell', { name: UNNAMED, exact: true })).toHaveCount(1);
+    await expect(page.getByRole('link', { name: `Edit ${UNNAMED}` })).toHaveCount(1);
 
     await page.getByPlaceholder('Search these rows').fill('Plan Alpha');
     await expect(page.getByRole('link', { name: /^Edit / })).toHaveCount(1);

@@ -158,6 +158,12 @@ describe('Edit link', () => {
     expect(links.map(l => l.getAttribute('data-edit-id'))).toEqual(ROWS.map(r => r.id));
   });
 
+  it('is named by rowTitle when set: an unnamed record\'s link is not just "Edit"', async () => {
+    const rows = [{ ...ROWS[0], name: null }];
+    await mount({ rows, view: 'cards', editHref, rowTitle: r => r.name?.value || r.id });
+    screen.getByRole('link', { name: 'Edit NMR:VehicleType:1' });
+  });
+
   it('is absent without editHref', async () => {
     await mount({ view: 'grid' });
     await gridRows();

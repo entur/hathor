@@ -36,8 +36,11 @@ const HEADING_NO_RING = { '&:focus': { outline: 'none' } };
 
 interface EditorFrameProps<T, F> {
   editor: EntityEditor<T, F>;
-  /** The form's entity: its typed name heads the pane (blank → `[ unnamed ]`), its id the NetexId badge. */
+  /** The form's entity: its typed name heads the pane unless `title` is set (blank →
+   *  `[ unnamed ]`), its id the NetexId badge. */
   entity: { id?: string; version?: number; name?: { value?: string } };
+  /** The record's display name (#290), the feature's `<entity>Title(form)`. */
+  title?: string;
   /** Test-id stem: `<testId>-details-title`, `<testId>-record-fetch-error`. */
   testId: string;
   copy: EditorCopy;
@@ -92,6 +95,7 @@ function LeaveGuard({ dirty, onSave }: { dirty: boolean; onSave?: () => void | P
 export default function EditorFrame<T, F>({
   editor,
   entity,
+  title,
   testId,
   copy,
   skeleton,
@@ -161,7 +165,7 @@ export default function EditorFrame<T, F>({
     );
   }
 
-  const trimmed = entity.name?.value?.trim();
+  const trimmed = (title ?? entity.name?.value)?.trim();
   // Drawn by the body's `FormSections`, last in its form column.
   const footer = (
     <EditFooter

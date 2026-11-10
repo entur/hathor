@@ -108,7 +108,9 @@ test.describe('/next/vehicles', () => {
     expect(await open.count()).toBe(0);
   });
 
-  test('a vehicle without a name shows its registration number', async ({ page }) => {
+  test('a vehicle without a name goes by its registration number: cells, Edit link, heading', async ({
+    page,
+  }) => {
     test.skip(IS_LIVE, 'a mocked row');
     // Sobek's empty name is whitespace.
     const row = vehicleRow('NMR:Vehicle:noname', {
@@ -127,8 +129,11 @@ test.describe('/next/vehicles', () => {
         }),
       });
     });
+    await interceptVehicleByIdQuery(page, () => row);
     await page.goto(LIST);
-    await expect(page.getByRole('gridcell', { name: 'NN-1' })).toHaveCount(2);
+    await expect(page.getByRole('gridcell', { name: 'NN-1', exact: true })).toHaveCount(2);
+    await page.getByRole('link', { name: 'Edit NN-1' }).click();
+    await expect(page.getByTestId('vehicle-details-title')).toHaveText('NN-1');
   });
 
   test('create: "Select type" until a type is picked; without one Save says so, the dialog offers none', async ({

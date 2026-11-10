@@ -78,6 +78,7 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     slotProps,
     editHref,
     editState,
+    rowTitle,
   }: EntityCollectionProps<E, K>): ReactNode => {
     const [inner, setInner] = useState<CollectionQuery>(defaultCollectionQuery);
     const [density, setDensity] = useState<GridDensity>(DEFAULT_DENSITY);
@@ -107,10 +108,12 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
       () =>
         editHref && {
           href: editHref as (row: unknown) => string,
-          name: row => (title ? displayValue(row, title, { yes, no }) : ''),
+          name: rowTitle
+            ? (rowTitle as (row: unknown) => string)
+            : row => (title ? displayValue(row, title, { yes, no }) : ''),
           state: editState,
         },
-      [editHref, editState, title, yes, no]
+      [editHref, editState, rowTitle, title, yes, no]
     );
     // Filters reach every filterable field, shown or not: a condition the host
     // set on a field outside `columns` is applied here, gets a chip, and matches

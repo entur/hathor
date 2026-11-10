@@ -188,6 +188,9 @@ export interface EntityCollectionProps<E, K extends string = string> {
   editHref?: (row: E) => string;
   /** Router state the Edit link carries; the details page needs none today. */
   editState?: unknown;
+  /** The record's display name (#290), naming its Edit link; omit for the card title's
+   *  stored text. Point the title column's `render` at the same function. Keep it stable. */
+  rowTitle?: (row: E) => string;
 }
 
 /** A record's Edit link, as both views draw it. */
