@@ -79,6 +79,20 @@ describe('saveDeckPlanAsNetexToBackend', () => {
     expect(posted).toContain(OWNER);
     expect(posted).toContain('NMR:ResponsibilitySet:1');
   });
+
+  it("throws Sobek's error body, not the often empty statusText", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: false,
+        statusText: '',
+        text: async () => 'vehicleTypeKind is required',
+      }))
+    );
+    await expect(
+      saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null)
+    ).rejects.toThrow('vehicleTypeKind is required');
+  });
 });
 
 /** Sobek rejects a single-object export without `dataOwner` (entur/sobek#227). */
