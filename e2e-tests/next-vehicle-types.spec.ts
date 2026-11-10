@@ -115,8 +115,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *     the deep link reloads that row's URL; a write the clean Save might send is aborted
  *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the Vehicles
  *     chip (fixture vehicle); the last-section mark (needs a short last section); the
- *     empty-list test (mocked empty list); the two bus-picture tests, the frame tests, the
- *     new page of cards and the focus return below the fold (mocked rows)
+ *     empty-list test (mocked empty list); the unnamed type, the two bus-picture tests, the
+ *     frame tests, the new page of cards and the focus return below the fold (mocked rows)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -183,6 +183,22 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(empty).toContainText('No vehicle types for Mock Org yet');
     await expect(empty.getByTestId('create-vehicle-type-fab')).toBeVisible();
     await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
+  });
+
+  test('a type without a name goes by its id: cell, Edit link, heading (#290)', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'a mocked row');
+    const id = 'NMR:VehicleType:noname';
+    // Sobek's empty name is whitespace.
+    await interceptVehicleTypeRows(page, [
+      { netexId: id, version: 1, name: { value: '  ' }, transportMode: 'BUS' },
+    ]);
+    await page.goto(LIST);
+    // The Name cell; the id column itself shows the compact `::noname`.
+    await expect(page.getByRole('gridcell', { name: id, exact: true })).toHaveCount(1);
+    await page.getByRole('link', { name: `Edit ${id}` }).click();
+    await expect(page.getByTestId('vehicle-type-details-title')).toHaveText(id);
   });
 
   test('cards draw buses and coaches; a type without a height says so, a train is unsupported', async ({
