@@ -23,7 +23,7 @@ import {
 } from '../types.ts';
 import { matchRows, pageRows, sortRows } from '../utils/applyQuery.ts';
 import { resolveCard, resolveColumns } from '../utils/columns.ts';
-import { displayValue, keyRows } from '../utils/values.ts';
+import { displayValue, keyRows, rowId } from '../utils/values.ts';
 import { CardsView } from './CardsView.tsx';
 import { CollectionPager } from './CollectionPager.tsx';
 import { CollectionToolbar } from './CollectionToolbar.tsx';
@@ -79,8 +79,18 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     editHref,
     editState,
     rowTitle,
+    focusEditId,
   }: EntityCollectionProps<E, K>): ReactNode => {
-    const [inner, setInner] = useState<CollectionQuery>(defaultCollectionQuery);
+    // Back from a record's page, open on the page holding it (#291): the default query
+    // neither sorts nor filters, so its rows stand in the host's order.
+    const [inner, setInner] = useState<CollectionQuery>(() => {
+      const i = focusEditId ? rows.findIndex(r => rowId(r) === focusEditId) : -1;
+      return i < 0
+        ? defaultCollectionQuery
+        : { ...defaultCollectionQuery, page: Math.floor(i / defaultCollectionQuery.pageSize) };
+    });
+    // One-shot: a link drawn again later (a page turned back to) leaves focus alone.
+    const pendingFocus = useRef(focusEditId);
     const [density, setDensity] = useState<GridDensity>(DEFAULT_DENSITY);
     const [innerView, setInnerView] = useState<CollectionView>(DEFAULT_VIEW);
     const view = controlledView ?? innerView;
@@ -112,6 +122,14 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
             ? (rowTitle as (row: unknown) => string)
             : row => (title ? displayValue(row, title, { yes, no }) : ''),
           state: editState,
+          takeFocus: id => {
+            if (!id || id !== pendingFocus.current) return false;
+            pendingFocus.current = undefined;
+            // Still where arrival put it — nowhere, or the page's h1 (`CollectionShell`) — so a
+            // late-drawn link doesn't pull the reader out of where they went (e.g. Search).
+            const active = document.activeElement;
+            return !active || active === document.body || active.tagName === 'H1';
+          },
         },
       [editHref, editState, rowTitle, title, yes, no]
     );

@@ -116,7 +116,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the Vehicles
  *     chip (fixture vehicle); the last-section mark (needs a short last section); the
  *     empty-list test (mocked empty list); the unnamed type, the two bus-picture tests, the
- *     frame tests, the new page of cards and the focus return below the fold (mocked rows)
+ *     frame tests, the new page of cards and the focus returns below the fold and on page 2
+ *     (mocked rows)
  */
 test.describe('/next/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -314,6 +315,20 @@ test.describe('/next/vehicle-types page shell', () => {
     await interceptRailRows(page, FULL_PAGE);
     await page.goto(LIST);
     const edit = page.getByRole('link', { name: `Edit Type ${BELOW_FOLD}`, exact: true });
+    await edit.click();
+    await page.getByTestId('editor-page-back').click();
+    await expect(page).toHaveURL(new RegExp(`${LIST}$`));
+    await expect(edit).toBeFocused();
+  });
+
+  test('Back to a record on the second page opens that page, its Edit link focused (#291)', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'mocked pages');
+    await interceptRailRows(page, 2 * FULL_PAGE);
+    await page.goto(LIST);
+    await page.getByRole('button', { name: 'Go to next page' }).click();
+    const edit = page.getByRole('link', { name: `Edit Type ${FULL_PAGE + 1}`, exact: true });
     await edit.click();
     await page.getByTestId('editor-page-back').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));

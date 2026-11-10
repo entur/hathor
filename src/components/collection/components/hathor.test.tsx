@@ -164,6 +164,14 @@ describe('Edit link', () => {
     screen.getByRole('link', { name: 'Edit NMR:VehicleType:1' });
   });
 
+  it('focusEditId opens on the page holding the record and focuses its link once', async () => {
+    const rows = Array.from({ length: 30 }, (_, i) => ({ ...ROWS[1], id: `NMR:VehicleType:${i}` }));
+    await mount({ rows, view: 'cards', editHref, focusEditId: 'NMR:VehicleType:27' });
+    const link = screen.getAllByRole('link').find(l => l.dataset.editId === 'NMR:VehicleType:27');
+    expect(document.activeElement).toBe(link);
+    expect(screen.getAllByRole('listitem')).toHaveLength(5); // page 2 of 25-row pages
+  });
+
   it('is absent without editHref', async () => {
     await mount({ view: 'grid' });
     await gridRows();

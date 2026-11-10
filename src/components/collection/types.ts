@@ -191,6 +191,10 @@ export interface EntityCollectionProps<E, K extends string = string> {
   /** The record's display name (#290), naming its Edit link; omit for the card title's
    *  stored text. Point the title column's `render` at the same function. Keep it stable. */
   rowTitle?: (row: E) => string;
+  /** The record to return to (#291), read once on mount: an uncontrolled collection opens on
+   *  the page holding it, and its Edit link takes focus as it is drawn — unless the reader
+   *  has moved focus on meanwhile. A controlled `query` keeps the host's page. */
+  focusEditId?: string;
 }
 
 /** A record's Edit link, as both views draw it. */
@@ -199,6 +203,8 @@ export interface RowEdit {
   /** The record's title text, for the link's accessible name. */
   name: (row: unknown) => string;
   state?: unknown;
+  /** True once, for the `focusEditId` record's link, while focus is still unclaimed. */
+  takeFocus: (id: string | undefined) => boolean;
 }
 
 /**

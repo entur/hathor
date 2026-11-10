@@ -1,4 +1,5 @@
 import CollectionPage from '../../../pages/shell/CollectionPage.tsx';
+import { useFocusEditId } from '../../../pages/shell/useFocusEditId.ts';
 import { NEXT_BASE } from '../../../pages/shell/PageShell.tsx';
 import { useDeckPlans } from '../hooks/useDeckPlans.ts';
 import { DeckPlanCollection } from './deckPlanCollectionConfig.tsx';
@@ -17,6 +18,7 @@ const KEYS = { title: 'deckPlans.title', new: 'deckPlans.actions.new', empty: 'd
  */
 export default function DeckPlanCollectionPage() {
   const { allData, loading, error } = useDeckPlans();
+  const focusEditId = useFocusEditId();
   return (
     <CollectionPage
       listPath={DECK_PLANS_NEXT_PATH}
@@ -26,7 +28,7 @@ export default function DeckPlanCollectionPage() {
       loading={loading}
       error={error}
     >
-      <DeckPlanCollection rows={allData} />
+      <DeckPlanCollection rows={allData} focusEditId={focusEditId} />
     </CollectionPage>
   );
 }

@@ -1,4 +1,5 @@
 import CollectionPage from '../../../pages/shell/CollectionPage.tsx';
+import { useFocusEditId } from '../../../pages/shell/useFocusEditId.ts';
 import { NEXT_BASE } from '../../../pages/shell/PageShell.tsx';
 import { useVehicles } from '../hooks/useVehicles.ts';
 import { VehicleCollection } from './vehicleCollectionConfig.tsx';
@@ -17,6 +18,7 @@ const KEYS = { title: 'vehicles.title', new: 'vehicles.actions.new', empty: 'veh
  */
 export default function VehicleCollectionPage() {
   const { allData, loading, error } = useVehicles();
+  const focusEditId = useFocusEditId();
   return (
     <CollectionPage
       listPath={VEHICLES_NEXT_PATH}
@@ -26,7 +28,7 @@ export default function VehicleCollectionPage() {
       loading={loading}
       error={error}
     >
-      <VehicleCollection rows={allData} />
+      <VehicleCollection rows={allData} focusEditId={focusEditId} />
     </CollectionPage>
   );
 }

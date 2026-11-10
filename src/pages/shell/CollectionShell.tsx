@@ -1,12 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
-import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LoadingPage from '../../components/common/LoadingPage.tsx';
 import ErrorPage from '../../components/common/ErrorPage.tsx';
-
-// How long focus waits for the Edit link to be drawn (the grid loads lazily) before the h1 takes it.
-const FOCUS_WAIT_MS = 2000;
+import { useFocusEditId } from './useFocusEditId.ts';
 
 /** Router state the details page hands back on close: the record whose Edit link regains focus
  *  (`new` = the New action). */
@@ -33,8 +30,9 @@ interface CollectionShellProps {
 /**
  * Frame of an entity's collection page, inside {@link PageShell}: title row
  * with actions and subtitle, then the list body — or the loading / error /
- * empty state in its place. Back from the details page, focus returns to the
- * Edit link named by {@link CollectionLinkState} — or the title, when that link is gone.
+ * empty state in its place. Back from the details page, focus goes to New when that
+ * was the way in, else to the title — which the record's Edit link takes over as the
+ * collection draws it (`focusEditId`, #291).
  *
  * @param {CollectionShellProps} props Title, load state, actions and the list body.
  * @returns {JSX.Element} The collection page frame.
@@ -49,39 +47,17 @@ export default function CollectionShell({
   children,
 }: CollectionShellProps) {
   const { t } = useTranslation();
-  const focusEditId = (useLocation().state as CollectionLinkState | null)?.focusEditId;
+  const focusEditId = useFocusEditId();
   const rootRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (loading || !focusEditId || !root) return;
-    const selector = `[data-edit-id="${CSS.escape(focusEditId)}"]`;
-    // Late focus must not pull the user out of where they went meanwhile (e.g. Search).
-    const unclaimed = () => {
-      const active = document.activeElement;
-      return active == null || active === document.body;
-    };
-    const focusLink = () => {
-      const link = root.querySelector<HTMLElement>(selector);
-      if (link && unclaimed()) link.focus();
-      return !!link;
-    };
-    if (focusLink()) return;
-    const observer = new MutationObserver(() => focusLink() && stop());
-    // shortcut: a row off the grid's first page is never drawn, so it waits FOCUS_WAIT_MS
-    // and lands on the h1; move to a collection-owned `focusEditId` (finds the row's page)
-    // when vehicles / deck-plans adopt the collection.
-    const timer = setTimeout(() => {
-      stop();
-      if (unclaimed()) headingRef.current?.focus();
-    }, FOCUS_WAIT_MS);
-    const stop = () => {
-      observer.disconnect();
-      clearTimeout(timer);
-    };
-    observer.observe(root, { childList: true, subtree: true });
-    return stop;
+    if (loading || !focusEditId) return;
+    // A link already drawn (New, a card's) has it or takes it now; the title holds it otherwise.
+    const link = rootRef.current?.querySelector<HTMLElement>(
+      `[data-edit-id="${CSS.escape(focusEditId)}"]`
+    );
+    (link ?? headingRef.current)?.focus();
   }, [loading, focusEditId]);
 
   const loaded = !loading && !error;
