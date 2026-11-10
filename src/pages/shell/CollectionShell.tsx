@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LoadingPage from '../../components/common/LoadingPage.tsx';
 import ErrorPage from '../../components/common/ErrorPage.tsx';
@@ -48,17 +49,26 @@ export default function CollectionShell({
 }: CollectionShellProps) {
   const { t } = useTranslation();
   const focusEditId = useFocusEditId();
+  const location = useLocation();
+  const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     if (loading || !focusEditId) return;
-    // A link already drawn (New, a card's) has it or takes it now; the title holds it otherwise.
-    const link = rootRef.current?.querySelector<HTMLElement>(
-      `[data-edit-id="${CSS.escape(focusEditId)}"]`
-    );
-    (link ?? headingRef.current)?.focus();
-  }, [loading, focusEditId]);
+    // Unless the reader moved on while the list loaded: a link already drawn (New, a card's)
+    // has focus or takes it now; the title holds it otherwise.
+    const active = document.activeElement;
+    if (!active || active === document.body) {
+      const link = rootRef.current?.querySelector<HTMLElement>(
+        `[data-edit-id="${CSS.escape(focusEditId)}"]`
+      );
+      (link ?? headingRef.current)?.focus();
+    }
+    // Read once per arrival: a later load (org switch, refetch) remounts the list and must
+    // not pull focus back. The mounted collection keeps its own copy for a late-drawn link.
+    navigate(location, { replace: true, state: null });
+  }, [loading, focusEditId, location, navigate]);
 
   const loaded = !loading && !error;
   const showEmpty = loaded && empty != null;
