@@ -83,7 +83,7 @@
     "lint-staged": "^16.0.0",
     "ncp": "^2.0.0",
     "playwright": "1.60.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.9.10",
     "storybook": "^10.4.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
