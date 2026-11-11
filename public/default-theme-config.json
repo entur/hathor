@@ -9,7 +9,7 @@
     "action": { "hover": "#FECDF2", "active": "#FECDF2" }
   },
   "typography": {
-    "fontFamily": "\"Patrick Hand\", \"Helvetica\", \"Arial\", sans-serif",
+    "fontFamily": "\"Helvetica\", \"Arial\", sans-serif",
     "fontSize": 18
   },
   "shape": {
