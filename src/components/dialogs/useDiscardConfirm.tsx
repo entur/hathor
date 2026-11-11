@@ -4,8 +4,7 @@ import DiscardDialog from './DiscardDialog.tsx';
 /**
  * Guard actions that would drop unsaved edits behind the {@link DiscardDialog}:
  * `ask(action)` runs it straight away on a clean form, or asks first on a dirty
- * one — Discard runs it, Save saves instead. Shared by the sidebar's `EditorRail`
- * and the form page's buttons, so both ask the same way.
+ * one — Discard runs it, Save saves instead. The form page's Cancel asks through it.
  *
  * @param {boolean} isDirty the form has unsaved edits
  * @param {Record<A, (() => void) | undefined>} actions what each guarded action does

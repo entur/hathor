@@ -78,7 +78,6 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
         title: 'vehicleType.detailsTitle',
         notFound: 'vehicleType.notFound',
         saved: 'vehicleType.saveSuccess',
-        deactivated: 'vehicleType.deactivateSuccess',
         deactivateTitle: 'vehicleType.deactivateConfirmTitle',
         deactivateMessage: 'vehicleType.deactivateConfirmMessage',
       }}
@@ -87,7 +86,7 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
       <VehicleTypeSections
         value={form}
         onChange={editor.setForm}
-        mode={editor.rail.mode}
+        mode={editor.actions.mode}
         euroClasses={[]}
         isCreate={editor.isCreate}
       />

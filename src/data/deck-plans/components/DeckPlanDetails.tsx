@@ -1,7 +1,5 @@
-import { Stack } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
-import { useEditorOnPage } from '../../../components/sidebar/editorHost.ts';
 import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import type { WriteResult } from '../../../hooks/entityEditorFlow.ts';
 import { deactivateDeckPlanRequest } from '../../../graphql/vehicles/mutations/deactivateDeckPlan.ts';
@@ -10,7 +8,6 @@ import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
 import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { patchDeckPlanXml } from '../utils/patchDeckPlanXml.ts';
 import { deckPlanForm } from '../stores/deckPlanFormState.ts';
-import DeckPlanForm from './DeckPlanForm.tsx';
 import DeckPlanSections from './DeckPlanSections.tsx';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { deckPlanTitle } from '../utils/deckPlanTitle.ts';
@@ -21,25 +18,22 @@ const COPY: EditorCopy = {
   title: 'deckPlans.detailsTitle',
   notFound: 'deckPlans.notFound',
   saved: 'deckPlans.saveSuccess',
-  deactivated: 'deckPlan.deactivateSuccess',
   deactivateTitle: 'deckPlan.deactivateConfirmTitle',
   deactivateMessage: 'deckPlan.deactivateConfirmMessage',
 };
 
 /**
- * DeckPlan editor: the shared {@link useEntityEditor} + {@link EditorFrame}. In the
- * sidebar (`/deck-plans?selected=<id>`) the {@link DeckPlanForm} tab pair — Identity
- * (name + description, editable) and XML (the read-only NeTEx body, a separate by-id
- * read); on the form page (`EditorHostContext`, #287) {@link DeckPlanSections}, the
- * decks in column 3.
+ * DeckPlan editor: the shared {@link useEntityEditor} + {@link EditorFrame} around
+ * {@link DeckPlanSections} (#287): name + description, the decks in column 3, and the
+ * read-only NeTEx body (a separate by-id read) behind its Show XML button.
  *
  * Save takes one of two paths. A create fires the `createOrUpdateDeckPlan`
- * mutation, which mints the new NeTEx id the sidebar then advances to. An edit
+ * mutation, which mints the new NeTEx id the page then advances to. An edit
  * patches the typed name/description into the fetched NeTEx document and POSTs
  * the whole body to the import endpoint — the only write path that preserves
  * deck geometry, which `DeckPlanInput` cannot carry.
  *
- * @param {EntityEditorHostProps} host Id, initial mode and the host's list reload / URL writes.
+ * @param {EntityEditorHostProps} host Id and the host's list reload / URL writes.
  * @returns {JSX.Element} The deck-plan editor pane.
  */
 export default function DeckPlanDetails(host: EntityEditorHostProps) {
@@ -65,7 +59,7 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
       return { error: e instanceof Error ? e.message : String(e) };
     }
     const result = await save(patched);
-    // Re-pull the persisted body so the XML tab stops showing the pre-save
+    // Re-pull the persisted body so Show XML stops showing the pre-save
     // document. Fire-and-forget: `refetchXml` bumps a tick, it returns no promise.
     if (!result.error) refetchXml();
     return { error: result.error };
@@ -85,11 +79,10 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
     canSubmit: () => isCreate || (!loading && !xmlError && !!xml),
   });
   const { form } = editor;
-  const page = useEditorOnPage();
   const body = {
     value: form,
     onChange: editor.setForm,
-    mode: editor.rail.mode,
+    mode: editor.actions.mode,
     isCreate,
     xml,
     loading,
@@ -106,13 +99,7 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
       copy={COPY}
       skeleton={SKELETON_ROWS}
     >
-      {page ? (
-        <DeckPlanSections {...body} />
-      ) : (
-        <Stack data-testid="deck-plan-context">
-          <DeckPlanForm {...body} />
-        </Stack>
-      )}
+      <DeckPlanSections {...body} />
     </EditorFrame>
   );
 }

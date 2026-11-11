@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/header/Header.tsx';
 import Menu from './components/Menu.tsx';
 import Home from './pages/Home';
-import { SearchProvider } from './components/search';
 import { CssBaseline, Toolbar, Box, ThemeProvider, useMediaQuery, useTheme } from '@mui/material';
 import { useCustomization } from './contexts/CustomizationContext.tsx';
 import { useAppTheme } from './hooks/useAppTheme';
@@ -51,39 +50,37 @@ export default function App() {
     isFeatureOn('DeckPlans') ? page : <Navigate to="/" replace />;
 
   return (
-    <SearchProvider>
-      <ThemeProvider theme={theme}>
-        <NavRailProvider>
-          <EditingProvider>
-            <CssBaseline />
-            <Header />
-            <Menu />
-            <Toolbar
-              sx={{
-                minHeight: { xs: '64px' },
-              }}
-            />
-            <AppShell>
-              <Box component="main" id={MAIN_CONTENT_ID} tabIndex={-1} className="app-content">
-                <TransportModeSprite />
-                <MenuIconSprite />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route element={<ProtectedRoute element={<PageShell />} />}>
-                    <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
-                    <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
-                    <Route path="vehicles" element={<VehicleCollectionPage />} />
-                    <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
-                    <Route path="deck-plans" element={deckPlans(<DeckPlanCollectionPage />)} />
-                    <Route path="deck-plans/:id" element={deckPlans(<DeckPlanDetailsPage />)} />
-                  </Route>
-                </Routes>
-              </Box>
-            </AppShell>
-            <SessionExpiredDialog />
-          </EditingProvider>
-        </NavRailProvider>
-      </ThemeProvider>
-    </SearchProvider>
+    <ThemeProvider theme={theme}>
+      <NavRailProvider>
+        <EditingProvider>
+          <CssBaseline />
+          <Header />
+          <Menu />
+          <Toolbar
+            sx={{
+              minHeight: { xs: '64px' },
+            }}
+          />
+          <AppShell>
+            <Box component="main" id={MAIN_CONTENT_ID} tabIndex={-1} className="app-content">
+              <TransportModeSprite />
+              <MenuIconSprite />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route element={<ProtectedRoute element={<PageShell />} />}>
+                  <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
+                  <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
+                  <Route path="vehicles" element={<VehicleCollectionPage />} />
+                  <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
+                  <Route path="deck-plans" element={deckPlans(<DeckPlanCollectionPage />)} />
+                  <Route path="deck-plans/:id" element={deckPlans(<DeckPlanDetailsPage />)} />
+                </Route>
+              </Routes>
+            </Box>
+          </AppShell>
+          <SessionExpiredDialog />
+        </EditingProvider>
+      </NavRailProvider>
+    </ThemeProvider>
   );
 }

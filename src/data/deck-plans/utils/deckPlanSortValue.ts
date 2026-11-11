@@ -1,6 +1,8 @@
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
-import type { OrderBy } from '../hooks/useDeckPlans.ts';
 import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
+
+/** A sortable deck-plan column. */
+export type OrderBy = 'name' | 'id';
 
 /**
  * Resolve the sort value for a DeckPlan column key. Optional NeTEx fields

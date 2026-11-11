@@ -6,7 +6,7 @@ import { NEW_SELECTION } from '../hooks/useEntityEditor.ts';
 interface NewEntityFabProps {
   /** Displayed label and aria-label. */
   label: string;
-  /** Target route — typically `<feature>?selected=new` for the sidebar create flow. */
+  /** Target route — the entity's create page, `/<entity>/new`. */
   to: string;
   /** `data-testid` for e2e selectors (e.g. `create-vehicle-fab`). */
   testid: string;
@@ -16,8 +16,7 @@ interface NewEntityFabProps {
 
 /**
  * Generic "New &lt;Entity&gt;" call-to-action button. Routes to the supplied
- * `to` URL (the `?selected=new` sidebar editor for every current entity);
- * shared between Vehicle and VehicleType create flows.
+ * `to` URL (the entity's create page); shared by every collection page.
  */
 export default function NewEntityFab({ label, to, testid, shortLabel }: NewEntityFabProps) {
   const navigate = useNavigate();

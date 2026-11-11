@@ -5,21 +5,13 @@ import { useConfig } from '../../../contexts/configContext.ts';
 import type { VehicleType, VehicleTypeContext } from '../types/vehicleTypeTypes.js';
 import { fetchVehicleTypes } from '../api/fetchVehicleTypes.ts';
 import { compareVehicleTypes } from '../utils/vehicleTypeSortValue.ts';
-import type { Order } from '../../../components/data/dataTableTypes.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
-
-export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 
 export function useVehicleTypes() {
   const [data, setData] = useState<VehicleType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<OrderBy>('name');
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const { applicationBaseUrl } = useConfig();
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
@@ -60,37 +52,8 @@ export function useVehicleTypes() {
     void doFetch().catch(() => {});
   }, [doFetch, filterParam]);
 
-  // Ref-stable so `DataTableHeader` doesn't re-render on every parent render
-  // (#77 N12). Deps are the sort state the toggle reads.
-  const handleRequestSort = useCallback(
-    (property: OrderBy) => {
-      const isAsc = orderBy === property && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(property);
-    },
-    [order, orderBy]
-  );
+  // By name, empty names last: the collection's unsorted order (#291 counts its pages in it).
+  const sorted = useMemo(() => [...data].sort(compareVehicleTypes('name', 'asc')), [data]);
 
-  const sorted = useMemo(
-    () => [...data].sort(compareVehicleTypes(orderBy, order)),
-    [data, orderBy, order]
-  );
-
-  const paginated = sorted.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-
-  return {
-    allData: sorted,
-    data: paginated,
-    totalCount: data.length,
-    error,
-    loading,
-    order,
-    orderBy,
-    handleRequestSort,
-    page,
-    rowsPerPage,
-    setPage,
-    setRowsPerPage,
-    refetch: doFetch,
-  };
+  return { allData: sorted, error, loading, refetch: doFetch };
 }

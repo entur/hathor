@@ -17,7 +17,6 @@ const COPY: EditorCopy = {
   title: 'deckPlans.detailsTitle',
   notFound: 'deckPlans.notFound',
   saved: 'deckPlans.saveSuccess',
-  deactivated: 'deckPlan.deactivateSuccess',
   deactivateTitle: 'deckPlan.deactivateConfirmTitle',
   deactivateMessage: 'deckPlan.deactivateConfirmMessage',
 };
@@ -62,7 +61,7 @@ function StoryDeckPlanDetails(host: EntityEditorHostProps) {
       <DeckPlanSections
         value={form}
         onChange={editor.setForm}
-        mode={editor.rail.mode}
+        mode={editor.actions.mode}
         isCreate={editor.isCreate}
         xml={editor.isCreate ? '' : wagon1}
         loading={false}

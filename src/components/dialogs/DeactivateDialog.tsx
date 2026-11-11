@@ -22,8 +22,7 @@ interface DeactivateDialogProps {
 }
 
 /**
- * Confirm before deactivating a record — shared by the sidebar's `EditorRail`
- * and the form page's Deactivate button.
+ * Confirm before deactivating a record — the form page's Deactivate button.
  *
  * @param {DeactivateDialogProps} props open state, the two outcomes and the copy
  * @returns {JSX.Element} the confirm dialog

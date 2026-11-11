@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  isTransportMode,
-  transportModeFilters,
-  transportModeLabelKey,
-  transportModeSortValue,
-} from './transportMode.ts';
+import { isTransportMode, transportModeLabelKey, transportModeSortValue } from './transportMode.ts';
 
 /**
  * Mirror of `enum TransportMode` in `src/graphql/sobek.schema.graphqls` — all
@@ -69,17 +64,5 @@ describe('transportModeSortValue', () => {
     expect(transportModeSortValue('UNKNOWN')).toBe('UNKNOWN');
     expect(transportModeSortValue('RAIL')).toBe('RAIL');
     expect(transportModeSortValue('BUS')).toBe('BUS');
-  });
-});
-
-describe('transportModeFilters (data-driven — no curated subset)', () => {
-  it('derives one chip per distinct mode present in the data, deduped and sorted', () => {
-    const filters = transportModeFilters(['RAIL', 'BUS', 'RAIL', 'FERRY']);
-    expect(filters.map(f => f.id)).toEqual(['BUS', 'FERRY', 'RAIL']);
-    expect(filters.every(f => f.labelKey === `transportMode.${f.id}`)).toBe(true);
-  });
-
-  it('returns an empty chip list when the data carries no modes', () => {
-    expect(transportModeFilters([])).toEqual([]);
   });
 });

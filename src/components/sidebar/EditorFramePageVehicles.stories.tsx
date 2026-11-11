@@ -6,7 +6,7 @@ import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
 import { stubSobek, withSobekUrl } from '../../contexts/mockSobek.tsx';
 import { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
 import VehicleSections from '../../data/vehicles/components/VehicleSections.tsx';
-import type { VehicleEditFormValue } from '../../data/vehicles/components/VehicleEditForm.tsx';
+import type { VehicleEditFormValue } from '../../data/vehicles/types/vehicle.ts';
 import { canSubmit, vehicleForm } from '../../data/vehicles/stores/vehicleFormState.ts';
 import type { Vehicle } from '../../data/vehicles/types/vehicle.ts';
 
@@ -26,7 +26,6 @@ const COPY: EditorCopy = {
   title: 'vehicles.detailsTitle',
   notFound: 'vehicles.notFound',
   saved: 'vehicles.saveSuccess',
-  deactivated: 'vehicles.deactivateSuccess',
   deactivateTitle: 'vehicle.deactivateConfirmTitle',
   deactivateMessage: 'vehicle.deactivateConfirmMessage',
 };
@@ -73,7 +72,7 @@ function StoryVehicleDetails(host: EntityEditorHostProps) {
       <VehicleSections
         value={form.vehicle}
         onChange={vehicle => editor.setForm({ ...form, vehicle })}
-        mode={editor.rail.mode}
+        mode={editor.actions.mode}
       />
     </EditorFrame>
   );

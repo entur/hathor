@@ -17,7 +17,6 @@ import {
 } from '../types/vehicleTypeLayout.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import type { CodeValue } from '../../code-values/types/codeValueTypes.ts';
-import { vehicleFormHref } from '../../vehicles/utils/vehicleUrlParams.ts';
 
 const PICTURE_DEBOUNCE_MS = 400;
 
@@ -40,10 +39,7 @@ interface VehicleTypeSectionsProps {
  */
 export default function VehicleTypeSections({ isCreate, ...form }: VehicleTypeSectionsProps) {
   const { t } = useTranslation();
-  const control = useVehicleTypeControls({
-    ...form,
-    vehicleHref: vehicleFormHref,
-  });
+  const control = useVehicleTypeControls(form);
   // Keyed by section id: the headings follow the language, the TOC's mark stays put (#293).
   const sections = useMemo(() => {
     const layout: Layout<VehicleTypeField> = Object.fromEntries(

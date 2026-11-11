@@ -1,12 +1,9 @@
-import { Stack } from '@mui/material';
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
-import { useEditorOnPage } from '../../../components/sidebar/editorHost.ts';
 import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import { createFormState } from '../../../hooks/useFormState.ts';
 import { deactivateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/deactivateVehicleType.ts';
 import { fetchVehicleType } from '../api/fetchVehicleTypes.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
-import VehicleTypeForm from './VehicleTypeForm.tsx';
 import VehicleTypeSections from './VehicleTypeSections.tsx';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import { useCodeValues } from '../../code-values/hooks/useCodeValues.ts';
@@ -20,7 +17,6 @@ const COPY: EditorCopy = {
   title: 'vehicleType.detailsTitle',
   notFound: 'vehicleType.notFound',
   saved: 'vehicleType.saveSuccess',
-  deactivated: 'vehicleType.deactivateSuccess',
   deactivateTitle: 'vehicleType.deactivateConfirmTitle',
   deactivateMessage: 'vehicleType.deactivateConfirmMessage',
 };
@@ -42,12 +38,10 @@ const vehicleTypeForm = createFormState<VehicleType, VehicleType>({
 
 /**
  * VehicleType editor: the shared {@link useEntityEditor} + {@link EditorFrame}
- * around a tabbed {@link VehicleTypeForm} in the sidebar
- * (`/vehicle-types?selected=<id>`), or {@link VehicleTypeSections} on the form
- * page (`EditorHostContext`, #280). Save fires `createOrUpdateVehicleType` via
+ * around {@link VehicleTypeSections} (#280). Save fires `createOrUpdateVehicleType` via
  * {@link useVehicleTypeSave}.
  *
- * @param {EntityEditorHostProps} host Id, initial mode and the host's list reload / URL writes.
+ * @param {EntityEditorHostProps} host Id and the host's list reload / URL writes.
  * @returns {JSX.Element} The vehicle-type editor pane.
  */
 export default function VehicleTypeDetails(host: EntityEditorHostProps) {
@@ -63,11 +57,10 @@ export default function VehicleTypeDetails(host: EntityEditorHostProps) {
     deactivateRequest: deactivateVehicleTypeRequest,
   });
   const { form } = editor;
-  const page = useEditorOnPage();
   const body = {
     value: form,
     onChange: editor.setForm,
-    mode: editor.rail.mode,
+    mode: editor.actions.mode,
     euroClasses,
   };
 
@@ -80,14 +73,8 @@ export default function VehicleTypeDetails(host: EntityEditorHostProps) {
       copy={COPY}
       skeleton={SKELETON_ROWS}
     >
-      {page ? (
-        // Bare: from `lg` its columns fill the page's height (#293).
-        <VehicleTypeSections {...body} isCreate={editor.isCreate} />
-      ) : (
-        <Stack data-testid="vehicle-type-context">
-          <VehicleTypeForm {...body} />
-        </Stack>
-      )}
+      {/* Bare: from `lg` its columns fill the page's height (#293). */}
+      <VehicleTypeSections {...body} isCreate={editor.isCreate} />
     </EditorFrame>
   );
 }

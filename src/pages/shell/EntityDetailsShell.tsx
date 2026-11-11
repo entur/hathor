@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useOrganisationsContext } from '../../contexts/useOrganisationsContext.ts';
 import { NEW_SELECTION, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
-import { EditorHostContext } from '../../components/sidebar/editorHost.ts';
 import type { CollectionLinkState } from './CollectionShell.tsx';
 
 /** Router state a create's own redirect carries. */
@@ -20,15 +19,14 @@ interface EntityDetailsShellProps {
 }
 
 /**
- * Full-page host for one entity editor at `<listPath>/:id` — the route
- * counterpart of the sidebar's `useUrlEditorSelection`. `:id` = `new` is the
+ * Full-page host for one entity editor at `<listPath>/:id`. `:id` = `new` is the
  * create pane; a record, like it, opens ready to edit (#282). Back navigates to `listPath` and asks it
  * to refocus this record's Edit link (New, from the create pane); a create
  * replaces the URL with the minted id and hands its "saved" toast across the re-mount.
  * The editor's page heading takes focus as it renders (`EditorFrame`).
  *
  * @param {EntityDetailsShellProps} props The list route and the editor renderer.
- * @returns {JSX.Element} The editor, as a form page (`EditorHostContext`).
+ * @returns {JSX.Element} The editor's form page.
  */
 export default function EntityDetailsShell({ listPath, renderEditor }: EntityDetailsShellProps) {
   const { id = NEW_SELECTION } = useParams();
@@ -40,22 +38,20 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
     <Box sx={{ height: '100%' }}>
       {/* An org switch re-mounts the editor, the create pane too: its picks (a type, a deck
           plan) are the old org's. With unsaved edits the org picker asks first. */}
-      <EditorHostContext.Provider value="page">
-        <Fragment key={`${orgId}:${id}`}>
-          {renderEditor({
-            id: isNew ? '' : id,
-            // shortcut: the flag stays in this history entry, so a reload re-shows the toast; clear it if that bothers.
-            initialSaved: state?.created,
-            onClose: () =>
-              navigate(listPath, { state: { focusEditId: id } satisfies CollectionLinkState }),
-            onCreated: newId =>
-              navigate(`${listPath}/${encodeURIComponent(newId)}`, {
-                replace: true,
-                state: { created: true } satisfies DetailsLinkState,
-              }),
-          })}
-        </Fragment>
-      </EditorHostContext.Provider>
+      <Fragment key={`${orgId}:${id}`}>
+        {renderEditor({
+          id: isNew ? '' : id,
+          // shortcut: the flag stays in this history entry, so a reload re-shows the toast; clear it if that bothers.
+          initialSaved: state?.created,
+          onClose: () =>
+            navigate(listPath, { state: { focusEditId: id } satisfies CollectionLinkState }),
+          onCreated: newId =>
+            navigate(`${listPath}/${encodeURIComponent(newId)}`, {
+              replace: true,
+              state: { created: true } satisfies DetailsLinkState,
+            }),
+        })}
+      </Fragment>
     </Box>
   );
 }

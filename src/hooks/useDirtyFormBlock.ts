@@ -6,8 +6,7 @@ import { useEffect } from 'react';
  * dialog — we only need to set `returnValue` for the prompt to appear.
  *
  * In-app navigation is not this hook's: a form page holds it with `useBlocker`
- * (`EditorFrame`'s `LeaveGuard`, #282). The sidebar editors stay unguarded
- * there until the cut-over retires them.
+ * (`EditorFrame`'s `LeaveGuard`, #282).
  */
 export function useDirtyFormBlock(isDirty: boolean): void {
   useEffect(() => {

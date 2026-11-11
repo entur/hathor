@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { EditorRailProps } from '../components/sidebar/EditorRail.tsx';
-import { useEditorOnPage } from '../components/sidebar/editorHost.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { runDeactivate, runSave, type FlowCtx, type WriteResult } from './entityEditorFlow.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
@@ -12,15 +10,12 @@ import { useLiftEditorDirty } from './useLiftEditorDirty.ts';
 
 export type EditorMode = 'view' | 'edit';
 
-/** Id a host routes to the create pane (`?selected=new`, `/<entity>/new`) — not a record id. */
+/** Id a host routes to the create pane (`/<entity>/new`) — not a record id. */
 export const NEW_SELECTION = 'new';
 
 export interface EntityEditorConfig<T, F> {
   /** NeTEx id to edit; `''` is the create pane. */
   id: string;
-  /** Ignored on a form page (`EditorHostContext`, #282): it opens in edit and stays there
-   *  after a save or Cancel; only a deactivate leaves it, into View. */
-  initialMode?: EditorMode;
   /** Open with the "saved" toast showing — a create re-mounted on its minted id. */
   initialSaved?: boolean;
   fetchById: FetchById<T>;
@@ -42,11 +37,27 @@ export interface EntityEditorConfig<T, F> {
   onCreated: (newId: string) => void;
 }
 
-/** What a host (e.g. `useUrlEditorSelection`) hands an entity editor. */
+/** What a host (`EntityDetailsShell`) hands an entity editor. */
 export type EntityEditorHostProps = Pick<
   EntityEditorConfig<unknown, unknown>,
-  'id' | 'initialMode' | 'initialSaved' | 'onSaved' | 'onClose' | 'onCreated'
+  'id' | 'initialSaved' | 'onSaved' | 'onClose' | 'onCreated'
 >;
+
+/** What the editor's chrome (`EditorFrame`) acts on. */
+export interface EditorActions {
+  /** Leave the editor (the page's Back). */
+  onClose: () => void;
+  /** `view` while deactivated, or while a save, deactivate or read settles. */
+  mode: EditorMode;
+  isDirty: boolean;
+  saving: boolean;
+  canSubmit: boolean;
+  /** Revert to the committed baseline, still editing. */
+  onCancel: () => void;
+  onSave: () => Promise<void>;
+  /** Unset while there is nothing to deactivate, or one is already under way. */
+  onDeactivate?: () => void;
+}
 
 export interface EntityEditor<T, F> {
   /** The id being edited; `''` is the create pane. */
@@ -66,21 +77,13 @@ export interface EntityEditor<T, F> {
   clearWarning: () => void;
   saved: boolean;
   clearSaved: () => void;
-  /** Deactivated and the list reloaded. */
-  deactivated: boolean;
   /** Deactivated this visit, list reloaded or not: read-only for good. */
   isDeactivated: boolean;
-  rail: Required<
-    Pick<
-      EditorRailProps,
-      'onCollapse' | 'mode' | 'isDirty' | 'saving' | 'canSubmit' | 'onCancelEdit' | 'onSave'
-    >
-  > &
-    Pick<EditorRailProps, 'onEnterEdit' | 'onDeactivate'>;
+  actions: EditorActions;
 }
 
 /**
- * The entity editor state machine shared by every editor, sidebar or form page: reads the
+ * The entity editor state machine shared by every form page: reads the
  * record by id, keeps the form and its baseline, and runs the canonical save /
  * cancel / deactivate ({@link runSave}, {@link runDeactivate}). Host-agnostic:
  * router I/O arrives as `onClose` / `onCreated`.
@@ -88,7 +91,7 @@ export interface EntityEditor<T, F> {
  * A save or deactivate that outlives its editor or its org publishes nothing.
  *
  * @param {EntityEditorConfig<T, F>} cfg What the feature declares.
- * @returns {EntityEditor<T, F>} Editor state plus ready-made `EditorRail` props.
+ * @returns {EntityEditor<T, F>} Editor state plus the actions its `EditorFrame` drives.
  */
 export function useEntityEditor<T extends { id: string; version?: number | string }, F>(
   cfg: EntityEditorConfig<T, F>
@@ -96,15 +99,12 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const { t } = useTranslation();
   const fs = cfg.formState;
   const isCreate = cfg.id === '';
-  // A form page edits only: no View until a deactivate.
-  const editOnly = useEditorOnPage();
-  const [mode, setMode] = useState<EditorMode>(editOnly ? 'edit' : (cfg.initialMode ?? 'view'));
   const [state, setState] = useState(fs.initial);
   const [saving, setSaving] = useState(false);
-  // True from Save until the post-save reads land; Edit stays hidden (an `editOnly`
-  // host's fields read-only) so typing can't be overwritten by the re-read's re-baseline.
+  // True from Save until the post-save reads land; the fields read only, so typing can't be
+  // overwritten by the re-read's re-baseline.
   const [settling, setSettling] = useState(false);
-  // True while a deactivate runs: no second send; a form page's fields read-only.
+  // True while a deactivate runs: no second send; the fields read only.
   const [deactivating, setDeactivating] = useState(false);
   const [saved, setSaved] = useState(cfg.initialSaved ?? false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -141,7 +141,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     return {
       t,
       live: () => started === scope.current,
-      toView: () => !editOnly && setMode('view'),
+      toView: () => {}, // a form page stays in edit; `mode` follows the settle flags
       reloadList: cfg.onSaved ?? (() => Promise.resolve()),
       warn: setWarning,
     };
@@ -208,31 +208,22 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     clearWarning: () => setWarning(null),
     saved,
     clearSaved: () => setSaved(false),
-    deactivated: deactivated === 'ok',
     isDeactivated: deactivated !== null,
-    rail: {
-      onCollapse: cfg.onClose,
-      // Deactivated is read-only on every host; a form page also reads only while a
-      // save or deactivate settles, or a read (a Retry) is in flight: its hydrate overwrites.
-      mode: deactivated || (editOnly && (settling || deactivating || loading)) ? 'view' : mode,
+    actions: {
+      onClose: cfg.onClose,
+      // Deactivated is read-only for good; the fields also read only while a save or
+      // deactivate settles, or a read (a Retry) is in flight: its hydrate overwrites.
+      mode: deactivated || settling || deactivating || loading ? 'view' : 'edit',
       isDirty,
       saving,
       canSubmit,
-      // No record (first read failed) → nothing to edit or deactivate. While a
-      // read is pending or failed, its eventual hydrate would overwrite edits.
-      onEnterEdit:
-        (isCreate || record) && !settling && !loading && !fetchError
-          ? () => !deactivated && setMode('edit')
-          : undefined,
-      // Once deactivated, or while one is in flight, a second click would re-send the mutation.
+      // No record (first read failed) → nothing to deactivate. Once deactivated, or while
+      // one is in flight, a second click would re-send the mutation.
       onDeactivate:
         record && !deactivated && !settling && !deactivating ? onDeactivate(record) : undefined,
-      onCancelEdit: () => {
-        // The committed baseline, not `record`: after a create whose list
-        // reload failed there is no record yet, and the baseline holds the new id.
-        setState(fs.restore);
-        if (!editOnly) setMode('view');
-      },
+      // The committed baseline, not `record`: after a create whose list reload failed
+      // there is no record yet, and the baseline holds the new id.
+      onCancel: () => setState(fs.restore),
       onSave,
     },
   };

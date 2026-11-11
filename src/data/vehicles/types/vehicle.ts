@@ -48,3 +48,8 @@ export const vehiclePictureMode = (
   v: Vehicle,
   type?: { transportMode?: TransportMode }
 ): TransportMode | undefined => type?.transportMode ?? v.transportType?.transportMode;
+
+/** The vehicle editor's form value. */
+export interface VehicleEditFormValue {
+  vehicle: Vehicle;
+}

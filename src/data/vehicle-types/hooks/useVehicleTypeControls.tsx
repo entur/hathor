@@ -9,13 +9,12 @@ import {
   FormSwitchField,
   FormTextField,
 } from '../../../components/FormFields.tsx';
-import { useFieldLock } from '../../../components/sidebar/editorHost.ts';
 import {
   TRANSPORT_MODES,
   transportModeLabelKey,
   type TransportMode,
 } from '../../netex/transportMode.ts';
-import { vehicleSelectedHref } from '../../vehicles/utils/vehicleUrlParams.ts';
+import { vehicleFormHref } from '../../vehicles/utils/vehicleUrlParams.ts';
 import { mergeNameText } from '../../netex/multilingualString.ts';
 import type { VehicleType, PassengerCapacity } from '../types/vehicleTypeTypes.ts';
 import { vehicleTypeFields, type VehicleTypeField } from '../types/vehicleTypeFields.ts';
@@ -32,9 +31,6 @@ export interface VehicleTypeControlsOptions {
   mode: 'view' | 'edit';
   /** Sobek's emission-standard code list; the stored value is always offered too. */
   euroClasses: readonly CodeValue[];
-  /** Where a Vehicles chip links: the sidebar's `?selected=` by default, the vehicle's form
-   *  page on a form page (#285). */
-  vehicleHref?: (id: string) => string;
 }
 
 /**
@@ -42,7 +38,7 @@ export interface VehicleTypeControlsOptions {
  * sections draw the same fields. Most follow `vehicleTypeFields` (kind, path, enum
  * values); a few are drawn by hand.
  *
- * @param {VehicleTypeControlsOptions} options value, onChange, mode, euro classes (the view-mode lock follows `EditorHostContext`)
+ * @param {VehicleTypeControlsOptions} options value, onChange, mode, euro classes (view mode reads only, not greyed out, #267)
  * @returns {(key: VehicleTypeField) => ReactNode} the control for a field key (nothing for
  *   a key the form doesn't edit)
  */
@@ -51,14 +47,13 @@ export function useVehicleTypeControls({
   onChange,
   mode,
   euroClasses,
-  vehicleHref = vehicleSelectedHref,
 }: VehicleTypeControlsOptions): (key: VehicleTypeField) => ReactNode {
   const { t } = useTranslation();
   const transportModeOptions = useMemo(
     () => TRANSPORT_MODES.map(m => ({ value: m, label: t(transportModeLabelKey(m), m) })),
     [t]
   );
-  const locked = useFieldLock(mode);
+  const locked = { readOnly: mode === 'view' };
   const label = (key: VehicleTypeField) => t(`vehicleType.field.${key}`);
 
   const setField = (patch: Partial<VehicleType>) => onChange({ ...value, ...patch });
@@ -122,7 +117,7 @@ export function useVehicleTypeControls({
                 <Chip
                   key={v.id}
                   component={RouterLink}
-                  to={vehicleHref(v.id)}
+                  to={vehicleFormHref(v.id)}
                   clickable
                   size="small"
                   variant="outlined"

@@ -65,7 +65,7 @@ export interface EditFooterProps {
   saving?: boolean;
   /** Lock both actions regardless of `dirty` (e.g. the form is still loading). */
   disabled?: boolean;
-  /** Extra Save gate, as `EditorRail.canSubmit`: false while a required field is
+  /** Extra Save gate, as `EditorActions.canSubmit`: false while a required field is
    *  missing. Save then says so instead of saving; Cancel can still discard. Default `true`. */
   canSubmit?: boolean;
   /** The last save succeeded and nothing changed since — e.g. `useEntityEditor().saved`.
