@@ -137,5 +137,64 @@ describe('serializeVehicleType', () => {
       const input = serializeVehicleType(projectVehicleType(wire), OWNER);
       expect(input.transportMode).toBe('FERRY');
     });
+
+    // Sobek: subtype "omitted means VEHICLE_TYPE, so it must be repeated when updating a train";
+    // the component lists replace the previous version's.
+    it('sends a train back as a train, its components as read', () => {
+      const wire: VehicleTypesQuery['vehicleTypes']['content'][number] = {
+        netexId: 'NMR:VehicleType:T1',
+        version: 2,
+        subtype: 'TRAIN',
+        numberOfCars: 2,
+        trainSizeType: 'SHORT',
+        trainElementType: null,
+        trainComponents: [
+          {
+            netexId: 'NMR:TrainComponent:1',
+            label: { value: 'A', lang: 'nb' },
+            description: null,
+            trainElement: { netexId: 'NMR:VehicleType:E1' },
+            operationalOrientation: 'FORWARDS',
+            forwardCouplingThroughAccess: 'DOOR',
+          },
+          // Sobek returned no element: the input requires one, so it can't go back.
+          { netexId: 'NMR:TrainComponent:2', trainElement: null },
+        ],
+        compoundTrainComponents: null,
+      };
+      const input = serializeVehicleType(projectVehicleType(wire), OWNER);
+      expect(input).toMatchObject({
+        subtype: 'TRAIN',
+        numberOfCars: 2,
+        trainSizeType: 'SHORT',
+        trainElementType: null,
+        trainComponents: [
+          {
+            netexId: 'NMR:TrainComponent:1',
+            label: { value: 'A', lang: 'nb' },
+            description: null,
+            trainElement: { netexId: 'NMR:VehicleType:E1' },
+            operationalOrientation: 'FORWARDS',
+            forwardCouplingThroughAccess: 'DOOR',
+          },
+        ],
+        compoundTrainComponents: null,
+      });
+      expect(input.trainComponents).toHaveLength(1);
+    });
+
+    it('repeats a plain subtype; a create sends none (Sobek defaults it)', () => {
+      const plain = projectVehicleType({
+        netexId: 'NMR:VehicleType:B',
+        version: 1,
+        subtype: 'VEHICLE_TYPE',
+      });
+      expect(plain.train).toBeUndefined();
+      expect(serializeVehicleType(plain, OWNER)).toMatchObject({
+        subtype: 'VEHICLE_TYPE',
+        trainComponents: null,
+      });
+      expect(serializeVehicleType({ id: '', version: 0 }, OWNER).subtype).toBeNull();
+    });
   });
 });

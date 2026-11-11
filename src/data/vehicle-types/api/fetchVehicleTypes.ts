@@ -10,7 +10,9 @@ import type {
   PropulsionType,
   FuelType,
   HybridCategory,
+  TrainParts,
   VehicleTypeKind,
+  VehicleTypeSubtype,
 } from '../types/vehicleTypeTypes.ts';
 import { VEHICLE_TYPE_KIND } from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
@@ -24,11 +26,35 @@ const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
   return out && out.length ? out : undefined;
 };
 
-export const projectVehicleType = (
-  vt: VehicleTypesQuery['vehicleTypes']['content'][number]
-): VehicleType => ({
+type VehicleTypeRow = VehicleTypesQuery['vehicleTypes']['content'][number];
+
+/**
+ * A train subtype's own fields in input shape, or `undefined` for a plain vehicle type.
+ * shortcut: a component whose element (train) Sobek doesn't return is dropped — the input
+ * requires the reference; keep it if Sobek ever returns such dangling components.
+ */
+const projectTrain = (vt: VehicleTypeRow): TrainParts | undefined => {
+  if (!vt.subtype || vt.subtype === 'VEHICLE_TYPE') return undefined;
+  return {
+    numberOfCars: vt.numberOfCars ?? null,
+    trainSizeType: vt.trainSizeType ?? null,
+    trainElementType: vt.trainElementType ?? null,
+    trainComponents:
+      vt.trainComponents?.flatMap(c =>
+        c.trainElement ? [{ ...c, trainElement: { netexId: c.trainElement.netexId } }] : []
+      ) ?? null,
+    compoundTrainComponents:
+      vt.compoundTrainComponents?.flatMap(c =>
+        c.train ? [{ ...c, train: { netexId: c.train.netexId } }] : []
+      ) ?? null,
+  };
+};
+
+export const projectVehicleType = (vt: VehicleTypeRow): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
+  subtype: vt.subtype ?? undefined,
+  train: projectTrain(vt),
   name: vt.name ?? undefined,
   shortName: vt.shortName ?? undefined,
   description: vt.description ?? undefined,
@@ -73,8 +99,10 @@ export const projectVehicleType = (
  * and it adds `description`. Mirrors `input VehicleTypeInput` in the SDL
  * (`src/graphql/sobek.schema.graphqls`).
  */
-export interface VehicleTypeInput {
+export interface VehicleTypeInput extends TrainParts {
   netexId?: string | null;
+  /** Omitted means VEHICLE_TYPE: an update of a train must repeat its subtype. */
+  subtype?: VehicleTypeSubtype | null;
   /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleTypeInput`. */
   dataOwnerRef: string;
   /** Required on create; on update it must repeat the stored kind (immutable). */
@@ -118,6 +146,10 @@ export interface VehicleTypeInput {
  * `keyValues` field (sobek#149 — echoing one trips `INTERNAL_ERROR`), so any
  * unlifted keyValues entry is cleared by full-replace on save.
  *
+ * `subtype` and a train's own fields ({@link TrainParts}: cars, size, element type, components)
+ * go back as read — hathor doesn't edit them, and omitting them would turn a train into a
+ * plain vehicle type and drop its components.
+ *
  * `deckPlan` is emitted as a Sobek `DeckPlanReferenceInput` (`netexId` only —
  * `name` is not part of the reference input). `dataOwnerRef` is a required
  * field on the input and is threaded in by the caller (current organisation).
@@ -130,6 +162,12 @@ export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): Veh
   netexId: vt.id === '' ? undefined : vt.id,
   dataOwnerRef,
   vehicleTypeKind: VEHICLE_TYPE_KIND,
+  subtype: vt.subtype ?? null,
+  numberOfCars: vt.train?.numberOfCars ?? null,
+  trainSizeType: vt.train?.trainSizeType ?? null,
+  trainElementType: vt.train?.trainElementType ?? null,
+  trainComponents: vt.train?.trainComponents ?? null,
+  compoundTrainComponents: vt.train?.compoundTrainComponents ?? null,
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,
   description: vt.description ?? null,

@@ -247,6 +247,12 @@ export const interceptVehicleTypesQuery = (
     const content = rows.map(r => ({
       netexId: r.netexId,
       version: r.version,
+      subtype: 'VEHICLE_TYPE',
+      numberOfCars: null,
+      trainSizeType: null,
+      trainElementType: null,
+      trainComponents: null,
+      compoundTrainComponents: null,
       name: r.name,
       shortName: null,
       description: null,
