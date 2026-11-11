@@ -84,7 +84,7 @@
     "ncp": "^2.0.0",
     "playwright": "1.60.0",
     "prettier": "^3.9.10",
-    "storybook": "^10.4.1",
+    "storybook": "^10.6.6",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.0.16",
