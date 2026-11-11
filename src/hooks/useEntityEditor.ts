@@ -131,8 +131,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   useLiftEditorDirty(isDirty);
 
   // Bumped on unmount and org change; a run whose captured scope is gone is not
-  // live. The create pane survives an org switch (its draft stays), so unmount
-  // alone would let a create started under the old org publish into the new one.
+  // live, so a create started under the old org never publishes into the new one.
   const orgId = useOrganisationsContext().currentOrganisation?.id;
   const scope = useRef(0);
   useEffect(() => () => void scope.current++, [orgId]);

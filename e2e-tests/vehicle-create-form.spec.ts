@@ -160,10 +160,10 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     await expect(page.getByLabel('Registration Number')).toHaveValue('NEW-001');
   });
 
-  // The create pane survives an org switch (draft kept), so a create started
-  // under org A that lands after the switch must not advance the URL to A's
-  // new id nor flip the B-scoped pane to view.
-  test('a create that lands after an org switch keeps the draft on ?selected=new', async ({
+  // An org switch re-mounts the create pane, so a create started under org A
+  // that lands after the switch must not advance the URL to A's new id nor flip
+  // the fresh B-scoped pane to view.
+  test('a create that lands after an org switch leaves the fresh pane on ?selected=new', async ({
     page,
   }) => {
     test.skip(IS_LIVE, 'needs a held mutation + a second mocked org');
@@ -220,11 +220,10 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     );
     release();
     await landed;
-    // Saving ends in the same render as the (stale) run would flip to view, so
-    // once Save is enabled again the run has had its chance to publish.
-    await expect(save).toBeEnabled();
+    // A stale run stops at runSave's first live() check, right after the write: no list
+    // reload or advance can follow the response.
     expect(page.url()).toContain('selected=new');
-    await expect(page.getByLabel('Registration Number')).toHaveValue('NEW-001');
+    await expect(page.getByLabel('Registration Number')).toHaveValue('');
     await expect(page.getByLabel('Registration Number')).toBeEditable();
   });
 

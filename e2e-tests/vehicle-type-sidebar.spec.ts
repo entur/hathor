@@ -52,9 +52,13 @@ async function routeTwoOrgs(page: import('@playwright/test').Page, gate?: Promis
 }
 
 /** Pick the second organisation in the header org picker. */
+/** Switch to Second Org from a form with unsaved edits: the org picker asks first, Discard. */
 async function switchToSecondOrg(page: import('@playwright/test').Page) {
-  await page.getByRole('banner').getByRole('combobox').first().click();
+  const picker = page.getByRole('banner').getByRole('combobox').first();
+  await picker.click();
   await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
+  await expect(picker).toHaveValue('Second Org (OPERATOR)');
 }
 
 /** Open the org's first VehicleType row sidebar; returns its `?selected=` id. */
@@ -462,7 +466,7 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
 
   // #238: an org switch re-mounts an open editor; an unsaved create draft
   // must survive it, as it did before.
-  test('an org switch keeps an unsaved create draft', async ({ page }) => {
+  test('an org switch, once confirmed, discards an unsaved create draft', async ({ page }) => {
     await interceptVehicleTypesWithSave(page);
     await routeTwoOrgs(page);
     await page.goto('/vehicle-types?selected=new');
@@ -470,7 +474,7 @@ test.describe('/vehicle-types sidebar save (no-auth)', () => {
     await page.locator('#vtype-name').fill('Draft Type');
     await switchToSecondOrg(page);
 
-    await expect(page.locator('#vtype-name')).toHaveValue('Draft Type');
+    await expect(page.locator('#vtype-name')).toHaveValue('');
   });
 
   // A failed first read leaves no record: Edit / Deactivate must not act on an

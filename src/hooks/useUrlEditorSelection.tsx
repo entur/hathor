@@ -76,14 +76,13 @@ export function useUrlEditorSelection<T>({
     const isNew = selected === NEW_SELECTION;
     setEditingItem({
       id: selected,
-      // Keyed on the org: an org switch re-mounts a record's editor, so nothing
-      // from the previous org's record, form or in-flight save carries over.
-      // The create pane has no record to lose, so its unsaved draft stays
-      // (useEntityEditor still invalidates its in-flight create on the switch).
+      // Keyed on the org: an org switch re-mounts the editor, the create pane too
+      // (its picks are the old org's), so nothing from the previous org's record,
+      // form or in-flight save carries over. With unsaved edits the org picker asks first.
       EditorComponent: function SelectedEditor() {
         const orgId = useOrganisationsContext().currentOrganisation?.id;
         return (
-          <Fragment key={isNew ? NEW_SELECTION : orgId}>
+          <Fragment key={orgId}>
             {renderEditorRef.current({
               id: isNew ? '' : selected,
               initialMode: isNew ? 'edit' : 'view',
