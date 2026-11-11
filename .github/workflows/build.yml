@@ -106,13 +106,19 @@ jobs:
             Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
           title: 'chore: bump version to ${{ steps.bump-version.outputs.version }}'
           body: |
-            Automated minor version bump. Merge after the required checks pass
-            to tag this version and trigger deployment.
+            Automated minor version bump. Auto-merges once the required checks
+            pass, which tags this version and triggers deployment.
       - name: Run required checks for the bot-created PR
         if: steps.version-pr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run playwright.yml --ref automation/version-bump
+      - name: Auto-merge the version-bump PR once checks pass
+        if: steps.version-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.version-pr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --auto --squash
   trigger-deployment:
     needs: build
     if: needs.build.outputs.release == 'true'
