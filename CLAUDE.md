@@ -41,25 +41,23 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 ## Architecture
 
-### Generic Data View Pattern
+### Collection + form pages
 
-The core architectural pattern is a reusable data table system:
+Each entity has two routes under the `PageShell` layout route (`src/pages/shell/`, epic #252):
 
-1. **ViewConfig** (`src/pages/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
-2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
-3. **Page component** (e.g. `src/data/vehicle-types/components/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
+1. **Collection page** `/<entity>` — `CollectionPage` / `CollectionShell` around the entity's collection, built once by `createEntityCollection(<entity>Fields, { filterFields })` (`src/components/collection/`, wired in `data/<feature>/components/<entity>CollectionConfig.tsx`): toolbar search / filter / sort, grid or cards, pager, an Edit link per row.
+2. **Form page** `/<entity>/:id` (`new` = create) — `EntityDetailsShell` hosts the feature's `*Details`: `useEntityEditor` (read, save, deactivate) + `EditorFrame` (title row, sticky Save / Cancel footer, `LeaveGuard`) around the feature's `*Sections` (`FormSections`, table of contents).
 
-To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
+To add an entity: types + field mapping → data hook → `*CollectionConfig` + `*CollectionPage` → `*Sections` + `*Details` + `*DetailsPage` → routes in `App.tsx`. The old list's `?selected=<id>` deep link redirects to the form page.
 
-**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen; the shapes are still hand-written and their drift from the schema is tracked in **#107**.
+**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen; the shapes are still hand-written and their drift from the schema is tracked in **#107**.
 
 ### State Management
 
 No state library — uses React Context API exclusively:
 
 - **ConfigContext** — runtime config (API URLs, OIDC settings) loaded from `public/config.json`
-- **SearchContext** — global search with debouncing, filters, suggestions
-- **EditingContext** — sidebar editor state (which entity is being edited)
+- **EditingContext** — the mounted editor's dirty flag, read by the header's org picker (asks before an org switch drops edits)
 - **CustomizationContext** — theme/icon toggle, persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
 - **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
@@ -87,7 +85,7 @@ When in doubt about whether a single hathor query has drifted, grep the canonica
 
 ### Routing
 
-React Router v7 data router — `createBrowserRouter` in `src/main.tsx` with one splat route around the providers (so the signin callback can navigate, and a form page can `useBlocker`, #282), routes as descendant `<Routes>` in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
+React Router v7 data router — `createBrowserRouter` in `src/main.tsx` with one splat route around the providers (so the signin callback can navigate, and a form page can `useBlocker`, #282), routes as descendant `<Routes>` in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a form page at `/<entity>/:id`.
 
 ### Internationalization
 
@@ -157,7 +155,6 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 
 Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a PR. *Design-level* ambiguities (couplings, naming leaks, filter shape) live in [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) instead.
 
-- **Commented-out code** — `useDataViewSearch.ts:14-27` (Tiamat filter logic with `ParentStopPlace`/`stopPlaceType`), `DesktopSearchBar.tsx` and `MobileSearchBar.tsx` (disabled `SearchAutocomplete` rendering), `Header.tsx` (unused `useTranslation` and mobile search callback).
 - **Unused translation keys** — ~49 dead keys across `en/translation.json` and `nb/translation.json`, including `data.table.*`, `map.*`, `types.*` (stop-place types), `session.expired.message`, `product.*`.
 
 ## Key Files
@@ -166,9 +163,9 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
 | `src/main.tsx` | Entry point, data router (`createBrowserRouter`) around the context providers + App |
-| `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
-| `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
-| `src/components/search/SearchContext.tsx` | Search state management |
+| `src/components/collection/` | `createEntityCollection` — the collection pages' list |
+| `src/pages/shell/` | `PageShell`, `CollectionPage`, `EntityDetailsShell` — the page frames |
+| `src/hooks/useEntityEditor.ts` | The editor state machine every form page shares |
 | `src/contexts/configContext.ts` | Runtime config types and context |
 | `public/config.json` | Runtime API/OIDC configuration |
 | `.github/environments/` | Environment-specific config files |
