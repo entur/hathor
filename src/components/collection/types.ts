@@ -195,6 +195,9 @@ export interface EntityCollectionProps<E, K extends string = string> {
    *  the page holding it, and its Edit link takes focus as it is drawn — unless the reader
    *  has moved focus on meanwhile. A controlled `query` keeps the host's page. */
   focusEditId?: string;
+  /** Conditions the list opens with (e.g. the ids an import just wrote), shown as chips the
+   *  reader can remove. Read once on mount; ignored under a controlled `query`. */
+  initialFilters?: CollectionFilters;
 }
 
 /** A record's Edit link, as both views draw it. */

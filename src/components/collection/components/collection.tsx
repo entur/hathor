@@ -80,14 +80,18 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
     editState,
     rowTitle,
     focusEditId,
+    initialFilters,
   }: EntityCollectionProps<E, K>): ReactNode => {
     // Back from a record's page, open on the page holding it (#291): the default query
     // neither sorts nor filters, so its rows stand in the host's order.
     const [inner, setInner] = useState<CollectionQuery>(() => {
+      const open = initialFilters
+        ? { ...defaultCollectionQuery, filters: initialFilters }
+        : defaultCollectionQuery;
+      // shortcut: the record's page is counted in the unfiltered rows; holds while Back from a
+      // record drops the filter (`EntityDetailsShell` navigates to the bare list path).
       const i = focusEditId ? rows.findIndex(r => rowId(r) === focusEditId) : -1;
-      return i < 0
-        ? defaultCollectionQuery
-        : { ...defaultCollectionQuery, page: Math.floor(i / defaultCollectionQuery.pageSize) };
+      return i < 0 ? open : { ...open, page: Math.floor(i / open.pageSize) };
     });
     // One-shot: a link drawn again later (a page turned back to) leaves focus alone.
     const pendingFocus = useRef(focusEditId);
