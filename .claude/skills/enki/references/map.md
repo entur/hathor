@@ -17,7 +17,7 @@ matters, list the directory (`scripts/enki.sh ls <path>`) before relying on it.
 
 | enki | hathor | Note |
 | --- | --- | --- |
-| `src/scenes/<Entity>/` (`index.tsx` list, `Editor/`) | `src/data/<feature>/` (`api/ components/ hooks/ types/ utils/`) + `src/pages/GenericDataViewPage.tsx` | enki hand-writes a `Table` per scene; hathor declares a `ViewConfig` and reuses one page |
+| `src/scenes/<Entity>/` (`index.tsx` list, `Editor/`) | `src/data/<feature>/` (`api/ components/ hooks/ types/ utils/`) + `src/pages/shell/` | enki hand-writes a `Table` per scene; hathor builds each list with `createEntityCollection` from the entity's field mapping |
 | `src/scenes/App/` | `src/App.tsx` + `src/components/header/` + `src/components/Menu.tsx` | app shell |
 | `src/scenes/App/Header/index.tsx` | `src/components/header/{Header,HeaderBranding,HeaderActions}.tsx` | one file there, three here |
 | `src/scenes/App/Header/LanguagePickerMenu.tsx` | — (language lives in `SettingsDialog`) | |
@@ -77,7 +77,7 @@ should not pull in Redux, Apollo, react-intl or SCSS unless the task is explicit
 | enki | hathor |
 | --- | --- |
 | `/<entities>` list | `/<entities>` list |
-| `/<entities>/create`, `/<entities>/edit/:id` full-page editor | `/<entities>?selected=<netexId>` sidebar editor; `/deck-plans/:id` route-based |
+| `/<entities>/create`, `/<entities>/edit/:id` full-page editor | `/<entities>/new`, `/<entities>/:id` form page (`EntityDetailsShell`); the old `?selected=<id>` redirects there |
 | `/` → redirect `/lines` | `/` → `Home` dashboard |
 
 Both use plural kebab-case segments.
@@ -110,5 +110,6 @@ Both use plural kebab-case segments.
 
 - **enki only:** `src/ext/` extension system, Leaflet map stack (`components/FormMap`), multi-step
   `LineEditorStepper`, `ConfirmNavigationDialog`, NeTEx export scenes, MSAL (Fintraffic).
-- **hathor only:** `ViewConfig` / `GenericDataViewPage`, resizable sidebar editor, Nav Rail, global
-  search (`SearchContext`), Storybook, DeckPlan editor web component, runtime JSON theme.
+- **hathor only:** `createEntityCollection` (grid / cards, toolbar search and filter), form pages
+  with a table of contents and sticky Save / Cancel, Nav Rail, Storybook, DeckPlan editor web
+  component, runtime JSON theme.

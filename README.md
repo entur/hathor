@@ -48,7 +48,7 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 - `auth/` — OIDC bootstrap, ProtectedRoute, login flow, auth utilities.
 - `config/` — runtime config fetch (`fetchConfig.ts`).
 - `theme/` — `createThemeFromConfig`, MUI theme module augmentation (`theme-config.d.ts`).
-- `data/<feature>/` — production domain folders (`vehicles/`, `vehicle-types/`, `deck-plans/`, `vehicle-imports/`). Each holds the data hook, view config, editor, cells, types, and View + Details components for one entity.
+- `data/<feature>/` — production domain folders (`vehicles/`, `vehicle-types/`, `deck-plans/`, `vehicle-imports/`). Each holds one entity's data hook, collection config + page, editor (`*Details`, `*Sections`, `*DetailsPage`) and types.
 - `graphql/` — GraphQL operations grouped by feature.
 - `locales/` — i18next translation files (`en/`, `nb/`).
 
@@ -63,13 +63,13 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 
 **Where new files go:**
 
-- New entity (data-table backed) → `data/<feature>/`. Data hook, view config, editor, cells, types, and the View component live together. Add a route in `App.tsx`.
+- New entity → `data/<feature>/`. Data hook, collection config + page, editor and types live together. Add its two routes in `App.tsx` (see CLAUDE.md, *Collection + form pages*).
 - New non-entity routed page → `pages/`.
 - New hook used by ≥2 features → `hooks/`. Single-feature hook → next to its caller in `data/<feature>/`.
-- New `*Types.ts` file → next to its primary consumer. Feature types under `data/<feature>/`; types that pair with shared infrastructure go with that infra (e.g. `pages/viewConfigTypes.ts`, `graphql/paginationTypes.ts`, `components/data/dataTableTypes.ts`). Don't recreate `src/types/`.
+- New `*Types.ts` file → next to its primary consumer. Feature types under `data/<feature>/`; types that pair with shared infrastructure go with that infra (e.g. `components/collection/types.ts`, `graphql/paginationTypes.ts`, `components/form-layout/types.ts`). Don't recreate `src/types/`.
 - JSX → `.tsx`. No JSX → `.ts`.
 
-Some contexts (`configContext`, `CustomizationContext`) and a few hooks haven't migrated to their feature folders yet — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) for tracked design ambiguities.
+Some contexts (`configContext`, `CustomizationContext`, `SessionContext`) and a few hooks haven't migrated to their feature folders yet.
 
 ## Customization
 

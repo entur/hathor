@@ -54,7 +54,8 @@ at the default worker count. The sequence, per entity:
    Mocked: `seedAuth` serves one synthetic org that auto-selects. Live: the pinned org is restored
    by the app; `selectFirstOrg` just waits for it (it only clicks the first option when no pin is
    set). See `references/surfaces-and-testids.md`.
-5. **Navigate + row count** — go to the entity list, read `total-entries[data-count]`.
+5. **Navigate + row count** — go to the entity's collection page, read the count in
+   `collection-subtitle` (or count the `Edit` links on a page).
    Mocked: assert the exact fixture count. Live: assert a *relative* check (`>= n`, or
    "increased by 1 after create") — never a hardcoded number.
 6. **Create → edit-verify** — create a row, then open it for edit and confirm the values you
@@ -234,8 +235,9 @@ A spec is **conformant** when:
   mock-only capture of the mutation input — captures can't work against a real backend.
 - Any `test.skip(process.env.E2E_BACKEND …)` gate is justified (genuinely mode-specific), not a
   workaround for an assertion that *could* be written mode-agnostically.
-- It relies only on stable testids (`editor-rail-edit/save/cancel/collapse`, `create-vehicle-fab`,
-  `vtype-*`, `organisation-select`, `total-entries`) — see `references/surfaces-and-testids.md`.
+- It relies only on stable testids and roles (`<entity>-details-title`, `editor-page-back`,
+  `create-*-fab`, `collection-subtitle`, the `Edit` links, footer `Save` / `Cancel`) — see
+  `references/surfaces-and-testids.md`.
 - Its **file-level JSDoc keynote** (the `Title → Workflow → Covers → Modes` block above the first
   `test(`) still matches what the spec actually does. This keynote is the spec's curated,
   machine-readable summary — the sibling **`spec-flowchart-viz`** skill reads exactly these blocks
@@ -244,15 +246,16 @@ A spec is **conformant** when:
   the next human reader and the diagram generator. Keep the `Modes:` section honest about
   mock / live / skip-live — that's the same mode-agnosticism this skill is verifying, just written down.
 
-**Create surface (now uniform):** all three entities create via the same sidebar flow — a
-`NewEntityFab` that navigates to `/<entity>?selected=new` (testids `create-vehicle-fab`,
-`create-vehicle-type-fab`, `create-deck-plan-fab`). The standalone `/vehicles/new` route was
-retired in PR #121. So "create → edit-verify → edit" maps cleanly to every entity through the
-`?selected=new` sidebar. Vehicle-types additionally support **bulk** create via the Autosys import
-dialog, launched from Home (`/`, `home-bulk-import-svv` — rendered only once an organisation is
-selected) — a second path, not the only one. Note backend *persistence*
-of a create can still differ per entity (e.g. a live deck-plan create may not round-trip); verify
-the read-back, don't assume parity from the shared surface.
+**Create surface (now uniform):** all three entities create on their form page — a `NewEntityFab`
+on the collection page navigates to `/<entity>/new` (testids `create-vehicle-fab`,
+`create-vehicle-type-fab`, `create-deck-plan-fab`); a Save replaces the URL with
+`/<entity>/<newId>`. Edit is the row's Edit link → `/<entity>/<id>`, open ready to edit (#252
+cut-over, 2026-11-11; the old `?selected=` sidebar is gone and its links redirect). Vehicle-types
+additionally support **bulk** create via the Autosys import dialog, launched from Home (`/`,
+`home-bulk-import-svv` — rendered only once an organisation is selected), which lands on
+`/vehicle-types?filter=<ids>`. Note backend *persistence* of a create can still differ per entity
+(e.g. a live deck-plan create may not round-trip); verify the read-back, don't assume parity from
+the shared surface.
 
 ## Reference files
 

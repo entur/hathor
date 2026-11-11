@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
 
-Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Extending this codebase — new entity views, domain modelling, the Generic Data View pattern — follows the Inanna *extend-fork* workflow, documented in the global **`inanna-fork`** skill rather than in-repo. `FORK_DECISIONS.md` records the design choices specific to this fork.
+Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Domain modelling (NeTEx types) follows the Inanna *extend-fork* workflow in the global **`inanna-fork`** skill; its Generic Data View steps no longer apply — hathor replaced that pattern with collection + form pages (below, #252). `FORK_DECISIONS.md` records the design choices specific to this fork.
 
 ## Key Documentation
 
 - **`README.md`** — brief project overview, tech stack, quick start, scripts, and `src/` folder semantics (where new files go).
-- **`DEV_GUIDE.md`** — a stub pointer. Hathor is an Inanna fork; the developer guide for adding entity views and extending the app lives in the global **`inanna-fork`** skill (extend mode), not in-repo.
+- **`DEV_GUIDE.md`** — a stub pointer: entities follow *Collection + form pages* below; NeTEx domain modelling follows the global **`inanna-fork`** skill (extend mode).
 - **`FORK_DECISIONS.md`** — the project's Architecture Decision Record (ADR) log. **Single source of truth for *why* design choices were made on this fork.** Each section captures one decision with its context, alternatives, and consequences. Add a new ADR section here for any non-obvious design call; do **not** restate the rationale in this file (CLAUDE.md describes *what* the patterns are; FORK_DECISIONS describes *why*).
 - **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
