@@ -29,6 +29,7 @@ const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exac
  *   - search narrows the rows by registration number (U1)
  *   - the vehicle's type links to its own form page (U2/F8) — not an orphan ref outside the
  *     org's types; a vehicle without a name shows its registration number (U4)
+ *   - a deep link to an unknown id shows "Vehicle not found", not a stuck spinner or a form
  *   - create: the picture box says "Select type" until a type is picked, then draws the
  *     type; without a type Save says what is missing and the leave dialog offers no Save
  *     (Sobek hides a vehicle with none)
@@ -134,6 +135,15 @@ test.describe('/next/vehicles', () => {
     await expect(page.getByRole('gridcell', { name: 'NN-1', exact: true })).toHaveCount(2);
     await page.getByRole('link', { name: 'Edit NN-1' }).click();
     await expect(page.getByTestId('vehicle-details-title')).toHaveText('NN-1');
+  });
+
+  test('a deep link to an unknown id says not found, without a form', async ({ page }) => {
+    // Registered last, so it answers first; live, Sobek finds no such vehicle either.
+    if (!IS_LIVE) await interceptVehicleByIdQuery(page, () => null);
+    await page.goto(`${LIST}/${encodeURIComponent('NMR:Vehicle:no-such-vehicle')}`);
+    await selectFirstOrg(page);
+    await expect(page.getByText('Vehicle not found')).toBeVisible();
+    await expect(page.locator('#vehicle-name')).toHaveCount(0);
   });
 
   test('create: "Select type" until a type is picked; without one Save says so, the dialog offers none', async ({

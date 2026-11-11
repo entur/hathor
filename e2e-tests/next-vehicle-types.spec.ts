@@ -61,6 +61,29 @@ const wheelUntil = (page: Page, done: () => Promise<void>) =>
     await done();
   }).toPass({ timeout: WHEEL_TIMEOUT_MS });
 
+/** Two organisations, Mock Org first. Registered after seedAuth's single org, so it answers first. */
+const interceptTwoOrgs = (page: Page) =>
+  interceptGraphQLQuery(page, 'organisations', {
+    data: {
+      organisations: {
+        content: ['Mock Org', 'Other Org'].map((value, i) => ({
+          netexId: `MOCK:Authority:${i + 1}`,
+          name: { value },
+          type: 'AUTHORITY',
+        })),
+        totalElements: 2,
+        page: 0,
+        size: 10000,
+      },
+    },
+  });
+
+/** Picks Other Org in the header's organisation picker. */
+const pickOtherOrg = async (page: Page) => {
+  await page.getByRole('banner').getByRole('combobox').click();
+  await page.getByRole('option', { name: /^Other Org/ }).click();
+};
+
 /** Rail types `Type 00` … `Type n-1`, padded so the name sort keeps their order: their cards
  *  get a line of text, no WebGL shot. */
 const interceptRailRows = (page: Page, n: number) =>
@@ -105,8 +128,11 @@ const interceptRailRows = (page: Page, n: number) =>
  *     own redirect to its new id after Save never asks; the dialog's Save saves and stays,
  *     and offers no Save while a save runs (or once it has landed clean), when the fields read
  *     only — as during a Retry read; an organisation switch asks the same way (Cancel keeps
- *     the edits, Discard switches)
+ *     the edits, Discard switches — and starts a create page over)
  *   - a Vehicles chip links to the vehicle's form page (#285)
+ *   - an Autosys import's `?filter=<ids>` opens on those rows only, as a removable chip
+ *   - live only: a rename saves, survives a fresh read, and leaves an untouched field as it was
+ *     (Sobek's full-document replace) — the record is renamed back after
  *   - create page (internal user test): no Deactivate, no New button, no Vehicles section;
  *     Cancel stays inert until a field changes, then asks and Discard returns to the list
  * Modes:
@@ -114,7 +140,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
  *   - live, the read-only form tests open the first row (openFirstRecord), not the fixture id;
  *     the deep link reloads that row's URL; a write the clean Save might send is aborted
- *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the org switch
+ *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the `?filter=`
+ *     (fixture id); the org switch
  *     (a second, mocked organisation); the Vehicles
  *     chip (fixture vehicle); the last-section mark (needs a short last section); the
  *     empty-list test (mocked empty list); the unnamed type, the two bus-picture tests, the
@@ -186,6 +213,17 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(empty).toContainText('No vehicle types for Mock Org yet');
     await expect(empty.getByTestId('create-vehicle-type-fab')).toBeVisible();
     await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
+  });
+
+  test('an import lands with ?filter=<ids>: only those rows, as a chip that clears', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'fixture ids');
+    await page.goto(`${LIST}?filter=${encodeURIComponent(FIXTURE_ID)}`);
+    const edits = page.getByRole('link', { name: /^Edit / });
+    await expect(edits).toHaveCount(1);
+    await page.getByRole('button', { name: /remove filter/ }).press('Backspace');
+    await expect(edits).toHaveCount(FIXTURE_ROWS);
   });
 
   test('a type without a name goes by its id: cell, Edit link, heading (#290)', async ({
@@ -617,38 +655,59 @@ test.describe('/next/vehicle-types page shell', () => {
     page,
   }) => {
     test.skip(IS_LIVE, 'a second, mocked organisation');
-    // Registered last, so it answers before seedAuth's single org.
-    await interceptGraphQLQuery(page, 'organisations', {
-      data: {
-        organisations: {
-          content: ['Mock Org', 'Other Org'].map((value, i) => ({
-            netexId: `MOCK:Authority:${i + 1}`,
-            name: { value },
-            type: 'AUTHORITY',
-          })),
-          totalElements: 2,
-          page: 0,
-          size: 10000,
-        },
-      },
-    });
+    await interceptTwoOrgs(page);
     const typed = edited(await openFirstRecord(page));
     const name = page.locator('#vtype-name');
     await name.fill(typed);
     const select = page.getByRole('banner').getByRole('combobox');
     const dialog = page.getByRole('dialog');
 
-    await select.click();
-    await page.getByRole('option', { name: /^Other Org/ }).click();
+    await pickOtherOrg(page);
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(select).toHaveValue(/^Mock Org/);
     await expect(name).toHaveValue(typed);
 
-    await select.click();
-    await page.getByRole('option', { name: /^Other Org/ }).click();
+    await pickOtherOrg(page);
     await dialog.getByRole('button', { name: 'Discard' }).click();
     await expect(select).toHaveValue(/^Other Org/);
     await expect(name).not.toHaveValue(typed);
+  });
+
+  test('a rename saves for real, survives a reload and leaves the other fields (live)', async ({
+    page,
+  }) => {
+    test.skip(!IS_LIVE, 'a real Sobek round trip');
+    const original = await openFirstRecord(page);
+    const url = page.url();
+    const name = page.locator('#vtype-name');
+    const length = await page.locator('#vtype-length').inputValue();
+    const marker = `E2E-live-${Date.now()}`;
+
+    await name.fill(marker);
+    await footerSave(page).click();
+    await expect(page.getByText('All changes saved')).toBeVisible();
+    // A fresh read: the name persisted, and the full-document replace kept a field it didn't touch.
+    await page.goto(url);
+    await selectFirstOrg(page);
+    await expect(name).toHaveValue(marker);
+    await expect(page.locator('#vtype-length')).toHaveValue(length);
+
+    // Leave the record as found (but for its version).
+    await name.fill(original);
+    await footerSave(page).click();
+    await expect(page.getByText('All changes saved')).toBeVisible();
+  });
+
+  test("an organisation switch discards a create's draft once confirmed", async ({ page }) => {
+    test.skip(IS_LIVE, 'a second, mocked organisation');
+    await interceptTwoOrgs(page);
+    await page.goto(`${LIST}/new`);
+    const name = page.locator('#vtype-name');
+    await name.fill('Type Omega');
+    await pickOtherOrg(page);
+    await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
+    // Its picks were the old org's: the create page starts over.
+    await expect(name).toHaveValue('');
   });
 
   test("a create's Save moves to the new id without asking", async ({ page }) => {
