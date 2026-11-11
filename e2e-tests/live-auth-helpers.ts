@@ -60,9 +60,6 @@ const ORG_STORAGE_KEY = 'hathor:currentOrganisationId';
 /** Live only: NeTEx id of the org to run against (`E2E_ORG_ID`); unset → the app's first authorized org. */
 const LIVE_ORG_ID = process.env.E2E_ORG_ID;
 
-/** Full NeTEx id, `Codespace:Type:Value`. */
-const NETEX_ID = /[A-Za-z]+:[A-Za-z]+:[\w.-]+/;
-
 /** A captured oidc-client-ts user entry: storage `k`ey + stored `v`alue. */
 interface OidcUser {
   k: string;
@@ -311,75 +308,6 @@ export const selectFirstOrg = async (page: Page) => {
   }).toPass({ timeout: ORG_READY_TIMEOUT });
 };
 
-/**
- * Read the current `total-entries[data-count]` as a number. Use for relative
- * row-count assertions under live data (`>= n`, or delta-after-create) instead
- * of the mock-mode exact counts.
- */
-export const rowCount = async (page: Page): Promise<number> => {
-  const raw = await page.getByTestId('total-entries').getAttribute('data-count');
-  return Number(raw ?? '0');
-};
-
-/**
- * Derive the first `n` real NeTEx ids from the `netex-id` chips rendered in the
- * table — the live substitute for fixture ids, so filter/deep-link specs exercise
- * the real backend instead of hardcoded fixture ids that don't exist in the DB.
- *
- * @param page Playwright `Page`, already on a list with rows rendered.
- * @param n How many ids to read (fewer are returned if the list is shorter).
- * @returns Full `Codespace:Type:Value` ids, in row order.
- */
-export const readNetexIds = async (page: Page, n: number): Promise<string[]> => {
-  // `rows.count()` doesn't retry; `total-entries` mounts only on a settled list.
-  await expect(page.getByTestId('total-entries')).toBeVisible();
-  const rows = page.locator('table tbody tr');
-  const total = Math.min(n, await rows.count());
-  const out: string[] = [];
-  for (let i = 0; i < total; i++) {
-    // The row's own id is its first `netex-id` chip, whichever column it sits in
-    // (lists are name-first, id-second). Read the id span — the one holding the
-    // bold value — not the whole chip, whose text also carries the `vN` badge.
-    const id = rows.nth(i).getByTestId('netex-id').first().locator('span:has(> strong)');
-    const m = (await id.innerText()).replace(/\s+/g, '').match(NETEX_ID);
-    if (m) out.push(m[0]);
-  }
-  return out;
-};
-
-/**
- * Derive a real, org-owned VehicleType numeric id from the live `/vehicle-types`
- * list — the valid `transportType` ref a live vehicle-create needs (the form
- * takes a bare int and prefixes `NMR:VehicleType:`). Fails loudly if the org has
- * no numeric-id vehicle types to build a ref from.
- */
-export const liveVehicleTypeInt = async (page: Page): Promise<string> => {
-  await page.goto('/vehicle-types');
-  await selectFirstOrg(page);
-  const [id] = await readNetexIds(page, 1);
-  const m = id?.match(/:(\d+)$/);
-  expect(m, 'expected a numeric live VehicleType id to build a transportType ref').toBeTruthy();
-  return m![1];
-};
-
-/**
- * Click the first data row, assert its `?selected=` sidebar opened (title testid
- * visible), and return the decoded netexId. Assumes the page is already on the
- * list with an org selected. Shared by the vehicles + vehicle-types specs.
- */
-export const openFirstRow = async (page: Page, titleTestId: string): Promise<string> => {
-  await page.locator('table tbody tr').first().click();
-  await expect(page).toHaveURL(/selected=/);
-  await expect(page.getByTestId(titleTestId)).toBeVisible();
-  return decodeURIComponent(new URL(page.url()).searchParams.get('selected') ?? '');
-};
-
-/**
- * Live create-form overrides: a per-run-unique registration number and a real
- * org-owned VehicleType int. Centralises the reg scheme so a future change (e.g.
- * a collision-avoiding prefix) lands in one place across the create specs.
- */
-export const liveCreateOverrides = async (page: Page): Promise<{ reg: string; vtInt: string }> => ({
-  reg: `E2E-${Date.now()}`,
-  vtInt: await liveVehicleTypeInt(page),
-});
+/** The list's first Edit link (#252 collection pages), live or mocked; an unnamed record's
+ *  reads just "Edit". */
+export const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit\b/ }).first();

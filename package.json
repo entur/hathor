@@ -9,7 +9,6 @@
     "prelocal": "run-p copy:theme copy:config-local",
     "local": "vite",
     "build": "tsc -b && vite build",
-    "gen:arch": "node scripts/gen-arch-metafile.mjs",
     "copy:theme": "ncp .github/environments/theme-localhost.json public/theme-dev.json",
     "copy:config-local": "ncp .github/environments/config-localhost.json public/config.json",
     "copy:config": "ncp .github/environments/config-dev.json public/config.json",
@@ -38,12 +37,13 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@entur/iteru-3dbus": "^0.3.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@mui/x-data-grid": "^8.2.0",
     "@opentrainticketing/netex-deckplan-editor": "^2.0.5",
     "@types/papaparse": "^5.5.2",
-    "fast-xml-parser": "^5.7.3",
+    "fast-xml-parser": "~5.7.3",
     "graphql": "^16.11.0",
     "graphql-request": "^7.3.1",
     "i18next": "^25.2.1",
@@ -55,7 +55,8 @@
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2",
     "react-oidc-context": "^3.3.0",
-    "react-router-dom": "^7.17.0"
+    "react-router-dom": "^7.17.0",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.2.1",
@@ -66,6 +67,7 @@
     "@storybook/addon-mcp": "^0.6.0",
     "@storybook/addon-vitest": "^10.4.1",
     "@storybook/react-vite": "^10.4.1",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^22.15.12",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
@@ -77,6 +79,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
     "lint-staged": "^16.0.0",
     "ncp": "^2.0.0",
     "playwright": "1.60.0",

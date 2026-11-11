@@ -22,9 +22,7 @@ interface DiscardDialogProps {
 
 /**
  * Reusable confirm-discard dialog for any flow that wants to interrupt a
- * dirty-form action (back nav, sidebar collapse, edit-mode cancel). Mirrors
- * the prior inline dialog in EditorRail so the two consumers stay in lockstep.
- * Copy comes from `common.discardTitle` / `common.discardBody`, shared by all
+ * dirty-form action (leaving the page, Cancel, an organisation switch). Copy comes from `common.discardTitle` / `common.discardBody`, shared by all
  * three editors.
  */
 export default function DiscardDialog({ open, onCancel, onDiscard, onSave }: DiscardDialogProps) {

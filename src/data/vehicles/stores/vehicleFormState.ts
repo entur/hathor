@@ -4,9 +4,8 @@
  * `VehicleDetails`). The named re-exports serve the tests.
  */
 import { createFormState, type FormState as GenericFormState } from '../../../hooks/useFormState';
-import type { VehicleEditFormValue } from '../components/VehicleEditForm';
+import type { Vehicle, VehicleEditFormValue } from '../types/vehicle.ts';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
-import type { Vehicle } from '../types/vehicle';
 
 export const vehicleForm = createFormState<VehicleEditFormValue, Partial<Vehicle>>({
   blank: BLANK_FORM,

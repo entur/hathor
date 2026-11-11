@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
 
-Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Extending this codebase — new entity views, domain modelling, the Generic Data View pattern — follows the Inanna *extend-fork* workflow, documented in the global **`inanna-fork`** skill rather than in-repo. `FORK_DECISIONS.md` records the design choices specific to this fork.
+Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Domain modelling (NeTEx types) follows the Inanna *extend-fork* workflow in the global **`inanna-fork`** skill; its Generic Data View steps no longer apply — hathor replaced that pattern with collection + form pages (below, #252). `FORK_DECISIONS.md` records the design choices specific to this fork.
 
 ## Key Documentation
 
 - **`README.md`** — brief project overview, tech stack, quick start, scripts, and `src/` folder semantics (where new files go).
-- **`DEV_GUIDE.md`** — a stub pointer. Hathor is an Inanna fork; the developer guide for adding entity views and extending the app lives in the global **`inanna-fork`** skill (extend mode), not in-repo.
+- **`DEV_GUIDE.md`** — a stub pointer: entities follow *Collection + form pages* below; NeTEx domain modelling follows the global **`inanna-fork`** skill (extend mode).
 - **`FORK_DECISIONS.md`** — the project's Architecture Decision Record (ADR) log. **Single source of truth for *why* design choices were made on this fork.** Each section captures one decision with its context, alternatives, and consequences. Add a new ADR section here for any non-obvious design call; do **not** restate the rationale in this file (CLAUDE.md describes *what* the patterns are; FORK_DECISIONS describes *why*).
 - **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
@@ -41,25 +41,23 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 ## Architecture
 
-### Generic Data View Pattern
+### Collection + form pages
 
-The core architectural pattern is a reusable data table system:
+Each entity has two routes under the `PageShell` layout route (`src/pages/shell/`, epic #252):
 
-1. **ViewConfig** (`src/pages/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
-2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
-3. **Page component** (e.g. `src/data/vehicle-types/components/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
+1. **Collection page** `/<entity>` — `CollectionPage` / `CollectionShell` around the entity's collection, built once by `createEntityCollection(<entity>Fields, { filterFields })` (`src/components/collection/`, wired in `data/<feature>/components/<entity>CollectionConfig.tsx`): toolbar search / filter / sort, grid or cards, pager, an Edit link per row.
+2. **Form page** `/<entity>/:id` (`new` = create) — `EntityDetailsShell` hosts the feature's `*Details`: `useEntityEditor` (read, save, deactivate) + `EditorFrame` (title row, sticky Save / Cancel footer, `LeaveGuard`) around the feature's `*Sections` (`FormSections`, table of contents).
 
-To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
+To add an entity: types + field mapping → data hook → `*CollectionConfig` + `*CollectionPage` → `*Sections` + `*Details` + `*DetailsPage` → routes in `App.tsx`. The old list's `?selected=<id>` deep link redirects to the form page.
 
-**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen; the shapes are still hand-written and their drift from the schema is tracked in **#107**.
+**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen; the shapes are still hand-written and their drift from the schema is tracked in **#107**.
 
 ### State Management
 
 No state library — uses React Context API exclusively:
 
 - **ConfigContext** — runtime config (API URLs, OIDC settings) loaded from `public/config.json`
-- **SearchContext** — global search with debouncing, filters, suggestions
-- **EditingContext** — sidebar editor state (which entity is being edited)
+- **EditingContext** — the mounted editor's dirty flag, read by the header's org picker (asks before an org switch drops edits)
 - **CustomizationContext** — theme/icon toggle, persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
 - **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
@@ -70,6 +68,7 @@ Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehic
 
 - **GraphQL (read)**: `graphql-request`, queries in `src/graphql/vehicles/queries/`
 - **GraphQL (write)**: `createOrUpdateVehicle` / `createOrUpdateVehicleType` mutations in `src/graphql/vehicles/mutations/`. Sobek's `createOrUpdate*` is a **full-document replace** — an absent/blank input field is nulled, so serializers must send the complete document (not omit-blank).
+- **Deactivate**: `deactivate*(DeactivateInput)` sends `deactivateAt`, but Sobek's read types expose no validity/status field — a "Deactivated" state is session-only (lost on reload). Accepted for the form pages; no Sobek issue filed yet.
 - **REST**: NeTEx XML import via `src/data/vehicle-imports/api/vehicleImportServices.ts` (Autosys bulk import). The route-based VehicleType *create-via-XML* editor was removed — VehicleType save is now the GraphQL mutation above.
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
@@ -86,7 +85,7 @@ When in doubt about whether a single hathor query has drifted, grep the canonica
 
 ### Routing
 
-React Router v6 — `<BrowserRouter>` in `src/main.tsx` (above `AuthProvider`, so the signin callback can navigate), routes in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
+React Router v7 data router — `createBrowserRouter` in `src/main.tsx` with one splat route around the providers (so the signin callback can navigate, and a form page can `useBlocker`, #282), routes as descendant `<Routes>` in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a form page at `/<entity>/:id`.
 
 ### Internationalization
 
@@ -156,7 +155,6 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 
 Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a PR. *Design-level* ambiguities (couplings, naming leaks, filter shape) live in [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) instead.
 
-- **Commented-out code** — `useDataViewSearch.ts:14-27` (Tiamat filter logic with `ParentStopPlace`/`stopPlaceType`), `DesktopSearchBar.tsx` and `MobileSearchBar.tsx` (disabled `SearchAutocomplete` rendering), `Header.tsx` (unused `useTranslation` and mobile search callback).
 - **Unused translation keys** — ~49 dead keys across `en/translation.json` and `nb/translation.json`, including `data.table.*`, `map.*`, `types.*` (stop-place types), `session.expired.message`, `product.*`.
 
 ## Key Files
@@ -164,10 +162,10 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 | File | Purpose |
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
-| `src/main.tsx` | Entry point, wraps app in `BrowserRouter` + context providers |
-| `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
-| `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
-| `src/components/search/SearchContext.tsx` | Search state management |
+| `src/main.tsx` | Entry point, data router (`createBrowserRouter`) around the context providers + App |
+| `src/components/collection/` | `createEntityCollection` — the collection pages' list |
+| `src/pages/shell/` | `PageShell`, `CollectionPage`, `EntityDetailsShell` — the page frames |
+| `src/hooks/useEntityEditor.ts` | The editor state machine every form page shares |
 | `src/contexts/configContext.ts` | Runtime config types and context |
 | `public/config.json` | Runtime API/OIDC configuration |
 | `.github/environments/` | Environment-specific config files |

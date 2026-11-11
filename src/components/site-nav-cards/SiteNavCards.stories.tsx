@@ -106,7 +106,7 @@ export const Stats: Story = { render: () => <StatStrip ctx={CTX} /> };
 /** Browse tiles only — links to the three list views. */
 export const Browse: Story = { render: () => <NavGrid /> };
 
-/** Create-new action row only — `?selected=new` deep links. */
+/** Create-new action row only — `/<entity>/new` links. */
 export const Create: Story = { render: () => <CreateRow /> };
 
 /**

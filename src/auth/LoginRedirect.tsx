@@ -7,7 +7,7 @@ const LoginRedirect = () => {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading, login } = useAuth();
   const { pathname, search, hash } = useLocation();
-  // Full location, not just the path — `?selected=<id>` deep links must survive login.
+  // Full location, not just the path — a deep link's query must survive login.
   const returnUrl = pathname + search + hash;
 
   useEffect(() => {

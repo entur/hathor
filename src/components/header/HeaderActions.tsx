@@ -1,5 +1,4 @@
 import { Box, IconButton, Badge, Button, Chip } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import { getIconUrl } from '../../utils/iconLoaderUtils.ts';
 import { useTranslation } from 'react-i18next';
 import { useNavRail } from '../../contexts/NavRailContext.tsx';
@@ -7,8 +6,6 @@ import SelectOrganisation from '../../data/organisations/components/SelectOrgani
 
 interface HeaderActionsProps {
   isMobile: boolean;
-  isHomePage: boolean;
-  onSearchIconClick: () => void;
   onUserIconClick: () => void;
   onSettingsIconClick: () => void;
   onMenuIconClick: () => void;
@@ -18,8 +15,6 @@ interface HeaderActionsProps {
 
 export default function HeaderActions({
   isMobile,
-  isHomePage,
-  onSearchIconClick,
   onUserIconClick,
   onSettingsIconClick,
   onMenuIconClick,
@@ -40,16 +35,6 @@ export default function HeaderActions({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
-      {isMobile && !isHomePage && (
-        <IconButton
-          color="inherit"
-          onClick={onSearchIconClick}
-          aria-label={t('header.actions.search')}
-        >
-          <SearchIcon />
-        </IconButton>
-      )}
-
       {isAuthenticated ? (
         <>
           <SelectOrganisation />
