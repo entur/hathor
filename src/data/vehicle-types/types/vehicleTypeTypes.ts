@@ -45,6 +45,11 @@ export type FuelType = (typeof FUEL_TYPES)[number];
 export type HybridCategory = (typeof HYBRID_CATEGORIES)[number];
 export type VehicleTypeKind = (typeof VEHICLE_TYPE_KINDS)[number];
 
+// shortcut: hathor reads and writes PHYSICAL vehicle types only (vehicles may only refer to those);
+// showing CONTRACTUAL ones is the open question on #274.
+/** The kind hathor reads, creates and imports (GraphQL filter + input, NeTEx import param). */
+export const VEHICLE_TYPE_KIND: VehicleTypeKind = 'PHYSICAL';
+
 /** Sobek `PassengerCapacity` — all counts optional. */
 export type PassengerCapacity = {
   totalCapacity?: number;

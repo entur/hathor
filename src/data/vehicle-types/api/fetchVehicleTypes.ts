@@ -12,14 +12,11 @@ import type {
   HybridCategory,
   VehicleTypeKind,
 } from '../types/vehicleTypeTypes.ts';
+import { VEHICLE_TYPE_KIND } from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
 import type { MultilingualString } from '../../netex/multilingualString.ts';
 import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
-
-// shortcut: hathor reads and writes PHYSICAL vehicle types only (vehicles may only refer to those);
-// showing CONTRACTUAL ones is the open question on #274.
-const VEHICLE_TYPE_KIND: VehicleTypeKind = 'PHYSICAL';
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
 const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {

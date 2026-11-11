@@ -147,7 +147,7 @@ test.describe('/deck-plans — sidebar editor', () => {
   test('saving a renamed deck plan POSTs a patched document without keyList', async ({ page }) => {
     await openFirstRow(page);
 
-    const { posted } = await interceptDeckPlanSave(page, xml());
+    const { posted, postedTo } = await interceptDeckPlanSave(page, xml());
 
     await page.getByTestId('editor-rail-edit').click();
     await page.locator('#deckPlan-name').fill('Plan Alpha renamed');
@@ -158,6 +158,8 @@ test.describe('/deck-plans — sidebar editor', () => {
     expect(posted()).toContain('NMR:DeckPlan:5');
     expect(posted()).toContain('<decks/>');
     expect(posted()).not.toContain('imported-id');
+    // Sobek answers 400 without it (entur/sobek#234).
+    expect(postedTo()?.searchParams.get('vehicleTypeKind')).toBe('PHYSICAL');
   });
 
   test('?selected=new renders the Edit panel bare and saves via the GQL mutation', async ({
