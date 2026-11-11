@@ -16,8 +16,14 @@ const FOCUS_PX = 2,
 // Linje `--font-weights-*` (#258): Nationale ships only these two.
 const BODY_WEIGHT = 500,
   HEADING_WEIGHT = 600;
-// Linje card corner, `--border-radiuses-large`; fields and buttons keep `shape.borderRadius` 4.
-const CARD_RADIUS_PX = 8;
+// Linje corners, standard density (#258): cards `--border-radiuses-large`, buttons
+// `--components-button-radius-*`; fields keep `shape.borderRadius` 4, chips stay pills.
+const CARD_RADIUS_PX = 8,
+  BUTTON_RADIUS_PX = 8,
+  BUTTON_RADIUS_SMALL_PX = 6;
+// Linje field border, `--components-form-baseform-standard-border-default`; navy on hover/focus.
+const FIELD_BORDER_PX = 2,
+  FIELD_BORDER = '#8284ab';
 
 const ring = (color: string, offset = FOCUS_PX) => ({
   outline: `${FOCUS_PX}px solid ${color}`,
@@ -48,19 +54,50 @@ const TYPE_SCALE: TypographyVariantsOptions = {
   h6: heading(1.25),
 };
 
+// Spelled out: emotion splits selectors on every comma, inside `:is()` / `:not()` too.
+const INSET_RING = ['.MuiMenuItem-root', '.MuiListItemButton-root', '.MuiTab-root']
+  .map(c => `&.Mui-focusVisible${c}`)
+  .concat('.MuiDataGrid-root &.Mui-focusVisible')
+  .join(', ');
+const NOTCH = '.MuiOutlinedInput-notchedOutline';
+
 /**
- * Card corners, and one keyboard-focus ring for the whole app, `:focus-visible` only (no ring
- * on a mouse click). Items flush in a clipping box (menus, the nav rail, tabs, grid cells) draw
- * it inset. A theme file's own entry for one of these components replaces it.
+ * Linje's component look on MUI: corners, chip text, field borders, and one keyboard-focus
+ * ring for the whole app, `:focus-visible` only (no ring on a mouse click). Items flush in a
+ * clipping box (menus, the nav rail, tabs, grid cells) draw the ring inset.
  */
 const BASE_COMPONENTS: Components<Theme> = {
   MuiCard: { styleOverrides: { root: { borderRadius: CARD_RADIUS_PX } } },
+  MuiButton: {
+    styleOverrides: {
+      root: { borderRadius: BUTTON_RADIUS_PX },
+      sizeSmall: { borderRadius: BUTTON_RADIUS_SMALL_PX },
+    },
+  },
+  MuiChip: {
+    styleOverrides: {
+      root: ({ theme }) => ({ fontSize: theme.typography.body2.fontSize }),
+      sizeSmall: ({ theme }) => ({ fontSize: theme.typography.caption.fontSize }),
+    },
+  },
+  MuiOutlinedInput: {
+    styleOverrides: {
+      // Hover uses MUI's own selector to outrank it; focus, error and disabled keep MUI's
+      // colours (focus is already a 2 px primary border), plus Linje's outline on focus.
+      root: ({ theme }) => ({
+        [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
+        [`&:hover:not(.Mui-disabled):not(.Mui-error) ${NOTCH}`]: {
+          borderColor: theme.palette.primary.main,
+        },
+        '&.Mui-focused': ring(theme.palette.primary.main, 0),
+      }),
+    },
+  },
   MuiButtonBase: {
     styleOverrides: {
       root: ({ theme }) => ({
         '&.Mui-focusVisible': ring(theme.palette.primary.main),
-        '&.Mui-focusVisible:is(.MuiMenuItem-root, .MuiListItemButton-root, .MuiTab-root), .MuiDataGrid-root &.Mui-focusVisible':
-          { outlineOffset: -FOCUS_PX },
+        [INSET_RING]: { outlineOffset: -FOCUS_PX },
       }),
     },
   },
@@ -80,53 +117,75 @@ const BASE_COMPONENTS: Components<Theme> = {
       }),
     },
   },
+  // A subtle primary tint for row hover: the opaque action.hover drowns out Chip/Button
+  // hover states in rows. Selected sits two stops above hover with a left accent stripe;
+  // hover-while-selected nudges one stop further, never back to an unselected look.
+  MuiTableRow: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '&.MuiTableRow-hover:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.08) },
+        '&.Mui-selected': {
+          backgroundColor: alpha(theme.palette.primary.main, 0.18),
+          borderLeft: `3px solid ${theme.palette.primary.main}`,
+        },
+        '&.Mui-selected.MuiTableRow-hover:hover': {
+          backgroundColor: alpha(theme.palette.primary.main, 0.24),
+        },
+      }),
+    },
+  },
 };
+
+type Style = Record<string, unknown>;
+type Slots = Record<string, unknown>;
+type Entry = { styleOverrides?: Slots } & Record<string, unknown>;
+
+const resolve = (style: unknown, props: object): Style =>
+  (typeof style === 'function' ? style(props) : style) as Style;
+
+/** A slot both sides style: each resolved, then shallow-merged, the theme file winning. */
+const mergeSlot = (base: unknown, user: unknown) =>
+  base === undefined
+    ? user
+    : user === undefined
+      ? base
+      : (props: object) => ({ ...resolve(base, props), ...resolve(user, props) });
+
+/**
+ * Lays a theme file's `components` over the base ones per style slot, so a theme's
+ * `MuiButton.root` adds to the base corners rather than replacing them.
+ *
+ * @param {Components<Theme>} base the app's component defaults
+ * @param {Components<Theme>} [user] the theme file's entries; it wins on a shared property
+ * @returns {Components<Theme>} both, merged
+ */
+export function mergeComponents(
+  base: Components<Theme>,
+  user: Components<Theme> = {}
+): Components<Theme> {
+  const b = base as Record<string, Entry>,
+    u = user as Record<string, Entry>;
+  return Object.fromEntries(
+    [...new Set([...Object.keys(b), ...Object.keys(u)])].map(name => {
+      const slots = { ...b[name]?.styleOverrides, ...u[name]?.styleOverrides };
+      const styleOverrides = Object.fromEntries(
+        Object.keys(slots).map(slot => [
+          slot,
+          mergeSlot(b[name]?.styleOverrides?.[slot], u[name]?.styleOverrides?.[slot]),
+        ])
+      );
+      return [name, { ...b[name], ...u[name], styleOverrides }];
+    })
+  );
+}
 
 export function createThemeFromConfig(cfg: ThemeConfig): Theme {
   const { logoUrl, ...themeOptions } = cfg;
-  const userTableRow = themeOptions.components?.MuiTableRow;
-  const userRootStyles =
-    typeof userTableRow?.styleOverrides?.root === 'object'
-      ? (userTableRow.styleOverrides.root as Record<string, unknown>)
-      : {};
 
   return createTheme({
     ...themeOptions,
     logoUrl,
     typography: { ...TYPE_SCALE, ...(themeOptions.typography as TypographyVariantsOptions) },
-    components: {
-      ...BASE_COMPONENTS,
-      ...themeOptions.components,
-      // Override table row hover from opaque action.hover to a subtle
-      // primary tint. The default palette action.hover is a solid color
-      // that drowns out Chip/Button hover states in rows, making
-      // navigation elements invisible on hover. Affected routes:
-      //   /vehicle-types  — ID chip links, vehicle list expand
-      //   /deck-plans     — edit buttons
-      //   /vehicle-types/:id — detail tabs using @entur/data-view-table
-      MuiTableRow: {
-        ...userTableRow,
-        styleOverrides: {
-          ...userTableRow?.styleOverrides,
-          root: ({ theme }: { theme: Theme }) => ({
-            '&.MuiTableRow-hover:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
-            },
-            // Selected row sits two stops above hover and carries a left
-            // accent stripe; hover-while-selected nudges one stop further so
-            // the hover affordance still reads but never collapses back to
-            // an unselected look.
-            '&.Mui-selected': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.18),
-              borderLeft: `3px solid ${theme.palette.primary.main}`,
-            },
-            '&.Mui-selected.MuiTableRow-hover:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.24),
-            },
-            ...userRootStyles,
-          }),
-        },
-      },
-    },
+    components: mergeComponents(BASE_COMPONENTS, themeOptions.components as Components<Theme>),
   });
 }
