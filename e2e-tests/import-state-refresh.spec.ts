@@ -62,7 +62,8 @@ async function railNavigate(page: Page, href: string): Promise<void> {
 /**
  * Drive the Autosys multi-import wizard, launched from Home, for one reg-nr through a successful
  * Submit (live only).
- * Throws if Submit errors — #141 needs a genuinely NEW import; a duplicate surfaces as a submit error.
+ * Throws with the dialog's error if Submit errors — #141 needs a genuinely NEW import, and a plate
+ * the org already owns fails too.
  */
 async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   await page.getByTestId(IMPORT_BTN).click();
@@ -85,12 +86,13 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   const closed = expect(dialog)
     .not.toBeVisible({ timeout: 15_000 })
     .then(() => 'ok' as const);
-  const errored = expect(dialog.locator('.MuiAlert-standardError'))
+  const error = dialog.locator('.MuiAlert-standardError');
+  const errored = expect(error)
     .toBeVisible({ timeout: 15_000 })
     .then(() => 'err' as const);
   if ((await Promise.race([closed, errored])) === 'err') {
     throw new Error(
-      `Import of "${reg}" failed (likely already imported). #141 needs a FRESH reg-nr — set E2E_AUTOSYS_REG_NR to a plate this org does not own.`
+      `Import of "${reg}" failed: ${(await error.innerText()).trim()}\nIf the org already owns this plate, set E2E_AUTOSYS_REG_NR to one it doesn't.`
     );
   }
   await expect(page).toHaveURL(atPath('/vehicle-types'));

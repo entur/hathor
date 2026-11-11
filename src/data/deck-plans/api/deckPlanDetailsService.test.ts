@@ -43,13 +43,15 @@ const GEOMETRY_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
  */
 describe('saveDeckPlanAsNetexToBackend', () => {
   let posted = '';
+  let postedTo: URL | undefined;
 
   beforeEach(() => {
     posted = '';
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (_url: string, init: { body: string }) => {
+      vi.fn(async (url: URL, init: { body: string }) => {
         posted = init.body;
+        postedTo = url;
         return { ok: true, statusText: 'OK', text: async () => 'imported' };
       })
     );
@@ -66,10 +68,30 @@ describe('saveDeckPlanAsNetexToBackend', () => {
     expect(posted).toContain('<Width>1.10</Width>');
   });
 
+  it('sends the vehicleTypeKind Sobek requires on every import (entur/sobek#234)', async () => {
+    await saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null);
+    expect(postedTo?.origin + postedTo!.pathname).toBe(IMPORT_URL);
+    expect(postedTo?.searchParams.get('vehicleTypeKind')).toBe('PHYSICAL');
+  });
+
   it('still grafts the owning organisation onto the frame', async () => {
     await saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null);
     expect(posted).toContain(OWNER);
     expect(posted).toContain('NMR:ResponsibilitySet:1');
+  });
+
+  it("throws Sobek's error body, not the often empty statusText", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: false,
+        statusText: '',
+        text: async () => 'vehicleTypeKind is required',
+      }))
+    );
+    await expect(
+      saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null)
+    ).rejects.toThrow('vehicleTypeKind is required');
   });
 });
 
