@@ -211,6 +211,8 @@ test.describe('?selected=new sidebar VehicleEditForm gates + URL advance (no-aut
     const orgPicker = page.getByRole('banner').getByRole('combobox').first();
     await orgPicker.click();
     await page.getByRole('option', { name: 'Second Org (OPERATOR)' }).click();
+    // The held save leaves the form dirty: the org picker asks first.
+    await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
     await expect(orgPicker).toHaveValue('Second Org (OPERATOR)');
 
     const landed = page.waitForResponse(

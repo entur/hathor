@@ -104,7 +104,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *     Cancel stays, Discard follows; with no edits a Menu link goes straight through; a create's
  *     own redirect to its new id after Save never asks; the dialog's Save saves and stays,
  *     and offers no Save while a save runs (or once it has landed clean), when the fields read
- *     only — as during a Retry read
+ *     only — as during a Retry read; an organisation switch asks the same way (Cancel keeps
+ *     the edits, Discard switches)
  *   - a Vehicles chip links to the vehicle's form page (#285)
  *   - create page (internal user test): no Deactivate, no New button, no Vehicles section;
  *     Cancel stays inert until a field changes, then asks and Discard returns to the list
@@ -113,7 +114,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
  *   - live, the read-only form tests open the first row (openFirstRecord), not the fixture id;
  *     the deep link reloads that row's URL; a write the clean Save might send is aborted
- *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the Vehicles
+ *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the org switch
+ *     (a second, mocked organisation); the Vehicles
  *     chip (fixture vehicle); the last-section mark (needs a short last section); the
  *     empty-list test (mocked empty list); the unnamed type, the two bus-picture tests, the
  *     frame tests, the new page of cards and the focus returns below the fold and on page 2
@@ -609,6 +611,44 @@ test.describe('/next/vehicle-types page shell', () => {
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('button', { name: 'Discard' }).click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
+  });
+
+  test('an organisation switch with unsaved edits asks first: Cancel keeps them, Discard switches', async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'a second, mocked organisation');
+    // Registered last, so it answers before seedAuth's single org.
+    await interceptGraphQLQuery(page, 'organisations', {
+      data: {
+        organisations: {
+          content: ['Mock Org', 'Other Org'].map((value, i) => ({
+            netexId: `MOCK:Authority:${i + 1}`,
+            name: { value },
+            type: 'AUTHORITY',
+          })),
+          totalElements: 2,
+          page: 0,
+          size: 10000,
+        },
+      },
+    });
+    const typed = edited(await openFirstRecord(page));
+    const name = page.locator('#vtype-name');
+    await name.fill(typed);
+    const select = page.getByRole('banner').getByRole('combobox');
+    const dialog = page.getByRole('dialog');
+
+    await select.click();
+    await page.getByRole('option', { name: /^Other Org/ }).click();
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(select).toHaveValue(/^Mock Org/);
+    await expect(name).toHaveValue(typed);
+
+    await select.click();
+    await page.getByRole('option', { name: /^Other Org/ }).click();
+    await dialog.getByRole('button', { name: 'Discard' }).click();
+    await expect(select).toHaveValue(/^Other Org/);
+    await expect(name).not.toHaveValue(typed);
   });
 
   test("a create's Save moves to the new id without asking", async ({ page }) => {
