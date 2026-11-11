@@ -23,7 +23,8 @@ import {
 } from '../types.ts';
 import { matchRows, pageRows, sortRows } from '../utils/applyQuery.ts';
 import { resolveCard, resolveColumns } from '../utils/columns.ts';
-import { displayValue, keyRows, rowId } from '../utils/values.ts';
+import { asList } from '../utils/filters.ts';
+import { displayValue, keyRows, rowId, valueList } from '../utils/values.ts';
 import { CardsView } from './CardsView.tsx';
 import { CollectionPager } from './CollectionPager.tsx';
 import { CollectionToolbar } from './CollectionToolbar.tsx';
@@ -157,6 +158,23 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
       return { ...raw, sort, pageSize: usablePageSize(raw.pageSize) };
     }, [raw, cols]);
 
+    // An enum filter offers the values the rows carry, in the mapping's order — never a curated
+    // or global list (FORK_DECISIONS, TransportMode) — plus any it already filters on. In server
+    // mode the rows are a filtered result already, so the mapping's list stands.
+    const offered = useMemo(
+      () =>
+        filterCols.map(c => {
+          const all = c.spec.options;
+          if (!all || filterMode === 'server') return c;
+          const have = new Set([
+            ...rows.flatMap(r => valueList(r, c.spec)),
+            ...asList(query.filters[c.key]),
+          ]);
+          return { ...c, spec: { ...c.spec, options: all.filter(o => have.has(o)) } };
+        }),
+      [filterCols, rows, query.filters, filterMode]
+    );
+
     // Search looks only at what is on screen: the grid's visible columns, or
     // the fields a card shows. A row is never found by text it does not show.
     const searchCols = useMemo(
@@ -233,7 +251,7 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
             view={view}
             onView={onView}
             columns={cols}
-            filterColumns={filterCols}
+            filterColumns={offered}
             filterFields={filterFields}
             query={query}
             onQuery={onQuery}

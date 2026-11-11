@@ -127,7 +127,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *     and offers no Save while a save runs (or once it has landed clean), when the fields read
  *     only — as during a Retry read; an organisation switch asks the same way (Cancel keeps
  *     the edits, Discard switches — and starts a create page over)
- *   - a Vehicles chip links to the vehicle's form page (#285)
+ *   - a Vehicles chip links to the vehicle's form page (#285); a deck plan without a name
+ *     shows its id in the Deck Plan cell
  *   - an Autosys import's `?filter=<ids>` opens on those rows only, as a removable chip
  *   - live only: a rename saves, survives a fresh read, and leaves an untouched field as it was
  *     (Sobek's full-document replace) — the record is renamed back after
@@ -143,7 +144,7 @@ const interceptRailRows = (page: Page, n: number) =>
  *     (fixture id); the org switch
  *     (a second, mocked organisation); the Vehicles
  *     chip (fixture vehicle); the last-section mark (needs a short last section); the
- *     empty-list test (mocked empty list); the unnamed type, the two bus-picture tests, the
+ *     empty-list test (mocked empty list); the unnamed type and deck plan, the two bus-picture tests, the
  *     frame tests, the new page of cards and the focus returns below the fold and on page 2
  *     (mocked rows)
  */
@@ -246,6 +247,25 @@ test.describe('/vehicle-types page shell', () => {
     await expect(page.getByRole('gridcell', { name: id, exact: true })).toHaveCount(1);
     await page.getByRole('link', { name: `Edit ${id}` }).click();
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText(id);
+  });
+
+  test("a deck plan without a name goes by its id in the type's Deck Plan cell", async ({
+    page,
+  }) => {
+    test.skip(IS_LIVE, 'a mocked row');
+    const plan = 'NMR:DeckPlan:noname';
+    await interceptVehicleTypeRows(page, [
+      {
+        netexId: 'NMR:VehicleType:1',
+        version: 1,
+        name: { value: 'Type One' },
+        transportMode: 'BUS',
+        // Sobek's empty name is whitespace.
+        deckPlan: { netexId: plan, version: 1, name: { value: '  ' } },
+      },
+    ]);
+    await page.goto(LIST);
+    await expect(page.getByRole('gridcell', { name: plan, exact: true })).toHaveCount(1);
   });
 
   test('cards draw buses and coaches; a type without a height says so, a train is unsupported', async ({

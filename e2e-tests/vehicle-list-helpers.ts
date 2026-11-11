@@ -216,6 +216,7 @@ export interface VehicleTypeRow {
   version: number;
   name: { value: string } | null;
   transportMode: string | null;
+  deckPlan?: { netexId: string; version: number; name: { value: string } | null };
 }
 
 const DEFAULT_VEHICLE_TYPES: VehicleTypeRow[] = [
@@ -276,7 +277,7 @@ export const interceptVehicleTypesQuery = (
       created: null,
       changed: null,
       changedBy: null,
-      deckPlan: null,
+      deckPlan: r.deckPlan ?? null,
       vehicles: null,
     }));
     await route.fulfill({

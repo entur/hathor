@@ -16,6 +16,7 @@ import {
   type VehicleTypeField,
 } from '../types/vehicleTypeFields.ts';
 import { vehicleTypeTitle } from '../utils/vehicleTypeTitle.ts';
+import { deckPlanTitle } from '../../deck-plans/utils/deckPlanTitle.ts';
 
 type Props = EntityCollectionProps<VehicleType, VehicleTypeField>;
 
@@ -36,7 +37,12 @@ const COLUMNS: NonNullable<Props['columns']> = [
       r.transportMode && <TransportModeIcon mode={r.transportMode} iconPosition="left" />,
     text: r => (r.transportMode ? i18next.t(transportModeLabelKey(r.transportMode)) : ''),
   },
-  'deckPlan',
+  // By name, its id when Sobek's name is blank (whitespace): a cell, not a gap; search matches it.
+  {
+    field: 'deckPlan',
+    render: r => r.deckPlan && deckPlanTitle(r.deckPlan),
+    text: r => (r.deckPlan ? deckPlanTitle(r.deckPlan) : ''),
+  },
   'totalCapacity',
   'length',
   'lowFloor',

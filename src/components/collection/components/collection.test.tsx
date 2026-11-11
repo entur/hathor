@@ -374,3 +374,41 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     expect(screen.queryByRole('columnheader', { name: humanize(textCol.key) })).toBeNull();
   });
 });
+
+describe('enum filter options', () => {
+  const Modes = createEntityCollection(
+    { mode: { kind: 'enum', path: ['mode'], options: ['bus', 'ferry', 'rail', 'tram'] } },
+    { filterFields: { mode: { arg: 'modes', op: 'anyOf' } } }
+  );
+  const rows = [
+    { id: 'a', mode: 'rail' },
+    { id: 'b', mode: 'bus' },
+  ];
+  /** The option list of the panel's Mode filter, opened. */
+  const offered = (): string[] => {
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    const input = within(screen.getByRole('dialog')).getByRole('combobox');
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    return within(screen.getByRole('listbox'))
+      .getAllByRole('option')
+      .map(o => o.textContent ?? '');
+  };
+
+  it("offers the values the rows carry, in the mapping's order, plus one already filtered on", () => {
+    render(
+      <Modes
+        rows={rows}
+        view="cards"
+        query={{ ...defaultCollectionQuery, filters: { mode: ['tram'] } }}
+      />
+    );
+    expect(offered()).toEqual(['bus', 'rail', 'tram']);
+    cleanup();
+  });
+
+  it("offers the mapping's whole list in server mode, where the rows are already filtered", () => {
+    render(<Modes rows={rows} view="cards" filterMode="server" />);
+    expect(offered()).toEqual(['bus', 'ferry', 'rail', 'tram']);
+    cleanup();
+  });
+});

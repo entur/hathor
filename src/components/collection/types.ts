@@ -25,7 +25,8 @@ export interface FieldSpec {
   kind: FieldKind;
   /** Access path into the row (length 1 = top-level; >1 = flattened leaf). */
   path: readonly string[];
-  /** Member list for `enum` / `enumMulti` — the filter's suggestions. */
+  /** Member list for `enum` / `enumMulti`, in display order. The filter offers only the
+   *  members the rows carry (client mode), so the full schema enum is the right input. */
   options?: readonly string[];
   /** Not on sobek's wire yet: a fetched list never carries it, so it is never shown. */
   patched?: boolean;
