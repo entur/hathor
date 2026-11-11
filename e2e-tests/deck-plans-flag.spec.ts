@@ -10,10 +10,10 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  *   seedAuth with DeckPlans on (fixture default) or off (config override)
  *   → goto / and wait for the org-gated vehicles links → assert deck-plan
  *   links present / absent; goto /deck-plans with DeckPlans off → lands on /;
- *   goto /vehicle-types → assert the "Deck Plan" column header present / absent
+ *   goto /next/vehicle-types → assert the "Deck Plan" column header present / absent
  * Covers:
  *   - on: nav-rail item, Home's card and create action link to /next/deck-plans(/new);
- *     vehicle-type list shows the Deck Plan column
+ *     the vehicle-type collection shows the Deck Plan column
  *   - off: no link into deck plans anywhere; a direct visit redirects to /; no Deck Plan column
  *   - (the multi-import deck-plan count is covered in autosys-multi-import.spec.ts)
  * Modes:
@@ -22,7 +22,8 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  *     client-side config, served by route interception in both modes
  */
 
-const DECK_PLANS_OFF = { sandboxFeatures: { DeckPlans: false } };
+// Replaces the fixture's flags whole: keep `Collections` on for /next/vehicle-types.
+const DECK_PLANS_OFF = { sandboxFeatures: { DeckPlans: false, Collections: true } };
 const DECK_PLAN_COLUMN = 'Deck Plan';
 
 /** Any link into deck plans: the nav-rail item and Home's card and create action. */
@@ -32,7 +33,7 @@ const deckPlanLinks = (page: Page) => page.locator('a[href*="/deck-plans"]');
 const navDeckPlanLink = (page: Page) =>
   page.getByTestId('nav-rail').locator('a[href="/next/deck-plans"]');
 
-/** The vehicle-type list's Deck Plan column header. */
+/** The vehicle-type collection's Deck Plan column header. */
 const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DECK_PLAN_COLUMN });
 
 /** Home with an organisation selected — the org-gated vehicles links mark the nav and cards as rendered. */
@@ -44,12 +45,12 @@ const openHome = async (page: Page) => {
   await expect(page.locator('.app-content a[href$="/vehicles"]')).toBeVisible();
 };
 
-/** /vehicle-types with its table rendered. */
+/** /next/vehicle-types with its grid rendered. */
 const openVehicleTypes = async (page: Page) => {
   if (!IS_LIVE) await interceptVehicleTypesQuery(page);
-  await page.goto('/vehicle-types');
+  await page.goto('/next/vehicle-types');
   await selectFirstOrg(page);
-  await expect(page.locator('table tbody tr').first()).toBeVisible();
+  await expect(page.getByRole('link', { name: /^Edit / }).first()).toBeVisible();
 };
 
 test.describe('sandboxFeatures.DeckPlans', () => {
@@ -61,7 +62,7 @@ test.describe('sandboxFeatures.DeckPlans', () => {
     await expect(page.locator('.app-content a[href="/next/deck-plans/new"]')).toBeVisible();
   });
 
-  test('on: vehicle-type list shows the Deck Plan column', async ({ context, page }) => {
+  test('on: the vehicle-type collection shows the Deck Plan column', async ({ context, page }) => {
     await seedAuth(context);
     await openVehicleTypes(page);
     await expect(deckPlanColumn(page)).toBeVisible();
@@ -79,7 +80,7 @@ test.describe('sandboxFeatures.DeckPlans', () => {
     await expect(page).toHaveURL(url => url.pathname === '/');
   });
 
-  test('off: vehicle-type list hides the Deck Plan column', async ({ context, page }) => {
+  test('off: the vehicle-type collection hides the Deck Plan column', async ({ context, page }) => {
     await seedAuth(context, DECK_PLANS_OFF);
     await openVehicleTypes(page);
     await expect(deckPlanColumn(page)).toHaveCount(0);

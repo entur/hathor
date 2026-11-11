@@ -7,6 +7,7 @@ import {
 import { BusPicture } from '../../../components/bus-picture/index.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
 import { transportModeLabelKey } from '../../netex/transportMode.ts';
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import {
@@ -24,7 +25,7 @@ const Collection = createEntityCollection(vehicleTypeFields, {
 
 /** Name first, the id when it has none (U4); id second; then what tells two types apart at a glance. Captions
  *  come from `vehicleType.field.*` through the labels' `field`. */
-const COLUMNS: Props['columns'] = [
+const COLUMNS: NonNullable<Props['columns']> = [
   // Shown, not stored: sort and search still read the name.
   { field: 'name', render: vehicleTypeTitle },
   'id',
@@ -47,6 +48,12 @@ const CARD: CardSpec<VehicleTypeField> = {
   fields: ['transportMode', 'deckPlan', 'totalCapacity'],
 };
 
+// `DeckPlans` off: no deck plan shown, in either view.
+const isDeckPlan = (c: (typeof COLUMNS)[number]) =>
+  (typeof c === 'string' ? c : c.field) === 'deckPlan';
+const COLUMNS_NO_DECK_PLAN = COLUMNS.filter(c => !isDeckPlan(c));
+const CARD_NO_DECK_PLAN = { ...CARD, fields: CARD.fields.filter(f => f !== 'deckPlan') };
+
 // Cards: the type drawn as a bus, white; dims it lacks come from the standard bus.
 // Not a bus or coach: a line of text instead.
 const busMedia = (vt: VehicleType) => (
@@ -65,10 +72,11 @@ const editHref = (vt: VehicleType) => encodeURIComponent(vt.id);
  */
 export function VehicleTypeCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
   const labels = useCollectionLabels('vehicleType.field');
+  const deckPlans = useIsFeatureOn()('DeckPlans');
   return (
     <Collection
-      columns={COLUMNS}
-      card={CARD}
+      columns={deckPlans ? COLUMNS : COLUMNS_NO_DECK_PLAN}
+      card={deckPlans ? CARD : CARD_NO_DECK_PLAN}
       cardMedia={busMedia}
       labels={labels}
       editHref={editHref}
