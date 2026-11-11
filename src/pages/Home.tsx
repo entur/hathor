@@ -65,15 +65,11 @@ export default function HomePage() {
         <Box component="header" sx={{ mb: { xs: 4, md: 6 } }}>
           <Typography
             variant="overline"
-            sx={{ color: 'primary.main', letterSpacing: '0.12em', fontWeight: 700 }}
+            sx={{ color: 'primary.main', letterSpacing: '0.12em', fontWeight: 'fontWeightBold' }}
           >
             {t('home.eyebrow')}
           </Typography>
-          <Typography
-            variant="h3"
-            component="h1"
-            sx={{ fontWeight: 800, lineHeight: 1.1, mt: 0.5, mb: 2 }}
-          >
+          <Typography variant="h1" sx={{ lineHeight: 1.1, mt: 0.5, mb: 2 }}>
             {t('home.welcomeMessage')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '64ch' }}>
@@ -124,7 +120,7 @@ export default function HomePage() {
         )}
         {!currentOrganisation && isAuthenticated && (
           <Box component="section">
-            <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
               {t('home.noOrganisation')}
             </Typography>
             {organisationsError && (

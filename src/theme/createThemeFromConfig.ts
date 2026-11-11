@@ -1,4 +1,10 @@
-import { alpha, createTheme, type Components, type Theme } from '@mui/material/styles';
+import {
+  alpha,
+  createTheme,
+  type Components,
+  type Theme,
+  type TypographyVariantsOptions,
+} from '@mui/material/styles';
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type { ThemeConfig } from './theme-config';
 
@@ -7,18 +13,48 @@ import type { ThemeConfig } from './theme-config';
 // (Lavender 40) on the navy header.
 const FOCUS_PX = 2,
   FOCUS_CONTRAST = '#aeb7e2';
+// Linje `--font-weights-*` (#258): Nationale ships only these two.
+const BODY_WEIGHT = 500,
+  HEADING_WEIGHT = 600;
+// Linje card corner, `--border-radiuses-large`; fields and buttons keep `shape.borderRadius` 4.
+const CARD_RADIUS_PX = 8;
 
 const ring = (color: string, offset = FOCUS_PX) => ({
   outline: `${FOCUS_PX}px solid ${color}`,
   outlineOffset: offset,
 });
 
+const heading = (rem: number) => ({
+  fontSize: `${rem}rem`,
+  fontWeight: HEADING_WEIGHT,
+  lineHeight: 1.25,
+});
+
 /**
- * One keyboard-focus ring for the whole app, `:focus-visible` only (no ring on a mouse
- * click). Items flush in a clipping box (menus, the nav rail, tabs, grid cells) draw it inset.
- * A theme file's own entry for one of these components replaces it.
+ * Linje's type scale (#258), 12 · 14 · 16 · 20 · 24 · 32 px: MUI's body, subtitle, button,
+ * caption and overline sizes already sit on it; headings step 32 / 24 / 20. A page title is
+ * `h5` (24), a section `h6` (20), the Home hero `h1` (32).
  */
-const FOCUS_RING: Components<Theme> = {
+const TYPE_SCALE: TypographyVariantsOptions = {
+  fontWeightLight: BODY_WEIGHT,
+  fontWeightRegular: BODY_WEIGHT,
+  fontWeightMedium: BODY_WEIGHT,
+  fontWeightBold: HEADING_WEIGHT,
+  h1: heading(2),
+  h2: heading(1.5),
+  h3: heading(1.5),
+  h4: heading(1.5),
+  h5: heading(1.5),
+  h6: heading(1.25),
+};
+
+/**
+ * Card corners, and one keyboard-focus ring for the whole app, `:focus-visible` only (no ring
+ * on a mouse click). Items flush in a clipping box (menus, the nav rail, tabs, grid cells) draw
+ * it inset. A theme file's own entry for one of these components replaces it.
+ */
+const BASE_COMPONENTS: Components<Theme> = {
+  MuiCard: { styleOverrides: { root: { borderRadius: CARD_RADIUS_PX } } },
   MuiButtonBase: {
     styleOverrides: {
       root: ({ theme }) => ({
@@ -57,8 +93,9 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
   return createTheme({
     ...themeOptions,
     logoUrl,
+    typography: { ...TYPE_SCALE, ...(themeOptions.typography as TypographyVariantsOptions) },
     components: {
-      ...FOCUS_RING,
+      ...BASE_COMPONENTS,
       ...themeOptions.components,
       // Override table row hover from opaque action.hover to a subtle
       // primary tint. The default palette action.hover is a solid color

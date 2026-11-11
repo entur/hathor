@@ -16,7 +16,7 @@ export default function HeaderBranding() {
         }}
       >
         <img src={theme.logoUrl} alt="logo" height={theme.logoHeight} />
-        <Typography variant="h6" sx={{ ml: 1, mr: 1, fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ ml: 1, mr: 1 }}>
           {theme.applicationName}
         </Typography>
       </Link>

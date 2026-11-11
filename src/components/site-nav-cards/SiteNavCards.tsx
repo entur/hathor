@@ -107,7 +107,7 @@ export function NavGrid({ types = TYPES }: { types?: SiteType[] }) {
   const { t } = useTranslation();
   return (
     <Box component="section">
-      <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+      <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
         {t('home.browse')}
       </Typography>
       <Box
@@ -134,7 +134,7 @@ export function CreateRow({ types = TYPES }: { types?: SiteType[] }) {
   const { t } = useTranslation();
   return (
     <Box component="section">
-      <Typography variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+      <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
         {t('home.createNew.title')}
       </Typography>
       <Box
@@ -287,7 +287,7 @@ function Count({ fn, ctx }: { fn: SiteType['count']; ctx: CountCtx }) {
   return (
     <Typography
       variant="h4"
-      sx={{ fontWeight: 800, lineHeight: 1, ...(err && { color: 'text.disabled' }) }}
+      sx={{ lineHeight: 1, ...(err && { color: 'text.disabled' }) }}
       title={err ? t('home.countUnavailable') : undefined}
       data-testid={s.st === 'pending' ? 'site-count-pending' : err ? 'site-count-err' : undefined}
     >
@@ -396,7 +396,7 @@ function ComboCard({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Glyph name={x.icon} size={iconSize} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'fontWeightBold' }}>
             {t(x.titleKey)}
           </Typography>
         </Box>
@@ -420,7 +420,7 @@ function ComboCard({
           color: 'primary.main',
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'fontWeightBold' }}>
           + {t(x.createKey)}
         </Typography>
       </Box>
@@ -459,7 +459,7 @@ function NavTile({
       }}
     >
       <Glyph name={icon} size={NAV_ICON} />
-      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 'fontWeightBold' }}>
         {title}
       </Typography>
       <Typography variant="body2" color="text.secondary">
@@ -488,7 +488,7 @@ function CreateAction({ to, icon, label }: { to: string; icon: MenuIconName; lab
       }}
     >
       <Glyph name={icon} size={ACTION_ICON} />
-      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 'fontWeightBold' }}>
         {label}
       </Typography>
     </Box>

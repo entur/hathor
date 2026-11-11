@@ -133,7 +133,7 @@ export default function EditorFrame<T, F>({
       <>
         <Box sx={{ p: 2 }}>
           <Typography
-            variant="h6"
+            variant="h5"
             component={heading}
             {...headingFocus}
             sx={{ mb: 1, ...HEADING_NO_RING }}
@@ -191,7 +191,7 @@ export default function EditorFrame<T, F>({
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1, flexShrink: 0 }}>
         <FormLayout sx={{ flex: 1, minWidth: 0 }}>
           <Typography
-            variant="h6"
+            variant="h5"
             component={heading}
             {...headingFocus}
             noWrap
@@ -207,7 +207,7 @@ export default function EditorFrame<T, F>({
                   sx={{
                     color: 'text.disabled',
                     fontStyle: 'italic',
-                    fontWeight: 400,
+                    fontWeight: 'fontWeightRegular',
                     letterSpacing: '0.02em',
                   }}
                 >
@@ -232,7 +232,7 @@ export default function EditorFrame<T, F>({
             <Typography
               variant="subtitle2"
               color="error"
-              sx={{ fontWeight: 700, textTransform: 'uppercase' }}
+              sx={{ fontWeight: 'fontWeightBold', textTransform: 'uppercase' }}
               data-testid="editor-page-deactivated"
             >
               {t('common.deactivated')}

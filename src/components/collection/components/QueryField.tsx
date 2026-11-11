@@ -36,7 +36,7 @@ const INPUT_MIN_CH = 10,
   INPUT_MIN_CH_NARROW = 6; // typed text keeps this much room beside the chips
 /** A compact count that stays inside the field's border. */
 const BADGE_SX = {
-  '& .MuiBadge-badge': { fontSize: '0.65rem', height: 16, minWidth: 16, px: 0.5 },
+  '& .MuiBadge-badge': { typography: 'caption', lineHeight: 1, height: 16, minWidth: 16, px: 0.5 },
 } as const;
 const ELLIPSIS = '…';
 const FIELD = '\u0000field'; // focus target: the input, never a column key

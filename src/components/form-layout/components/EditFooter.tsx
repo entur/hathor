@@ -197,7 +197,7 @@ export function EditFooter({
         <Typography
           variant="caption"
           // Linje has no warning text colour (Canary text fails contrast) — the dot carries it.
-          sx={{ color: dirty ? 'text.primary' : 'text.secondary', fontWeight: 500 }}
+          sx={{ color: dirty ? 'text.primary' : 'text.secondary', fontWeight: 'fontWeightMedium' }}
         >
           {status}
         </Typography>
