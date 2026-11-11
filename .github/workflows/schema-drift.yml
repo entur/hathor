@@ -1,0 +1,46 @@
+name: Sobek schema drift
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - name: Compare the vendored schema with Sobek's live schema
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -uo pipefail
+        url=https://entur.github.io/sobek/schema.graphqls
+        live=${RUNNER_TEMP}/sobek.live.graphqls
+        curl -fsS --retry 3 --retry-delay 2 --retry-all-errors --max-time 30 "$url" -o "$live"
+        [ -s "$live" ] || { echo "::error::Empty schema from $url"; exit 1; }
+        title="Sobek schema drift: re-sync src/graphql/sobek.schema.graphqls"
+        existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+        if diff -u src/graphql/sobek.schema.graphqls "$live" > "${RUNNER_TEMP}/drift.diff"; then
+          echo "Sobek schema in sync."
+          exit 0
+        fi
+        echo "Sobek schema has drifted."
+        if [ -n "$existing" ]; then
+          echo "Issue #$existing is already open."
+          exit 0
+        fi
+        {
+          echo "The live Sobek schema differs from the vendored snapshot. To re-sync:"
+          echo
+          echo '```sh'
+          echo "curl -s $url -o src/graphql/sobek.schema.graphqls"
+          echo "node scripts/validate-graphql-documents.mjs"
+          echo "npm test src/data/netex/e2eFixturesContract.test.ts"
+          echo '```'
+          echo
+          echo "Then update any mocks and fixtures whose query selection changed."
+          echo "The \`schema\` check on pull requests already fails if a query selects something Sobek removed."
+        } > "${RUNNER_TEMP}/body.md"
+        gh issue create --title "$title" --body-file "${RUNNER_TEMP}/body.md"

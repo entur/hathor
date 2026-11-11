@@ -147,9 +147,9 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 ### CI Workflow
 
 `.github/workflows/playwright.yml` runs on push/PR to `main`/`master` as three jobs:
-1. **`schema`** — Sobek schema-drift guard (curl + diff, no `npm ci`); gates `e2e`.
+1. **`schema`** — validates every `gql` document under `src/graphql` against the live Sobek schema (`scripts/validate-graphql-documents.mjs`); fails only on real breakage, not unrelated Sobek changes. Sibling of `e2e` (no `needs`). Full-schema drift is reported weekly by `schema-drift.yml`, which opens an issue.
 2. **`unit`** — `npm ci` + `npm run test:coverage`; sibling of `e2e` (no `needs`, so neither blocks the other).
-3. **`e2e`** — `needs: schema`; browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
+3. **`e2e`** — browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
 
 ## Legacy Cleanup TODO
 
