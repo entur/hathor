@@ -22,8 +22,10 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  *     client-side config, served by route interception in both modes
  */
 
-// Replaces the fixture's flags whole: keep `Collections` on for /next/vehicle-types.
-const DECK_PLANS_OFF = { sandboxFeatures: { DeckPlans: false, Collections: true } };
+// Replaces the fixture's flags whole: only DeckPlans differs from config-with-auth.json.
+const DECK_PLANS_OFF = {
+  sandboxFeatures: { DeckPlans: false, AutosysImport: true, Collections: true },
+};
 const DECK_PLAN_COLUMN = 'Deck Plan';
 
 /** Any link into deck plans: the nav-rail item and Home's card and create action. */

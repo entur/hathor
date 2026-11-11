@@ -215,7 +215,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(page.getByTestId('create-vehicle-type-fab')).toHaveCount(1);
   });
 
-  test('an import lands with ?filter=<ids>: only those rows, as a chip that clears', async ({
+  test('an import lands with ?filter=<ids>: only those rows, as a chip that clears, URL too', async ({
     page,
   }) => {
     test.skip(IS_LIVE, 'fixture ids');
@@ -224,6 +224,8 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(edits).toHaveCount(1);
     await page.getByRole('button', { name: /remove filter/ }).press('Backspace');
     await expect(edits).toHaveCount(FIXTURE_ROWS);
+    // The URL lets it go too: a reload doesn't bring it back.
+    await expect(page).toHaveURL(new RegExp(`${LIST}$`));
   });
 
   test('a type without a name goes by its id: cell, Edit link, heading (#290)', async ({
@@ -656,7 +658,8 @@ test.describe('/next/vehicle-types page shell', () => {
   }) => {
     test.skip(IS_LIVE, 'a second, mocked organisation');
     await interceptTwoOrgs(page);
-    const typed = edited(await openFirstRecord(page));
+    const loaded = await openFirstRecord(page);
+    const typed = edited(loaded);
     const name = page.locator('#vtype-name');
     await name.fill(typed);
     const select = page.getByRole('banner').getByRole('combobox');
@@ -670,7 +673,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await pickOtherOrg(page);
     await dialog.getByRole('button', { name: 'Discard' }).click();
     await expect(select).toHaveValue(/^Other Org/);
-    await expect(name).not.toHaveValue(typed);
+    await expect(name).toHaveValue(loaded);
   });
 
   test('a rename saves for real, survives a reload and leaves the other fields (live)', async ({
@@ -683,19 +686,29 @@ test.describe('/next/vehicle-types page shell', () => {
     const length = await page.locator('#vtype-length').inputValue();
     const marker = `E2E-live-${Date.now()}`;
 
-    await name.fill(marker);
-    await footerSave(page).click();
-    await expect(page.getByText('All changes saved')).toBeVisible();
-    // A fresh read: the name persisted, and the full-document replace kept a field it didn't touch.
-    await page.goto(url);
-    await selectFirstOrg(page);
-    await expect(name).toHaveValue(marker);
-    await expect(page.locator('#vtype-length')).toHaveValue(length);
-
-    // Leave the record as found (but for its version).
-    await name.fill(original);
-    await footerSave(page).click();
-    await expect(page.getByText('All changes saved')).toBeVisible();
+    /** A fresh read of the record. */
+    const reload = async () => {
+      await page.goto(url);
+      await selectFirstOrg(page);
+      await expect(name).toBeEditable();
+    };
+    try {
+      await name.fill(marker);
+      await footerSave(page).click();
+      await expect(page.getByText('All changes saved')).toBeVisible();
+      // The name persisted, and the full-document replace kept a field it didn't touch.
+      await reload();
+      await expect(name).toHaveValue(marker);
+      await expect(page.locator('#vtype-length')).toHaveValue(length);
+    } finally {
+      // Leave the shared record as found (but for its version), even after a failure.
+      await reload();
+      if ((await name.inputValue()) !== original) {
+        await name.fill(original);
+        await footerSave(page).click();
+        await expect(page.getByText('All changes saved')).toBeVisible();
+      }
+    }
   });
 
   test("an organisation switch discards a create's draft once confirmed", async ({ page }) => {
