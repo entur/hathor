@@ -10,6 +10,37 @@ Companion to [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md): that file holds *unresolv
 
 ---
 
+## Version bumps go through pull requests (2026-11-11)
+
+### Context
+
+The Build workflow's direct push of its version-bump commit is rejected by the
+ruleset protecting `main`. The original feature PR does not authorize a subsequent
+automated push.
+
+### Decision
+
+Create or update a minor-version-bump PR instead. Explicitly dispatch the existing
+Tests workflow on its branch so the required checks run despite `GITHUB_TOKEN`
+event suppression. After the version change is merged, build and tag the merged
+commit, then trigger deployment. Detect the version change across the push's
+before/after commits so merging the bump does not open another bump PR.
+
+### Alternatives considered
+
+A dedicated GitHub App with a ruleset bypass would permit direct pushes, but
+requires another credential and exempts those pushes from the normal checks.
+Deploying before the version PR merges would decouple deployed versions from
+approved commits.
+
+### Consequences
+
+Releases require merging the version-bump PR. Administrators must allow Actions
+to create PRs, but no bypass or additional token is needed. The Tests workflow
+also accepts manual dispatches.
+
+---
+
 ## Vehicle deep-link via `?selected=` query param _(retroactive, captured 2026-05-12)_
 
 > **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
