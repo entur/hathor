@@ -10,7 +10,7 @@ import type { EntityCollectionProps } from './index';
 import { ALL_TOOLS } from './types';
 
 const ROW_COUNT = 120;
-const LIST = '/next/vehicle-types';
+const LIST = '/vehicle-types';
 const NARROW_W = 360; // a phone: the toolbar wraps, the Columns tool trims the grid (U5)
 const FRAME_H = 560; // a page-shell height: the toolbar and pager stay, the rows scroll (#278)
 const MODES: TransportMode[] = ['BUS', 'COACH', 'RAIL', 'TRAM', 'WATER'];

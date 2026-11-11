@@ -16,7 +16,6 @@
   "themeFilePath": "/theme-dev.json",
   "sandboxFeatures": {
     "DeckPlans": true,
-    "AutosysImport": true,
-    "Collections": true
+    "AutosysImport": true
   }
 }

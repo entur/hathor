@@ -17,7 +17,6 @@
   "faviconPath": "/assets/M-favicon.svg",
   "sandboxFeatures": {
     "DeckPlans": true,
-    "AutosysImport": true,
-    "Collections": true
+    "AutosysImport": true
   }
 }

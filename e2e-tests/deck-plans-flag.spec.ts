@@ -10,9 +10,9 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  *   seedAuth with DeckPlans on (fixture default) or off (config override)
  *   → goto / and wait for the org-gated vehicles links → assert deck-plan
  *   links present / absent; goto /deck-plans with DeckPlans off → lands on /;
- *   goto /next/vehicle-types → assert the "Deck Plan" column header present / absent
+ *   goto /vehicle-types → assert the "Deck Plan" column header present / absent
  * Covers:
- *   - on: nav-rail item, Home's card and create action link to /next/deck-plans(/new);
+ *   - on: nav-rail item, Home's card and create action link to /deck-plans(/new);
  *     the vehicle-type collection shows the Deck Plan column
  *   - off: no link into deck plans anywhere; a direct visit redirects to /; no Deck Plan column
  *   - (the multi-import deck-plan count is covered in autosys-multi-import.spec.ts)
@@ -23,17 +23,15 @@ import { IS_LIVE, seedAuth, selectFirstOrg } from './live-auth-helpers';
  */
 
 // Replaces the fixture's flags whole: only DeckPlans differs from config-with-auth.json.
-const DECK_PLANS_OFF = {
-  sandboxFeatures: { DeckPlans: false, AutosysImport: true, Collections: true },
-};
+const DECK_PLANS_OFF = { sandboxFeatures: { DeckPlans: false, AutosysImport: true } };
 const DECK_PLAN_COLUMN = 'Deck Plan';
 
 /** Any link into deck plans: the nav-rail item and Home's card and create action. */
 const deckPlanLinks = (page: Page) => page.locator('a[href*="/deck-plans"]');
 
-/** The nav-rail item for /next/deck-plans (`Collections` is on in the fixture config, #295). */
+/** The nav-rail item for /deck-plans. */
 const navDeckPlanLink = (page: Page) =>
-  page.getByTestId('nav-rail').locator('a[href="/next/deck-plans"]');
+  page.getByTestId('nav-rail').locator('a[href="/deck-plans"]');
 
 /** The vehicle-type collection's Deck Plan column header. */
 const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DECK_PLAN_COLUMN });
@@ -42,15 +40,14 @@ const deckPlanColumn = (page: Page) => page.getByRole('columnheader', { name: DE
 const openHome = async (page: Page) => {
   await page.goto('/');
   await selectFirstOrg(page);
-  // /next/vehicles with `Collections` on (fixture default, #295); /vehicles when an override drops it.
   await expect(page.getByTestId('nav-rail').locator('a[href$="/vehicles"]')).toBeVisible();
   await expect(page.locator('.app-content a[href$="/vehicles"]')).toBeVisible();
 };
 
-/** /next/vehicle-types with its grid rendered. */
+/** /vehicle-types with its grid rendered. */
 const openVehicleTypes = async (page: Page) => {
   if (!IS_LIVE) await interceptVehicleTypesQuery(page);
-  await page.goto('/next/vehicle-types');
+  await page.goto('/vehicle-types');
   await selectFirstOrg(page);
   await expect(page.getByRole('link', { name: /^Edit / }).first()).toBeVisible();
 };
@@ -60,8 +57,8 @@ test.describe('sandboxFeatures.DeckPlans', () => {
     await seedAuth(context);
     await openHome(page);
     await expect(navDeckPlanLink(page)).toBeVisible();
-    await expect(page.locator('.app-content a[href="/next/deck-plans"]')).toBeVisible();
-    await expect(page.locator('.app-content a[href="/next/deck-plans/new"]')).toBeVisible();
+    await expect(page.locator('.app-content a[href="/deck-plans"]')).toBeVisible();
+    await expect(page.locator('.app-content a[href="/deck-plans/new"]')).toBeVisible();
   });
 
   test('on: the vehicle-type collection shows the Deck Plan column', async ({ context, page }) => {

@@ -2,15 +2,12 @@ import { Box, Container } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { APP_HEADER_HEIGHT_PX } from '../../components/Menu.tsx';
 
-/** Route prefix of the shell's pages while they run beside the legacy views (#252). */
-export const NEXT_BASE = '/next';
-
 // MUI `lg` = 1200px: content width cap; Container adds the responsive side gutters.
 const CONTENT_MAX_WIDTH = 'lg';
 
 /**
- * Outer frame for the collection and entity-details pages — the layout route
- * at {@link NEXT_BASE}, parallel to `GenericDataViewPage`. A full-height
+ * Outer frame for the collection and entity-details pages — their layout route
+ * (#252). A full-height
  * column under the app header; the child route fills a left-aligned, width-capped
  * {@link Container} via `<Outlet/>`.
  *

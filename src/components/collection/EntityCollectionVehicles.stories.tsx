@@ -11,7 +11,7 @@ import type { EntityCollectionProps } from './index';
 import { ALL_TOOLS } from './types';
 
 const ROW_COUNT = 40;
-const LIST = '/next/vehicles';
+const LIST = '/vehicles';
 const UNNAMED_EVERY = 7; // these rows have no name: Name falls back to the registration number
 
 // Sobek's wire shape, kept in step with the query by the e2e suite. Globbed: the fixture

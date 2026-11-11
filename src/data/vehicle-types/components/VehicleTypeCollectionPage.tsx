@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import CollectionPage from '../../../pages/shell/CollectionPage.tsx';
 import { useFocusEditId } from '../../../pages/shell/useFocusEditId.ts';
-import { NEXT_BASE } from '../../../pages/shell/PageShell.tsx';
 import { useVehicleTypes } from '../hooks/useVehicleTypes.ts';
 import { VehicleTypeCollection } from './vehicleTypeCollectionConfig.tsx';
 
 /** Collection route of vehicle types under the page shell. */
-export const VEHICLE_TYPES_NEXT_PATH = `${NEXT_BASE}/vehicle-types`;
+export const VEHICLE_TYPES_PATH = `/vehicle-types`;
 
 /** Query param an Autosys import lands with: the vehicle-type ids it wrote, comma-separated
  *  (`AutosysImportFloatingMenu`). */
@@ -21,7 +20,7 @@ const KEYS = {
 };
 
 /**
- * `/next/vehicle-types` — the vehicle-type collection page: the org's vehicle types in grid or
+ * `/vehicle-types` — the vehicle-type collection page: the org's vehicle types in grid or
  * cards, each with an Edit link to its details page. `?filter=<ids>` opens it narrowed to
  * those ids, as a chip; removing the chip drops the param too.
  *
@@ -38,7 +37,7 @@ export default function VehicleTypeCollectionPage() {
   if (filter && filter !== opened) setOpened(filter);
   return (
     <CollectionPage
-      listPath={VEHICLE_TYPES_NEXT_PATH}
+      listPath={VEHICLE_TYPES_PATH}
       keys={KEYS}
       newTestId="create-vehicle-type-fab"
       count={allData.length}

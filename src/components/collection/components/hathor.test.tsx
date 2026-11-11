@@ -116,12 +116,12 @@ describe('render', () => {
 });
 
 describe('Edit link', () => {
-  const editHref = (r: Row) => `/next/vehicle-types/${encodeURIComponent(r.id)}`;
+  const editHref = (r: Row) => `/vehicle-types/${encodeURIComponent(r.id)}`;
 
   it('is a real link per grid row, named for the record, with its focus-return id', async () => {
     await mount({ view: 'grid', editHref });
     const link = within((await gridRows())[0]).getByRole('link', { name: 'Edit Flirt' });
-    expect(link.getAttribute('href')).toBe('/next/vehicle-types/NMR%3AVehicleType%3A1');
+    expect(link.getAttribute('href')).toBe('/vehicle-types/NMR%3AVehicleType%3A1');
     expect(link.getAttribute('data-edit-id')).toBe('NMR:VehicleType:1');
     expect(link.textContent).toBe('Edit');
   });
@@ -143,7 +143,7 @@ describe('Edit link', () => {
                 />
               }
             />
-            <Route path="/next/vehicle-types/:id" element={<Where />} />
+            <Route path="/vehicle-types/:id" element={<Where />} />
           </Routes>
         </MemoryRouter>
       );

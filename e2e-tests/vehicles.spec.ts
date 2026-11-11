@@ -8,7 +8,7 @@ import {
   vehicleRow,
 } from './vehicle-list-helpers';
 
-const LIST = '/next/vehicles';
+const LIST = '/vehicles';
 // vehicles-list-mock.json: a rail vehicle, its type not in vehicle-types-mock.json.
 const FIXTURE_REG = 'RAIL-003';
 // vehicle-types-mock.json: a bus type with all three dims.
@@ -18,11 +18,11 @@ const BUS_TYPE = 'Type Alpha';
 const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exact: true });
 
 /**
- * /next/vehicles — the vehicle pair (#285, epic #252): CollectionShell list ·
- * EntityDetailsShell form page, as /next/vehicle-types.
+ * /vehicles — the vehicle pair (#285, epic #252): CollectionShell list ·
+ * EntityDetailsShell form page, as /vehicle-types.
  *
  * Workflow:
- *   /next/vehicles → collection grid with an Edit link per row → /next/vehicles/<id>, ready
+ *   /vehicles → collection grid with an Edit link per row → /vehicles/<id>, ready
  *   to edit → Back returns to the list.
  * Covers:
  *   - Edit → form page (h1 focused, Save has nothing to save); Back → focus back on the row's Edit link
@@ -40,7 +40,7 @@ const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exac
  *   - skip-live: the search (a fixture registration number), the type-link and unnamed tests
  *     (mocked rows), and the create test (fixture type names)
  */
-test.describe('/next/vehicles', () => {
+test.describe('/vehicles', () => {
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) {
@@ -100,7 +100,7 @@ test.describe('/next/vehicles', () => {
     const open = page.getByRole('link', { name: 'Open vehicle type' });
     await expect(open).toHaveAttribute(
       'href',
-      `/next/vehicle-types/${encodeURIComponent('NMR:VehicleType:1')}`
+      `/vehicle-types/${encodeURIComponent('NMR:VehicleType:1')}`
     );
 
     // vehicles-list-mock.json's rail type is not among the org's types: no page to open.

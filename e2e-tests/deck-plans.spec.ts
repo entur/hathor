@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { interceptDeckPlanSave, interceptDeckPlansQuery, loadXmlFixture } from './autosys-helpers';
 import { IS_LIVE, firstEdit, seedAuth, selectFirstOrg } from './live-auth-helpers';
 
-const LIST = '/next/deck-plans';
+const LIST = '/deck-plans';
 // deck-plans-mock.json: "Plan Alpha", name padded with whitespace.
 const ALPHA = 'NMR:DeckPlan:5';
 // deck-plans-mock.json: a plan with no name at all.
@@ -17,11 +17,11 @@ const serveBody = (page: Page, file = 'deck-plan-xml-with-decks-mock.xml') =>
   );
 
 /**
- * /next/deck-plans — the deck-plan pair (#287, epic #252): CollectionShell list ·
- * EntityDetailsShell form page, as /next/vehicles.
+ * /deck-plans — the deck-plan pair (#287, epic #252): CollectionShell list ·
+ * EntityDetailsShell form page, as /vehicles.
  *
  * Workflow:
- *   /next/deck-plans → collection grid with an Edit link per row → /next/deck-plans/<id>,
+ *   /deck-plans → collection grid with an Edit link per row → /deck-plans/<id>,
  *   ready to edit, decks in column 3 → Back returns to the list.
  * Covers:
  *   - Edit → form page (h1 focused, Save has nothing to save); Back → focus back on the row's Edit link
@@ -36,7 +36,7 @@ const serveBody = (page: Page, file = 'deck-plan-xml-with-decks-mock.xml') =>
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; Edit → Back on the first row
  *   - skip-live: fixture names and decks, the save (writes a shared plan), create
  */
-test.describe('/next/deck-plans', () => {
+test.describe('/deck-plans', () => {
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) {
@@ -112,8 +112,7 @@ test.describe('/next/deck-plans', () => {
   });
 
   test('DeckPlans off: a direct visit lands on /', async ({ page, context }) => {
-    // Top-level merge: the override replaces all of `sandboxFeatures`, so keep Collections on.
-    await seedAuth(context, { sandboxFeatures: { Collections: true, DeckPlans: false } });
+    await seedAuth(context, { sandboxFeatures: { DeckPlans: false } });
     await page.goto(LIST);
     await expect(page).toHaveURL(url => url.pathname === '/');
   });

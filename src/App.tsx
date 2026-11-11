@@ -16,10 +16,7 @@ import {
   RAIL_EXPANDED_W,
 } from './contexts/NavRailContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
-import VehicleTypeView from './data/vehicle-types/components/VehicleTypeView.tsx';
-import DeckPlanView from './data/deck-plans/components/DeckPlanView.tsx';
-import VehicleView from './data/vehicles/components/VehicleView.tsx';
-import PageShell, { NEXT_BASE } from './pages/shell/PageShell.tsx';
+import PageShell from './pages/shell/PageShell.tsx';
 import VehicleTypeCollectionPage from './data/vehicle-types/components/VehicleTypeCollectionPage.tsx';
 import VehicleTypeDetailsPage from './data/vehicle-types/components/VehicleTypeDetailsPage.tsx';
 import VehicleCollectionPage from './data/vehicles/components/VehicleCollectionPage.tsx';
@@ -72,25 +69,7 @@ export default function App() {
                 <MenuIconSprite />
                 <Routes>
                   <Route path="/" element={<Home />} />
-                  <Route
-                    path="/vehicle-types"
-                    element={<ProtectedRoute element={<VehicleTypeView />} />}
-                  />
-                  <Route path="/vehicles" element={<ProtectedRoute element={<VehicleView />} />} />
-                  <Route
-                    path="/deck-plans"
-                    element={deckPlans(<ProtectedRoute element={<DeckPlanView />} />)}
-                  />
-                  <Route
-                    path={NEXT_BASE}
-                    element={
-                      isFeatureOn('Collections') ? (
-                        <ProtectedRoute element={<PageShell />} />
-                      ) : (
-                        <Navigate to="/" replace />
-                      )
-                    }
-                  >
+                  <Route element={<ProtectedRoute element={<PageShell />} />}>
                     <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
                     <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
                     <Route path="vehicles" element={<VehicleCollectionPage />} />

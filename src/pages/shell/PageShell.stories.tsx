@@ -6,7 +6,7 @@ import CollectionShell from './CollectionShell.tsx';
 import EntityDetailsShell from './EntityDetailsShell.tsx';
 import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
 
-const LIST = '/next/things';
+const LIST = '/things';
 
 /** Stand-in for whatever a route renders into a shell slot. */
 function Standin({ text }: { text: string }) {
@@ -19,12 +19,12 @@ function Standin({ text }: { text: string }) {
   );
 }
 
-/** Mount `child` under the `/next` layout route at `entry`. */
+/** Mount `child` under the page shell's layout route at `entry`. */
 function AtRoute({ entry, path, child }: { entry: string; path: string; child: React.ReactNode }) {
   return (
     <MemoryRouter initialEntries={[entry]}>
       <Routes>
-        <Route path="/next" element={<PageShell />}>
+        <Route path="/" element={<PageShell />}>
           <Route path={path} element={child} />
         </Route>
       </Routes>
@@ -40,7 +40,7 @@ const meta: Meta<typeof PageShell> = {
     docs: {
       description: {
         component:
-          'Page shell (#253): `PageShell` is the `/next` layout route — full height, left-aligned `lg` Container, `<Outlet/>`. `CollectionShell` and `EntityDetailsShell` fill the outlet. Grey papers are stand-ins for the slot content.',
+          'Page shell (#253): `PageShell` is the layout route of the collection and form pages — full height, left-aligned `lg` Container, `<Outlet/>`. `CollectionShell` and `EntityDetailsShell` fill the outlet. Grey papers are stand-ins for the slot content.',
       },
     },
   },
@@ -54,11 +54,7 @@ type Story = StoryObj<typeof PageShell>;
 /** The outer frame alone: the Outlet holds a stand-in page. */
 export const Outer: Story = {
   render: () => (
-    <AtRoute
-      entry="/next/things"
-      path="things"
-      child={<Standin text="<Outlet/> — routed page" />}
-    />
+    <AtRoute entry="/things" path="things" child={<Standin text="<Outlet/> — routed page" />} />
   ),
 };
 

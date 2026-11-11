@@ -8,7 +8,7 @@ import {
 import { IS_LIVE, firstEdit, seedAuth, selectFirstOrg } from './live-auth-helpers';
 import { interceptVehicleTypesQuery as interceptVehicleTypeRows } from './vehicle-list-helpers';
 
-const LIST = '/next/vehicle-types';
+const LIST = '/vehicle-types';
 // Fixture row (vehicle-types-mock.json): Type Alpha.
 const FIXTURE_ID = 'NMR:VehicleType:1';
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
@@ -34,8 +34,7 @@ const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exac
 /** The form page's footer Cancel. */
 const footerCancel = (page: Page) => page.getByRole('button', { name: 'Cancel', exact: true });
 /** A Menu link off the form page (the rail's Vehicles item). */
-const menuVehicles = (page: Page) =>
-  page.getByTestId('nav-rail').locator('a[href="/next/vehicles"]');
+const menuVehicles = (page: Page) => page.getByTestId('nav-rail').locator('a[href="/vehicles"]');
 /** The form page's table of contents (the list from `lg` up). */
 const toc = (page: Page) => page.getByRole('navigation', { name: 'Sections' });
 
@@ -98,18 +97,17 @@ const interceptRailRows = (page: Page, n: number) =>
   );
 
 /**
- * /next/vehicle-types — the page shell (#253, epic #252) beside the legacy list:
+ * /vehicle-types — the page shell (#253, epic #252):
  * PageShell layout route → CollectionShell list · EntityDetailsShell editor page.
  *
  * Workflow:
- *   /next/vehicle-types → collection grid (#271) with an Edit link per row → Edit opens
- *   /next/vehicle-types/<id>, ready to edit → the page's Back returns to the list.
+ *   /vehicle-types → collection grid (#271) with an Edit link per row → Edit opens
+ *   /vehicle-types/<id>, ready to edit → the page's Back returns to the list.
  * Covers:
- *   - the header search is hidden on shell routes
  *   - Edit → details page, ready to edit; Back → back on the list
- *   - a deep link to /next/vehicle-types/<id> opens ready to edit: Cancel inert, Save has
+ *   - a deep link to /vehicle-types/<id> opens ready to edit: Cancel inert, Save has
  *     nothing to save
- *   - `Collections` flag off → /next/* redirects to /
+ *   - the old list's `?selected=<id>` deep link redirects to the record's form page
  *   - user test II: <main> + skip link; subtitle names the organisation and the count;
  *     empty list offers one New; New shortens to "New" on a phone; focus moves to the editor's
  *     h1 on open and back to the row's Edit link on close, also a row below the grid's fold
@@ -140,7 +138,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *   - live (E2E_BACKEND=true): seedAuth JWT + org auto-select; runs on the org's real rows
  *   - live, the read-only form tests open the first row (openFirstRecord), not the fixture id;
  *     the deep link reloads that row's URL; a write the clean Save might send is aborted
- *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the `?filter=`
+ *   - skip-live: the writes (Deactivate, dialog Save, held save, Retry, create); the `?selected=`
+ *     redirect and the `?filter=`
  *     (fixture id); the org switch
  *     (a second, mocked organisation); the Vehicles
  *     chip (fixture vehicle); the last-section mark (needs a short last section); the
@@ -148,15 +147,13 @@ const interceptRailRows = (page: Page, n: number) =>
  *     frame tests, the new page of cards and the focus returns below the fold and on page 2
  *     (mocked rows)
  */
-test.describe('/next/vehicle-types page shell', () => {
+test.describe('/vehicle-types page shell', () => {
   test.beforeEach(async ({ page, context }) => {
     await seedAuth(context);
     if (!IS_LIVE) await interceptVehicleTypesQuery(page);
   });
 
-  test('hides the header search on shell routes', async ({ page }) => {
-    // Mobile: the header's search icon is the part a shell route must drop (desktop
-    // renders the filter button only when a legacy list registers filters).
+  test('on a phone New shortens to "New" and the header has no search', async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     const banner = page.getByRole('banner');
     const searchIcon = banner.getByRole('button', { name: 'search', exact: true });
@@ -166,6 +163,13 @@ test.describe('/next/vehicle-types page shell', () => {
     expect(await searchIcon.count()).toBe(0);
     // innerText skips the hidden long label (textContent would include both).
     await expect.poll(() => page.getByTestId('create-vehicle-type-fab').innerText()).toBe('New');
+  });
+
+  test("the old list's ?selected=<id> deep link opens the record's form page", async ({ page }) => {
+    test.skip(IS_LIVE, 'fixture id');
+    await page.goto(`${LIST}?selected=${encodeURIComponent(FIXTURE_ID)}`);
+    await expect(page).toHaveURL(`${LIST}/${encodeURIComponent(FIXTURE_ID)}`);
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
   });
 
   test('Edit opens the details page ready to edit; Back returns to the list', async ({ page }) => {
@@ -499,7 +503,7 @@ test.describe('/next/vehicle-types page shell', () => {
     // vehicle-types-mock.json: Type Alpha lists NMR:Vehicle:101.
     await expect(page.getByRole('link', { name: /AA-101/ })).toHaveAttribute(
       'href',
-      `/next/vehicles/${encodeURIComponent('NMR:Vehicle:101')}`
+      `/vehicles/${encodeURIComponent('NMR:Vehicle:101')}`
     );
   });
 
@@ -555,7 +559,7 @@ test.describe('/next/vehicle-types page shell', () => {
 
     await menuVehicles(page).click();
     await dialog.getByRole('button', { name: 'Discard' }).click();
-    await expect(page).toHaveURL(/\/next\/vehicles$/);
+    await expect(page).toHaveURL(/\/vehicles$/);
   });
 
   test("the leave dialog's Save saves and stays; then the Menu link goes through", async ({
@@ -572,7 +576,7 @@ test.describe('/next/vehicle-types page shell', () => {
     await expect(page).toHaveURL(new RegExp(`${LIST}/[^/]+$`));
     await expect(name).toHaveValue('Type Omega');
     await menuVehicles(page).click();
-    await expect(page).toHaveURL(/\/next\/vehicles$/);
+    await expect(page).toHaveURL(/\/vehicles$/);
   });
 
   test('while a save runs the fields read only and the leave dialog offers no Save', async ({
@@ -738,13 +742,7 @@ test.describe('/next/vehicle-types page shell', () => {
   test('with no unsaved edits a Menu link goes straight through', async ({ page }) => {
     await openFirstRecord(page);
     await menuVehicles(page).click();
-    await expect(page).toHaveURL(/\/next\/vehicles$/);
+    await expect(page).toHaveURL(/\/vehicles$/);
     expect(await page.getByRole('dialog').count()).toBe(0);
   });
-});
-
-test('Collections flag off redirects /next/* to /', async ({ page, context }) => {
-  await seedAuth(context, { sandboxFeatures: {} });
-  await page.goto(LIST);
-  await expect(page).toHaveURL(/\/$/);
 });

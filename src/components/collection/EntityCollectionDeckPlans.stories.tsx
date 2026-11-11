@@ -9,7 +9,7 @@ import type { EntityCollectionProps } from './index';
 import { ALL_TOOLS } from './types';
 
 const ROW_COUNT = 25;
-const LIST = '/next/deck-plans';
+const LIST = '/deck-plans';
 const UNNAMED_EVERY = 6; // these rows have no name: Name falls back to the id
 
 /** Varied but the same on every load. */

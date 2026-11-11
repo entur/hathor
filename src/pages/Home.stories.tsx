@@ -54,7 +54,7 @@ export const Mobile: Story = {
 
 /**
  * The whole app on `/`: Header and Menu around Home. Its links work — a card opens
- * the `/next` collection, Edit its form page — on the e2e fixtures.
+ * the collection, Edit its form page — on the e2e fixtures.
  */
 export const Complete: Story = {
   ...APP_STORY_META,
