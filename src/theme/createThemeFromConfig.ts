@@ -1,5 +1,50 @@
-import { alpha, createTheme, type Theme } from '@mui/material/styles';
+import { alpha, createTheme, type Components, type Theme } from '@mui/material/styles';
+import type {} from '@mui/x-data-grid/themeAugmentation';
 import type { ThemeConfig } from './theme-config';
+
+// Linje focus ring (WCAG 2.4.7, #256): `outlines.focus` / `outlineOffsets.focus` 2 px, in
+// `--stroke-focus-standard` (primary) on light surfaces and `--stroke-focus-contrast`
+// (Lavender 40) on the navy header.
+const FOCUS_PX = 2,
+  FOCUS_CONTRAST = '#aeb7e2';
+
+const ring = (color: string, offset = FOCUS_PX) => ({
+  outline: `${FOCUS_PX}px solid ${color}`,
+  outlineOffset: offset,
+});
+
+/**
+ * One keyboard-focus ring for the whole app, `:focus-visible` only (no ring on a mouse
+ * click). Items flush in a clipping box (menus, the nav rail, tabs, grid cells) draw it inset.
+ * A theme file's own entry for one of these components replaces it.
+ */
+const FOCUS_RING: Components<Theme> = {
+  MuiButtonBase: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '&.Mui-focusVisible': ring(theme.palette.primary.main),
+        '&.Mui-focusVisible:is(.MuiMenuItem-root, .MuiListItemButton-root, .MuiTab-root), .MuiDataGrid-root &.Mui-focusVisible':
+          { outlineOffset: -FOCUS_PX },
+      }),
+    },
+  },
+  MuiAppBar: {
+    // One class more specific than the ring itself, which the button inserts later.
+    styleOverrides: {
+      root: { '& .MuiButtonBase-root.Mui-focusVisible': { outlineColor: FOCUS_CONTRAST } },
+    },
+  },
+  MuiDataGrid: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        '& .MuiDataGrid-columnHeader:focus-visible, & .MuiDataGrid-cell:focus-visible': ring(
+          theme.palette.primary.main,
+          -FOCUS_PX
+        ),
+      }),
+    },
+  },
+};
 
 export function createThemeFromConfig(cfg: ThemeConfig): Theme {
   const { logoUrl, ...themeOptions } = cfg;
@@ -13,6 +58,7 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
     ...themeOptions,
     logoUrl,
     components: {
+      ...FOCUS_RING,
       ...themeOptions.components,
       // Override table row hover from opaque action.hover to a subtle
       // primary tint. The default palette action.hover is a solid color

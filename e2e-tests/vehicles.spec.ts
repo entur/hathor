@@ -26,6 +26,7 @@ const footerSave = (page: Page) => page.getByRole('button', { name: 'Save', exac
  *   to edit → Back returns to the list.
  * Covers:
  *   - Edit → form page (h1 focused, Save has nothing to save); Back → focus back on the row's Edit link
+ *   - keyboard focus draws the theme's ring (Tab into the grid), a mouse click none (F4)
  *   - search narrows the rows by registration number (U1)
  *   - the vehicle's type links to its own form page (U2/F8) — not an orphan ref outside the
  *     org's types; a vehicle without a name shows its registration number (U4)
@@ -68,6 +69,22 @@ test.describe('/vehicles', () => {
     await page.getByTestId('editor-page-back').click();
     await expect(page).toHaveURL(new RegExp(`${LIST}$`));
     await expect(edit).toBeFocused();
+  });
+
+  test('keyboard focus draws a ring, a mouse click does not (#256)', async ({ page }) => {
+    await page.goto(LIST);
+    await selectFirstOrg(page);
+    await expect(firstEdit(page)).toBeVisible(); // the grid loads lazily
+    // The view switch's last button, then Tab into the grid: its one tab stop, a column header.
+    await page.getByRole('button', { name: 'Cards' }).focus();
+    await page.keyboard.press('Tab');
+    const focusedInGrid = page.locator('.MuiDataGrid-root [role="columnheader"]:focus');
+    // The grid's own focus outline is 1 px; the theme's ring is 2.
+    await expect(focusedInGrid).toHaveCSS('outline-width', '2px');
+
+    const toggle = page.getByTestId('nav-rail-toggle');
+    await toggle.click();
+    await expect(toggle).toHaveCSS('outline-style', 'none');
   });
 
   test('search narrows the rows by registration number', async ({ page }) => {
