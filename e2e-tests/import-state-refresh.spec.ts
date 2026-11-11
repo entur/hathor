@@ -129,6 +129,8 @@ test.describe('#141 import filter leaks into sibling lists', () => {
   test('post-import filter must not survive client-nav (F5 count == client-nav count)', async ({
     page,
   }) => {
+    // Five full page loads and two rail hops: past 30 s on a loaded Firefox run.
+    test.slow();
     // Reach the post-import filtered state and confirm the filter is genuinely applied here.
     const filterUrl = await establishFilteredState(page);
     await expect(filterChip(page), 'filter is applied on /vehicle-types').toBeVisible();

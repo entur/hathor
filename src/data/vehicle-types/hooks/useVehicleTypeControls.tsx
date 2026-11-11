@@ -34,8 +34,7 @@ export interface VehicleTypeControlsOptions {
 }
 
 /**
- * One control per vehicle-type field, so the sidebar's tabs and the form page's
- * sections draw the same fields. Most follow `vehicleTypeFields` (kind, path, enum
+ * One control per vehicle-type field, for the form page's sections. Most follow `vehicleTypeFields` (kind, path, enum
  * values); a few are drawn by hand.
  *
  * @param {VehicleTypeControlsOptions} options value, onChange, mode, euro classes (view mode reads only, not greyed out, #267)

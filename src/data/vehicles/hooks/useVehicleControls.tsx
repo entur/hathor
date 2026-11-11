@@ -25,8 +25,7 @@ export interface VehicleControlsOptions {
 }
 
 /**
- * One control per vehicle field, so the sidebar's form and the form page's section
- * draw the same fields (#285).
+ * One control per vehicle field, for the form page's section (#285).
  *
  * @param {VehicleControlsOptions} options value, onChange, mode, vehicle types (view mode reads only, not greyed out, #267)
  *   and the type link

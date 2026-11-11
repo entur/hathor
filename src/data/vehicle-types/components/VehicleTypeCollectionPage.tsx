@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import CollectionPage from '../../../pages/shell/CollectionPage.tsx';
 import { useFocusEditId } from '../../../pages/shell/useFocusEditId.ts';
@@ -22,7 +21,7 @@ const KEYS = {
 /**
  * `/vehicle-types` — the vehicle-type collection page: the org's vehicle types in grid or
  * cards, each with an Edit link to its details page. `?filter=<ids>` opens it narrowed to
- * those ids, as a chip; removing the chip drops the param too.
+ * those ids, as a chip; once the reader changes or removes it, the param goes too.
  *
  * @returns {JSX.Element} The vehicle-type collection page.
  */
@@ -31,10 +30,6 @@ export default function VehicleTypeCollectionPage() {
   const focusEditId = useFocusEditId();
   const [params, setParams] = useSearchParams();
   const filter = params.get(VEHICLE_TYPE_FILTER_PARAM);
-  // The last ids an import landed with: a new import re-opens the list on its own ids, but the
-  // param dropping (its chip removed) keeps the list as the reader left it.
-  const [opened, setOpened] = useState(filter);
-  if (filter && filter !== opened) setOpened(filter);
   return (
     <CollectionPage
       listPath={VEHICLE_TYPES_PATH}
@@ -45,12 +40,12 @@ export default function VehicleTypeCollectionPage() {
       error={error}
     >
       <VehicleTypeCollection
-        key={opened}
         rows={allData}
         focusEditId={focusEditId}
         initialFilters={filter ? { id: filter } : undefined}
         onQueryChange={q => {
-          if (filter && !q.filters.id)
+          // Read once on mount (`initialFilters`); a reload must not bring back what the reader changed.
+          if (filter && q.filters.id !== filter)
             setParams(
               p => {
                 p.delete(VEHICLE_TYPE_FILTER_PARAM);

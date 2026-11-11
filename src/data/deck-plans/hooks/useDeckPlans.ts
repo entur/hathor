@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
-import { useSearchParams } from 'react-router-dom';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import type { DeckPlan, DeckPlanContext } from '../types/deckPlanTypes.ts';
@@ -15,11 +14,7 @@ export function useDeckPlans() {
   const { applicationBaseUrl } = useConfig();
   const [error, setError] = useState<string | null>(null);
   const { getAccessToken } = useAuth();
-  const [searchParams] = useSearchParams();
   const { currentOrganisation } = useOrganisationsContext();
-
-  // Track filter param to trigger refetch when it changes (e.g., after import)
-  const filterParam = searchParams.get('filter');
 
   // This doFetch shape (gate → fetch chain → setLoading) is still duplicated
   // in `useVehicleTypes` and `useVehicles`; the error translation it used to
@@ -45,12 +40,11 @@ export function useDeckPlans() {
       .finally(() => setLoading(false));
   }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
 
-  // Refetch when applicationBaseUrl changes or when filter param changes (after
-  // import). Fire-and-forget: the error is already in state, so swallow the
+  // Refetch when applicationBaseUrl or the org changes. Fire-and-forget: the error is already in state, so swallow the
   // rejection here (only awaiting callers like the post-save refresh care).
   useEffect(() => {
     void doFetch().catch(() => {});
-  }, [doFetch, filterParam]);
+  }, [doFetch]);
 
   // By name, empty names last: the collection's unsorted order (#291 counts its pages in it).
   const sorted = useMemo(() => [...data].sort(compareDeckPlans('name', 'asc')), [data]);
