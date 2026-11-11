@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import CollectionPage from '../../../pages/shell/CollectionPage.tsx';
 import { useFocusEditId } from '../../../pages/shell/useFocusEditId.ts';
@@ -22,14 +23,19 @@ const KEYS = {
 /**
  * `/next/vehicle-types` — the vehicle-type collection page: the org's vehicle types in grid or
  * cards, each with an Edit link to its details page. `?filter=<ids>` opens it narrowed to
- * those ids, as a chip the reader can remove.
+ * those ids, as a chip; removing the chip drops the param too.
  *
  * @returns {JSX.Element} The vehicle-type collection page.
  */
 export default function VehicleTypeCollectionPage() {
   const { allData, loading, error } = useVehicleTypes();
   const focusEditId = useFocusEditId();
-  const filter = useSearchParams()[0].get(VEHICLE_TYPE_FILTER_PARAM);
+  const [params, setParams] = useSearchParams();
+  const filter = params.get(VEHICLE_TYPE_FILTER_PARAM);
+  // The last ids an import landed with: a new import re-opens the list on its own ids, but the
+  // param dropping (its chip removed) keeps the list as the reader left it.
+  const [opened, setOpened] = useState(filter);
+  if (filter && filter !== opened) setOpened(filter);
   return (
     <CollectionPage
       listPath={VEHICLE_TYPES_NEXT_PATH}
@@ -39,12 +45,21 @@ export default function VehicleTypeCollectionPage() {
       loading={loading}
       error={error}
     >
-      {/* Keyed: a second import onto this page re-opens it on the new ids. */}
       <VehicleTypeCollection
-        key={filter}
+        key={opened}
         rows={allData}
         focusEditId={focusEditId}
         initialFilters={filter ? { id: filter } : undefined}
+        onQueryChange={q => {
+          if (filter && !q.filters.id)
+            setParams(
+              p => {
+                p.delete(VEHICLE_TYPE_FILTER_PARAM);
+                return p;
+              },
+              { replace: true }
+            );
+        }}
       />
     </CollectionPage>
   );
