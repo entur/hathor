@@ -3,8 +3,13 @@ import { Button, Dialog, type ButtonProps } from '@mui/material';
 import { useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import MultiImport from './MultiImport';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
+import {
+  VEHICLE_TYPE_FILTER_PARAM,
+  VEHICLE_TYPES_NEXT_PATH,
+} from '../../vehicle-types/components/VehicleTypeCollectionPage.tsx';
 
-const VT_PATH = '/vehicle-types';
+const LEGACY_VT_PATH = '/vehicle-types';
 
 interface AutosysImportFloatingMenuProps {
   /** Button text (already translated). */
@@ -19,7 +24,8 @@ interface AutosysImportFloatingMenuProps {
 
 /**
  * Button that opens the Autosys bulk-import dialog ({@link MultiImport}); on
- * completion navigates to /vehicle-types filtered to the imported ids —
+ * completion navigates to the vehicle-type list (the collection page with `Collections` on)
+ * filtered to the imported ids —
  * replacing the history entry only when already there, so Back from a
  * Home-launched import returns to Home.
  * @param {AutosysImportFloatingMenuProps} props - label + test id, plus optional look overrides.
@@ -35,13 +41,14 @@ export default function AutosysImportFloatingMenu({
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const vtPath = useIsFeatureOn()('Collections') ? VEHICLE_TYPES_NEXT_PATH : LEGACY_VT_PATH;
 
   const handleImportComplete = (vehicleTypeIds: string[]) => {
     setOpen(false);
     if (vehicleTypeIds.length > 0) {
       const filterParam = vehicleTypeIds.join(',');
-      navigate(`${VT_PATH}?filter=${encodeURIComponent(filterParam)}`, {
-        replace: pathname === VT_PATH,
+      navigate(`${vtPath}?${VEHICLE_TYPE_FILTER_PARAM}=${encodeURIComponent(filterParam)}`, {
+        replace: pathname === vtPath,
       });
     }
   };
