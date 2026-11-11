@@ -38,10 +38,10 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
   const isNew = id === NEW_SELECTION;
   return (
     <Box sx={{ height: '100%' }}>
-      {/* Keyed like useUrlEditorSelection: an org switch re-mounts a record's
-          editor; the create pane keeps its draft. */}
+      {/* An org switch re-mounts the editor, the create pane too: its picks (a type, a deck
+          plan) are the old org's. With unsaved edits the org picker asks first. */}
       <EditorHostContext.Provider value="page">
-        <Fragment key={isNew ? NEW_SELECTION : `${orgId}:${id}`}>
+        <Fragment key={`${orgId}:${id}`}>
           {renderEditor({
             id: isNew ? '' : id,
             // shortcut: the flag stays in this history entry, so a reload re-shows the toast; clear it if that bothers.
