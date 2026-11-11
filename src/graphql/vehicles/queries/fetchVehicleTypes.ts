@@ -7,8 +7,16 @@ import type {
   HybridCategory,
   PassengerCapacity,
   PropulsionType,
+  ThroughAccess,
+  TrainElementType,
+  TrainSize,
+  VehicleOrientation,
   VehicleTypeKind,
+  VehicleTypeSubtype,
 } from '../../../data/vehicle-types/types/vehicleTypeTypes.ts';
+
+/** A train component's label / description, with the lang a save must keep. */
+type Text = MultilingualString | null;
 
 const vehicleTypesDocument = gql`
   query VehicleTypes($page: Int, $size: Int, $filter: VehicleTypeFilter) {
@@ -16,6 +24,41 @@ const vehicleTypesDocument = gql`
       content {
         netexId
         version
+        subtype
+        numberOfCars
+        trainSizeType
+        trainElementType
+        trainComponents {
+          netexId
+          label {
+            value
+            lang
+          }
+          description {
+            value
+            lang
+          }
+          trainElement {
+            netexId
+          }
+          operationalOrientation
+          forwardCouplingThroughAccess
+        }
+        compoundTrainComponents {
+          netexId
+          label {
+            value
+            lang
+          }
+          description {
+            value
+            lang
+          }
+          train {
+            netexId
+          }
+          operationalOrientation
+        }
         name {
           value
         }
@@ -96,6 +139,29 @@ export type VehicleTypesQuery = {
     content: {
       netexId: string;
       version: number;
+      subtype?: VehicleTypeSubtype | null;
+      numberOfCars?: number | null;
+      trainSizeType?: TrainSize | null;
+      trainElementType?: TrainElementType | null;
+      trainComponents?:
+        | {
+            netexId?: string | null;
+            label?: Text;
+            description?: Text;
+            trainElement?: { netexId: string } | null;
+            operationalOrientation?: VehicleOrientation | null;
+            forwardCouplingThroughAccess?: ThroughAccess | null;
+          }[]
+        | null;
+      compoundTrainComponents?:
+        | {
+            netexId?: string | null;
+            label?: Text;
+            description?: Text;
+            train?: { netexId: string } | null;
+            operationalOrientation?: VehicleOrientation | null;
+          }[]
+        | null;
       name?: MultilingualString | null;
       shortName?: MultilingualString | null;
       description?: MultilingualString | null;

@@ -1,27 +1,20 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useConfig } from '../../../contexts/configContext.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
-import type { Order } from '../../../components/data/dataTableTypes.ts';
-import type { Vehicle, VehicleColumnKey } from '../types/vehicle.ts';
+import type { Vehicle } from '../types/vehicle.ts';
 import { fetchVehiclesAndApply } from '../api/fetchVehiclesAndApply.ts';
 import { compareVehicles } from '../utils/vehicleSortValue.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 
 /**
  * Data hook for the `/vehicles` list. Mirrors `useVehicleTypes` — single fetch
- * of the full set, client-side sort + pagination. Refetch on
+ * of the full set, sorted by registration number. Refetch on
  * `applicationBaseUrl` change.
  */
 export function useVehicles() {
   const [data, setData] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<VehicleColumnKey>('registrationNumber');
-
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { applicationBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
@@ -52,39 +45,12 @@ export function useVehicles() {
     void doFetch().catch(() => {}); // surfaced through `error`
   }, [doFetch]);
 
-  // Ref-stable so `DataTableHeader` doesn't re-render on every parent render
-  // (#77 N12). Deps are the sort state the toggle reads.
-  const handleRequestSort = useCallback(
-    (property: VehicleColumnKey) => {
-      const isAsc = orderBy === property && order === 'asc';
-      setOrder(isAsc ? 'desc' : 'asc');
-      setOrderBy(property);
-    },
-    [order, orderBy]
-  );
-
-  // Memoized so that `allData` is a stable reference across renders. The
-  // /vehicles URL effect (`useVehicleUrlSelection`) depends on `allData` —
-  // without memoisation a fresh array each render would re-fire the effect
-  // continuously, remounting the slider editor and wiping its `mode` state.
+  // By registration number, empty ones last: the collection's unsorted order (#291 counts its
+  // pages in it).
   const sorted = useMemo(
-    () => [...data].sort(compareVehicles(orderBy, order)),
-    [data, orderBy, order]
+    () => [...data].sort(compareVehicles('registrationNumber', 'asc')),
+    [data]
   );
 
-  return {
-    allData: sorted,
-    data: sorted.slice(page * rowsPerPage, (page + 1) * rowsPerPage),
-    totalCount: data.length,
-    error,
-    loading,
-    order,
-    orderBy,
-    handleRequestSort,
-    page,
-    rowsPerPage,
-    setPage,
-    setRowsPerPage,
-    refetch: doFetch,
-  };
+  return { allData: sorted, error, loading, refetch: doFetch };
 }

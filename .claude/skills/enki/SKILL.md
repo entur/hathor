@@ -77,8 +77,10 @@ hathor equivalents — use those. Three things make a straight copy wrong:
   new custom field is needed), not a new TS theme.
 
 Where hathor deliberately differs, the difference stays unless the task says otherwise: the
-persistent left Nav Rail (#65) instead of enki's right-side hamburger drawer, the `?selected=`
-sidebar editor instead of `/edit/:id` pages, `ViewConfig` tables instead of hand-written ones.
+persistent left Nav Rail (#65) instead of enki's right-side hamburger drawer, form pages at
+`/<entity>/:id` (`new` = create) instead of `/create` + `/edit/:id`, and one shared collection
+(`createEntityCollection`: grid or cards, toolbar search / filter) instead of a hand-written table
+per scene (#252).
 Check `FORK_DECISIONS.md` before "fixing" such a difference — and when an alignment task settles a
 non-obvious call (adopt enki's way, or keep hathor's), record it there as an ADR.
 
@@ -86,7 +88,7 @@ non-obvious call (adopt enki's way, or keep hathor's), record it there as an ADR
 
 | enki | hathor |
 | --- | --- |
-| `src/scenes/<Entity>/` | `src/data/<feature>/` + `src/pages/GenericDataViewPage.tsx` |
+| `src/scenes/<Entity>/` | `src/data/<feature>/` + `src/pages/shell/` (collection / form-page frames) |
 | `src/scenes/App/` (Header, MenuDrawer, Routes, SelectProvider) | `src/App.tsx`, `src/components/header/`, Nav Rail, `SelectOrganisation` |
 | `src/model/` | `src/data/<feature>/types/`, `src/data/netex/` |
 | `src/api/uttu/` (Apollo) | `src/graphql/vehicles/` (graphql-request) |

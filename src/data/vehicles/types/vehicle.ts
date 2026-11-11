@@ -35,3 +35,21 @@ export type VehicleColumnKey =
 /** Resolve the row's transport mode, collapsing missing `transportType` to `'unknown'`. */
 export const vehicleMode = (v: Vehicle): TransportMode =>
   v.transportType?.transportMode ?? UNKNOWN_TRANSPORT_MODE;
+
+/**
+ * The mode a vehicle is drawn in: its type's, looked up in the org's list (a picked type on
+ * a create carries none of its own), else the one embedded in the vehicle (#285).
+ *
+ * @param {Vehicle} v the vehicle
+ * @param {{ transportMode?: TransportMode }} [type] its type from the org's list, if found
+ * @returns {TransportMode | undefined} the mode to draw; none draws the standard bus
+ */
+export const vehiclePictureMode = (
+  v: Vehicle,
+  type?: { transportMode?: TransportMode }
+): TransportMode | undefined => type?.transportMode ?? v.transportType?.transportMode;
+
+/** The vehicle editor's form value. */
+export interface VehicleEditFormValue {
+  vehicle: Vehicle;
+}

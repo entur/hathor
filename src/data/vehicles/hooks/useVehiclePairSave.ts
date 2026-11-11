@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../auth/authUtils';
 import { useConfig } from '../../../contexts/configContext';
-import type { VehicleEditFormValue } from '../components/VehicleEditForm';
+import type { VehicleEditFormValue } from '../types/vehicle.ts';
 import { createOrUpdateVehicleRequest } from '../../../graphql/vehicles/mutations/createOrUpdateVehicle';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
 import { graphqlErrMsg } from '../../graphqlErrMsg';

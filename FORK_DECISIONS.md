@@ -10,7 +10,40 @@ Companion to [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md): that file holds *unresolv
 
 ---
 
+## Version bumps go through pull requests (2026-11-11)
+
+### Context
+
+The Build workflow's direct push of its version-bump commit is rejected by the
+ruleset protecting `main`. The original feature PR does not authorize a subsequent
+automated push.
+
+### Decision
+
+Create or update a minor-version-bump PR instead. Explicitly dispatch the existing
+Tests workflow on its branch so the required checks run despite `GITHUB_TOKEN`
+event suppression. After the version change is merged, build and tag the merged
+commit, then trigger deployment. Detect the version change across the push's
+before/after commits so merging the bump does not open another bump PR.
+
+### Alternatives considered
+
+A dedicated GitHub App with a ruleset bypass would permit direct pushes, but
+requires another credential and exempts those pushes from the normal checks.
+Deploying before the version PR merges would decouple deployed versions from
+approved commits.
+
+### Consequences
+
+Releases require merging the version-bump PR. Administrators must allow Actions
+to create PRs, but no bypass or additional token is needed. The Tests workflow
+also accepts manual dispatches.
+
+---
+
 ## Vehicle deep-link via `?selected=` query param _(retroactive, captured 2026-05-12)_
+
+> **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
 
 ### Context
 
@@ -135,6 +168,8 @@ Introduce `src/data/netex/NetexId.tsx` — a small chip component that:
 ---
 
 ## Composite `EditorRail` for sidebar-edge controls _(2026-05-16)_
+
+> **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
 
 ### Context
 
@@ -611,6 +646,8 @@ The Autosys bulk import had two entry points: the list-head button on `/vehicle-
 
 ## Sidebar forms: label on the field, single-column stack _(2026-10-09)_
 
+> **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
+
 Supersedes "Horizontal form rows via CSS Grid + `<FieldRow>`" (2026-05-15) for **editable** fields. Read-only rows keep that layout.
 
 ### Context
@@ -757,3 +794,33 @@ The vehicle, vehicle-type and deck-plan editors each carried a copy of the same 
 - A standalone `/<entity>/:id` page needs only a host that supplies `onClose` / `onCreated`. `EditorFrame` still renders the sidebar `EditorRail`.
 - Visible changes: blank names read `common.unnamed`, a failed record read offers Retry, DeckPlan's badge shows the version, and a DeckPlan patch or stale-body refusal shows as a save error (red), no longer a warning.
 - The per-feature save hooks are now stateless request wrappers; `useEntityEditor` owns `saving` and the save error.
+
+---
+
+## Collection and form pages replace the list views and sidebar editor _(2026-11-11)_
+
+### Context
+
+Epic #252 rebuilt each entity's screens as a collection page (`createEntityCollection`, `src/components/collection/`) and a full-page form editor (`EntityDetailsShell`, `EditorFrame`) under `/next/*`, beside the old `GenericDataViewPage` list with its resizable sidebar editor. User test II (2026-11-03) and the internal test favoured the new pages; keeping both doubled every editor (a sidebar form and a form page per entity) and every e2e flow.
+
+### Decision
+
+- `/vehicle-types`, `/vehicles`, `/deck-plans` (+ `/:id`, `/new`) serve the collection and form pages; `/next` and the `Collections` flag are gone.
+- The old `?selected=<id>` deep link redirects to `/<entity>/<id>` (`CollectionPage`), so bookmarks and shared links keep working.
+- The form page is the only editor host: `useEntityEditor` returns neutral `EditorActions` (no `EditorRail` props), and it opens in edit; View is only a read-only state (deactivated, or a save / read settling).
+- `EditingContext` keeps only the dirty flag: the header's organisation picker asks through `DiscardDialog` before an org switch drops unsaved edits. An org switch re-mounts the editor, the create page too.
+- Deleted: `GenericDataViewPage`, `viewConfigTypes`, `components/data`, `components/search` (+ header search), the sidebar (`Sidebar`, `EditorRail`, `editorHost`, the sidebar forms) and their hooks.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the old views behind a flag for a while** | Two editors per entity to keep in step, and nobody needed the old one after the user tests. |
+| **Redirect `/next/*` too** | Only testers with the flag on ever saw it. |
+
+### Consequences
+
+- An Autosys import lands on `/vehicle-types?filter=<ids>`, read once as the collection's `initialFilters` and dropped from the URL when its chip goes.
+- Search, filter and sort are the collection's own state, per page visit; nothing is global any more (the #141 leak can't recur).
+- `src/components/sidebar/` now holds only the form-page frame (`EditorFrame`) and its stories; the folder name is historical.
+

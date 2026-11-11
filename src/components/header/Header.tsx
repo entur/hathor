@@ -1,38 +1,45 @@
 import { useState } from 'react';
-import { AppBar, Toolbar, useTheme, useMediaQuery } from '@mui/material';
+import { AppBar, Link, Toolbar, useTheme, useMediaQuery } from '@mui/material';
 import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
 import { useNavRail } from '../../contexts/NavRailContext.tsx';
-// import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
-import DesktopSearchBar from '../search/DesktopSearchBar.tsx';
-import MobileSearchBar from '../search/MobileSearchBar.tsx';
 import HeaderActions from './HeaderActions.tsx';
-import { useLocation } from 'react-router-dom';
+
+/** Id of the app's `<main>`; the header's skip link jumps to it. */
+export const MAIN_CONTENT_ID = 'main-content';
 
 export default function Header() {
   const { toggleMobile } = useNavRail();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
-  const [searchActive, setSearchActive] = useState(false);
 
   const auth = useAuth();
   const { oidcConfig } = useConfig();
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const location = useLocation();
-  const isHomePage = location.pathname === '/';
-
-  // const handleMobileSearchUIClose = () => {
-  //   setSearchActive(false);
-  // };
-
   return (
     <>
+      <Link
+        href={`#${MAIN_CONTENT_ID}`}
+        data-testid="skip-to-content"
+        sx={{
+          position: 'fixed',
+          left: 8,
+          top: -48,
+          zIndex: theme.zIndex.appBar + 1,
+          p: 1,
+          bgcolor: 'background.paper',
+          '&:focus': { top: 8 },
+        }}
+      >
+        {t('header.skipToContent')}
+      </Link>
       <AppBar position="fixed">
         <Toolbar
           sx={{
@@ -42,27 +49,15 @@ export default function Header() {
             minHeight: { xs: '64px' },
           }}
         >
-          {isMobile && searchActive ? (
-            <MobileSearchBar
-            // onCloseRequest={handleMobileSearchUIClose}
-            // placeholder={t('search.searchPlaceholder')}
-            />
-          ) : (
-            <>
-              <HeaderBranding />
-              {!isHomePage && !isMobile && <DesktopSearchBar />}
-              <HeaderActions
-                isMobile={isMobile}
-                isHomePage={isHomePage}
-                onSearchIconClick={isHomePage ? () => {} : () => setSearchActive(true)}
-                onUserIconClick={() => (auth.isAuthenticated ? setUserOpen(true) : auth.login())}
-                onSettingsIconClick={() => setSettingsOpen(true)}
-                onMenuIconClick={toggleMobile}
-                isAuthenticated={auth.isAuthenticated}
-                authConfigured={!!oidcConfig}
-              />
-            </>
-          )}
+          <HeaderBranding />
+          <HeaderActions
+            isMobile={isMobile}
+            onUserIconClick={() => (auth.isAuthenticated ? setUserOpen(true) : auth.login())}
+            onSettingsIconClick={() => setSettingsOpen(true)}
+            onMenuIconClick={toggleMobile}
+            isAuthenticated={auth.isAuthenticated}
+            authConfigured={!!oidcConfig}
+          />
         </Toolbar>
       </AppBar>
 

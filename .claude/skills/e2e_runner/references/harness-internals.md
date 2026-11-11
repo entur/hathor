@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
 Three skip flavours exist in the suite:
 - `if (E2E_BACKEND !== 'true') intercept…` — mock when not live (most specs).
 - `test.skip(E2E_BACKEND === 'true', 'mock-bound assertions')` — mock-only specs
-  (e.g. `vehicle-type-sidebar.spec.ts` save block, `vehicle-slider-form.spec.ts`).
+  (e.g. the writes in `vehicle-types.spec.ts`: Deactivate, dialog Save, create).
 - `test.skip(() => E2E_BACKEND !== 'true', 'needs local Sobek')` — live-only specs
   (`vehicle-type-save-live.spec.ts`).
 

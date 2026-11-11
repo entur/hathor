@@ -39,11 +39,22 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 | `npm run e2e` | Playwright tests (mocked GraphQL) |
 | `npm run e2e:local-backend` | Playwright tests against a live local Sobek |
 
-## Architecture diagram
+## Releases
 
-[`docs/architecture.html`](docs/architecture.html) is a standalone, interactive diagram of the component architecture — from `App.tsx` down through the generic wrapper (`GenericDataViewPage`) to every feature view. Open it in a browser (it loads D3 from a CDN); click a widget chip to expand its detail.
+The Build workflow opens or updates `automation/version-bump` after changes reach
+`main`. The PR increments the minor version in `package.json` and
+`package-lock.json`; it does not push directly to `main`.
 
-**Keeping it in sync:** the diagram is driven by `docs/architecture-data.js`, a generated metafile. When routes or views change in `src/App.tsx`, regenerate it with `npm run gen:arch`. See the **RUN** section of the JSDoc header in [`scripts/gen-arch-metafile.mjs`](scripts/gen-arch-metafile.mjs) for details.
+Merge the version-bump PR after its required checks pass. Only a push to `main`
+that changes the package version creates the corresponding `v<version>` tag and
+triggers deployment. Merging the bump does not create another bump PR.
+
+Repository administrators must enable **Settings > Actions > General > Workflow
+permissions > Allow GitHub Actions to create and approve pull requests**.
+The workflow requests `contents: write`, `pull-requests: write`, and
+`actions: write`. It explicitly dispatches the Tests workflow on the bump branch
+because PRs created with `GITHUB_TOKEN` do not automatically trigger PR workflows.
+No ruleset bypass or additional token is required.
 
 ## Folder semantics
 
@@ -54,28 +65,28 @@ Hathor's `src/` mixes two organizational styles. Before adding files, know which
 - `auth/` — OIDC bootstrap, ProtectedRoute, login flow, auth utilities.
 - `config/` — runtime config fetch (`fetchConfig.ts`).
 - `theme/` — `createThemeFromConfig`, MUI theme module augmentation (`theme-config.d.ts`).
-- `data/<feature>/` — production domain folders (`vehicles/`, `vehicle-types/`, `deck-plans/`, `vehicle-imports/`). Each holds the data hook, view config, editor, cells, types, and View + Details components for one entity.
+- `data/<feature>/` — production domain folders (`vehicles/`, `vehicle-types/`, `deck-plans/`, `vehicle-imports/`). Each holds one entity's data hook, collection config + page, editor (`*Details`, `*Sections`, `*DetailsPage`) and types.
 - `graphql/` — GraphQL operations grouped by feature.
 - `locales/` — i18next translation files (`en/`, `nb/`).
 
 **Horizontal (file-kind) folders:**
 
-- `components/` — UI components grouped by sub-area (`data/`, `search/`, `header/`, `sidebar/`, `dialogs/`, `common/`, `auth/`).
+- `components/` — UI components grouped by sub-area (`collection/`, `form-layout/`, `header/`, `sidebar/` (the form page's `EditorFrame`), `dialogs/`, `common/`, `auth/`).
 - `hooks/` — global hooks shared across features.
-- `pages/` — generic infrastructure (`GenericDataViewPage`) and the `Home` page. Entity Views live in `data/<feature>/`, not here.
+- `pages/` — generic infrastructure (`shell/`: the page frames) and the `Home` page. Entity pages live in `data/<feature>/`, not here.
 - `utils/` — domain-neutral helpers (`iconLoaderUtils.ts`).
 - `contexts/` — top-level React contexts not yet hosted in feature folders (`configContext`, `CustomizationContext`, `EditingContext`, `SessionContext`).
 - `static/` — static assets.
 
 **Where new files go:**
 
-- New entity (data-table backed) → `data/<feature>/`. Data hook, view config, editor, cells, types, and the View component live together. Add a route in `App.tsx`.
+- New entity → `data/<feature>/`. Data hook, collection config + page, editor and types live together. Add its two routes in `App.tsx` (see CLAUDE.md, *Collection + form pages*).
 - New non-entity routed page → `pages/`.
 - New hook used by ≥2 features → `hooks/`. Single-feature hook → next to its caller in `data/<feature>/`.
-- New `*Types.ts` file → next to its primary consumer. Feature types under `data/<feature>/`; types that pair with shared infrastructure go with that infra (e.g. `pages/viewConfigTypes.ts`, `graphql/paginationTypes.ts`, `components/data/dataTableTypes.ts`). Don't recreate `src/types/`.
+- New `*Types.ts` file → next to its primary consumer. Feature types under `data/<feature>/`; types that pair with shared infrastructure go with that infra (e.g. `components/collection/types.ts`, `graphql/paginationTypes.ts`, `components/form-layout/types.ts`). Don't recreate `src/types/`.
 - JSX → `.tsx`. No JSX → `.ts`.
 
-Some contexts (`configContext`, `CustomizationContext`) and a few hooks haven't migrated to their feature folders yet — see [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) for tracked design ambiguities.
+Some contexts (`configContext`, `CustomizationContext`, `SessionContext`) and a few hooks haven't migrated to their feature folders yet.
 
 ## Customization
 

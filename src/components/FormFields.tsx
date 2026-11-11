@@ -29,7 +29,13 @@ interface FieldProps {
   id: string;
   label: string;
   disabled?: boolean;
+  /** Shown as is, not greyed out: a form page's view mode (#267). The value stays selectable. */
+  readOnly?: boolean;
 }
+
+/** `FIELD_BASE` plus the read-only input, when set. */
+const fieldBase = (readOnly?: boolean) =>
+  readOnly ? { ...FIELD_BASE, slotProps: { ...SHRUNK_LABEL, input: { readOnly } } } : FIELD_BASE;
 
 interface FormTextFieldProps extends FieldProps {
   value: string;
@@ -44,11 +50,20 @@ interface FormTextFieldProps extends FieldProps {
  * @param label    Field label.
  * @param value    Current text; `''` when empty.
  * @param onChange Fired with the raw input string on every edit.
- * @param disabled Render the field read-only.
+ * @param disabled Render the field greyed out.
+ * @param readOnly Render the field read-only, not greyed out.
  * @param type     `'date'` for a native date picker; defaults to `'text'`.
  * @returns The labelled field.
  */
-export function FormTextField({ id, label, value, onChange, disabled, type }: FormTextFieldProps) {
+export function FormTextField({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+  readOnly,
+  type,
+}: FormTextFieldProps) {
   return (
     <TextField
       id={id}
@@ -57,7 +72,7 @@ export function FormTextField({ id, label, value, onChange, disabled, type }: Fo
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
-      {...FIELD_BASE}
+      {...fieldBase(readOnly)}
     />
   );
 }
@@ -76,10 +91,18 @@ interface FormNumberFieldProps extends FieldProps {
  * @param label    Field label.
  * @param value    Current number; `undefined` renders an empty input.
  * @param onChange Fired with the parsed number, or `undefined` when cleared.
- * @param disabled Render the field read-only.
+ * @param disabled Render the field greyed out.
+ * @param readOnly Render the field read-only, not greyed out.
  * @returns The labelled field.
  */
-export function FormNumberField({ id, label, value, onChange, disabled }: FormNumberFieldProps) {
+export function FormNumberField({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+  readOnly,
+}: FormNumberFieldProps) {
   return (
     <TextField
       id={id}
@@ -88,7 +111,7 @@ export function FormNumberField({ id, label, value, onChange, disabled }: FormNu
       value={value ?? ''}
       onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
       disabled={disabled}
-      {...FIELD_BASE}
+      {...fieldBase(readOnly)}
       sx={NUMERIC_SX}
     />
   );
@@ -112,7 +135,8 @@ interface FormSelectFieldProps<T extends string> extends FieldProps {
  * @param options   Choices, in display order.
  * @param noneLabel Label of the blank option.
  * @param onChange  Fired with the chosen value, or `undefined` for the blank option.
- * @param disabled  Render the field read-only.
+ * @param disabled  Render the field greyed out.
+ * @param readOnly  Render the field read-only (the menu doesn't open), not greyed out.
  * @returns The labelled field.
  */
 export function FormSelectField<T extends string>({
@@ -123,6 +147,7 @@ export function FormSelectField<T extends string>({
   noneLabel,
   onChange,
   disabled,
+  readOnly,
 }: FormSelectFieldProps<T>) {
   return (
     <TextField
@@ -132,7 +157,7 @@ export function FormSelectField<T extends string>({
       value={value ?? ''}
       onChange={e => onChange(blankToUndefined(e.target.value) as T | undefined)}
       disabled={disabled}
-      {...FIELD_BASE}
+      {...fieldBase(readOnly)}
     >
       <MenuItem value="">
         <em>{noneLabel}</em>
@@ -214,18 +239,27 @@ interface FormSwitchFieldProps extends FieldProps {
  * @param label    Label shown beside the switch.
  * @param checked  Current state.
  * @param onChange Fired with the new state on toggle.
- * @param disabled Render the switch read-only.
+ * @param disabled Render the switch greyed out.
+ * @param readOnly Render the switch read-only: a toggle is ignored, it isn't greyed out.
  * @returns The labelled switch.
  */
-export function FormSwitchField({ id, label, checked, onChange, disabled }: FormSwitchFieldProps) {
+export function FormSwitchField({
+  id,
+  label,
+  checked,
+  onChange,
+  disabled,
+  readOnly,
+}: FormSwitchFieldProps) {
   return (
     <FormControlLabel
       control={
         <Switch
           id={id}
           checked={checked}
-          onChange={e => onChange(e.target.checked)}
+          onChange={e => !readOnly && onChange(e.target.checked)}
           disabled={disabled}
+          slotProps={readOnly ? { input: { readOnly, 'aria-readonly': true } } : undefined}
           size="small"
         />
       }

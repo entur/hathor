@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { edit, hydrate, initialFormState, isDirty, type FormState } from './vehicleFormState';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
-import type { VehicleEditFormValue } from '../components/VehicleEditForm';
+import type { VehicleEditFormValue } from '../types/vehicle.ts';
 import type { Vehicle } from '../types/vehicle';
 
 const aVehicle: Partial<Vehicle> = {

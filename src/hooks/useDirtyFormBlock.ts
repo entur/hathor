@@ -5,12 +5,8 @@ import { useEffect } from 'react';
  * true. Modern browsers ignore custom messages and show their own native
  * dialog — we only need to set `returnValue` for the prompt to appear.
  *
- * **Limitation:** does not block in-app React Router navigation. A proper
- * in-app guard requires `react-router-dom`'s `useBlocker`, which only
- * works under data routers (`createBrowserRouter`). The app currently
- * mounts the legacy `<BrowserRouter>` component, so `useBlocker` throws
- * an invariant at render time. A follow-up can migrate the router and
- * upgrade this hook in one go.
+ * In-app navigation is not this hook's: a form page holds it with `useBlocker`
+ * (`EditorFrame`'s `LeaveGuard`, #282).
  */
 export function useDirtyFormBlock(isDirty: boolean): void {
   useEffect(() => {

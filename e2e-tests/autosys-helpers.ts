@@ -14,7 +14,7 @@ export const fixturesDir = path.join(__dirname, 'fixtures');
  * @param name Fixture file name (e.g. 'vehicle-types-mock.json').
  * @returns Parsed JSON value.
  */
-const loadFixture = (name: string): unknown =>
+export const loadFixture = (name: string): unknown =>
   JSON.parse(fs.readFileSync(path.join(fixturesDir, name), 'utf-8'));
 
 /**
@@ -25,7 +25,7 @@ const loadFixture = (name: string): unknown =>
  * @param queryName Substring to match against `postData.query` (e.g. 'vehicleTypes').
  * @param body JSON payload to return; will be `JSON.stringify`ed.
  */
-const interceptGraphQLQuery = async (
+export const interceptGraphQLQuery = async (
   page: import('@playwright/test').Page,
   queryName: string,
   body: unknown
@@ -87,22 +87,25 @@ export const loadXmlFixture = (name: string): string =>
  * @param body XML to answer the POST with (normally the same fixture the body
  *   route serves).
  * @returns `posted()` — the most recent POST body, `''` before the first save;
- *   `saved()` — whether a POST has been answered.
+ *   `postedTo()` — that POST's URL; `saved()` — whether a POST has been answered.
  */
 export async function interceptDeckPlanSave(
   page: import('@playwright/test').Page,
   body: string
-): Promise<{ posted: () => string; saved: () => boolean }> {
+): Promise<{ posted: () => string; postedTo: () => URL | undefined; saved: () => boolean }> {
   let posted = '';
+  let postedTo: URL | undefined;
   let saved = false;
 
-  await page.route('**/services/vehicles/netex', async route => {
+  // With or without a query: the import takes `?vehicleTypeKind=` (entur/sobek#234).
+  await page.route(/\/services\/vehicles\/netex(\?|$)/, async route => {
     posted = route.request().postData() ?? '';
+    postedTo = new URL(route.request().url());
     saved = true;
     await route.fulfill({ status: 200, contentType: 'application/xml', body });
   });
 
-  return { posted: () => posted, saved: () => saved };
+  return { posted: () => posted, postedTo: () => postedTo, saved: () => saved };
 }
 
 interface VehicleTypeInputCapture {

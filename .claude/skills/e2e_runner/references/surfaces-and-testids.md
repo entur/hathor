@@ -22,48 +22,52 @@ carrying role assignments (live mode). No current spec does this; it's the top c
 
 ## Per-entity surfaces
 
-All three create via the same sidebar flow: a `NewEntityFab` → `/<entity>?selected=new`.
+All three create on their form page: a `NewEntityFab` on the collection page → `/<entity>/new`;
+Save replaces the URL with `/<entity>/<newId>`. The old `?selected=<id>` link redirects to
+`/<entity>/<id>` (#252 cut-over, 2026-11-11).
 
 | Entity | Create | Edit | Save mutation | Notes |
 |---|---|---|---|---|
-| **Vehicles** | `create-vehicle-fab` → `/vehicles?selected=new` sidebar | row-click → `?selected=<netexId>` sidebar; `editor-rail-edit` → fields → `editor-rail-save` | `createOrUpdateVehicle` | |
-| **Vehicle-types** | `create-vehicle-type-fab` → `/vehicle-types?selected=new` sidebar; **bulk** also via Autosys import dialog, launched from Home (`/`) via `home-bulk-import-svv` | `?selected=<netexId>` sidebar; tabs `vtype-tab-*`; `editor-rail-edit/save` | `createOrUpdateVehicleType` (full-document replace) | import is a second create path, not the only one |
-| **Deck-plans** | `create-deck-plan-fab` → `/deck-plans?selected=new` sidebar | row-click → `?selected=<id>` sidebar (replaced the deprecated `/deck-plans/:id` route, #129) | n/a in specs | |
+| **Vehicles** | `create-vehicle-fab` → `/vehicles/new` | Edit link (`Edit <reg no / name>`) → `/vehicles/<id>`, ready to edit; footer Save | `createOrUpdateVehicle` | create needs a type (Save says what is missing) |
+| **Vehicle-types** | `create-vehicle-type-fab` → `/vehicle-types/new`; **bulk** also via the Autosys import dialog on Home (`home-bulk-import-svv`) → `/vehicle-types?filter=<ids>` | Edit link → `/vehicle-types/<id>`; sections + table of contents; footer Save | `createOrUpdateVehicleType` (full-document replace) | import is a second create path |
+| **Deck-plans** | `create-deck-plan-fab` → `/deck-plans/new` | Edit link → `/deck-plans/<id>`; decks in column 3, `deck-plan-show-xml` | create: `createOrUpdateDeckPlan`; edit: XML patch POST | |
 
-`/vehicles/new` was retired in PR #121. The canonical "create → edit-verify → edit" maps cleanly to
-every entity through the `?selected=new` sidebar — but backend *persistence* can still differ
-per entity, so verify the read-back rather than assuming parity from the shared surface.
+The canonical "create → edit-verify → edit" maps cleanly to every entity through the form page —
+but backend *persistence* can still differ per entity, so verify the read-back rather than
+assuming parity from the shared surface.
 
 ## testid inventory
 
-Editor rail (`src/components/sidebar/EditorRail.tsx`): `editor-rail`, `editor-rail-collapse`,
-`editor-rail-edit`, `editor-rail-cancel`, `editor-rail-save`.
+Collection page (`src/pages/shell/`, `src/components/collection/`): `collection-subtitle`
+(organisation · count), `collection-empty`, `collection-rows`; rows are found by role —
+`getByRole('link', { name: /^Edit / })`; filter chips are buttons named `…, remove filter`.
 
-Lists (`src/components/data/DataPageContent.tsx`): `total-entries` (+ `data-count`),
-`url-filter-chip` (+ `data-filter-count`), `no-data-row`, `table-pagination`,
-`pagination-displayed-rows`, `breadcrumbs-nav`.
+Form page (`src/components/sidebar/EditorFrame.tsx`): `<entity>-details-title` (the `h1`, focused
+on open), `editor-page-back`, `editor-page-deactivate`, `editor-page-deactivated`; footer
+`Save` / `Cancel` by role name; leave / discard via the `DiscardDialog` (role `dialog`).
 
-Vehicles: `create-vehicle-fab`, `vehicle-details-title`, `vehicle-context`; form fields
-`#vehicle-name`, `#vehicle-transport-type`, `#vehicle-build-date`, `#vehicle-registration-date`;
-create feedback = "Vehicle saved" snackbar + "View in list" action.
+Vehicles: `create-vehicle-fab`, `vehicle-details-title`, `bus-picture-placeholder`; fields
+`#vehicle-name`, `#vehicle-transport-type`, `#vehicle-build-date`, `#vehicle-registration-date`.
 
-Vehicle-types: `vehicle-type-details-title`; tabs `vtype-tab-edit` / `-propulsion` / `-capacity` /
-`-environment` / `-vehicles`; fields `#vtype-name` (required), `#vtype-length`, `#vtype-euro-class`,
-`#vtype-maximumEngineEffectKW`, `#vtype-low-floor`.
+Vehicle-types: `create-vehicle-type-fab`, `vehicle-type-details-title`; fields `#vtype-name`
+(required), `#vtype-length`, `#vtype-euro-class`, `#vtype-maximumEngineEffectKW`, `#vtype-low-floor`.
+
+Deck-plans: `create-deck-plan-fab`, `deck-plan-details-title`, `deck-plan-decks`,
+`deck-plan-decks-placeholder`, `deck-plan-show-xml`.
 
 Autosys import (launcher on Home `/`, needs a selected org): `home-bulk-import-svv`, `multi-import-file-input`, `multi-import-dropzone`,
 `multi-import-add-input`, `multi-import-add-button`, `multi-import-tags`,
 `column-mapper-reg-number`, `column-mapper-operational-ref`.
 
-Org / header: `organisation-select`, `auth-disabled-label`. NeTEx id chip: `netex-id`,
+Org / header: `organisation-select` (an Autocomplete — select it as the banner's combobox), `auth-disabled-label`. NeTEx id chip: `netex-id`,
 `netex-id-copy`, `netex-id-version`.
 
 ## Hardcoded counts (must become relative under live)
 
-These pin a fixture count and will fail against a live DB — rewrite as `>= n` or delta-after-create:
-- `vehicle.spec.ts` — `data-count='15'` (all), `'12'` (rail-filtered).
-- `vehicle-type-filter.spec.ts` — `'3'` (all), `'1'`, `'2'` (filtered).
-- `deck-plan-name-sort.spec.ts` — `'10'`.
+A fixture count (e.g. `FIXTURE_ROWS` in `vehicle-types.spec.ts`) fails against a live DB: keep it
+behind `test.skip(IS_LIVE, …)` or rewrite it as `>= n` / delta-after-create. The old-list specs
+that pinned `data-count` (`vehicle.spec`, `vehicle-type-filter`, `deck-plan-name-sort`) went with
+the #252 cut-over.
 
 ## Fixture NeTEx ids (full `Codespace:Type:Number` form — never bare row ids)
 
