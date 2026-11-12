@@ -14,7 +14,7 @@ export default function VehicleTypeDetailsPage({ kind }: { kind: VehicleTypeKind
   return (
     <EntityDetailsShell
       listPath={VEHICLE_TYPE_KIND_CONFIG[kind].path}
-      renderEditor={host => <VehicleTypeDetails {...host} kind={kind} />}
+      renderEditor={host => <VehicleTypeDetails key={kind} {...host} kind={kind} />}
     />
   );
 }
