@@ -55,7 +55,7 @@ jobs:
         name: List the state of node modules
         continue-on-error: true
         run: npm list
-      - run: npm ci npm r--legacy-peer-deps
+      - run: npm ci --legacy-peer-deps
       - run: npm run check
       - name: Unit tests with coverage
         run: npm run test:coverage
