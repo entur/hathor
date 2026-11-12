@@ -191,6 +191,15 @@
 
   "vehicleTypes.actions.new": "New Vehicle Type",
   "vehicleTypes.empty": "No vehicle types for {{org}} yet",
+  "contractualVehicleTypes.menu": "Contractual Vehicle Types",
+  "contractualVehicleTypes.actions.new": "New Contractual Vehicle Type",
+  "contractualVehicleTypes.empty": "No contractual vehicle types for {{org}} yet",
+  "contractualVehicleType.title": "Contractual Vehicle Types",
+  "contractualVehicleType.detailsTitle": "Contractual Vehicle Type Details",
+  "contractualVehicleType.notFound": "Contractual vehicle type not found",
+  "contractualVehicleType.saveSuccess": "Contractual vehicle type saved",
+  "contractualVehicleType.deactivateConfirmTitle": "Deactivate contractual vehicle type?",
+  "contractualVehicleType.deactivateConfirmMessage": "This contractual vehicle type will be deactivated.",
 
   "common.none": "None",
   "common.saveNoIdReturned": "Saved, but no id was returned — please refresh.",

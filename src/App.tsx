@@ -68,8 +68,22 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route element={<ProtectedRoute element={<PageShell />} />}>
-                  <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
-                  <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
+                  <Route
+                    path="vehicle-types"
+                    element={<VehicleTypeCollectionPage kind="PHYSICAL" />}
+                  />
+                  <Route
+                    path="vehicle-types/:id"
+                    element={<VehicleTypeDetailsPage kind="PHYSICAL" />}
+                  />
+                  <Route
+                    path="contractual-vehicle-types"
+                    element={<VehicleTypeCollectionPage kind="CONTRACTUAL" />}
+                  />
+                  <Route
+                    path="contractual-vehicle-types/:id"
+                    element={<VehicleTypeDetailsPage kind="CONTRACTUAL" />}
+                  />
                   <Route path="vehicles" element={<VehicleCollectionPage />} />
                   <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
                   <Route path="deck-plans" element={deckPlans(<DeckPlanCollectionPage />)} />
