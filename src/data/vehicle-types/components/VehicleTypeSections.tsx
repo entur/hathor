@@ -27,6 +27,8 @@ interface VehicleTypeSectionsProps {
   euroClasses: readonly CodeValue[];
   /** A create: a record not yet saved has no vehicles to list. */
   isCreate: boolean;
+  /** List the linked vehicles (default): false for a kind vehicles can't refer to. */
+  showVehicles?: boolean;
 }
 
 /**
@@ -37,19 +39,22 @@ interface VehicleTypeSectionsProps {
  * @param {VehicleTypeSectionsProps} props value, onChange, mode, euro classes, create flag
  * @returns {JSX.Element} the sections, their table of contents and the picture
  */
-export default function VehicleTypeSections({ isCreate, ...form }: VehicleTypeSectionsProps) {
+export default function VehicleTypeSections({
+  isCreate,
+  showVehicles = true,
+  ...form
+}: VehicleTypeSectionsProps) {
   const { t } = useTranslation();
   const control = useVehicleTypeControls(form);
   // Keyed by section id: the headings follow the language, the TOC's mark stays put (#293).
   const sections = useMemo(() => {
     const layout: Layout<VehicleTypeField> = Object.fromEntries(
-      VEHICLE_TYPE_SECTION_IDS.filter(s => !(isCreate && s === 'vehicles')).map(s => [
-        s,
-        vehicleTypeSections[s],
-      ])
+      VEHICLE_TYPE_SECTION_IDS.filter(s => !((isCreate || !showVehicles) && s === 'vehicles')).map(
+        s => [s, vehicleTypeSections[s]]
+      )
     );
     return resolveSections(vehicleTypeFields, layout);
-  }, [isCreate]);
+  }, [isCreate, showVehicles]);
   const { value } = form;
   const { length, width, height } = value;
   // The picture follows the dims once typing pauses: each new one is a WebGL shot.

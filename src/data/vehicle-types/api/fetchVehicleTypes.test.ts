@@ -36,6 +36,27 @@ describe('fetchVehicleTypes', () => {
     });
   });
 
+  it('filters on CONTRACTUAL when asked, for the list and by id', async () => {
+    mockedRequest.mockResolvedValue(mkPage([]));
+    await fetchVehicleTypes('http://x', 'NMR:Organisation:1', null, 'CONTRACTUAL');
+    expect(mockedRequest.mock.calls[0][2]?.filter).toEqual({
+      dataOwnerRef: 'NMR:Organisation:1',
+      vehicleTypeKind: 'CONTRACTUAL',
+    });
+    await fetchVehicleType(
+      'CVT:VehicleType:9',
+      'http://x',
+      'NMR:Organisation:1',
+      null,
+      'CONTRACTUAL'
+    );
+    expect(mockedRequest.mock.calls[1][2]?.filter).toEqual({
+      netexIds: ['CVT:VehicleType:9'],
+      vehicleTypeKind: 'CONTRACTUAL',
+      dataOwnerRef: 'NMR:Organisation:1',
+    });
+  });
+
   it('returns an empty array when content is empty', async () => {
     mockedRequest.mockResolvedValue(mkPage([]));
     const ctx = await fetchVehicleTypes('http://x', null);

@@ -94,6 +94,12 @@ describe('serializeVehicleType', () => {
     ).toBe('PHYSICAL');
   });
 
+  it('sends vehicleTypeKind CONTRACTUAL when asked', () => {
+    expect(serializeVehicleType({ id: '', version: 0 }, OWNER, 'CONTRACTUAL').vehicleTypeKind).toBe(
+      'CONTRACTUAL'
+    );
+  });
+
   it('round-trips netexId through project∘serialize', () => {
     const wire: VehicleTypesQuery['vehicleTypes']['content'][number] = {
       netexId: 'NMR:VehicleType:rail',

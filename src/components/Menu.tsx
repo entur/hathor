@@ -38,6 +38,12 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
   { textKey: 'home', path: '/', iconKey: 'home', requiresOrg: false },
   {
+    textKey: 'contractualVehicleTypes.menu',
+    path: '/contractual-vehicle-types',
+    iconKey: 'contractualVehicleTypes',
+    requiresOrg: true,
+  },
+  {
     textKey: 'home.features.vehicletypes.headline',
     path: '/vehicle-types',
     iconKey: 'vehicleTypes',

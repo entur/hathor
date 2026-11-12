@@ -190,6 +190,15 @@
 
   "vehicleTypes.actions.new": "Ny kjøretøytype",
   "vehicleTypes.empty": "Ingen kjøretøytyper for {{org}} ennå",
+  "contractualVehicleTypes.menu": "Kontraktuelle kjøretøytyper",
+  "contractualVehicleTypes.actions.new": "Ny kontraktuell kjøretøytype",
+  "contractualVehicleTypes.empty": "Ingen kontraktuelle kjøretøytyper for {{org}} ennå",
+  "contractualVehicleType.title": "Kontraktuelle kjøretøytyper",
+  "contractualVehicleType.detailsTitle": "Detaljer for kontraktuell kjøretøytype",
+  "contractualVehicleType.notFound": "Kontraktuell kjøretøytype ikke funnet",
+  "contractualVehicleType.saveSuccess": "Kontraktuell kjøretøytype lagret",
+  "contractualVehicleType.deactivateConfirmTitle": "Deaktivere kontraktuell kjøretøytype?",
+  "contractualVehicleType.deactivateConfirmMessage": "Denne kontraktuelle kjøretøytypen vil bli deaktivert.",
 
   "common.none": "Ingen",
   "common.saveNoIdReturned": "Lagret, men ingen id ble returnert — last på nytt.",
