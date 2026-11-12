@@ -70,7 +70,7 @@ export default function App() {
                 <Route element={<ProtectedRoute element={<PageShell />} />}>
                   <Route
                     path="vehicle-types"
-                    element={<VehicleTypeCollectionPage kind="PHYSICAL" />}
+                    element={<VehicleTypeCollectionPage key="PHYSICAL" kind="PHYSICAL" />}
                   />
                   <Route
                     path="vehicle-types/:id"
@@ -78,7 +78,7 @@ export default function App() {
                   />
                   <Route
                     path="contractual-vehicle-types"
-                    element={<VehicleTypeCollectionPage kind="CONTRACTUAL" />}
+                    element={<VehicleTypeCollectionPage key="CONTRACTUAL" kind="CONTRACTUAL" />}
                   />
                   <Route
                     path="contractual-vehicle-types/:id"
