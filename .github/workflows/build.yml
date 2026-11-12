@@ -22,11 +22,15 @@ jobs:
           node-version: 22
       - name: Read version and detect a merged version bump
         id: version
-        env:
-          BEFORE: ${{ github.event.before }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          PREVIOUS_VERSION=$(git show "$BEFORE:package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+          # Use previous commit if available, otherwise check if HEAD~1 exists
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            # Fallback: compare with HEAD~1 if event.before is empty/null
+            BEFORE="HEAD~1"
+          fi
+          PREVIOUS_VERSION=$(git show "$BEFORE:package.json" 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version" 2>/dev/null || echo "0.0.0")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           if [ "$VERSION" != "$PREVIOUS_VERSION" ]; then
             echo "release=true" >> "$GITHUB_OUTPUT"
