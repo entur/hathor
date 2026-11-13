@@ -13,6 +13,11 @@ export interface SandboxFeatures {
   DeckPlans?: boolean;
   /** The SVV (Autosys) bulk import on Home. */
   AutosysImport?: boolean;
+  /**
+   * The 3D bus picture: the card media on the vehicle-type and vehicle collections and the
+   * picture above the TOC on their form pages. Off, those places have no picture.
+   */
+  BusPictures?: boolean;
 }
 
 export interface Config {

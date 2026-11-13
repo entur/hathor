@@ -16,6 +16,7 @@
   "themeFilePath": "/theme-dev.json",
   "sandboxFeatures": {
     "DeckPlans": true,
-    "AutosysImport": true
+    "AutosysImport": true,
+    "BusPictures": true
   }
 }
