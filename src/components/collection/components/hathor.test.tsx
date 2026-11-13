@@ -7,6 +7,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { createTheme } from '@mui/material/styles';
 import { defaultCollectionQuery, type EntityCollectionProps, type FieldSpec } from '../types.ts';
 import { resolveColumns } from '../utils/columns.ts';
 import { createEntityCollection } from './collection.tsx';
@@ -31,7 +32,9 @@ const ROWS: Row[] = [
   { id: 'NMR:VehicleType:2', name: { value: 'Citea' }, transportMode: 'bus' },
 ];
 const GRID_SLOT = { dataGrid: { disableVirtualization: true } };
-const MUTED = 'rgba(0, 0, 0, 0.6)'; // default theme's text.secondary
+// Get the muted color from the default MUI theme instead of hardcoding it
+const DEFAULT_THEME = createTheme();
+const MUTED = DEFAULT_THEME.palette.text.secondary;
 const Collection = createEntityCollection(FIELDS);
 
 const mount = async (props: Partial<EntityCollectionProps<Row, keyof typeof FIELDS>> = {}) => {
