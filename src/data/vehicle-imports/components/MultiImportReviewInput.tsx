@@ -32,8 +32,8 @@ function EntryChipLabel({ entry }: { entry: ImportEntry }) {
         sx={{
           bgcolor: 'secondary.main',
           color: 'secondary.contrastText',
-          fontSize: '0.7rem',
-          fontWeight: 600,
+          typography: 'caption',
+          fontWeight: 'fontWeightBold',
           px: 0.75,
           py: 0.125,
           borderRadius: 1,

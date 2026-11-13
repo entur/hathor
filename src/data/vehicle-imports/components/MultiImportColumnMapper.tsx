@@ -123,7 +123,7 @@ export default function MultiImportColumnMapper({
                 <TableCell
                   key={h}
                   sx={{
-                    fontWeight: 'bold',
+                    fontWeight: 'fontWeightBold',
                     bgcolor: highlightCols.has(h) ? 'action.selected' : 'background.paper',
                   }}
                 >

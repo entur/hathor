@@ -109,7 +109,7 @@ interface MetaRowProps {
 export function MetaRow({ label, children }: MetaRowProps) {
   return (
     <Box sx={{ display: 'contents' }}>
-      <Typography sx={{ fontSize: '0.875rem', color: 'text.primary', minWidth: 0 }}>
+      <Typography variant="body2" sx={{ color: 'text.primary', minWidth: 0 }}>
         {label}
       </Typography>
       <Typography variant="body2" component="div" sx={{ minWidth: 0 }}>
