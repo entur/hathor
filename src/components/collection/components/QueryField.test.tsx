@@ -90,31 +90,31 @@ describe('QueryField', () => {
   it('shows at most two filters and folds the rest into a +N chip that opens the panel', () => {
     mount({ query: { filters: { netexId: ['T:1'], name: 'fli', transportMode: ['rail'] } } });
     const tokens = screen.getByRole('group', { name: 'Active filters' });
-    expect(within(tokens).getByText('Id: ::1')).toBeTruthy();
+    expect(within(tokens).getByText('Id: 1')).toBeTruthy();
     expect(within(tokens).getByText('Name: fli')).toBeTruthy();
     expect(within(tokens).queryByText(/Transport mode/)).toBeNull();
     fireEvent.click(within(tokens).getByRole('button', { name: '1 more filter' }));
     expect(screen.getByRole('dialog', { name: 'Filters' })).toBeTruthy();
   });
 
-  it('captions an id filter "Id" and compacts its values, full ids on hover', () => {
+  it('captions an id filter "Id" and shortens its values, full ids on hover', () => {
     mount({ query: { filters: { netexId: ['VEH:VehicleType:1004', 'VEH:VehicleType:7'] } } });
     const chip = screen.getByText(/^Id: /).closest('.MuiChip-root') as HTMLElement;
-    expect(chip.textContent).toBe('Id: ::1004, ::7');
+    expect(chip.textContent).toBe('Id: 1004, 7');
     expect(chip.getAttribute('title')).toBe('Id: VEH:VehicleType:1004, VEH:VehicleType:7');
   });
 
-  it('shows a typed bare number in the same ::NUM form as a full id', () => {
+  it('shows a typed bare number the same as a full id', () => {
     mount({ query: { filters: { netexId: ['1004', 'VEH:VehicleType:7'] } } });
-    expect(screen.getByText(/^Id: /).closest('.MuiChip-root')?.textContent).toBe('Id: ::1004, ::7');
+    expect(screen.getByText(/^Id: /).closest('.MuiChip-root')?.textContent).toBe('Id: 1004, 7');
   });
 
-  it('shows compact id tags inside the filter panel', () => {
+  it('shows local-part id tags inside the filter panel', () => {
     mount({ query: { filters: { netexId: ['VEH:VehicleType:1004'] } } });
     fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
     const panel = screen.getByRole('dialog', { name: 'Filters' });
     expect(within(panel).getByRole('combobox', { name: 'Id' })).toBeTruthy();
-    expect(within(panel).getByText('::1004')).toBeTruthy();
+    expect(within(panel).getByText('1004')).toBeTruthy();
   });
 
   describe('on a narrow screen', () => {

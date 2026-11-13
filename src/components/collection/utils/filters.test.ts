@@ -87,7 +87,7 @@ describe('matchesFilter on the identity field', () => {
   const ID = col('netexId', { kind: 'text', path: ['netexId'] });
   const vt = { netexId: 'VEH:VehicleType:1004' };
 
-  it('matches the compact ::NUM form and the bare number', () => {
+  it('matches the bare number and the old ::NUM form', () => {
     expect(matchesFilter(vt, ID, 'anyOf', ['::1004'])).toBe(true);
     expect(matchesFilter(vt, ID, 'anyOf', ['1004'])).toBe(true);
   });
@@ -152,7 +152,7 @@ describe('editing helpers', () => {
 
   it('shows a condition through the column entry rule', () => {
     const id = col('netexId', { kind: 'text', path: ['netexId'] });
-    expect(chipText(['VEH:VehicleType:1004', '7'], id.entryLabel)).toBe('::1004, ::7');
+    expect(chipText(['VEH:VehicleType:1004', '7'], id.entryLabel)).toBe('1004, 7');
     expect(chipText(' fli ')).toBe('fli');
   });
 

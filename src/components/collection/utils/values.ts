@@ -10,7 +10,7 @@ import {
   type KeyedRow,
 } from '../types.ts';
 
-/** The identity field: captioned "Id" and shown compact (`::1004`). */
+/** The identity field: captioned "Id" and shown as its local part (`1004`). */
 export const ID_FIELD = 'netexId';
 const ID_KEYS = [ID_FIELD, 'id'] as const; // first present → row identity
 const VERSION_KEY = 'version',
@@ -18,8 +18,8 @@ const VERSION_KEY = 'version',
 const POSITION_PREFIX = 'row:'; // id-less rows; a real id never starts with it
 const REPEAT_SEP = '#'; // a repeated identity's 2nd, 3rd… occurrence
 const ID_SEP = ':',
-  COMPACT_MARK = '::';
-const VERSION_MARK = '/ver'; // `::1004/ver3` on a card
+  LEGACY_MARK = '::'; // the old compact form `::1004`, still accepted when typed
+const VERSION_MARK = '/ver'; // `1004/ver3` on a card
 const DATE_LEN = 10,
   MINUTE_LEN = 16; // 'YYYY-MM-DD', 'YYYY-MM-DDTHH:mm'
 /** Shown for a missing value, in every view. */
@@ -176,7 +176,7 @@ export const rowId = (row: unknown): string | undefined => {
 const lastSegment = (id: string): string => id.slice(id.lastIndexOf(ID_SEP) + 1);
 
 /**
- * A NeTEx id shortened to its local part: `VEH:VehicleType:1004` → `::1004`.
+ * A NeTEx id shortened to its local part: `VEH:VehicleType:1004` → `1004`.
  * Within one collection the codespace and type repeat on every row, so only
  * the last segment tells rows apart. A value without segments (or with an
  * empty last one) is returned unchanged.
@@ -186,12 +186,12 @@ const lastSegment = (id: string): string => id.slice(id.lastIndexOf(ID_SEP) + 1)
  */
 export const compactId = (id: string): string => {
   const tail = lastSegment(id);
-  return id.includes(ID_SEP) && tail ? `${COMPACT_MARK}${tail}` : id;
+  return id.includes(ID_SEP) && tail ? tail : id;
 };
 
 /**
- * Does a typed id pick out a full one? The compact `::1004` and the bare
- * `1004` match on the last segment; a value carrying a namespace must match
+ * Does a typed id pick out a full one? The bare `1004` (and the old `::1004`)
+ * match on the last segment; a value carrying a namespace must match
  * whole — the full id stays a working fallback.
  *
  * @param full  the row's id
@@ -200,19 +200,19 @@ export const compactId = (id: string): string => {
  */
 export const idMatches = (full: string, typed: string): boolean => {
   if (typed === full) return true;
-  const local = typed.startsWith(COMPACT_MARK) ? typed.slice(COMPACT_MARK.length) : typed;
+  const local = typed.startsWith(LEGACY_MARK) ? typed.slice(LEGACY_MARK.length) : typed;
   return local !== '' && !local.includes(ID_SEP) && local === lastSegment(full);
 };
 
 /**
- * A typed id filter entry in the compact form: a full id is compacted, and a
- * bare local part (`1004`) gains the `::` mark, so every entry reads alike.
+ * A typed id filter entry as the column shows it: a full id is shortened to its
+ * local part, and a bare one (`1004`, or the old `::1004`) is that local part.
  *
  * @param typed what the user entered
  * @returns the entry as shown on a chip or tag
  */
 export const compactIdEntry = (typed: string): string =>
-  typed.includes(ID_SEP) ? compactId(typed) : `${COMPACT_MARK}${typed}`;
+  typed.startsWith(LEGACY_MARK) ? typed.slice(LEGACY_MARK.length) : compactId(typed);
 
 /**
  * The text a view shows for one cell: `formatValue` passed through the

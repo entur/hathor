@@ -70,7 +70,7 @@ test.describe('/deck-plans', () => {
   }) => {
     test.skip(IS_LIVE, 'fixture rows');
     await page.goto(LIST);
-    // The Name cell; the id column itself shows the compact `::2`.
+    // The Name cell; the id column itself shows the local part `2`.
     await expect(page.getByRole('gridcell', { name: UNNAMED, exact: true })).toHaveCount(1);
     await expect(page.getByRole('link', { name: `Edit ${UNNAMED}` })).toHaveCount(1);
 
