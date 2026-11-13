@@ -6,6 +6,7 @@ import {
   resolveSections,
   type Layout,
 } from '../../../components/form-layout/index.ts';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue.ts';
 import { useVehicleTypeControls } from '../hooks/useVehicleTypeControls.tsx';
 import { vehicleTypeFields, type VehicleTypeField } from '../types/vehicleTypeFields.ts';
@@ -46,6 +47,7 @@ export default function VehicleTypeSections({
 }: VehicleTypeSectionsProps) {
   const { t } = useTranslation();
   const control = useVehicleTypeControls(form);
+  const busPictures = useIsFeatureOn()('BusPictures');
   // Keyed by section id: the headings follow the language, the TOC's mark stays put (#293).
   const sections = useMemo(() => {
     const layout: Layout<VehicleTypeField> = Object.fromEntries(
@@ -69,7 +71,11 @@ export default function VehicleTypeSections({
       renderField={f => control(f.key)}
       tocLabel={t('formSections.toc')}
       sectionLabel={id => t(VEHICLE_TYPE_SECTION_LABEL[id as VehicleTypeSection])}
-      aside={<BusPictureFrame dims={dims} paint="vehicleType" mode={value.transportMode} />}
+      aside={
+        busPictures ? (
+          <BusPictureFrame dims={dims} paint="vehicleType" mode={value.transportMode} />
+        ) : undefined
+      }
     />
   );
 }

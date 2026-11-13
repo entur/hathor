@@ -39,11 +39,22 @@ export default defineConfig({
           globals: true,
           environment: 'node',
           include: ['src/**/*.test.{ts,tsx}'],
-          // Initialise i18next once for the whole project, exactly as
-          // `.storybook/preview.tsx` and `src/main.tsx` do for their entries.
+          // Initialise i18next once for the whole project (as
+          // `.storybook/preview.tsx` and `src/main.tsx` do for their entries),
+          // pinned to English so the host locale can't change assertions.
           // Without it `i18next.t()` is unbound and returns `undefined`, so
           // every module that localises a string would need a guarded wrapper.
-          setupFiles: ['src/i18n.ts'],
+          setupFiles: ['src/vitest.setup.ts'],
+          // The DataGrid collection tests (first `import('@mui/x-data-grid')`,
+          // jsdom + MUI renders) overrun the 5s/10s defaults on a cold Windows
+          // machine where every file runs in parallel.
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
+          // vitest's worker start-up timeout is hard-coded, and a many-core
+          // dev machine starting a fork per core trips it ("Failed to start
+          // forks worker"), silently skipping files. Cap locally; CI keeps the
+          // default.
+          maxWorkers: process.env.CI ? undefined : 4,
         },
       },
       {

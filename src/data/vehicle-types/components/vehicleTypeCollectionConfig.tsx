@@ -78,12 +78,13 @@ const editHref = (vt: VehicleType) => encodeURIComponent(vt.id);
  */
 export function VehicleTypeCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
   const labels = useCollectionLabels('vehicleType.field');
-  const deckPlans = useIsFeatureOn()('DeckPlans');
+  const isOn = useIsFeatureOn();
+  const deckPlans = isOn('DeckPlans');
   return (
     <Collection
       columns={deckPlans ? COLUMNS : COLUMNS_NO_DECK_PLAN}
       card={deckPlans ? CARD : CARD_NO_DECK_PLAN}
-      cardMedia={busMedia}
+      cardMedia={isOn('BusPictures') ? busMedia : undefined}
       labels={labels}
       editHref={editHref}
       rowTitle={vehicleTypeTitle}
