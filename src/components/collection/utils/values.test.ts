@@ -3,6 +3,7 @@ import type { FieldSpec } from '../types.ts';
 import { resolveColumns } from './columns.ts';
 import {
   compactId,
+  compactIdEntry,
   displayValue,
   formatValue,
   fullTitle,
@@ -118,9 +119,17 @@ describe('rowKeys', () => {
   });
 });
 
+describe('compactIdEntry', () => {
+  it('reads a typed id as its local part: full, bare or the old ::NUM', () => {
+    expect(compactIdEntry('VEH:VehicleType:1004')).toBe('1004');
+    expect(compactIdEntry('1004')).toBe('1004');
+    expect(compactIdEntry('::1004')).toBe('1004');
+  });
+});
+
 describe('compactId', () => {
   it('keeps only the last segment of a NeTEx id, marked with ::', () => {
-    expect(compactId('VEH:VehicleType:1004')).toBe('::1004');
+    expect(compactId('VEH:VehicleType:1004')).toBe('1004');
   });
 
   it('leaves a value that is not segmented, or ends in a colon, as it is', () => {
@@ -138,7 +147,7 @@ describe('displayValue', () => {
   const row = { netexId: 'VEH:VehicleType:1004', name: { value: 'A:B:C' } };
 
   it('compacts the id column only', () => {
-    expect(displayValue(row, ID)).toBe('::1004');
+    expect(displayValue(row, ID)).toBe('1004');
     expect(displayValue(row, NAME)).toBe('A:B:C');
   });
 });
@@ -176,9 +185,9 @@ describe('keyRows', () => {
 
 describe('withVersion', () => {
   it('appends the version as /verNUM, and leaves text without one alone', () => {
-    expect(withVersion('::1004', { version: '3' })).toBe('::1004/ver3');
-    expect(withVersion('::1004', { version: '' })).toBe('::1004');
-    expect(withVersion('::1004', {})).toBe('::1004');
+    expect(withVersion('1004', { version: '3' })).toBe('1004/ver3');
+    expect(withVersion('1004', { version: '' })).toBe('1004');
+    expect(withVersion('1004', {})).toBe('1004');
     expect(withVersion('', { version: '3' })).toBe('');
   });
 });

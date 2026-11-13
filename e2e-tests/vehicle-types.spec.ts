@@ -243,7 +243,7 @@ test.describe('/vehicle-types page shell', () => {
       { netexId: id, version: 1, name: { value: '  ' }, transportMode: 'BUS' },
     ]);
     await page.goto(LIST);
-    // The Name cell; the id column itself shows the compact `::noname`.
+    // The Name cell; the id column itself shows the local part `noname`.
     await expect(page.getByRole('gridcell', { name: id, exact: true })).toHaveCount(1);
     await page.getByRole('link', { name: `Edit ${id}` }).click();
     await expect(page.getByTestId('vehicle-type-details-title')).toHaveText(id);

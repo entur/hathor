@@ -93,7 +93,7 @@ export function FilterPanel({
               // Free text (ids) commits on blur too: leaving the field or the
               // panel must not silently drop what was typed.
               autoSelect={!c.spec.options}
-              // Tags read as the column shows its values (a compact `::1004` id).
+              // Tags read as the column shows its values (a local-part `1004` id).
               getOptionLabel={c.entryLabel}
               options={[...(c.spec.options ?? [])]}
               value={asList(filters[c.key])}
