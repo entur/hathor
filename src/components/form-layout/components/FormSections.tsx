@@ -144,7 +144,8 @@ export function FormSections<K extends string>({
       ref={rootRef}
       sx={{
         display: 'grid',
-        gridTemplateColumns: wide && column ? `${formColumn} ${TOC_WIDTH}` : formColumn,
+        // No column 3 (no aside, no TOC): the form takes the whole page width.
+        gridTemplateColumns: column ? (wide ? `${formColumn} ${TOC_WIDTH}` : formColumn) : '1fr',
         columnGap: SECTION_GAP,
         rowGap: FIELD_GAP,
         alignItems: 'start',
