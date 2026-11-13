@@ -18,6 +18,8 @@ const FORM_TOP_PAD = 1;
 const DROPDOWN_PAD = 1,
   DROPDOWN_H_PX = 48;
 const TOC_Z = 2; // above outlined field labels, which carry z-index 1
+/** On a form with no column 3; `EditorFrame` keys its page width off it. */
+export const NARROW_ATTR = 'data-form-narrow';
 const STACKED_MIN_SECTIONS = 2; // fewer → one flat group with no heading
 
 export interface FormSectionsProps<K extends string = string> {
@@ -71,7 +73,7 @@ export function FormSections<K extends string>({
   const shown = active !== undefined && toc.includes(active) ? active : toc[0];
   const theme = useTheme();
   const wide = useMediaQuery(theme.breakpoints.up('lg'));
-  const formColumn = `minmax(0, ${formColumnWidth(theme)})`;
+  const formColumn = 'minmax(0, 1fr)'; // what column 3 leaves of the page
   const register = useSectionSpy({
     labels: toc,
     enabled: toc.length > 0,
@@ -142,10 +144,13 @@ export function FormSections<K extends string>({
   return (
     <Box
       ref={rootRef}
+      // No column 3 (no aside, no TOC): the form is one narrow column, centred; `EditorFrame`
+      // narrows its page to match, by this attribute.
+      {...(!column && { [NARROW_ATTR]: '' })}
       sx={{
         display: 'grid',
-        // No column 3 (no aside, no TOC): the form takes the whole page width.
         gridTemplateColumns: column ? (wide ? `${formColumn} ${TOC_WIDTH}` : formColumn) : '1fr',
+        ...(!column && { width: '100%', maxWidth: formColumnWidth(theme), mx: 'auto' }),
         columnGap: SECTION_GAP,
         rowGap: FIELD_GAP,
         alignItems: 'start',
