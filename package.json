@@ -39,7 +39,7 @@
     "@emotion/styled": "^11.14.0",
     "@entur/iteru-3dbus": "^0.3.0",
     "@mui/icons-material": "^9.5.0",
-    "@mui/material": "^7.0.2",
+    "@mui/material": "^9.5.0",
     "@mui/x-data-grid": "^8.2.0",
     "@opentrainticketing/netex-deckplan-editor": "^2.0.5",
     "@types/papaparse": "^5.5.2",
