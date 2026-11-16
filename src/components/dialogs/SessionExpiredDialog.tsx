@@ -22,7 +22,8 @@ export default function SessionExpiredDialog() {
   return (
     <Dialog
       open={isSessionExpired}
-      disableEscapeKeyDown
+      // Not dismissible: ignore Escape and backdrop closes (disableEscapeKeyDown was removed in v9).
+      onClose={() => {}}
       slotProps={{
         backdrop: { style: { pointerEvents: 'none' } },
       }}

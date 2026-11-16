@@ -133,7 +133,7 @@ export function useVehicleTypeControls({
                 />
               ))
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 {t('vehicleType.noVehicles')}
               </Typography>
             )}

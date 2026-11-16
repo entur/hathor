@@ -76,7 +76,7 @@ export default function HomePage() {
           >
             {t('home.welcomeMessage')}
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '64ch' }}>
+          <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: '64ch' }}>
             {t('home.description')}
           </Typography>
         </Box>
@@ -106,7 +106,7 @@ export default function HomePage() {
             component="section"
             sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}
           >
-            <Typography variant="body1" color="text.secondary">
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
               {t('home.login.body')}
             </Typography>
             <Button
@@ -117,7 +117,7 @@ export default function HomePage() {
             >
               {t('header.actions.login')}
             </Button>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {t('home.login.provider')}
             </Typography>
           </Box>

@@ -94,7 +94,7 @@ export default function MultiImportFileInput({
       >
         <CloudUpload sx={{ fontSize: 48, color: 'action.active', mb: 1 }} />
         <Typography>{t('import.multi.dropzoneLabel')}</Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
           {t('import.multi.dropzoneHint')}
         </Typography>
       </Box>

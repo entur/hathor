@@ -66,8 +66,10 @@ export default function CollectionPage({
       actions={newAction}
       empty={
         count === 0 ? (
-          <Stack spacing={2} alignItems="flex-start" data-testid="collection-empty">
-            <Typography color="text.secondary">{t(keys.empty, { org: orgName })}</Typography>
+          <Stack spacing={2} sx={{ alignItems: 'flex-start' }} data-testid="collection-empty">
+            <Typography sx={{ color: 'text.secondary' }}>
+              {t(keys.empty, { org: orgName })}
+            </Typography>
             {newAction}
           </Stack>
         ) : undefined

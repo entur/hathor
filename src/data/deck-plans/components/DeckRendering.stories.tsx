@@ -43,8 +43,8 @@ function Framed({
 }) {
   const deck = useDeck(xml);
   return (
-    <Stack spacing={0.5} alignItems="flex-start">
-      <Typography variant="caption" color="text.secondary">
+    <Stack spacing={0.5} sx={{ alignItems: 'flex-start' }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
         {label}
       </Typography>
       {deck ? (
@@ -109,7 +109,7 @@ export const Ghost: Story = {
  */
 export const Orientations: Story = {
   render: () => (
-    <Stack direction="row" spacing={4} alignItems="flex-start">
+    <Stack direction="row" spacing={4} sx={{ alignItems: 'flex-start' }}>
       <Framed label="vertical" xml={SAMPLE_XML} vertical />
       <Framed label="horizontal" xml={SAMPLE_XML} />
     </Stack>
@@ -132,7 +132,7 @@ export const Orientations: Story = {
 /** Scale sweep — confirms px-per-metre is honoured and nothing clips. */
 export const Scales: Story = {
   render: () => (
-    <Stack direction="row" spacing={4} alignItems="flex-start">
+    <Stack direction="row" spacing={4} sx={{ alignItems: 'flex-start' }}>
       {[DECK_SCALE / 2, DECK_SCALE, DECK_SCALE * 2].map(s => (
         <Framed key={s} label={`scale ${s}`} xml={SAMPLE_XML} vertical scale={s} />
       ))}

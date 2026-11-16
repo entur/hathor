@@ -53,7 +53,7 @@ export default function DeckStrip({ xml, id, loading, fetchError, onRetry }: Dec
         {isGhost && (
           <Box data-testid="deck-plan-decks-sample">
             <Typography variant="subtitle2">{t('deckPlans.deck.sample')}</Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               {t('deckPlans.deck.sampleHint')}
             </Typography>
           </Box>
@@ -65,11 +65,10 @@ export default function DeckStrip({ xml, id, loading, fetchError, onRetry }: Dec
               // `Deck/id/1`, so a plan merged from several exports repeats ids.
               key={i}
               spacing={0.5}
-              alignItems="center"
-              sx={{ flex: '0 0 auto' }}
+              sx={{ alignItems: 'center', flex: '0 0 auto' }}
             >
               <DeckRendering deck={deck} vertical data-testid={`deck-plan-deck-${i}`} />
-              <Typography variant="caption" color="text.secondary" noWrap>
+              <Typography variant="caption" noWrap sx={{ color: 'text.secondary' }}>
                 {netexText(deck.Name) ?? t('deckPlans.deck.label', { n: i + 1 })}
               </Typography>
             </Stack>
