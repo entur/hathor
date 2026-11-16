@@ -219,8 +219,10 @@ export function FormAutocompleteField<
           required={required}
           error={error}
           helperText={helperText}
-          // `params.slotProps.inputLabel` carries the label's id/htmlFor wiring.
+          // v9 puts the input's ref/handlers (`htmlInput`, `input`) and the label wiring in
+          // `params.slotProps`; keep them all, only forcing the label shrunk.
           slotProps={{
+            ...params.slotProps,
             inputLabel: { ...params.slotProps?.inputLabel, ...SHRUNK_LABEL.inputLabel },
           }}
         />
