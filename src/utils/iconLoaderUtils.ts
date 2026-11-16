@@ -50,14 +50,13 @@ const fallback = index.get(FALLBACK_NAME);
  * `default.*` fallback → '' (never throws / returns undefined).
  *
  * @param name - bare icon name, e.g. 'menu', 'train'
- * @param useCustom - false skips the custom tiers (tests compare the two sets)
  * @returns resolved asset URL, or '' if nothing (incl. fallback) is found
  */
-export function getIconUrl(name: string, useCustom = true): string {
+export function getIconUrl(name: string): string {
   const e = index.get(name);
   return (
-    (useCustom && e?.customSvg) ||
-    (useCustom && e?.customPng) ||
+    e?.customSvg ||
+    e?.customPng ||
     e?.defaultSvg ||
     e?.defaultPng ||
     fallback?.defaultSvg ||

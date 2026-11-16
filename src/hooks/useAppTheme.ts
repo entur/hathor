@@ -9,14 +9,10 @@ import { useThemeFonts } from '../theme/themeFonts';
  * or a failed load, gives MUI's plain theme (abzu does the same).
  *
  * @param {string | undefined} themePath URL of the theme JSON, one of `themeConfigs`
- * @returns {{ theme: Theme, themeError: string | null }} the theme, and why loading failed
+ * @returns {Theme} the theme
  */
-export function useAppTheme(themePath: string | undefined): {
-  theme: Theme;
-  themeError: string | null;
-} {
+export function useAppTheme(themePath: string | undefined): Theme {
   const [cfg, setCfg] = useState<ThemeConfig | null>(null);
-  const [themeError, setThemeError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!themePath) {
@@ -31,15 +27,11 @@ export function useAppTheme(themePath: string | undefined): {
         return res.json() as Promise<ThemeConfig>;
       })
       .then(next => {
-        if (!live) return;
-        setCfg(next);
-        setThemeError(null);
+        if (live) setCfg(next);
       })
       .catch((error: unknown) => {
         if (!live) return;
-        const message = error instanceof Error ? error.message : String(error);
-        console.error('Theme loading error:', message);
-        setThemeError(message);
+        console.error('Theme loading error:', error instanceof Error ? error.message : error);
         setCfg(null);
       });
     return () => {
@@ -49,7 +41,5 @@ export function useAppTheme(themePath: string | undefined): {
 
   useThemeFonts(cfg?.fonts?.faces);
 
-  const theme = useMemo(() => (cfg ? createThemeFromConfig(cfg) : createTheme()), [cfg]);
-
-  return { theme, themeError };
+  return useMemo(() => (cfg ? createThemeFromConfig(cfg) : createTheme()), [cfg]);
 }

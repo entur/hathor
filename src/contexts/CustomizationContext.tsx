@@ -1,8 +1,7 @@
-import { createContext, useState, useContext, type ReactNode, useCallback } from 'react';
+import { createContext, useState, useContext, type ReactNode } from 'react';
 import { useConfig } from './configContext.ts';
 
 const LOCAL_STORAGE_KEY = 'themeConfig';
-const NO_THEMES: string[] = [];
 
 interface CustomizationContextType {
   /** The deployment's `themeConfigs`; Settings shows a picker when there are two or more. */
@@ -15,19 +14,14 @@ interface CustomizationContextType {
 
 const CustomizationContext = createContext<CustomizationContextType | undefined>(undefined);
 
-const readStored = () =>
-  typeof window !== 'undefined' && window.localStorage
-    ? localStorage.getItem(LOCAL_STORAGE_KEY)
-    : null;
-
 export const CustomizationProvider = ({ children }: { children: ReactNode }) => {
-  const themes = useConfig().themeConfigs ?? NO_THEMES;
-  const [stored, setStored] = useState<string | null>(readStored);
+  const themes = useConfig().themeConfigs ?? [];
+  const [stored, setStored] = useState(() => localStorage.getItem(LOCAL_STORAGE_KEY));
 
-  const setThemePath = useCallback((path: string) => {
+  const setThemePath = (path: string) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, path);
     setStored(path);
-  }, []);
+  };
 
   const themePath = stored && themes.includes(stored) ? stored : themes[0];
 

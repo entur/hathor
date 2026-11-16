@@ -10,8 +10,8 @@ import { setConfig } from './live-auth-helpers';
  *   → assert the picker, pick the second theme, assert header colour + font, reload
  * Covers:
  *   - one theme: Settings has no theme picker
- *   - two themes: picking the second recolours the header, injects its font faces and
- *     sets its font stack; the pick survives a reload
+ *   - two themes: picking the second recolours the header and sets its font stack;
+ *     the pick survives a reload (the @font-face text is unit-tested: themeFonts.test.ts)
  * Modes:
  *   - mock and live alike: themes are static files, no backend involved
  */
@@ -61,10 +61,6 @@ test.describe('Theme picker', () => {
 
     const header = page.locator('header').first();
     await expect(header).toHaveCSS('background-color', ALT_PRIMARY);
-    // a <style> in <head> has no rendered text, so read textContent
-    await expect
-      .poll(() => page.locator('style[data-theme-font]').textContent())
-      .toContain(`font-family: "${ALT_FAMILY}"`);
     await expect(page.locator('body')).toHaveCSS('font-family', new RegExp(ALT_FAMILY));
 
     await page.reload();
