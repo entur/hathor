@@ -13,9 +13,10 @@
     },
     "redirect_uri": "http://localhost:5000"
   },
-  "themeFilePath": "/theme-dev.json",
+  "themeConfigs": ["/theme-dev.json"],
   "sandboxFeatures": {
     "DeckPlans": true,
-    "AutosysImport": true
+    "AutosysImport": true,
+    "BusPictures": true
   }
 }

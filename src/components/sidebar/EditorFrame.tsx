@@ -12,7 +12,13 @@ import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
 import DiscardDialog from '../dialogs/DiscardDialog.tsx';
-import { EditFooter, FormFooterContext, formPageWidth } from '../form-layout/index.ts';
+import {
+  EditFooter,
+  FormFooterContext,
+  FORM_PAGE_MAX_WIDTH,
+  formColumnWidth,
+  NARROW_ATTR,
+} from '../form-layout/index.ts';
 
 /** The i18n keys a feature's editor copy lives under. */
 export interface EditorCopy {
@@ -181,8 +187,12 @@ export default function EditorFrame<T, F>({
     <Box
       sx={{
         height: '100%',
-        // As wide as the form and column 3, so the title row's actions end above the picture.
-        maxWidth: formPageWidth,
+        // Capped, and centred in the page; the title row's actions end above column 3.
+        maxWidth: FORM_PAGE_MAX_WIDTH,
+        width: '100%',
+        mx: 'auto',
+        // A body with no column 3 (`FormSections`) is one narrow column: the page shrinks to it.
+        [`&:has([${NARROW_ATTR}])`]: { maxWidth: formColumnWidth },
         display: 'flex',
         flexDirection: 'column',
         overflowY: { xs: 'auto', lg: 'hidden' },

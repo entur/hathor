@@ -5,21 +5,14 @@ import { deactivateVehicleTypeRequest } from '../../../graphql/vehicles/mutation
 import { fetchVehicleType } from '../api/fetchVehicleTypes.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
 import VehicleTypeSections from './VehicleTypeSections.tsx';
-import type { VehicleType } from '../types/vehicleTypeTypes.ts';
+import type { VehicleType, VehicleTypeKind } from '../types/vehicleTypeTypes.ts';
+import { VEHICLE_TYPE_KIND_CONFIG } from '../utils/vehicleTypeKindConfig.ts';
 import { useCodeValues } from '../../code-values/hooks/useCodeValues.ts';
 import { EMISSION_STANDARD } from '../../code-values/types/codeValueTypes.ts';
 import { vehicleTypeTitle } from '../utils/vehicleTypeTitle.ts';
 
 const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
 const SKELETON_ROWS = 8;
-
-const COPY: EditorCopy = {
-  title: 'vehicleType.detailsTitle',
-  notFound: 'vehicleType.notFound',
-  saved: 'vehicleType.saveSuccess',
-  deactivateTitle: 'vehicleType.deactivateConfirmTitle',
-  deactivateMessage: 'vehicleType.deactivateConfirmMessage',
-};
 
 /**
  * Coerce flag booleans so a Switch's `false` (off) compares equal to an absent
@@ -41,16 +34,22 @@ const vehicleTypeForm = createFormState<VehicleType, VehicleType>({
  * around {@link VehicleTypeSections} (#280). Save fires `createOrUpdateVehicleType` via
  * {@link useVehicleTypeSave}.
  *
- * @param {EntityEditorHostProps} host Id and the host's list reload / URL writes.
+ * @param {EntityEditorHostProps & { kind: VehicleTypeKind }} props Id and the host's list reload / URL writes, plus
+ *   the kind (PHYSICAL or CONTRACTUAL) this editor reads and writes.
  * @returns {JSX.Element} The vehicle-type editor pane.
  */
-export default function VehicleTypeDetails(host: EntityEditorHostProps) {
-  const { save } = useVehicleTypeSave();
+export default function VehicleTypeDetails({
+  kind,
+  ...host
+}: EntityEditorHostProps & { kind: VehicleTypeKind }) {
+  const { copy, editorTestId, showVehicles } = VEHICLE_TYPE_KIND_CONFIG[kind];
+  const { save } = useVehicleTypeSave(kind);
   // Fetched on the first editor open of the session, cached for every later one.
   const euroClasses = useCodeValues(EMISSION_STANDARD);
   const editor = useEntityEditor({
     ...host,
-    fetchById: fetchVehicleType,
+    fetchById: (id, baseUrl, dataOwnerRef, token) =>
+      fetchVehicleType(id, baseUrl, dataOwnerRef, token, kind),
     formState: vehicleTypeForm,
     write: form => save(form),
     withNewId: (form, newId) => ({ ...form, id: newId, version: 1 }),
@@ -69,12 +68,12 @@ export default function VehicleTypeDetails(host: EntityEditorHostProps) {
       editor={editor}
       entity={form}
       title={vehicleTypeTitle(form)}
-      testId="vehicle-type"
-      copy={COPY}
+      testId={editorTestId}
+      copy={copy satisfies EditorCopy}
       skeleton={SKELETON_ROWS}
     >
       {/* Bare: from `lg` its columns fill the page's height (#293). */}
-      <VehicleTypeSections {...body} isCreate={editor.isCreate} />
+      <VehicleTypeSections {...body} isCreate={editor.isCreate} showVehicles={showVehicles} />
     </EditorFrame>
   );
 }

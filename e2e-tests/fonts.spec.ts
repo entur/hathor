@@ -3,8 +3,8 @@ import { setConfig } from './live-auth-helpers';
 
 /**
  * Fonts — hathor loads no web font from Google (#255): the index.html link to three unused
- * handwriting fonts is gone, so no user IP goes to Google. Nationale itself is not loaded yet;
- * the theme falls back to Arial, Linje's support font.
+ * handwriting fonts is gone, so no user IP goes to Google. Nationale comes only from the
+ * deployment theme (FORK_DECISIONS 2026-11-16); hathor's own themes use Arial, Linje's support font.
  *
  * Workflow:
  *   setConfig 'auth-off' → record requests → goto / and wait for `.app-content`

@@ -7,6 +7,7 @@ import {
 } from '../../../components/collection/index.ts';
 import { BusPicture } from '../../../components/bus-picture/index.ts';
 import TransportModeIcon from '../../../components/icons/TransportModeIcon.tsx';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
 import { useCollectionLabels } from '../../../hooks/useCollectionLabels.ts';
 import { transportModeLabelKey } from '../../netex/transportMode.ts';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
@@ -62,6 +63,7 @@ const editHref = (v: Vehicle) => encodeURIComponent(v.id);
 export function VehicleCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
   const labels = useCollectionLabels('vehicles.field');
   const { allData: types } = useVehicleTypes();
+  const busPictures = useIsFeatureOn()('BusPictures');
   // Cards: the vehicle drawn as a bus, red, in its type's dims (the `vehicles` query
   // carries none); dims the type lacks come from the standard bus.
   const busMedia = useMemo(() => {
@@ -75,7 +77,7 @@ export function VehicleCollection(props: Partial<Props> & Pick<Props, 'rows'>) {
     <Collection
       columns={COLUMNS}
       card={CARD}
-      cardMedia={busMedia}
+      cardMedia={busPictures ? busMedia : undefined}
       labels={labels}
       editHref={editHref}
       rowTitle={vehicleTitle}

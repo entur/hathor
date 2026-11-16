@@ -51,20 +51,20 @@ const MODE_BADGE = {
 };
 
 describe('identity under `id`', () => {
-  it('is compacted like `netexId`, matching on its last segment', () => {
+  it('is shortened like `netexId`, matching on its last segment', () => {
     const [id] = resolveColumns(FIELDS, ['id']);
     expect(id.label).toBe('Id');
-    expect(id.display('NMR:VehicleType:1')).toBe('::1');
+    expect(id.display('NMR:VehicleType:1')).toBe('1');
     expect(id.matches('NMR:VehicleType:1', '1')).toBe(true);
   });
 
   it('is muted in the grid and on a card', async () => {
     await mount({ view: 'grid' });
-    const cell = within((await gridRows())[0]).getByText('::1');
+    const cell = within((await gridRows())[0]).getByText('1');
     expect(getComputedStyle(cell).color).toBe(MUTED);
     cleanup();
     await mount({ view: 'cards' });
-    expect(getComputedStyle(screen.getByText('::1/ver2')).color).toBe(MUTED);
+    expect(getComputedStyle(screen.getByText('1/ver2')).color).toBe(MUTED);
   });
 });
 

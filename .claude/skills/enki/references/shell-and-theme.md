@@ -107,7 +107,7 @@ navigate to the editor.
 | `shape.borderRadius` | `4` |
 | `spacing` | `8` |
 
-Typography — same `"Nationale", Arial, …` stack as hathor. Scale is fixed px:
+Typography — `"Nationale", Arial, …`. Hathor's in-repo themes use `Arial, sans-serif`; Nationale reaches hathor only through the deployment theme's `fonts.faces` (FORK_DECISIONS 2026-11-16). Scale is fixed px:
 
 | Variant | size / weight / line-height |
 | --- | --- |

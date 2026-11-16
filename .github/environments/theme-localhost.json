@@ -12,7 +12,7 @@
     "action": { "hover": "#d9ddf2", "active": "#aeb7e2" }
   },
   "typography": {
-    "fontFamily": "\"Nationale\", Arial, sans-serif"
+    "fontFamily": "Arial, sans-serif"
   },
   "shape": {
     "borderRadius": 4

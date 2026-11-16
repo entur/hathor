@@ -39,6 +39,23 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 | `npm run e2e` | Playwright tests (mocked GraphQL) |
 | `npm run e2e:local-backend` | Playwright tests against a live local Sobek |
 
+## Releases
+
+The Build workflow opens or updates `automation/version-bump` after changes reach
+`main`. The PR increments the minor version in `package.json` and
+`package-lock.json`; it does not push directly to `main`.
+
+Merge the version-bump PR after its required checks pass. Only a push to `main`
+that changes the package version creates the corresponding `v<version>` tag and
+triggers deployment. Merging the bump does not create another bump PR.
+
+Repository administrators must enable **Settings > Actions > General > Workflow
+permissions > Allow GitHub Actions to create and approve pull requests**.
+The workflow requests `contents: write`, `pull-requests: write`, and
+`actions: write`. It explicitly dispatches the Tests workflow on the bump branch
+because PRs created with `GITHUB_TOKEN` do not automatically trigger PR workflows.
+No ruleset bypass or additional token is required.
+
 ## Folder semantics
 
 Hathor's `src/` mixes two organizational styles. Before adding files, know which one you're touching.

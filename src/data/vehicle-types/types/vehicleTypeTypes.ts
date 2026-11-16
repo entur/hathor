@@ -107,9 +107,8 @@ export type TrainParts = {
   compoundTrainComponents?: TrainInCompoundTrainInput[] | null;
 };
 
-// shortcut: hathor reads and writes PHYSICAL vehicle types only (vehicles may only refer to those);
-// showing CONTRACTUAL ones is the open question on #274.
-/** The kind hathor reads, creates and imports (GraphQL filter + input, NeTEx import param). */
+/** The default kind: what vehicles refer to, and what the import and the vehicle type picker use
+ *  (GraphQL filter + input, NeTEx import param). CONTRACTUAL types have their own pages. */
 export const VEHICLE_TYPE_KIND: VehicleTypeKind = 'PHYSICAL';
 
 /** Sobek `PassengerCapacity` — all counts optional. */

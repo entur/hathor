@@ -156,12 +156,17 @@ export interface VehicleTypeInput extends TrainParts {
  *
  * @param vt Domain VehicleType (as held by the editor form).
  * @param dataOwnerRef Owning organisation ref (required by Sobek's input).
+ * @param kind PHYSICAL (default) or CONTRACTUAL; immutable once created.
  * @returns The mutation input payload.
  */
-export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
+export const serializeVehicleType = (
+  vt: VehicleType,
+  dataOwnerRef: string,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
+): VehicleTypeInput => ({
   netexId: vt.id === '' ? undefined : vt.id,
   dataOwnerRef,
-  vehicleTypeKind: VEHICLE_TYPE_KIND,
+  vehicleTypeKind: kind,
   subtype: vt.subtype ?? null,
   numberOfCars: vt.train?.numberOfCars ?? null,
   trainSizeType: vt.train?.trainSizeType ?? null,
@@ -192,8 +197,8 @@ export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): Veh
 });
 
 /**
- * Fetch the organisation's PHYSICAL vehicle types (plus nested deckPlan +
- * vehicles) — not CONTRACTUAL ones; also feeds the vehicle form's type picker,
+ * Fetch the organisation's vehicle types of one kind (plus nested deckPlan +
+ * vehicles) — PHYSICAL by default, which also feeds the vehicle form's type picker,
  * where only PHYSICAL is valid. Sobek's
  * post-#135 schema returns `netexId` in full NeTEx form at every level, so the
  * projection just renames `netexId` → `id` and coerces server-side `null` to
@@ -201,42 +206,40 @@ export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): Veh
  *
  * @param applicationBaseUrl Sobek base URL.
  * @param token OIDC access token (bearer).
+ * @param kind PHYSICAL (default) or CONTRACTUAL.
  */
 export const fetchVehicleTypes = async (
   applicationBaseUrl: string,
   dataOwnerRef: string,
-  token: AccessToken
+  token: AccessToken,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
 ): Promise<VehicleTypeContext> => {
   const raw = await fetchVehicleTypesRequest(applicationBaseUrl, token, {
     size: FETCH_ALL_SIZE,
-    filter: { dataOwnerRef, vehicleTypeKind: VEHICLE_TYPE_KIND },
+    filter: { dataOwnerRef, vehicleTypeKind: kind },
   });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
 };
 
 /**
  * Fetch one VehicleType by NeTEx id — the `vehicleTypes(...)` query filtered
- * to `netexIds: [id]`. PHYSICAL only, like the list: a CONTRACTUAL id reads as
- * not found.
+ * to `netexIds: [id]`. Of one kind, like the list (PHYSICAL by default): an id of
+ * the other kind reads as not found.
  *
  * @param netexId Full NeTEx id.
  * @param applicationBaseUrl Sobek base URL.
  * @param dataOwnerRef Current organisation ref.
  * @param token OIDC access token (bearer).
+ * @param kind PHYSICAL (default) or CONTRACTUAL.
  * @returns The vehicle type, or `null` when Sobek returns none for the id.
  */
 export const fetchVehicleType = async (
   netexId: string,
   applicationBaseUrl: string,
   dataOwnerRef: string,
-  token: AccessToken
+  token: AccessToken,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
 ): Promise<VehicleType | null> => {
-  const raw = await fetchVehicleTypeRequest(
-    applicationBaseUrl,
-    netexId,
-    dataOwnerRef,
-    VEHICLE_TYPE_KIND,
-    token
-  );
+  const raw = await fetchVehicleTypeRequest(applicationBaseUrl, netexId, dataOwnerRef, kind, token);
   return raw.vehicleTypes.content.map(projectVehicleType).find(vt => vt.id === netexId) ?? null;
 };

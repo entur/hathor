@@ -18,7 +18,7 @@ const FIXTURES = Object.fromEntries(
   ).map(([path, body]) => [path.split('/').pop()!.replace('-mock.json', ''), body])
 );
 
-// The deployed Entur ("custom") theme, served as a URL; `public/theme-*.json` are
+// The deployed Entur theme, served as a URL; `public/theme-*.json` are
 // gitignored copies that exist only after `npm run dev`.
 const [ENTUR_THEME_URL] = Object.values(
   import.meta.glob<string>('../../.github/environments/theme-dev.json', {
@@ -56,7 +56,7 @@ export function AppAt({ path }: { path: string }) {
     )
   );
   return (
-    <ConfigContext.Provider value={{ ...config, themeFilePath: ENTUR_THEME_URL }}>
+    <ConfigContext.Provider value={{ ...config, themeConfigs: [ENTUR_THEME_URL] }}>
       <RouterProvider router={router} />
     </ConfigContext.Provider>
   );

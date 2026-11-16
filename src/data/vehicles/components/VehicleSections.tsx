@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BusPictureFrame } from '../../../components/bus-picture/index.ts';
+import { useIsFeatureOn } from '../../../config/featureFlags.ts';
 import { FormSections, resolveSections } from '../../../components/form-layout/index.ts';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { vehicleTypeFormHref } from '../../vehicle-types/utils/vehicleTypeUrlParams.ts';
@@ -26,6 +27,7 @@ interface VehicleSectionsProps {
  */
 export default function VehicleSections(form: VehicleSectionsProps) {
   const { t } = useTranslation();
+  const busPictures = useIsFeatureOn()('BusPictures');
   // The type picker's options, and the picture's dims by the picked type.
   const vehicleTypes = useVehicleTypes();
   const control = useVehicleControls({
@@ -44,12 +46,14 @@ export default function VehicleSections(form: VehicleSectionsProps) {
       sections={SECTIONS}
       renderField={f => control(f.key)}
       aside={
-        <BusPictureFrame
-          dims={dims}
-          paint="vehicle"
-          mode={vehiclePictureMode(form.value, type)}
-          placeholder={typeId ? undefined : t('vehicles.selectType')}
-        />
+        busPictures ? (
+          <BusPictureFrame
+            dims={dims}
+            paint="vehicle"
+            mode={vehiclePictureMode(form.value, type)}
+            placeholder={typeId ? undefined : t('vehicles.selectType')}
+          />
+        ) : undefined
       }
     />
   );

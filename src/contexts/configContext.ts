@@ -13,6 +13,11 @@ export interface SandboxFeatures {
   DeckPlans?: boolean;
   /** The SVV (Autosys) bulk import on Home. */
   AutosysImport?: boolean;
+  /**
+   * The 3D bus picture: the card media on the vehicle-type and vehicle collections and the
+   * picture above the TOC on their form pages. Off, those places have no picture.
+   */
+  BusPictures?: boolean;
 }
 
 export interface Config {
@@ -27,7 +32,11 @@ export interface Config {
   preferredNameNamespace?: string;
   claimsNamespace?: string;
   oidcConfig?: OidcClientSettings;
-  themeFilePath?: string;
+  /**
+   * Theme JSON URLs (abzu's `themeConfigs`): the first is the default, two or more give a
+   * picker in Settings. Unset or empty → MUI's plain theme.
+   */
+  themeConfigs?: string[];
   /** Per-environment favicon, e.g. `/assets/M-favicon-prod.svg`; unset keeps index.html's. */
   faviconPath?: string;
   sandboxFeatures?: SandboxFeatures;

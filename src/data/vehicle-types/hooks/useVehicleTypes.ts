@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { graphqlErrMsg } from '../../graphqlErrMsg.ts';
 import { useConfig } from '../../../contexts/configContext.ts';
-import type { VehicleType, VehicleTypeContext } from '../types/vehicleTypeTypes.js';
+import {
+  VEHICLE_TYPE_KIND,
+  type VehicleType,
+  type VehicleTypeContext,
+  type VehicleTypeKind,
+} from '../types/vehicleTypeTypes.ts';
 import { fetchVehicleTypes } from '../api/fetchVehicleTypes.ts';
 import { compareVehicleTypes } from '../utils/vehicleTypeSortValue.ts';
 import { useAuth } from '../../../auth/authUtils.ts';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 
-export function useVehicleTypes() {
+/** The org's vehicle types of one kind — PHYSICAL by default (the vehicle form's type picker). */
+export function useVehicleTypes(kind: VehicleTypeKind = VEHICLE_TYPE_KIND) {
   const [data, setData] = useState<VehicleType[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +33,7 @@ export function useVehicleTypes() {
     // Return the chain so callers (`refetch` as `onSaved`) can await a fully
     // applied refresh — the post-save re-baseline depends on `setData` having
     // run before the success signal fires.
-    return fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token)
+    return fetchVehicleTypes(applicationBaseUrl, currentOrganisation.id, token, kind)
       .then((ctx: VehicleTypeContext) => {
         setData(ctx.vehicleTypes);
       })
@@ -38,7 +44,7 @@ export function useVehicleTypes() {
         throw err;
       })
       .finally(() => setLoading(false));
-  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id]);
+  }, [applicationBaseUrl, getAccessToken, currentOrganisation?.id, kind]);
 
   // Refetch when applicationBaseUrl or the org changes. Fire-and-forget: the error is already in state, so swallow the
   // rejection here (only awaiting callers like the post-save refresh care).

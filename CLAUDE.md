@@ -58,7 +58,7 @@ No state library — uses React Context API exclusively:
 
 - **ConfigContext** — runtime config (API URLs, OIDC settings) loaded from `public/config.json`
 - **EditingContext** — the mounted editor's dirty flag, read by the header's org picker (asks before an org switch drops edits)
-- **CustomizationContext** — theme/icon toggle, persisted to localStorage
+- **CustomizationContext** — the active theme out of `config.themeConfigs`, picked in Settings (≥ 2 listed), persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
 - **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
 
@@ -93,7 +93,7 @@ i18next with English (`src/locales/en/`) and Norwegian Bokmål (`src/locales/nb/
 
 ### Theming
 
-JSON-based theme config loaded at runtime and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
+JSON-based theme config loaded at runtime (`themeConfigs` in `config.json`, `src/hooks/useAppTheme.ts`) and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; a theme's `fonts.faces` become `@font-face` rules (`src/theme/themeFonts.ts`) — the Entur font Nationale ships only from the deployment config, never this repo (FORK_DECISIONS 2026-11-16); custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
 
 ## E2E Testing (Playwright)
 
@@ -147,9 +147,9 @@ Tests also check for the `.app-content` CSS class and the "Log in" button text.
 ### CI Workflow
 
 `.github/workflows/playwright.yml` runs on push/PR to `main`/`master` as three jobs:
-1. **`schema`** — Sobek schema-drift guard (curl + diff, no `npm ci`); gates `e2e`.
+1. **`schema`** — validates every `gql` document under `src/graphql` against the live Sobek schema (`scripts/validate-graphql-documents.mjs`); fails only on real breakage, not unrelated Sobek changes. Sibling of `e2e` (no `needs`). Full-schema drift is reported weekly by `schema-drift.yml`, which opens an issue.
 2. **`unit`** — `npm ci` + `npm run test:coverage`; sibling of `e2e` (no `needs`, so neither blocks the other).
-3. **`e2e`** — `needs: schema`; browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
+3. **`e2e`** — browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
 
 ## Legacy Cleanup TODO
 

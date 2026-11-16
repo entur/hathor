@@ -10,6 +10,37 @@ Companion to [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md): that file holds *unresolv
 
 ---
 
+## Version bumps go through pull requests (2026-11-11)
+
+### Context
+
+The Build workflow's direct push of its version-bump commit is rejected by the
+ruleset protecting `main`. The original feature PR does not authorize a subsequent
+automated push.
+
+### Decision
+
+Create or update a minor-version-bump PR instead. Explicitly dispatch the existing
+Tests workflow on its branch so the required checks run despite `GITHUB_TOKEN`
+event suppression. After the version change is merged, build and tag the merged
+commit, then trigger deployment. Detect the version change across the push's
+before/after commits so merging the bump does not open another bump PR.
+
+### Alternatives considered
+
+A dedicated GitHub App with a ruleset bypass would permit direct pushes, but
+requires another credential and exempts those pushes from the normal checks.
+Deploying before the version PR merges would decouple deployed versions from
+approved commits.
+
+### Consequences
+
+Releases require merging the version-bump PR. Administrators must allow Actions
+to create PRs, but no bypass or additional token is needed. The Tests workflow
+also accepts manual dispatches.
+
+---
+
 ## Vehicle deep-link via `?selected=` query param _(retroactive, captured 2026-05-12)_
 
 > **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
@@ -793,3 +824,32 @@ Epic #252 rebuilt each entity's screens as a collection page (`createEntityColle
 - Search, filter and sort are the collection's own state, per page visit; nothing is global any more (the #141 leak can't recur).
 - `src/components/sidebar/` now holds only the form-page frame (`EditorFrame`) and its stories; the folder name is historical.
 
+
+---
+
+## Themes come from `themeConfigs`; Nationale ships only from the deployment _(2026-11-16)_
+
+### Context
+
+Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & icons"), switching between the deployment's `themeFilePath` and the Inanna demo theme `public/default-theme-config.json` (#202). The theme asked for Entur's font Nationale but nothing loaded it (#255). Nationale is licensed by Playtype for official Entur products only; this repo is public (EUPL) and forked. abzu (`entur/abzu` `23b32c4`) lists themes in `bootstrap.json` `themeConfigs`, loads fonts from a theme's `fonts.faces`, and keeps Nationale out of git (`.gitignore:32-36`, `THEME_CONFIG_GUIDE.md:511-524`).
+
+### Decision
+
+- **`themeConfigs: string[]`** in `config.json` replaces `themeFilePath`; the first entry is the default, two or more give a picker in Settings, the pick is kept in localStorage (`CustomizationContext`). None listed → MUI's plain theme.
+- **A theme loads its own fonts.** `fonts.faces` in the theme JSON becomes `@font-face` rules (`src/theme/themeFonts.ts`), abzu's shape.
+- **Nationale lives in `entur/hathor-deployment-config` only** — the woff2 files, the `fonts.faces` that point at them, and the `"Nationale"` family name (hathor-deployment-config#9). Whatever abzu ships, no theme in this repo asks for a licensed font (`theme-{dev,localhost}.json`: `Arial, sans-serif`); without the deployment theme, hathor renders in Arial.
+- **The demo theme and the custom/default icon switch are gone.** Icons always resolve custom first, default as fallback (`iconLoaderUtils.ts`).
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **`@entur/typography` as a dependency** | Puts Nationale into every build of a public, forkable repo, forks included. |
+| **A config key with a font stylesheet URL (#255's first plan)** | A second mechanism beside the theme; abzu's `fonts.faces` already carries the font with the theme that uses it. |
+| **Keep the demo theme as a second entry** | Nobody uses it; a picker needs a second real theme. |
+
+### Consequences
+
+- Rollout follows hathor-deployment-config#8: the deployment lists `themeConfigs` beside `themeFilePath` before this release, and drops `themeFilePath` after it.
+- A first visit paints in Arial, then swaps to Nationale once `config.json` → theme JSON → font load (`font-display: swap`).
+- The type scale and weights live in code (`TYPE_SCALE`, `createThemeFromConfig.ts`, #258); a theme JSON carries data only — palette, logo, `fonts.faces`, `fontFamily` — so the deployment themes set no `fontWeight*` (hathor-deployment-config#10).

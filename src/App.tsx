@@ -42,9 +42,9 @@ function AppShell({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
-  const { useCustomFeatures } = useCustomization();
+  const { themePath } = useCustomization();
 
-  const { theme } = useAppTheme(useCustomFeatures);
+  const theme = useAppTheme(themePath);
   const isFeatureOn = useIsFeatureOn();
   const deckPlans = (page: ReactNode) =>
     isFeatureOn('DeckPlans') ? page : <Navigate to="/" replace />;
@@ -68,8 +68,22 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route element={<ProtectedRoute element={<PageShell />} />}>
-                  <Route path="vehicle-types" element={<VehicleTypeCollectionPage />} />
-                  <Route path="vehicle-types/:id" element={<VehicleTypeDetailsPage />} />
+                  <Route
+                    path="vehicle-types"
+                    element={<VehicleTypeCollectionPage key="PHYSICAL" kind="PHYSICAL" />}
+                  />
+                  <Route
+                    path="vehicle-types/:id"
+                    element={<VehicleTypeDetailsPage kind="PHYSICAL" />}
+                  />
+                  <Route
+                    path="contractual-vehicle-types"
+                    element={<VehicleTypeCollectionPage key="CONTRACTUAL" kind="CONTRACTUAL" />}
+                  />
+                  <Route
+                    path="contractual-vehicle-types/:id"
+                    element={<VehicleTypeDetailsPage kind="CONTRACTUAL" />}
+                  />
                   <Route path="vehicles" element={<VehicleCollectionPage />} />
                   <Route path="vehicles/:id" element={<VehicleDetailsPage />} />
                   <Route path="deck-plans" element={deckPlans(<DeckPlanCollectionPage />)} />
