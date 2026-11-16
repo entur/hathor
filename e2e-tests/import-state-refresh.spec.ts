@@ -78,7 +78,7 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   await expect(page.getByTestId('multi-import-tags').getByText(reg)).toBeVisible();
   await dialog.getByRole('button', { name: /next/i }).click();
 
-  const summary = dialog.locator('.MuiAlert-standardSuccess');
+  const summary = dialog.locator('.MuiAlert-standard.MuiAlert-colorSuccess');
   await expect(summary).toBeVisible({ timeout: 15_000 });
   await expect(summary).toContainText('1 of 1');
   await dialog.getByRole('button', { name: /submit/i }).click();
@@ -86,7 +86,7 @@ async function importRegViaAutosys(page: Page, reg: string): Promise<void> {
   const closed = expect(dialog)
     .not.toBeVisible({ timeout: 15_000 })
     .then(() => 'ok' as const);
-  const error = dialog.locator('.MuiAlert-standardError');
+  const error = dialog.locator('.MuiAlert-standard.MuiAlert-colorError');
   const errored = expect(error)
     .toBeVisible({ timeout: 15_000 })
     .then(() => 'err' as const);
