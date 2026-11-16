@@ -49,8 +49,13 @@ export function BusPictureFrame({
       {placeholder ? (
         <Typography
           variant="body2"
-          color="text.secondary"
-          sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}
+          sx={{
+            color: 'text.secondary',
+            position: 'absolute',
+            inset: 0,
+            display: 'grid',
+            placeItems: 'center',
+          }}
           data-testid="bus-picture-placeholder"
         >
           {placeholder}

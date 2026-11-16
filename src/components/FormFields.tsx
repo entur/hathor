@@ -219,8 +219,10 @@ export function FormAutocompleteField<
           required={required}
           error={error}
           helperText={helperText}
-          // `params.InputLabelProps` carries the label's id/htmlFor wiring.
-          slotProps={{ inputLabel: { ...params.InputLabelProps, ...SHRUNK_LABEL.inputLabel } }}
+          // `params.slotProps.inputLabel` carries the label's id/htmlFor wiring.
+          slotProps={{
+            inputLabel: { ...params.slotProps?.inputLabel, ...SHRUNK_LABEL.inputLabel },
+          }}
         />
       )}
     />

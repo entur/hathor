@@ -48,7 +48,7 @@ const ValueText = ({
   <Typography
     noWrap
     title={fullTitle(row, col)}
-    color={col.muted ? 'text.secondary' : undefined}
+    sx={col.muted ? { color: 'text.secondary' } : undefined}
     {...typography}
   >
     {col.render ? col.render(row) : col.cardText(displayValue(row, col, labels), row) || EMPTY_TEXT}
@@ -109,7 +109,7 @@ const CardHeading = ({ row, card, labels }: HeadingProps) => (
         col={card.subtitle}
         labels={labels}
         variant="body2"
-        color="text.secondary"
+        sx={{ color: 'text.secondary' }}
       />
     ) : null}
   </>
@@ -243,7 +243,7 @@ export function CardsView({
             >
               {card.fields.map(col => (
                 <Fragment key={col.key}>
-                  <Typography component="dt" variant="caption" color="text.secondary">
+                  <Typography component="dt" variant="caption" sx={{ color: 'text.secondary' }}>
                     {col.label}
                   </Typography>
                   <Box component="dd" sx={{ m: 0, minWidth: 0 }}>

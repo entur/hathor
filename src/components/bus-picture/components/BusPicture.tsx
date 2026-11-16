@@ -54,8 +54,14 @@ const CompactLine = ({ children }: { children: string }) => (
   <Typography
     data-card-media-compact=""
     variant="body2"
-    color="text.secondary"
-    sx={{ px: 2, pb: 1.5, display: 'flex', alignItems: 'center', gap: 0.75 }}
+    sx={{
+      color: 'text.secondary',
+      px: 2,
+      pb: 1.5,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 0.75,
+    }}
   >
     <WarningAmberRounded fontSize="small" sx={{ color: 'warning.main' }} aria-hidden />
     {children}

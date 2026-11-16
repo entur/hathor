@@ -12,7 +12,7 @@ const LIST = '/things';
 function Standin({ text }: { text: string }) {
   return (
     <Paper variant="outlined" sx={{ p: 2, flex: 1, height: '100%', boxSizing: 'border-box' }}>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
         {text}
       </Typography>
     </Paper>

@@ -34,13 +34,13 @@ export default function MultiImportConfirm({
           mb: 2,
         }}
       >
-        <Typography color="text.secondary">{t('import.multi.vehicles')}</Typography>
+        <Typography sx={{ color: 'text.secondary' }}>{t('import.multi.vehicles')}</Typography>
         <Typography>{assembledResult.summary.vehicleCount}</Typography>
 
-        <Typography color="text.secondary">{t('import.multi.vehicleTypes')}</Typography>
+        <Typography sx={{ color: 'text.secondary' }}>{t('import.multi.vehicleTypes')}</Typography>
         <Typography>{assembledResult.summary.vehicleTypeIds.size}</Typography>
 
-        <Typography color="text.secondary">{t('import.multi.vehicleModels')}</Typography>
+        <Typography sx={{ color: 'text.secondary' }}>{t('import.multi.vehicleModels')}</Typography>
         <Typography>{assembledResult.summary.vehicleModelIds.size}</Typography>
       </Box>
       {assembledResult.summary.errors.length > 0 && (
