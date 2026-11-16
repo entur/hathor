@@ -42,4 +42,28 @@ describe('createThemeFromConfig', () => {
     const root = merged.MuiChip?.styleOverrides?.root as (p: object) => object;
     expect(root({})).toEqual({ a: 1, b: 2 });
   });
+
+  it('keeps an array-valued slot as an interpolation list, the theme file last', () => {
+    const merged = mergeComponents(
+      { MuiChip: { styleOverrides: { root: { a: 1 } } } },
+      { MuiChip: { styleOverrides: { root: [{ color: 'red' }] } } }
+    );
+    const root = merged.MuiChip?.styleOverrides?.root as (p: object) => unknown;
+    expect(root({})).toEqual([{ a: 1 }, [{ color: 'red' }]]);
+  });
+
+  it("keeps the scale's heading weight and line height under a theme's h1 size", () => {
+    // the deployed themes still carry `h1: { fontSize: '3rem' }`
+    const theme = createThemeFromConfig({
+      ...CFG,
+      typography: { fontFamily: 'Arial, sans-serif', h1: { fontSize: '3rem' } },
+    });
+    expect(theme.typography.h1).toMatchObject({
+      fontSize: '3rem',
+      fontWeight: 600,
+      lineHeight: 1.25,
+    });
+    expect(theme.typography.fontFamily).toBe('Arial, sans-serif');
+    expect(theme.typography.fontWeightRegular).toBe(500);
+  });
 });
