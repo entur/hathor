@@ -355,6 +355,9 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
           backgroundColor: PRESSED_FILL_CONTRAST,
           color: PRESSED_ICON_CONTRAST,
         },
+        // The header's own icons are installation images (`getIconUrl`), white and not
+        // recolourable: white on the pressed fill is 2.9:1, so they keep the hover fill (6:1).
+        '& .MuiIconButton-root:active:has(img)': { backgroundColor: HOVER_FILL_CONTRAST },
       },
     },
   },
