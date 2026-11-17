@@ -94,8 +94,12 @@ const INSET_RING = ['.MuiMenuItem-root', '.MuiListItemButton-root', '.MuiTab-roo
   .concat('.MuiDataGrid-root &.Mui-focusVisible')
   .join(', ');
 const NOTCH = '.MuiOutlinedInput-notchedOutline';
-// MUI's own field-hover selector: matching it is the only way to outrank it.
-const HOVER = `:hover:not(.Mui-disabled):not(.Mui-error) ${NOTCH}`;
+// MUI's own field-hover selector, outranking it; never on a read-only (view-mode) field.
+const HOVER = `:hover:not(.Mui-disabled):not(.Mui-error):not(.MuiInputBase-readOnly) ${NOTCH}`;
+// Hover only where a pointer hovers: a tap leaves `:hover` stuck (MUI gates its own the same way).
+const CAN_HOVER = '@media (hover: hover)';
+const CANNOT_HOVER = '@media (hover: none)',
+  STUCK_HOVER = `:hover:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly) ${NOTCH}`;
 
 /** A filled field's border, as an inset shadow: it keeps MUI's 48 px box 48 px. */
 const edge = (color: string) => ({ boxShadow: `inset 0 0 0 ${FIELD_BORDER_PX}px ${color}` });
@@ -136,17 +140,16 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   MuiOutlinedInput: {
     styleOverrides: {
       // Outlined fields are the small ones — toolbar, filters, the header picker — the label
-      // in the outline's notch. Hover uses MUI's own selector to outrank it; focus and error
-      // keep MUI's colours (focus is already a 2 px primary border), plus Linje's outline.
+      // in the outline's notch. Focus and error keep MUI's colours: focus is the 2 px border
+      // turning primary. No ring: an outline is a plain box and would strike the label.
       root: {
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
-        [`&${HOVER}`]: {
-          borderColor: theme.palette.primary.main,
-        },
-        // Read-only too, unlike Linje: view-mode fields stay in the tab order (WCAG 2.4.7).
-        '&.Mui-focused': ring(theme.palette.primary.main, 0),
-        // Linje read-only (view mode, #267): no border, no hover — an error still shows.
-        [`&.MuiInputBase-readOnly:not(.Mui-error) ${NOTCH}, &.MuiInputBase-readOnly${HOVER}`]: {
+        [CAN_HOVER]: { [`&${HOVER}`]: { borderColor: theme.palette.primary.main } },
+        // Touch: MUI's own reset paints a stuck `:hover` 0.23 black (1.7:1, WCAG 1.4.11); keep ours.
+        [CANNOT_HOVER]: { [`&${STUCK_HOVER}`]: { borderColor: FIELD_BORDER } },
+        // Linje read-only (view mode, #267): no border, no hover — an error still shows, and
+        // focus does (view-mode fields stay in the tab order, WCAG 2.4.7).
+        [`&.MuiInputBase-readOnly:not(.Mui-error):not(.Mui-focused) ${NOTCH}`]: {
           borderColor: 'transparent',
         },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL },
@@ -228,16 +231,20 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible': {
           outlineColor: FOCUS_CONTRAST,
         },
-        // No ring on the picker: an outline is a plain box and would strike through the
-        // notched label. Its focus shows as the outline turning white, as in enki.
-        '& .MuiOutlinedInput-root.Mui-focused': { outline: 'none' },
         '& .MuiInputLabel-root': { color: HEADER_LABEL },
         '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.common.white },
         '& .MuiOutlinedInput-root, & .MuiAutocomplete-popupIndicator, & .MuiAutocomplete-clearIndicator':
           { color: theme.palette.common.white },
         [`& .MuiOutlinedInput-root ${NOTCH}`]: { borderColor: FOCUS_CONTRAST },
-        [`& .MuiOutlinedInput-root${HOVER}, & .MuiOutlinedInput-root.Mui-focused ${NOTCH}`]: {
+        [CANNOT_HOVER]: {
+          [`& .MuiOutlinedInput-root${STUCK_HOVER}`]: { borderColor: FOCUS_CONTRAST },
+        },
+        // The picker's focus: the outline turning white, as in enki.
+        [`& .MuiOutlinedInput-root.Mui-focused ${NOTCH}`]: {
           borderColor: theme.palette.common.white,
+        },
+        [CAN_HOVER]: {
+          [`& .MuiOutlinedInput-root${HOVER}`]: { borderColor: theme.palette.common.white },
         },
       },
     },
