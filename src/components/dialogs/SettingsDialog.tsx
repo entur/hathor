@@ -42,7 +42,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       <DialogContent dividers>
         <Stack spacing={3}>
           {themes.length > 1 && (
-            <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Typography id="theme-select-label">{t('settings.theme')}</Typography>
               <FormControl>
                 <Select
@@ -61,7 +61,7 @@ export default function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             </Box>
           )}
 
-          <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography>{t('settings.language')}</Typography>
             <FormControl>
               <Select

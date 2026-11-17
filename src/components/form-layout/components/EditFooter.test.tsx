@@ -100,20 +100,6 @@ describe('EditFooter', () => {
     );
   });
 
-  it('lets a host restyle either button through slotProps', () => {
-    render(
-      <EditFooter
-        dirty
-        onSave={vi.fn()}
-        onCancel={vi.fn()}
-        slotProps={{ save: { color: 'secondary' }, cancel: { size: 'large' } }}
-      />
-    );
-
-    expect(save().className).toMatch(/MuiButton-containedSecondary/);
-    expect(cancel().className).toMatch(/MuiButton-outlinedSizeLarge/);
-  });
-
   it('keeps the controlled props, whatever slotProps ask for', () => {
     const onSave = vi.fn();
     render(

@@ -88,7 +88,9 @@ const openConfirm = async (page: Page, regNrs: string[] = [REG_NR]): Promise<str
   await fetchNext.click();
 
   // Step 2 (Confirm): the summary alert is a warning when any plate failed
-  const summaryAlert = dialog.locator('.MuiAlert-standardSuccess, .MuiAlert-standardWarning');
+  const summaryAlert = dialog.locator(
+    '.MuiAlert-standard.MuiAlert-colorSuccess, .MuiAlert-standard.MuiAlert-colorWarning'
+  );
   await expect(summaryAlert).toBeVisible({ timeout: 15_000 });
   await expect(summaryAlert).toContainText(`1 of ${regNrs.length}`);
 
@@ -130,7 +132,9 @@ test.describe('Autosys multi-import dialog', () => {
 
     await dialog.getByRole('button', { name: /next/i }).click();
 
-    await expect(dialog.locator('.MuiAlert-standardError')).toHaveText('shepet unavailable');
+    await expect(dialog.locator('.MuiAlert-standard.MuiAlert-colorError')).toHaveText(
+      'shepet unavailable'
+    );
     await expect(page.getByTestId('multi-import-tags')).toBeVisible();
   });
 

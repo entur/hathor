@@ -53,12 +53,12 @@ export default function DeckPlanSections({
             data-testid="deck-plan-decks-placeholder"
             sx={{ py: 4, borderRadius: 1, bgcolor: 'action.hover', textAlign: 'center' }}
           >
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {t('deckPlans.noDecks')}
             </Typography>
           </Box>
         ) : (
-          <Stack spacing={1} alignItems="flex-start">
+          <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
             <DeckStrip
               xml={xml}
               id={form.value.id || undefined}

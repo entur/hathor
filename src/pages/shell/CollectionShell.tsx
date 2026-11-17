@@ -81,7 +81,11 @@ export default function CollectionShell({
             {t(titleKey)}
           </Typography>
           {subtitle && loaded && (
-            <Typography variant="body2" color="text.secondary" data-testid="collection-subtitle">
+            <Typography
+              variant="body2"
+              data-testid="collection-subtitle"
+              sx={{ color: 'text.secondary' }}
+            >
               {subtitle}
             </Typography>
           )}

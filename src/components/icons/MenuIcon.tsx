@@ -9,12 +9,7 @@
 
 /** Sprite-backed menu glyph names — must match `<symbol id="menu-<name>">`. */
 export type MenuIconName =
-  | 'home'
-  | 'vehicleTypes'
-  | 'contractualVehicleTypes'
-  | 'vehicles'
-  | 'deckPlans'
-  | 'menu';
+  'home' | 'vehicleTypes' | 'contractualVehicleTypes' | 'vehicles' | 'deckPlans' | 'menu';
 
 type MenuIconProps = {
   /** Which `#menu-<name>` symbol to render. */

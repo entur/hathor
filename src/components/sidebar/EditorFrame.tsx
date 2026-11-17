@@ -147,10 +147,10 @@ export default function EditorFrame<T, F>({
             {t(copy.title)}
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
             {t(copy.notFound)}
           </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ wordBreak: 'break-all' }}>
+          <Typography variant="caption" sx={{ color: 'text.disabled', wordBreak: 'break-all' }}>
             {editor.id}
           </Typography>
           <Box sx={{ mt: 2 }}>{backButton}</Box>
@@ -237,7 +237,7 @@ export default function EditorFrame<T, F>({
             />
           )}
         </FormLayout>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexShrink: 0 }}>
           {frozen && (
             <Typography
               variant="subtitle2"
