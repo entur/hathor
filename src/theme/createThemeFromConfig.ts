@@ -43,7 +43,8 @@ const DISABLED_FILL = '#cfd2d4',
 const HEADER_LABEL = '#d9dae8';
 // MUI's Autocomplete input keeps its own padding (7.5 px vertical, 5 px left).
 const AC_INPUT_PAD_Y_PX = 7.5,
-  AC_INPUT_PAD_LEFT_PX = 5;
+  AC_INPUT_PAD_LEFT_PX = 5,
+  CHIP_ROW_GAP_PX = 4; // between wrapped chip rows
 // Linje buttons, `button/height/horizontal content` Small / Medium / Large.
 const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48,
@@ -172,8 +173,9 @@ const BASE_COMPONENTS: Components<Theme> = {
         [`&${HOVER}`]: {
           borderColor: theme.palette.primary.main,
         },
-        '&.Mui-focused:not(.MuiInputBase-readOnly)': ring(theme.palette.primary.main, 0),
-        // Linje read-only (view mode, #267): no border, no hover, no focus outline.
+        // Read-only too, unlike Linje: view-mode fields stay in the tab order (WCAG 2.4.7).
+        '&.Mui-focused': ring(theme.palette.primary.main, 0),
+        // Linje read-only (view mode, #267): no border, no hover.
         [`&.MuiInputBase-readOnly ${NOTCH}, &.MuiInputBase-readOnly${HOVER}`]: {
           borderColor: 'transparent',
         },
@@ -202,6 +204,7 @@ const BASE_COMPONENTS: Components<Theme> = {
         [`& ${LABELLED_ROOT}`]: {
           paddingTop: VALUE_PAD_TOP,
           paddingBottom: VALUE_PAD_BOTTOM_PX,
+          rowGap: CHIP_ROW_GAP_PX,
         },
         [`& ${LABELLED_ROOT} .MuiAutocomplete-input`]: { paddingBlock: 0 },
         // Chips sit on the value's line, inside the 48 px box, lined up with the label.
