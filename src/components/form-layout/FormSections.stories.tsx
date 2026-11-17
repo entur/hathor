@@ -19,6 +19,8 @@ import { deckPlanFields, deckPlanLayout } from '../../data/deck-plans/types/deck
 import {
   EditFooter,
   FormSections,
+  FormSkeleton,
+  PictureSkeleton,
   resolveSections,
   type Layout,
   type ResolvedField,
@@ -88,10 +90,12 @@ interface DemoProps {
   footer: boolean;
   /** Footer state: tinted band, live Save. */
   dirty: boolean;
+  /** The form's loading state instead: `FormSkeleton` over the same sections. */
+  loading?: boolean;
 }
 
 /** Menu | form (| picture + TOC), as the form page will place it; `FormSections` draws column 3. */
-const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
+const Demo = ({ fields, layout, media, footer, dirty, loading }: DemoProps) => (
   <Box
     sx={{
       display: 'grid',
@@ -104,12 +108,20 @@ const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
     <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
     {/* Fixed height, as the form page: from `lg` the form column scrolls on its own (#293). */}
     <Box sx={{ height: 'calc(100vh - 32px)', display: 'flex', flexDirection: 'column' }}>
-      <FormSections
-        sections={resolveSections(fields, layout)}
-        renderField={control(fields)}
-        aside={media && <MediaPlaceholder />}
-        footer={footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
-      />
+      {loading ? (
+        <FormSkeleton
+          sections={resolveSections(fields, layout)}
+          fields={fields}
+          aside={media && <PictureSkeleton />}
+        />
+      ) : (
+        <FormSections
+          sections={resolveSections(fields, layout)}
+          renderField={control(fields)}
+          aside={media && <MediaPlaceholder />}
+          footer={footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
+        />
+      )}
     </Box>
   </Box>
 );
@@ -147,3 +159,9 @@ export const Vehicle: Story = { args: { fields: vehicleFields, layout: vehicleLa
 
 /** The deck-plan form page's own section (#287): one → flat, no heading, no TOC. */
 export const DeckPlan: Story = { args: { fields: deckPlanFields, layout: deckPlanLayout } };
+
+/** The vehicle-type form loading: the same sections in skeleton blocks (48 px fields, 42 px
+ *  checkbox rows), so the page doesn't jump when the record lands. */
+export const VehicleTypeLoading: Story = {
+  args: { fields: vehicleTypeFields, layout: vehicleTypeLayout, loading: true },
+};

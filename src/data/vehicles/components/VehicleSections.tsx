@@ -2,7 +2,12 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BusPictureFrame } from '../../../components/bus-picture/index.ts';
 import { useIsFeatureOn } from '../../../config/featureFlags.ts';
-import { FormSections, resolveSections } from '../../../components/form-layout/index.ts';
+import {
+  FormSections,
+  FormSkeleton,
+  PictureSkeleton,
+  resolveSections,
+} from '../../../components/form-layout/index.ts';
 import { useVehicleTypes } from '../../vehicle-types/hooks/useVehicleTypes.ts';
 import { vehicleTypeFormHref } from '../../vehicle-types/utils/vehicleTypeUrlParams.ts';
 import { useVehicleControls } from '../hooks/useVehicleControls.tsx';
@@ -55,6 +60,22 @@ export default function VehicleSections(form: VehicleSectionsProps) {
           />
         ) : undefined
       }
+    />
+  );
+}
+
+/**
+ * The form's shape while the record loads: its fields in skeleton blocks, the picture's place.
+ *
+ * @returns {JSX.Element} the skeleton section
+ */
+export function VehicleSectionsSkeleton() {
+  const busPictures = useIsFeatureOn()('BusPictures');
+  return (
+    <FormSkeleton
+      sections={SECTIONS}
+      fields={vehicleFields}
+      aside={busPictures ? <PictureSkeleton /> : undefined}
     />
   );
 }

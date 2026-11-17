@@ -1,6 +1,11 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { FormSections, resolveSections } from '../../../components/form-layout/index.ts';
+import {
+  FormSections,
+  FormSkeleton,
+  PictureSkeleton,
+  resolveSections,
+} from '../../../components/form-layout/index.ts';
 import { useDeckPlanControls } from '../hooks/useDeckPlanControls.tsx';
 import { deckPlanFields, deckPlanLayout } from '../types/deckPlanFields.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
@@ -75,4 +80,13 @@ export default function DeckPlanSections({
       }
     />
   );
+}
+
+/**
+ * The form's shape while the record loads: its fields in skeleton blocks, the deck strip's place.
+ *
+ * @returns {JSX.Element} the skeleton section
+ */
+export function DeckPlanSectionsSkeleton() {
+  return <FormSkeleton sections={SECTIONS} fields={deckPlanFields} aside={<PictureSkeleton />} />;
 }

@@ -6,7 +6,9 @@ import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
 import { withSobekUrl } from '../../contexts/mockSobek.tsx';
 import { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
 import { createFormState } from '../../hooks/useFormState.ts';
-import VehicleTypeSections from '../../data/vehicle-types/components/VehicleTypeSections.tsx';
+import VehicleTypeSections, {
+  VehicleTypeSectionsSkeleton,
+} from '../../data/vehicle-types/components/VehicleTypeSections.tsx';
 import type { VehicleType } from '../../data/vehicle-types/types/vehicleTypeTypes.ts';
 
 const CREATED_ID = 'NMR:VehicleType:2';
@@ -81,7 +83,7 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
         deactivateTitle: 'vehicleType.deactivateConfirmTitle',
         deactivateMessage: 'vehicleType.deactivateConfirmMessage',
       }}
-      skeleton={8}
+      skeleton={<VehicleTypeSectionsSkeleton />}
     >
       <VehicleTypeSections
         value={form}

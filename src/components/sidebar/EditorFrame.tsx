@@ -1,10 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import { useBlocker } from 'react-router-dom';
-import { Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, IconButton, Skeleton, Stack, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
-import FormLayoutSkeleton from '../FormLayoutSkeleton.tsx';
 import BodyState from '../feedback/BodyState.tsx';
 import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
 import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
@@ -37,6 +36,33 @@ const focusOnMount = (el: HTMLElement | null) => el?.focus();
 const HEADING_NO_RING = { '&:focus': { outline: 'none' } };
 // Below this the title block takes the whole row and the actions wrap under it.
 const TITLE_MIN = '16rem';
+// The loading title row: the loaded one's height (40 px buttons), a name and an id badge.
+const TITLE_ROW_PX = 40,
+  TITLE_SKELETON_W = '40%',
+  ID_SKELETON_PX = 160,
+  ID_SKELETON_H_PX = 24;
+
+/** The page: from `lg` it stays put and the form column scrolls itself (`FormSections`, #293). */
+const FRAME_SX = {
+  height: '100%',
+  // Capped, and centred in the page; the title row's actions end above column 3.
+  maxWidth: FORM_PAGE_MAX_WIDTH,
+  width: '100%',
+  mx: 'auto',
+  // A body with no column 3 (`FormSections`) is one narrow column: the page shrinks to it.
+  [`&:has([${NARROW_ATTR}])`]: { maxWidth: formColumnWidth },
+  display: 'flex',
+  flexDirection: 'column',
+  overflowY: { xs: 'auto', lg: 'hidden' },
+  p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
+} as const;
+/** The body fills the rest from `lg`, so the form column can scroll inside it. */
+const BODY_SX = {
+  flex: { lg: '1 1 0' },
+  minHeight: { lg: 0 },
+  display: { lg: 'flex' },
+  flexDirection: 'column',
+} as const;
 
 interface EditorFrameProps<T, F> {
   editor: EntityEditor<T, F>;
@@ -48,8 +74,9 @@ interface EditorFrameProps<T, F> {
   /** Test-id stem: `<testId>-details-title`, `<testId>-record-fetch-error`. */
   testId: string;
   copy: EditorCopy;
-  /** Shown while the first read is in flight: a node, or a stacked-row count for the default. */
-  skeleton: ReactNode | number;
+  /** The form's shape while the first read is in flight, drawn in the frame below a title
+   *  skeleton: the feature's `FormSkeleton` (`<Entity>SectionsSkeleton`). */
+  skeleton: ReactElement;
   /** The feature's form (and any context rows above it). */
   children: ReactNode;
 }
@@ -128,18 +155,16 @@ export default function EditorFrame<T, F>({
   );
 
   if (editor.loading && !editor.record) {
+    // The loaded page's frame, title row and body, so nothing jumps when the record lands.
     return (
-      <>
-        {typeof skeleton === 'number' ? (
-          <FormLayoutSkeleton
-            ariaLabel={t('data.loading')}
-            showTitle
-            sections={[{ rowCount: skeleton, stacked: true }]}
-          />
-        ) : (
-          skeleton
-        )}
-      </>
+      <Box sx={FRAME_SX} role="status" aria-label={t('data.loading')}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, minHeight: TITLE_ROW_PX }}>
+          <Skeleton variant="text" sx={{ typography: 'h5', width: TITLE_SKELETON_W }} />
+          <Skeleton variant="rounded" width={ID_SKELETON_PX} height={ID_SKELETON_H_PX} />
+        </Box>
+        <Divider sx={{ mb: 2 }} />
+        <Box sx={BODY_SX}>{skeleton}</Box>
+      </Box>
     );
   }
 
@@ -192,22 +217,7 @@ export default function EditorFrame<T, F>({
   );
 
   return (
-    // From `lg` the page stays put; the form column scrolls itself (`FormSections`, #293).
-    <Box
-      sx={{
-        height: '100%',
-        // Capped, and centred in the page; the title row's actions end above column 3.
-        maxWidth: FORM_PAGE_MAX_WIDTH,
-        width: '100%',
-        mx: 'auto',
-        // A body with no column 3 (`FormSections`) is one narrow column: the page shrinks to it.
-        [`&:has([${NARROW_ATTR}])`]: { maxWidth: formColumnWidth },
-        display: 'flex',
-        flexDirection: 'column',
-        overflowY: { xs: 'auto', lg: 'hidden' },
-        p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
-      }}
-    >
+    <Box sx={FRAME_SX}>
       {/* On a narrow page the actions wrap onto their own line. */}
       <Box
         sx={{
@@ -311,15 +321,7 @@ export default function EditorFrame<T, F>({
       <Divider sx={{ mb: 2 }} />
 
       <FormFooterContext.Provider value={frozen ? null : footer}>
-        {/* The body fills the rest from `lg`, so the form column can scroll inside it. */}
-        <Box
-          sx={{
-            flex: { lg: '1 1 0' },
-            minHeight: { lg: 0 },
-            display: { lg: 'flex' },
-            flexDirection: 'column',
-          }}
-        >
+        <Box sx={BODY_SX}>
           <BodyState
             error={editor.fetchError}
             onRetry={() => void editor.refetch().catch(() => {})}

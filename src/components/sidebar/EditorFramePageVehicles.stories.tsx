@@ -5,7 +5,9 @@ import { FormPage, STORY_SAVE_MS } from './formPageStory.tsx';
 import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
 import { stubSobek, withSobekUrl } from '../../contexts/mockSobek.tsx';
 import { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
-import VehicleSections from '../../data/vehicles/components/VehicleSections.tsx';
+import VehicleSections, {
+  VehicleSectionsSkeleton,
+} from '../../data/vehicles/components/VehicleSections.tsx';
 import type { VehicleEditFormValue } from '../../data/vehicles/types/vehicle.ts';
 import { canSubmit, vehicleForm } from '../../data/vehicles/stores/vehicleFormState.ts';
 import type { Vehicle } from '../../data/vehicles/types/vehicle.ts';
@@ -20,7 +22,6 @@ const [vehicleTypesMock] = Object.values(
 );
 
 const CREATED_ID = 'NMR:Vehicle:2';
-const SKELETON_ROWS = 6;
 
 const COPY: EditorCopy = {
   title: 'vehicles.detailsTitle',
@@ -67,7 +68,7 @@ function StoryVehicleDetails(host: EntityEditorHostProps) {
       entity={form.vehicle}
       testId="vehicle"
       copy={COPY}
-      skeleton={SKELETON_ROWS}
+      skeleton={<VehicleSectionsSkeleton />}
     >
       <VehicleSections
         value={form.vehicle}

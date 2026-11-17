@@ -67,6 +67,9 @@ export const HOVER_FILL = '#d9ddf2',
 const TOOLTIP_FILL = '#181c56',
   TOOLTIP_PAD = '5px 10px',
   TOOLTIP_RADIUS_PX = 4;
+// Linje Skeleton (`loader/BaseSkeleton.scss`, `loader/skeleton/Standard/*`): fill, shimmer.
+const SKELETON_FILL = '#eaeaf1',
+  SKELETON_HIGHLIGHT = '#f6f6f9';
 // Linje AlertBox (`@entur/alert` BaseAlertBox.scss, `alert/AlertBox/<severity>/Standard/*`):
 // a light fill, Linje text, a coloured border and icon; 1 px border, legacy radius 4.
 const ALERT_TEXT = '#181c56',
@@ -206,6 +209,21 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         borderRadius: TOOLTIP_RADIUS_PX,
       },
       arrow: { color: TOOLTIP_FILL },
+    },
+  },
+  // Linje's skeleton: its fill and shimmer; still under reduced motion.
+  MuiSkeleton: {
+    defaultProps: { animation: 'wave' },
+    styleOverrides: {
+      root: {
+        backgroundColor: SKELETON_FILL,
+        [REDUCED_MOTION_MEDIA]: { animation: 'none', '&::after': { display: 'none' } },
+      },
+      wave: {
+        '&::after': {
+          background: `linear-gradient(90deg, transparent, ${SKELETON_HIGHLIGHT}, transparent)`,
+        },
+      },
     },
   },
   MuiChip: {

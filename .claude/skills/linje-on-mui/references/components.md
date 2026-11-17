@@ -231,6 +231,18 @@ Cross-cutting traps:
 - **Status: partial; E7 open (#135).** `ProtectedRoute.tsx:30,38` still renders bare `<div>`
   text. Use `<LoadingPage text={…} />`.
 
+## Skeleton
+
+- **Linje**: `packages/loader/src/BaseSkeleton.scss:19-24`; `loader/skeleton/Standard/*`: fill
+  #eaeaf1, shimmer #f6f6f9.
+- **MUI**: theme `MuiSkeleton`: that fill, the `wave` shimmer in #f6f6f9, still under reduced
+  motion. A form page loads as `FormSkeleton` (`form-layout/components/FormSkeleton.tsx`):
+  `FormSections` over the form's own sections, a rounded block per control (48 px field, 42 px
+  checkbox row, radius 8), `PictureSkeleton` (16:10) in column 3; each feature exports its
+  `<Entity>SectionsSkeleton`, and `EditorFrame` draws it in the loaded page's frame below a
+  title-row skeleton.
+- **Status: done (#389).**
+
 ## MultiSelect / SearchableDropdown (Autocomplete)
 
 - **Linje**: `packages/dropdown/src/` (MultiSelect, SearchableDropdown). Selected items show as
