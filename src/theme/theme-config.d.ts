@@ -12,7 +12,9 @@ export interface ThemeFontFace {
 }
 
 export interface ThemeConfig extends ThemeOptions {
-  applicationName: string;
+  /** The header's title for an installation that wants its own; the app's translated
+   *  short title (`app.shortTitle`) otherwise. */
+  applicationName?: string;
   companyName: string;
   logoUrl: string;
   logoHeight: number;
@@ -23,7 +25,7 @@ export interface ThemeConfig extends ThemeOptions {
 
 declare module '@mui/material/styles' {
   interface Theme {
-    applicationName: string;
+    applicationName?: string;
     companyName: string;
     logoUrl: string;
     logoHeight: number;

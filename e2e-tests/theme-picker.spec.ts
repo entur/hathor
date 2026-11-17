@@ -51,6 +51,8 @@ test.describe('Theme picker', () => {
     await openSettings(page);
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(themePicker(page)).toHaveCount(0);
+    // The repo theme names no installation: the header shows the app's own title (#389).
+    await expect(page.locator('header').first()).toContainText('Vehicle Registry');
   });
 
   test('two themes: picking the second applies it and survives a reload', async ({ page }) => {
@@ -64,6 +66,7 @@ test.describe('Theme picker', () => {
 
     const header = page.locator('header').first();
     await expect(header).toHaveCSS('background-color', ALT_PRIMARY);
+    await expect(header).toContainText('Alt'); // the theme's `applicationName` overrides it
     await expect(page.locator('body')).toHaveCSS('font-family', new RegExp(ALT_FAMILY));
 
     await page.reload();

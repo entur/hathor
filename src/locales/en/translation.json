@@ -1,5 +1,6 @@
 {
   "app.title": "National Vehicle Registry",
+  "app.shortTitle": "Vehicle Registry",
   "app.loading": "Loading…",
   "close": "Close",
   "back": "Back",

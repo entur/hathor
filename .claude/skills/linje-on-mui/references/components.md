@@ -48,7 +48,8 @@ checked this one).
 - Shared Linje fills are exported (`HOVER_FILL`, `PRESSED_FILL`, …) for components that draw
   their own parts (`SquareButton`, `FormCheckboxField`).
 - Theme JSON (`.github/environments/theme-*.json`, `entur/hathor-deployment-config`) is data:
-  palette (`primary.main` #181C56), fonts, logo, `applicationName`. The rules live in code.
+  palette (`primary.main` #181C56), fonts, logo, an optional `applicationName` (header title
+  override; the app's own is `app.shortTitle`). The rules live in code.
 - ADRs: `FORK_DECISIONS.md` 2026-11-16 (themes, Nationale) and 2026-11-17 (label inside the box).
 
 Cross-cutting traps:
@@ -123,8 +124,7 @@ Cross-cutting traps:
   - no outline ring, since a box outline would strike through the notched label
 - **Status: deviation, by decision.** This is enki's style, not Linje's white field
   (ADR 2026-11-17). Open (#185):
-  - The title shows `theme.applicationName` ("App", `HeaderBranding.tsx:20`); use i18n
-    `app.title`.
+  - Done (#389): the title is `app.shortTitle` unless the theme sets `applicationName`.
   - Option labels are `name (TYPE)` (`SelectOrganisation.tsx:30`); show the name only, the
     localised type as secondary text, sorted with `Intl.Collator(i18n.language)`.
 
