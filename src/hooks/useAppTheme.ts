@@ -6,13 +6,16 @@ import { useThemeFonts } from '../theme/themeFonts';
 
 /**
  * The MUI theme built from one theme JSON, plus its font faces in `<head>`. No path,
- * or a failed load, gives MUI's plain theme (abzu does the same).
+ * or a failed load, gives MUI's plain theme (abzu does the same). `null` until the
+ * first theme settles, so the app never paints in MUI's default blue; a later switch
+ * keeps the current theme until the next one arrives.
  *
  * @param {string | undefined} themePath URL of the theme JSON, one of `themeConfigs`
- * @returns {Theme} the theme
+ * @returns {Theme | null} the theme, or `null` while the first one loads
  */
-export function useAppTheme(themePath: string | undefined): Theme {
-  const [cfg, setCfg] = useState<ThemeConfig | null>(null);
+export function useAppTheme(themePath: string | undefined): Theme | null {
+  // undefined = first theme still loading; null = none or failed (MUI's plain theme)
+  const [cfg, setCfg] = useState<ThemeConfig | null | undefined>(undefined);
 
   useEffect(() => {
     if (!themePath) {
@@ -41,5 +44,8 @@ export function useAppTheme(themePath: string | undefined): Theme {
 
   useThemeFonts(cfg?.fonts?.faces);
 
-  return useMemo(() => (cfg ? createThemeFromConfig(cfg) : createTheme()), [cfg]);
+  return useMemo(
+    () => (cfg === undefined ? null : cfg ? createThemeFromConfig(cfg) : createTheme()),
+    [cfg]
+  );
 }

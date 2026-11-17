@@ -12,13 +12,15 @@ import { setConfig } from './live-auth-helpers';
  *   - one theme: Settings has no theme picker
  *   - two themes: picking the second recolours the header and sets its font stack;
  *     the pick survives a reload (the @font-face text is unit-tested: themeFonts.test.ts)
+ *   - while the theme JSON loads: a neutral loader, no header in MUI's default blue
  * Modes:
  *   - mock and live alike: themes are static files, no backend involved
  */
 
 const BASE_THEME = '/theme-dev.json',
   ALT_THEME = '/alt-theme.json';
-const ALT_PRIMARY = 'rgb(0, 128, 0)';
+const ALT_PRIMARY = 'rgb(0, 128, 0)',
+  ENTUR_PRIMARY = 'rgb(24, 28, 86)';
 const ALT_FAMILY = 'AltFace';
 const ALT_THEME_BODY = {
   applicationName: 'Alt',
@@ -65,5 +67,23 @@ test.describe('Theme picker', () => {
 
     await page.reload();
     await expect(header).toHaveCSS('background-color', ALT_PRIMARY);
+  });
+
+  test('until the theme loads: a loader, never a default-blue header', async ({ page }) => {
+    await setConfig(page, 'auth-off');
+    let release!: () => void;
+    const held = new Promise<void>(resolve => (release = resolve));
+    await page.route(`**${BASE_THEME}`, async route => {
+      await held;
+      await route.continue();
+    });
+    await page.goto('/');
+
+    await expect(page.getByRole('status')).toHaveText('Loading…');
+    await expect(page.locator('header')).toHaveCount(0);
+
+    release();
+    await expect(page.locator('header').first()).toHaveCSS('background-color', ENTUR_PRIMARY);
+    await expect(page.getByRole('status')).toHaveCount(0);
   });
 });

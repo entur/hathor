@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LoadingPage from './components/common/LoadingPage.tsx';
 import Header from './components/header/Header.tsx';
 import Menu from './components/Menu.tsx';
 import Home from './pages/Home';
@@ -42,12 +44,16 @@ function AppShell({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  const { t } = useTranslation();
   const { themePath } = useCustomization();
 
   const theme = useAppTheme(themePath);
   const isFeatureOn = useIsFeatureOn();
   const deckPlans = (page: ReactNode) =>
     isFeatureOn('DeckPlans') ? page : <Navigate to="/" replace />;
+
+  // No theme yet, so no brand colour: a neutral loader until the theme JSON lands (abzu holds its tree too)
+  if (!theme) return <LoadingPage text={t('app.loading')} color="text.secondary" />;
 
   return (
     <ThemeProvider theme={theme}>

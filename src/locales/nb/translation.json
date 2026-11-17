@@ -1,5 +1,6 @@
 {
   "app.title": "Nasjonalt Materiellregister",
+  "app.loading": "Laster…",
   "close": "Lukk",
   "back": "Tilbake",
   "save": "Lagre",
