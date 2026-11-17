@@ -188,17 +188,32 @@ Cross-cutting traps:
 
 ## IconButton
 
-- **Linje**: `packages/button/src/IconButton.scss:5,13,48-53`; `Icon Button/*` tokens.
-  - Transparent, padding 4, radius legacy 4.
+- **Linje**: `packages/button/src/IconButton.scss:4-13,24-27,29-45`; `Icon Button/*` tokens.
+  - Transparent, padding 8 (`$space-extra-small`) plus a 2 px transparent border, radius
+    **legacy** medium 4 (no Figma IconButton radius token). Small: 24 px, padding 0.
   - Hover #d9ddf2, active #aeb7e2, icon #181c56.
-  - Contrast surface: hover #626493, icon white.
+  - Contrast surface: hover #626493, active #8794d4, icon white.
   - Focus 2 px offset 2.
-- **MUI**: `IconButton`, used in `NetexId.tsx`, `Menu.tsx`, `header/HeaderActions.tsx`,
-  `CollectionToolbar.tsx`, `QueryField.tsx`. There's no theme entry, so it is a round MUI icon
-  button; its icon is `action.active`, which `createThemeFromConfig` defaults to `primary.main`
-  (#181c56) unless a theme file sets it.
-- **Status: open, #389.** Add `MuiIconButton`: `borderRadius`, `color: primary.main`, hover and
-  active backgrounds. Under `MuiAppBar`, use the contrast values.
+- **MUI**: `IconButton`. Theme `MuiIconButton`: radius 4, hover (in `@media (hover: hover)`) and
+  `:active` fills as named constants (`HOVER_FILL`, `PRESSED_FILL`); MUI's sizes stay (medium
+  padding 8 = Linje's). Icon colour is `action.active`, which `createThemeFromConfig` defaults to
+  `primary.main` unless a theme file sets it. Under `MuiAppBar` the contrast fills; icon buttons
+  there are `color="inherit"`, so no root colour is set (it would beat `colorInherit`).
+- Used for: the grid / card Edit link (`EditLink.tsx`, pencil + Tooltip, name "Edit <title>"),
+  the form page's `< Back` (`EditorFrame.tsx`, arrow + visible label, name = label, WCAG 2.5.3).
+- **Trap**: a Tooltip whose title is a string sets `aria-label` on its child only when the child
+  has none; the Edit link's own `aria-label` wins.
+- **Deviation**: size. Linje medium is ~36 px (16 px icon + 8 px padding + 2 px border); MUI's
+  is 40 px with a 24 px icon. Kept MUI's, so icons stay MUI-sized across the app.
+- **Trap**: under `MuiAppBar` the `:active` rule must come after the `CAN_HOVER` hover rule
+  (same specificity), and pressed takes the accent icon (`Contrast/Icon-Active` #181c56).
+- **Status: done (#389).**
+
+## Tooltip
+
+- **Linje**: `packages/tooltip/src/Tooltip.scss:6-7,20-32`: fill #181c56, white 14 px text,
+  padding 5 / 10, radius legacy 4.
+- **MUI**: theme `MuiTooltip` `tooltip` + `arrow` slots. **Status: done (#389).**
 
 ## Loader
 

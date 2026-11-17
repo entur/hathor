@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useBlocker } from 'react-router-dom';
-import { Box, Button, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, IconButton, Stack, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
 import { FormLayout } from '../FormLayout.tsx';
@@ -112,11 +113,17 @@ export default function EditorFrame<T, F>({
   const discard = useDiscardConfirm(actions.isDirty, { cancel: actions.onCancel }, dialogSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const frozen = editor.isDeactivated;
-  // Leaves outright: with unsaved edits the LeaveGuard asks first.
+  // Leaves outright: with unsaved edits the LeaveGuard asks first. Linje's IconButton with
+  // its label beside the arrow (`< Back`), so the name is the visible text (WCAG 2.5.3).
   const backButton = (
-    <Button size="small" onClick={actions.onClose} data-testid="editor-page-back">
+    <IconButton
+      onClick={actions.onClose}
+      data-testid="editor-page-back"
+      sx={{ gap: 0.5, typography: 'body1' }}
+    >
+      <ArrowBackIcon />
       {t('back')}
-    </Button>
+    </IconButton>
   );
 
   if (editor.loading && !editor.record) {
@@ -200,7 +207,7 @@ export default function EditorFrame<T, F>({
         p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, flexShrink: 0 }}>
         <FormLayout sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant="h5"

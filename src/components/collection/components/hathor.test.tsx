@@ -126,7 +126,7 @@ describe('Edit link', () => {
     const link = within((await gridRows())[0]).getByRole('link', { name: 'Edit Flirt' });
     expect(link.getAttribute('href')).toBe('/vehicle-types/NMR%3AVehicleType%3A1');
     expect(link.getAttribute('data-edit-id')).toBe('NMR:VehicleType:1');
-    expect(link.textContent).toBe('Edit');
+    expect(link.querySelector('[data-testid="EditOutlinedIcon"]')).not.toBeNull(); // Linje pencil IconButton
   });
 
   it("carries the host's router state to the details page", async () => {

@@ -54,6 +54,19 @@ const HEADING_LINE_HEIGHT = 1.25,
   H1_REM = 2,
   H_PAGE_REM = 1.5,
   H_SECTION_REM = 1.25;
+// Linje secondary fills (`Fill/Secondary/{Hover,Active}/Light`, `.../Contrast`): icon button and
+// chip hover / pressed, light ground and the navy header. Named here rather than read from
+// `action.*`, which installations set differently.
+const HOVER_FILL = '#d9ddf2',
+  PRESSED_FILL = '#aeb7e2',
+  HOVER_FILL_CONTRAST = '#626493',
+  PRESSED_FILL_CONTRAST = '#8794d4',
+  PRESSED_ICON_CONTRAST = '#181c56', // `Icon Button/Contrast/Icon-Active`: white is 2.9:1 there
+  ICON_BUTTON_RADIUS_PX = 4; // `IconButton.scss` legacy border-radiuses-medium
+// Linje Tooltip (`tooltip/Tooltip.scss`): accent fill, 14 px text, 5 / 10 px padding, radius 4.
+const TOOLTIP_FILL = '#181c56',
+  TOOLTIP_PAD = '5px 10px',
+  TOOLTIP_RADIUS_PX = 4;
 // Linje AlertBox (`@entur/alert` BaseAlertBox.scss, `alert/AlertBox/<severity>/Standard/*`):
 // a light fill, Linje text, a coloured border and icon; 1 px border, legacy radius 4.
 const ALERT_TEXT = '#181c56',
@@ -171,6 +184,29 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       ),
     },
   },
+  // Linje IconButton (`button/IconButton.scss`): square-ish, accent icon (`action.active`),
+  // secondary fills on hover / press; MUI's sizes stay (medium 8 px padding = Linje's).
+  MuiIconButton: {
+    styleOverrides: {
+      root: {
+        borderRadius: ICON_BUTTON_RADIUS_PX,
+        [CAN_HOVER]: { '&:hover': { backgroundColor: HOVER_FILL } },
+        '&:active': { backgroundColor: PRESSED_FILL },
+      },
+    },
+  },
+  MuiTooltip: {
+    styleOverrides: {
+      tooltip: {
+        backgroundColor: TOOLTIP_FILL,
+        color: theme.palette.common.white,
+        fontSize: theme.typography.body2.fontSize,
+        padding: TOOLTIP_PAD,
+        borderRadius: TOOLTIP_RADIUS_PX,
+      },
+      arrow: { color: TOOLTIP_FILL },
+    },
+  },
   MuiChip: {
     styleOverrides: {
       root: { fontSize: theme.typography.body2.fontSize },
@@ -180,7 +216,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       deleteIcon: {
         color: 'inherit',
         borderRadius: '50%',
-        '&:hover': { color: 'inherit', backgroundColor: theme.palette.action.hover },
+        '&:hover': { color: 'inherit', backgroundColor: HOVER_FILL },
       },
     },
   },
@@ -296,7 +332,13 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
           borderColor: theme.palette.primary.contrastText,
         },
         [CAN_HOVER]: {
+          '& .MuiIconButton-root:hover': { backgroundColor: HOVER_FILL_CONTRAST },
           [`& .MuiOutlinedInput-root${HOVER}`]: { borderColor: theme.palette.primary.contrastText },
+        },
+        // Linje IconButton on a contrast surface; after hover, so a press shows while hovered.
+        '& .MuiIconButton-root:active': {
+          backgroundColor: PRESSED_FILL_CONTRAST,
+          color: PRESSED_ICON_CONTRAST,
         },
       },
     },
