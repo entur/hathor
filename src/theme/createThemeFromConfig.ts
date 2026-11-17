@@ -25,15 +25,13 @@ const CARD_RADIUS_PX = 8,
 const FIELD_BORDER_PX = 2,
   FIELD_BORDER = '#8284ab';
 // Linje TextField / Dropdown, standard density (`@entur/form` BaseFormControl.scss,
-// InputGroupLabel.scss): one 48 px box, 16 px inline padding, radius 8. The label rests
-// inside at 16 px and moves to the box's top at 12 px once focused or filled; the value sits
-// under it, 4 px off the bottom. Offsets are for MUI's 1.4375em (23 px) line.
-const FIELD_HEIGHT_PX = 48,
-  FIELD_PAD_X_PX = 16,
+// InputGroupLabel.scss): one 48 px box with the label inside, resting mid-field and moving to
+// the top once focused or filled. That is MUI's small `filled` field (48 px, value 21 / 4 px
+// in, ADR 2026-11-17); hathor adds the white fill, the border, radius 8 and Linje's 16 px
+// indent (MUI's is 12).
+const FIELD_PAD_X_PX = 16,
+  FIELD_INDENT_SHIFT_PX = 4,
   FIELD_RADIUS_PX = 8,
-  VALUE_PAD_BOTTOM_PX = 4,
-  LABEL_REST_Y_PX = 12.5,
-  LABEL_TOP_Y_PX = 5,
   // Linje `Text/Subdued`, 5.6:1 on white.
   LABEL_COLOR = '#626493';
 // Linje disabled field (`BaseFormControl.scss` `--disabled`): grey fill, no border, grey text.
@@ -41,9 +39,8 @@ const DISABLED_FILL = '#cfd2d4',
   DISABLED_TEXT = '#6e6f73';
 // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy: the header picker's label.
 const HEADER_LABEL = '#d9dae8';
-// MUI's Autocomplete input keeps its own padding (7.5 px vertical, 5 px left).
-const AC_INPUT_PAD_Y_PX = 7.5,
-  AC_INPUT_PAD_LEFT_PX = 5,
+// MUI's filled Autocomplete input keeps 4 px of its own left padding; the root adds the rest.
+const AC_INPUT_PAD_LEFT_PX = 4,
   CHIP_ROW_GAP_PX = 4; // between wrapped chip rows
 // Linje buttons, `button/height/horizontal content` Small / Medium / Large.
 const BUTTON_HEIGHT_SMALL_PX = 32,
@@ -98,17 +95,8 @@ const NOTCH = '.MuiOutlinedInput-notchedOutline';
 // MUI's own field-hover selector: matching it is the only way to outrank it.
 const HOVER = `:hover:not(.Mui-disabled):not(.Mui-error) ${NOTCH}`;
 
-// Form-size fields; small ones (toolbar, filters, the header picker) keep MUI's 40 px,
-// the label in the outline's notch: a Linje small field (32 px) has no room for it inside.
-const MEDIUM = ':not(.MuiInputBase-sizeSmall)';
-const LABEL_MEDIUM = '&.MuiInputLabel-outlined:not(.MuiInputLabel-sizeSmall)';
-// A field with a label: its value sits under the label, at the bottom of the box.
-const LABELLED = `.MuiInputLabel-root + &${MEDIUM}`,
-  LABELLED_ROOT = `.MuiInputLabel-root + .MuiOutlinedInput-root${MEDIUM}`;
-/** Top padding that puts MUI's one-line value 4 px off the bottom of the 48 px box. */
-const VALUE_PAD_TOP = `calc(${FIELD_HEIGHT_PX}px - 1.4375em - ${VALUE_PAD_BOTTOM_PX}px)`;
-/** Vertical padding that centres MUI's one-line value in the 48 px box (no label). */
-const VALUE_PAD_Y = `calc((${FIELD_HEIGHT_PX}px - 1.4375em) / 2)`;
+/** A filled field's border, as an inset shadow: it keeps MUI's 48 px box 48 px. */
+const edge = (color: string) => ({ boxShadow: `inset 0 0 0 ${FIELD_BORDER_PX}px ${color}` });
 
 /**
  * Linje's component look on MUI: corners, chip text, field borders, and one focus ring for
@@ -126,20 +114,13 @@ const BASE_COMPONENTS: Components<Theme> = {
       sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX },
     },
   },
-  // Linje's label inside the box: resting mid-field, at the top once focused or filled.
   MuiInputLabel: {
     styleOverrides: {
       root: {
         color: LABEL_COLOR,
         '&.Mui-disabled': { color: DISABLED_TEXT },
-        [LABEL_MEDIUM]: {
-          transform: `translate(${FIELD_PAD_X_PX}px, ${LABEL_REST_Y_PX}px) scale(1)`,
-          maxWidth: `calc(100% - ${2 * FIELD_PAD_X_PX}px)`,
-        },
-        [`${LABEL_MEDIUM}.MuiInputLabel-shrink`]: {
-          transform: `translate(${FIELD_PAD_X_PX}px, ${LABEL_TOP_Y_PX}px) scale(0.75)`,
-          maxWidth: `calc(133% - ${(2 * FIELD_PAD_X_PX * 4) / 3}px)`,
-        },
+        // MUI's own moves, nudged to Linje's indent: `translate` adds to its `transform`.
+        '&.MuiInputLabel-filled': { translate: `${FIELD_INDENT_SHIFT_PX}px 0` },
       },
     },
   },
@@ -151,24 +132,10 @@ const BASE_COMPONENTS: Components<Theme> = {
   },
   MuiOutlinedInput: {
     styleOverrides: {
-      // Hover uses MUI's own selector to outrank it; focus, error and disabled keep MUI's
-      // colours (focus is already a 2 px primary border), plus Linje's outline on focus.
-      // The label lives inside the box, so the outline's notch stays closed (TextField
-      // sets `notched` itself, so CSS closes it).
+      // Outlined fields are the small ones — toolbar, filters, the header picker — the label
+      // in the outline's notch. Hover uses MUI's own selector to outrank it; focus and error
+      // keep MUI's colours (focus is already a 2 px primary border), plus Linje's outline.
       root: ({ theme }) => ({
-        [`&${MEDIUM}`]: {
-          minHeight: FIELD_HEIGHT_PX,
-          paddingInline: FIELD_PAD_X_PX,
-          borderRadius: FIELD_RADIUS_PX,
-        },
-        // Block and left only: a Select's own right padding keeps its text off the arrow.
-        [`&${MEDIUM} .MuiOutlinedInput-input`]: { paddingBlock: VALUE_PAD_Y, paddingLeft: 0 },
-        [`${LABELLED} .MuiOutlinedInput-input`]: {
-          paddingBlock: `${VALUE_PAD_TOP} ${VALUE_PAD_BOTTOM_PX}px`,
-        },
-        // shortcut: a labelled multiline field isn't laid out for the label inside (its first
-        // line would sit under the label); style it when a form gets a textarea.
-        [`&${MEDIUM} ${NOTCH} legend`]: { maxWidth: '0.01px' },
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [`&${HOVER}`]: {
           borderColor: theme.palette.primary.main,
@@ -181,37 +148,55 @@ const BASE_COMPONENTS: Components<Theme> = {
         },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL },
         [`&.Mui-disabled ${NOTCH}`]: { borderColor: 'transparent' },
+      }),
+    },
+  },
+  // Form fields (`FormFields.tsx`): MUI's small filled field, dressed as Linje's.
+  MuiFilledInput: {
+    defaultProps: { disableUnderline: true },
+    styleOverrides: {
+      root: ({ theme }) => ({
+        backgroundColor: theme.palette.common.white,
+        borderRadius: FIELD_RADIUS_PX,
+        ...edge(FIELD_BORDER),
+        '&:hover': {
+          backgroundColor: theme.palette.common.white,
+          ...edge(theme.palette.primary.main),
+        },
+        // Read-only too, unlike Linje: view-mode fields stay in the tab order (WCAG 2.4.7).
+        '&.Mui-focused': {
+          backgroundColor: theme.palette.common.white,
+          ...edge(theme.palette.primary.main),
+          ...ring(theme.palette.primary.main, 0),
+        },
+        '&.Mui-error': edge(theme.palette.error.main),
+        '&.Mui-error.Mui-focused': ring(theme.palette.error.main, 0),
+        // Linje read-only (view mode, #267): no border, no hover.
+        '&.MuiInputBase-readOnly': { boxShadow: 'none' },
+        '&.Mui-disabled': { backgroundColor: DISABLED_FILL, boxShadow: 'none' },
+      }),
+      // A Select's own `&&&` right padding still wins, keeping its text off the arrow.
+      input: { paddingInline: FIELD_PAD_X_PX },
+    },
+  },
+  // Linje disabled text, either field variant (MUI's own is ~2.6:1).
+  MuiInputBase: {
+    styleOverrides: {
+      root: {
         '& .MuiInputBase-input.Mui-disabled': {
           color: DISABLED_TEXT,
           WebkitTextFillColor: DISABLED_TEXT,
         },
-      }),
+      },
     },
   },
-  // Autocomplete pads its input root itself: the same 48 px box, value under the label.
+  // MUI pads its filled Autocomplete itself; only Linje's indent and the chip-row gap differ.
   MuiAutocomplete: {
     styleOverrides: {
       root: {
-        [`& .MuiOutlinedInput-root${MEDIUM}`]: {
-          paddingBlock: `calc((${FIELD_HEIGHT_PX}px - 1.4375em - ${2 * AC_INPUT_PAD_Y_PX}px) / 2)`,
+        '& .MuiFilledInput-root': {
           paddingLeft: FIELD_PAD_X_PX - AC_INPUT_PAD_LEFT_PX,
-        },
-        // Outranks the field's value padding, which would zero the input's own.
-        [`& .MuiOutlinedInput-root${MEDIUM} .MuiAutocomplete-input`]: {
-          paddingBlock: AC_INPUT_PAD_Y_PX,
-          paddingLeft: AC_INPUT_PAD_LEFT_PX,
-        },
-        [`& ${LABELLED_ROOT}`]: {
-          paddingTop: VALUE_PAD_TOP,
-          paddingBottom: VALUE_PAD_BOTTOM_PX,
           rowGap: CHIP_ROW_GAP_PX,
-        },
-        [`& ${LABELLED_ROOT} .MuiAutocomplete-input`]: { paddingBlock: 0 },
-        // Chips sit on the value's line, inside the 48 px box, lined up with the label.
-        [`& ${LABELLED_ROOT} .MuiAutocomplete-tag`]: {
-          marginBlock: 0,
-          marginLeft: AC_INPUT_PAD_LEFT_PX,
-          height: '1.4375em',
         },
       },
     },

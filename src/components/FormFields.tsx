@@ -17,9 +17,10 @@ const NUMERIC_SX = {
   [`@container (min-width: ${NUMERIC_FULL_BELOW})`]: { width: NUMERIC_WIDTH },
 };
 
-// What every text-like field in a sidebar form shares: Linje's 48 px field, its label
-// inside the box until focused or filled (createThemeFromConfig `MuiInputLabel`).
-const FIELD_BASE = { fullWidth: true } as const;
+// What every text-like field in a sidebar form shares: Linje's 48 px field, its label inside
+// the box until focused or filled — MUI's small filled field (createThemeFromConfig
+// `MuiFilledInput`). Its width is the form layout's (`KIND_WIDTH`, at most two per row).
+const FIELD_BASE = { fullWidth: true, variant: 'filled', size: 'small' } as const;
 
 interface FieldProps {
   /** DOM id of the control — external selectors and the label both target it. */
@@ -215,10 +216,12 @@ export function FormAutocompleteField<
   return (
     <Autocomplete<T, Multiple, DisableClearable, false>
       {...autocompleteProps}
+      size="small"
       fullWidth
       renderInput={params => (
         <TextField
           {...params}
+          variant="filled"
           label={label}
           required={required}
           error={error}
