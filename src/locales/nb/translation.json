@@ -334,7 +334,6 @@
   "product": "Produkt",
 
   "organisations.select.label": "Velg organisasjon",
-  "organisations.select.fieldLabel": "Organisasjon",
   "organisations.select.noOptions": "Ingen organisasjoner tilgjengelig",
   "organisations.loadError": "Kunne ikke hente organisasjoner.",
   "protectedRoute.loadingAuthStatus": "Sjekker autentiseringsstatus...",

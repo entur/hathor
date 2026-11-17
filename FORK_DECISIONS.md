@@ -853,3 +853,24 @@ Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & ic
 - Rollout follows hathor-deployment-config#8: the deployment lists `themeConfigs` beside `themeFilePath` before this release, and drops `themeFilePath` after it.
 - A first visit paints in Arial, then swaps to Nationale once `config.json` → theme JSON → font load (`font-display: swap`).
 - The type scale and weights live in code (`TYPE_SCALE`, `createThemeFromConfig.ts`, #258); a theme JSON carries data only — palette, logo, `fonts.faces`, `fontFamily` — so the deployment themes set no `fontWeight*` (hathor-deployment-config#10).
+
+## Form labels sit above the field — except the header's organisation picker _(2026-11-17)_
+
+### Context
+
+User test II (S5, #260): floating labels animate while a form hydrates and collide with a native date input's mask. Linje itself keeps the label inside the field box (`@entur/form` `InputGroupLabel.scss`), with `disableLabelAnimation` to pin it; enki's header provider picker keeps MUI's outlined label in the notch.
+
+### Decision
+
+- **Every field's label is pinned above it** (`MuiInputLabel` in `createThemeFromConfig.ts`, the outline's notch closed), on Linje's standard sizes: fields 48 / small 32 px, buttons 32 / 48 / 64 px.
+- **The header's organisation picker is the exception**, matching enki: label pinned in the outline's notch ("Select organisation"), 40 px, transparent on the navy — white text, Linje `Text/SubduedAlt` label, `--stroke-contrast` outline (`MuiAppBar` override). It never animates (explicit `shrink`) and holds no date, so S5's reasons don't apply, and a label above would not fit the 64 px bar.
+
+### Alternatives considered
+
+- **Label above in the header too** — consistent, but 56 of 64 px and cramped against the top edge.
+- **No visible label** (aria-label only, as before) — fails WCAG 3.3.2.
+- **Linje's white field on contrast** (48 px, label inside the box) — strict Linje, but taller than the bar allows and unlike enki.
+
+### Consequences
+
+- 40 px is off Linje's 32 / 48 scale; it is MUI's small height, as in enki.

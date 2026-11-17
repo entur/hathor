@@ -41,8 +41,11 @@ export default function SelectOrganisation() {
               {...params}
               id="organisation-select"
               size="small"
-              label={t('organisations.select.fieldLabel')}
+              label={t('organisations.select.label')}
               variant="outlined"
+              // Shrink set here, not left to the theme default: TextField opens the outline's
+              // notch only for an explicit `shrink`, and the header label sits in it.
+              slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
             />
           )}
         />

@@ -30,8 +30,13 @@ const FIELD_HEIGHT_PX = 48,
   FIELD_HEIGHT_SMALL_PX = 32,
   FIELD_PAD_X_PX = 16,
   FIELD_PAD_X_SMALL_PX = 12,
-  LABEL_GAP_PX = 8,
-  HEADER_LABEL_GAP_PX = 4;
+  LABEL_GAP_PX = 8;
+// The header's org picker is the one field that keeps MUI's outlined label in the notch,
+// as enki's provider picker does: MUI small height, label at MUI's 16 px × 0.75 shrink.
+const HEADER_FIELD_HEIGHT_PX = 40,
+  NOTCH_LABEL_TRANSFORM = 'translate(14px, -9px) scale(0.75)',
+  // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy.
+  HEADER_LABEL = '#d9dae8';
 // MUI's Autocomplete input keeps its own left padding (5 px, small 8 px); the root adds the rest.
 const AC_INPUT_PAD_LEFT_PX = 5,
   AC_INPUT_PAD_LEFT_SMALL_PX = 8;
@@ -188,16 +193,29 @@ const BASE_COMPONENTS: Components<Theme> = {
   },
   MuiAppBar: {
     // One class more specific than each ring, which its component inserts later. A field
-    // sits on the navy itself (the org picker): white text and label, Lavender 40 outline.
+    // sits on the navy itself (the org picker), enki-style: label back in the outline's
+    // notch (not pinned above, S5 is for forms), Blue 30 label, Lavender 40 outline, white text.
     styleOverrides: {
       root: ({ theme }) => ({
         '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible, & .MuiOutlinedInput-root.Mui-focused':
           { outlineColor: FOCUS_CONTRAST },
-        '& .MuiInputLabel-root, & .MuiInputLabel-root.Mui-focused': {
-          ...theme.typography.caption,
-          marginBottom: HEADER_LABEL_GAP_PX,
-          color: theme.palette.common.white,
+        '& .MuiInputLabel-root': {
+          ...theme.typography.body1,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: NOTCH_LABEL_TRANSFORM,
+          transformOrigin: 'top left',
+          maxWidth: 'calc(133% - 32px)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          marginBottom: 0,
+          color: HEADER_LABEL,
         },
+        '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.common.white },
+        [`& .MuiOutlinedInput-root ${NOTCH} legend`]: { maxWidth: '100%' },
+        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall': { minHeight: HEADER_FIELD_HEIGHT_PX },
         '& .MuiOutlinedInput-root, & .MuiAutocomplete-popupIndicator, & .MuiAutocomplete-clearIndicator':
           { color: theme.palette.common.white },
         [`& .MuiOutlinedInput-root ${NOTCH}`]: { borderColor: FOCUS_CONTRAST },
