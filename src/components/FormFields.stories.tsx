@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Box } from '@mui/material';
 import { FormStack } from './FormLayout';
-import { FormNumberField, FormSelectField, FormSwitchField, FormTextField } from './FormFields';
+import { FormNumberField, FormSelectField, FormCheckboxField, FormTextField } from './FormFields';
 
 // Inner width lands under FormNumberField's 16rem breakpoint.
 const NARROW_WIDTH = '16rem';
@@ -73,7 +73,7 @@ function AllFields({ disabled, readOnly }: { disabled?: boolean; readOnly?: bool
         disabled={disabled}
         readOnly={readOnly}
       />
-      <FormSwitchField
+      <FormCheckboxField
         id="s-low-floor"
         label="Low floor"
         checked={lowFloor}

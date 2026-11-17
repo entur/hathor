@@ -90,11 +90,14 @@ Cross-cutting traps:
 - **Guidance** (`apps/documentation/src/pages/komponenter/skjemaelementer/checkbox.mdx:60`): a
   value saved with the form's Save button is a Checkbox. Switch is only for changes that apply
   immediately.
-- **MUI**: `Checkbox` inside `FormControlLabel`. No theme entry yet. MUI's icon is about a
-  24 px glyph, colour `primary`.
-- **Status: open, #389.** Replace `FormSwitchField` (`src/components/FormFields.tsx`) with a
-  checkbox field. Add `MuiCheckbox`: hover background #d9ddf2, and an error colour via
-  FormControl `error`.
+- **MUI**: `FormCheckboxField` (`src/components/FormFields.tsx`): MUI `Checkbox` in a
+  `FormControlLabel`, Linje's box drawn as `icon` / `checkedIcon` (no theme entry, so the
+  DataGrid's selection checkboxes keep MUI's look). Selected hover #393d79
+  (`Fill-SelectedHover`); ring on the box at offset 2, no ripple; 11 px padding puts the box on
+  the field edge under FormControlLabel's −11 px margin (42 px target).
+- **Deviation**: read-only border #8284ab, not Linje's #e3e6e8 (1.25:1, WCAG 1.4.11); read-only
+  checked is a navy tick on no fill (`Icon-ReadOnly`).
+- **Status: done (#389).** No error state yet (no yes/no field is required).
 
 ## Contrast surface and TopNavigation (header)
 

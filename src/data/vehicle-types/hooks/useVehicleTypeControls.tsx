@@ -6,7 +6,7 @@ import {
   FormAutocompleteField,
   FormNumberField,
   FormSelectField,
-  FormSwitchField,
+  FormCheckboxField,
   FormTextField,
 } from '../../../components/FormFields.tsx';
 import {
@@ -159,7 +159,7 @@ export function useVehicleTypeControls({
       }
       case 'switch':
         return (
-          <FormSwitchField
+          <FormCheckboxField
             id={`vtype-${kebab(key)}`}
             label={label(key)}
             checked={!!own}

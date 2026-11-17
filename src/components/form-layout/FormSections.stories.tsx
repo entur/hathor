@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 import { useState } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
-import { FormNumberField, FormSwitchField, FormTextField } from '../FormFields.tsx';
+import { FormNumberField, FormCheckboxField, FormTextField } from '../FormFields.tsx';
 import { CARD_MEDIA_ASPECT, type FieldSpec } from '../collection/index.ts';
 import en from '../../locales/en/translation.json';
 import {
@@ -40,7 +40,7 @@ function StoryField({ kind, id, label }: { kind: FieldSpec['kind']; id: string; 
   const [num, setNum] = useState<number>();
   const [on, setOn] = useState(false);
   if (kind === 'switch')
-    return <FormSwitchField id={id} label={label} checked={on} onChange={setOn} />;
+    return <FormCheckboxField id={id} label={label} checked={on} onChange={setOn} />;
   if (kind === 'number')
     return <FormNumberField id={id} label={label} value={num} onChange={setNum} />;
   const type = kind === 'date' ? 'date' : 'text';
