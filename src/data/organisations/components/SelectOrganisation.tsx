@@ -33,7 +33,8 @@ export default function SelectOrganisation() {
           onChange={(_e, v) => (isEditorDirty ? setPending(v) : setCurrentOrganisation(v))}
           size="small"
           sx={{
-            width: { xs: 'clamp(8rem, 36vw, 11rem)', sm: '14rem', md: '16rem' },
+            // Down to 6rem on a 320 px phone, so the header's last action stays on screen (1.4.10).
+            width: { xs: 'clamp(6rem, 30vw, 11rem)', sm: '14rem', md: '16rem' },
             mr: 1,
           }}
           renderInput={params => (
