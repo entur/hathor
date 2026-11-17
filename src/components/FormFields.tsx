@@ -10,26 +10,26 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { blankToUndefined } from '../utils/blankToUndefined.ts';
-import { HOVER_FILL } from '../theme/createThemeFromConfig.ts';
+import { CAN_HOVER, FIELD_BORDER, HOVER_FILL, ringOn } from '../theme/createThemeFromConfig.ts';
 
 // What every text-like field in a sidebar form shares: Linje's 48 px field, its label inside
 // the box until focused or filled — MUI's small filled field (createThemeFromConfig
 // `MuiFilledInput`). Its width is the form layout's (`KIND_WIDTH`, at most two per row).
-const FIELD_BASE = { fullWidth: true, variant: 'filled', size: 'small' } as const;
+export const FIELD_BASE = { fullWidth: true, variant: 'filled', size: 'small' } as const;
 
 // Linje Checkbox (`@entur/form` Checkbox.scss:170-183, `form/Checkbox/Standard/*`): a 20 px box,
 // 2 px accent border, radius 2 (legacy medium / 2), accent fill and white check when checked.
-// Read-only keeps a #8284ab border: Linje's #e3e6e8 is 1.25:1 on white (WCAG 1.4.11).
+// Read-only keeps the field border: Linje's #e3e6e8 is 1.25:1 on white (WCAG 1.4.11).
 const BOX_PX = 20,
   BOX_BORDER_PX = 2,
   BOX_RADIUS_PX = 2,
   CHECK_PX = 16,
   CHECKED_HOVER = '#393d79', // Fill-SelectedHover
-  READONLY_BORDER = '#8284ab',
   // MUI's FormControlLabel pulls the control in by 11 px: an 11 px pad puts the box on the
   // field edge, with a 42 px target (WCAG 2.5.8).
-  CHECKBOX_PAD_PX = 11,
-  FOCUS_PX = 2; // outlines.focus, outlineOffsets.focus
+  CHECKBOX_PAD_PX = 11;
+/** A checkbox row's height: the box and its padding (`FormSkeleton` draws it). */
+export const CHECKBOX_ROW_PX = BOX_PX + 2 * CHECKBOX_PAD_PX;
 const BOX = 'FormCheckbox-box';
 
 /** The drawn box: MUI's checkbox takes it as `icon` / `checkedIcon`. */
@@ -45,7 +45,7 @@ const CheckBoxIcon = ({ checked, readOnly }: { checked?: boolean; readOnly?: boo
       height: BOX_PX,
       border: `${BOX_BORDER_PX}px solid`,
       borderRadius: `${BOX_RADIUS_PX}px`,
-      borderColor: readOnly ? READONLY_BORDER : 'primary.main',
+      borderColor: readOnly ? FIELD_BORDER : 'primary.main',
       bgcolor: checked && !readOnly ? 'primary.main' : 'transparent',
       color: readOnly ? 'primary.main' : 'common.white',
     }}
@@ -122,8 +122,7 @@ interface FormNumberFieldProps extends FieldProps {
 
 /**
  * Numeric field for a sidebar form. An empty input is reported as `undefined`,
- * never `0` or `NaN`. Two thirds wide inside a `FormStack` with room, full
- * width in a narrow one.
+ * never `0` or `NaN`. Its width is the form layout's (`KIND_WIDTH`: half a row).
  *
  * @param id       DOM id of the input.
  * @param label    Field label.
@@ -306,18 +305,13 @@ export function FormCheckboxField({
             p: `${CHECKBOX_PAD_PX}px`,
             '&:hover': { bgcolor: 'transparent' },
             ...(!readOnly && {
-              '@media (hover: hover)': {
+              [CAN_HOVER]: {
                 [`&:hover .${BOX}`]: { bgcolor: HOVER_FILL },
                 [`&.Mui-checked:hover .${BOX}`]: { bgcolor: CHECKED_HOVER },
               },
             }),
             '&.Mui-disabled': { opacity: 0.5 },
-            '&.Mui-focusVisible': { outline: 'none' },
-            [`&.Mui-focusVisible .${BOX}`]: {
-              outline: `${FOCUS_PX}px solid`,
-              outlineColor: 'primary.main',
-              outlineOffset: FOCUS_PX,
-            },
+            ...ringOn(BOX),
           }}
         />
       }

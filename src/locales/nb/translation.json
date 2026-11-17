@@ -212,7 +212,6 @@
   "vehicles.editChipLabel": "Rediger",
   "vehicles.viewChipLabel": "Vis",
   "vehicles.notFound": "Kjøretøy ikke funnet",
-  "vehicles.loading": "Laster kjøretøy…",
   "vehicles.saveSuccess": "Kjøretøy lagret",
   "vehicles.deactivateSuccess": "Kjøretøy deaktivert",
   "vehicle.deactivateConfirmTitle": "Deaktivere kjøretøy?",

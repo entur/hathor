@@ -14,6 +14,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SR_ONLY } from '../../../utils/srOnly.ts';
+import { PRESSED_FILL } from '../../../theme/createThemeFromConfig.ts';
 import { pageSizesFor, type CollectionLabels, type CollectionQuery } from '../types.ts';
 
 // Linje's pager sizes (tokens named on the right).
@@ -21,7 +22,6 @@ const PAGE_PX = 32, // --space-extra-large
   ELLIPSIS_FONT_PX = 24, // --font-sizes-extra-large2
   FOCUS_PX = 2, // outlines.focus, outlineOffsets.focus
   FAST_S = 0.1; // timings.fast
-const CURRENT_FILL = '#aeb7e2'; // menu/Pagination/Standard/Active (Lavender 40)
 
 const PAGE_SX = {
   appearance: 'none',
@@ -49,7 +49,7 @@ const PAGE_SX = {
   },
   // As Linje: no hover on the current page (it stays focusable by keyboard).
   '&[aria-current="page"]': {
-    bgcolor: CURRENT_FILL,
+    bgcolor: PRESSED_FILL, // menu/Pagination/Standard/Active = Linje's pressed fill
     borderColor: 'primary.main',
     pointerEvents: 'none',
   },

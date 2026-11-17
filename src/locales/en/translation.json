@@ -213,7 +213,6 @@
   "vehicles.editChipLabel": "Edit",
   "vehicles.viewChipLabel": "View",
   "vehicles.notFound": "Vehicle not found",
-  "vehicles.loading": "Loading vehicle…",
   "vehicles.saveSuccess": "Vehicle saved",
   "vehicles.deactivateSuccess": "Vehicle deactivated",
   "vehicle.deactivateConfirmTitle": "Deactivate vehicle?",

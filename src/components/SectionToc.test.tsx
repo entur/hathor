@@ -2,7 +2,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SectionToc } from './SectionToc';
+import { ThemeProvider } from '@mui/material/styles';
 import { REDUCED_MOTION_QUERY } from '../utils/motion';
+import { createThemeFromConfig } from '../theme/createThemeFromConfig';
+import type { ThemeConfig } from '../theme/theme-config';
 
 const sections = ['Edit', 'Dim.', 'Cargo'];
 
@@ -134,20 +137,24 @@ const stilled = (root: HTMLElement): string[] => {
   return injectedCss()
     .split(MEDIA)
     .slice(1)
-    .flatMap(b => [...b.matchAll(/([^{}]+)\{[^{}]*\banimation:none[^{}]*\}/g)].map(m => m[1]))
+    .flatMap(b =>
+      [...b.matchAll(/([^{}]+)\{[^{}]*\b(?:animation|display):none[^{}]*\}/g)].map(m => m[1])
+    )
     .filter(sel => mine.has(sel.match(/^\.([\w-]+)/)?.[1] ?? ''));
 };
 
-// MUI's wave runs on the skeleton's ::after, and `animation` is not inherited:
-// a guard on the root alone leaves the shimmer running.
+// MUI's wave runs on the skeleton's ::after, and `animation` is not inherited: the app
+// theme's `MuiSkeleton` guard must reach the ::after, not only the root.
 describe('SectionToc loading under reduced motion stops the skeleton wave', () => {
   it.each(['list', 'dropdown'] as const)('%s', variant => {
     const { container } = render(
-      <SectionToc sections={['A', 'B']} onSelect={() => {}} variant={variant} loading />
+      <ThemeProvider theme={createThemeFromConfig({} as ThemeConfig)}>
+        <SectionToc sections={['A', 'B']} onSelect={() => {}} variant={variant} loading />
+      </ThemeProvider>
     );
     const still = stilled(container);
     expect(still.length).toBeGreaterThan(0); // this tree's guard is found at all
-    expect(still.some(sel => /\.MuiSkeleton-root::after/.test(sel))).toBe(true);
+    expect(still.some(sel => /::after/.test(sel))).toBe(true); // the shimmer, not only the root
   });
 });
 

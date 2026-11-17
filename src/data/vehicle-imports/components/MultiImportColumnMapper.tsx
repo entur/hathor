@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import type { TableMeta } from '../utils/inputTextAnalyzer';
 import { FormSelectField } from '../../../components/FormFields.tsx';
 
-const NONE = '__none__';
 const PREVIEW_ROWS = 5;
 
 export interface ColumnMapping {
@@ -32,7 +31,7 @@ export default function MultiImportColumnMapper({
   const { headers, rows } = tableMeta;
 
   const [regNumberCol, setRegNumberCol] = useState(headers[0] ?? '');
-  const [operationalRefCol, setOperationalRefCol] = useState<string>(NONE);
+  const [operationalRefCol, setOperationalRefCol] = useState<string | null>(null);
 
   // Push initial mapping to parent on mount
   useEffect(() => {
@@ -48,13 +47,13 @@ export default function MultiImportColumnMapper({
     setRegNumberCol(value);
     onConfirm({
       regNumberCol: value,
-      operationalRefCol: operationalRefCol === NONE ? null : operationalRefCol,
+      operationalRefCol,
     });
   };
 
-  const handleOperationalRefColChange = (value: string) => {
+  const handleOperationalRefColChange = (value: string | null) => {
     setOperationalRefCol(value);
-    onConfirm({ regNumberCol, operationalRefCol: value === NONE ? null : value });
+    onConfirm({ regNumberCol, operationalRefCol: value });
   };
 
   // Options keyed by column index: a header may be blank (''), which a Select reads as "none".
@@ -69,7 +68,7 @@ export default function MultiImportColumnMapper({
   const previewRows = rows.slice(0, PREVIEW_ROWS);
   const highlightCols = new Set([
     regNumberCol,
-    ...(operationalRefCol !== NONE ? [operationalRefCol] : []),
+    ...(operationalRefCol === null ? [] : [operationalRefCol]),
   ]);
 
   return (
@@ -98,10 +97,10 @@ export default function MultiImportColumnMapper({
         <FormSelectField
           id="column-mapper-operational-ref"
           label={t('import.multi.operationalRefColumn')}
-          value={operationalRefCol === NONE ? undefined : optionOf(operationalRefCol)}
+          value={operationalRefCol === null ? undefined : optionOf(operationalRefCol)}
           options={columns}
           noneLabel={t('import.multi.none')}
-          onChange={v => handleOperationalRefColChange(v === undefined ? NONE : headers[Number(v)])}
+          onChange={v => handleOperationalRefColChange(v === undefined ? null : headers[Number(v)])}
         />
       </Box>
 

@@ -1,17 +1,26 @@
 import type { ReactNode } from 'react';
 import { Box, ButtonBase, type ButtonBaseProps } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { HOVER_FILL, PRESSED_FILL } from '../theme/createThemeFromConfig.ts';
+import {
+  BUTTON_HEIGHT_PX,
+  BUTTON_HEIGHT_SMALL_PX,
+  BUTTON_RADIUS_PX,
+  BUTTON_RADIUS_SMALL_PX,
+  CAN_HOVER,
+  FIELD_BORDER,
+  FIELD_BORDER_PX,
+  HOVER_FILL,
+  PRESSED_FILL,
+  ringOn,
+} from '../theme/createThemeFromConfig.ts';
 
-// Linje SquareButton, secondary (`@entur/button` SquareButton.scss; `button/height`,
-// `button/radius`, `button/gap`, `button/border`, `Square secondary/Standard/*` tokens).
+// Linje SquareButton, secondary (`@entur/button` SquareButton.scss): the square at the button
+// heights and radii, `button/gap` to its label, `Square secondary/Standard/Border` = the field
+// border.
 const SIZES = {
-  medium: { box: 48, radius: 8, gap: 1, font: 'body1' },
-  small: { box: 32, radius: 6, gap: 0.5, font: 'body2' },
+  medium: { box: BUTTON_HEIGHT_PX, radius: BUTTON_RADIUS_PX, gap: 1, font: 'body1' },
+  small: { box: BUTTON_HEIGHT_SMALL_PX, radius: BUTTON_RADIUS_SMALL_PX, gap: 0.5, font: 'body2' },
 } as const;
-const BORDER_PX = 2,
-  BORDER = '#8284ab', // Square secondary/Standard/Border
-  FOCUS_PX = 2; // outlines.focus, outlineOffsets.focus
 const SQUARE = 'SquareButton-square';
 
 export interface SquareButtonProps extends Omit<ButtonBaseProps, 'children'> {
@@ -50,7 +59,6 @@ export default function SquareButton({
           gap: s.gap,
           typography: s.font,
           color: 'primary.main',
-          '&.Mui-focusVisible': { outline: 'none' },
           [`& .${SQUARE}`]: {
             display: 'inline-flex',
             alignItems: 'center',
@@ -58,16 +66,12 @@ export default function SquareButton({
             flexShrink: 0,
             width: s.box,
             height: s.box,
-            border: `${BORDER_PX}px solid ${BORDER}`,
+            border: `${FIELD_BORDER_PX}px solid ${FIELD_BORDER}`,
             borderRadius: `${s.radius}px`,
           },
-          '@media (hover: hover)': { [`&:hover .${SQUARE}`]: { bgcolor: HOVER_FILL } },
+          [CAN_HOVER]: { [`&:hover .${SQUARE}`]: { bgcolor: HOVER_FILL } },
           [`&:active .${SQUARE}`]: { bgcolor: PRESSED_FILL, borderColor: 'primary.main' },
-          [`&.Mui-focusVisible .${SQUARE}`]: {
-            outline: `${FOCUS_PX}px solid`,
-            outlineColor: 'primary.main',
-            outlineOffset: FOCUS_PX,
-          },
+          ...ringOn(SQUARE),
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

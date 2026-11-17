@@ -1,17 +1,20 @@
 import { Skeleton } from '@mui/material';
-import type { FieldSpec } from '../../collection/types.ts';
+import { CARD_MEDIA_ASPECT, type FieldSpec } from '../../collection/types.ts';
+import { CHECKBOX_ROW_PX } from '../../FormFields.tsx';
+import { FIELD_RADIUS_PX } from '../../../theme/createThemeFromConfig.ts';
 import type { Section } from '../utils/sections.ts';
 import { FormSections, type FormSectionsProps } from './FormSections.tsx';
 
-// The loaded form's control heights: Linje's 48 px field, the 42 px checkbox row (20 px box
-// padded 11 px) — so the page doesn't jump when the record lands.
-const FIELD_PX = 48,
-  CHECKBOX_PX = 42,
-  FIELD_RADIUS_PX = 8;
+// The loaded field's height (MUI's small filled field, Linje's 48 px), so the page doesn't jump
+// when the record lands.
+const FIELD_PX = 48;
 
-/** Column 3's picture while loading: `BusPictureFrame`'s 16:10. */
+/** Column 3's picture while loading, in `BusPictureFrame`'s aspect. */
 export const PictureSkeleton = () => (
-  <Skeleton variant="rounded" sx={{ width: '100%', height: 'auto', aspectRatio: '16 / 10' }} />
+  <Skeleton
+    variant="rounded"
+    sx={{ width: '100%', height: 'auto', aspectRatio: CARD_MEDIA_ASPECT }}
+  />
 );
 
 export interface FormSkeletonProps<K extends string> extends Pick<
@@ -38,7 +41,7 @@ export function FormSkeleton<K extends string>({ fields, ...sections }: FormSkel
       renderField={f => (
         <Skeleton
           variant="rounded"
-          height={fields[f.key].kind === 'switch' ? CHECKBOX_PX : FIELD_PX}
+          height={fields[f.key].kind === 'switch' ? CHECKBOX_ROW_PX : FIELD_PX}
           sx={{ borderRadius: `${FIELD_RADIUS_PX}px` }}
         />
       )}

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Box } from '@mui/material';
-import { FormStack } from './FormLayout';
+import { Box, Stack } from '@mui/material';
 import { FormNumberField, FormSelectField, FormCheckboxField, FormTextField } from './FormFields';
 
 // Inner width lands under FormNumberField's 16rem breakpoint.
@@ -37,7 +36,7 @@ function AllFields({ disabled, readOnly }: { disabled?: boolean; readOnly?: bool
   const [mode, setMode] = useState<Mode | undefined>('bus');
   const [lowFloor, setLowFloor] = useState(true);
   return (
-    <FormStack>
+    <Stack spacing={2} useFlexGap>
       <FormTextField
         id="s-name"
         label="Name"
@@ -81,7 +80,7 @@ function AllFields({ disabled, readOnly }: { disabled?: boolean; readOnly?: bool
         disabled={disabled}
         readOnly={readOnly}
       />
-    </FormStack>
+    </Stack>
   );
 }
 
