@@ -24,6 +24,21 @@ const CARD_RADIUS_PX = 8,
 // Linje field border, `--components-form-baseform-standard-border-default`; navy on hover/focus.
 const FIELD_BORDER_PX = 2,
   FIELD_BORDER = '#8284ab';
+// Linje form fields, standard density (S5, #260): `base form/height/Default` Medium 48 /
+// Small 32 px, inline padding 16 / 12 px, the label pinned 8 px above (`gap/vertical/Medium`).
+const FIELD_HEIGHT_PX = 48,
+  FIELD_HEIGHT_SMALL_PX = 32,
+  FIELD_PAD_X_PX = 16,
+  FIELD_PAD_X_SMALL_PX = 12,
+  LABEL_GAP_PX = 8,
+  HEADER_LABEL_GAP_PX = 4;
+// MUI's Autocomplete input keeps its own left padding (5 px, small 8 px); the root adds the rest.
+const AC_INPUT_PAD_LEFT_PX = 5,
+  AC_INPUT_PAD_LEFT_SMALL_PX = 8;
+// Linje buttons, `button/height/horizontal content` Small / Medium / Large.
+const BUTTON_HEIGHT_SMALL_PX = 32,
+  BUTTON_HEIGHT_PX = 48,
+  BUTTON_HEIGHT_LARGE_PX = 64;
 // Heading sizes (rem) on Linje's 32 / 24 / 20 px steps, one line height for all.
 const HEADING_LINE_HEIGHT = 1.25,
   H1_REM = 2,
@@ -70,6 +85,11 @@ const INSET_RING = ['.MuiMenuItem-root', '.MuiListItemButton-root', '.MuiTab-roo
   .concat('.MuiDataGrid-root &.Mui-focusVisible')
   .join(', ');
 const NOTCH = '.MuiOutlinedInput-notchedOutline';
+// MUI's own field-hover selector: matching it is the only way to outrank it.
+const HOVER = `:hover:not(.Mui-disabled):not(.Mui-error) ${NOTCH}`;
+
+/** Vertical input padding that centres MUI's one-line input (1.4375em) in `height` px. */
+const padY = (height: number) => `calc((${height}px - 1.4375em) / 2)`;
 
 /**
  * Linje's component look on MUI: corners, chip text, field borders, and one focus ring for
@@ -82,8 +102,25 @@ const BASE_COMPONENTS: Components<Theme> = {
   MuiCard: { styleOverrides: { root: { borderRadius: CARD_RADIUS_PX } } },
   MuiButton: {
     styleOverrides: {
-      root: { borderRadius: BUTTON_RADIUS_PX },
-      sizeSmall: { borderRadius: BUTTON_RADIUS_SMALL_PX },
+      root: { borderRadius: BUTTON_RADIUS_PX, minHeight: BUTTON_HEIGHT_PX },
+      sizeSmall: { borderRadius: BUTTON_RADIUS_SMALL_PX, minHeight: BUTTON_HEIGHT_SMALL_PX },
+      sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX },
+    },
+  },
+  // Labels pinned above the field (S5), never floating in it: static in the FormControl's
+  // column, the outline's notch closed (TextField sets `notched` itself, so CSS closes it).
+  MuiInputLabel: {
+    defaultProps: { shrink: true },
+    styleOverrides: {
+      root: ({ theme }) => ({
+        ...theme.typography.body2,
+        position: 'static',
+        transform: 'none',
+        maxWidth: '100%',
+        whiteSpace: 'normal',
+        marginBottom: LABEL_GAP_PX,
+        color: theme.palette.text.primary,
+      }),
     },
   },
   MuiChip: {
@@ -97,14 +134,45 @@ const BASE_COMPONENTS: Components<Theme> = {
       // Hover uses MUI's own selector to outrank it; focus, error and disabled keep MUI's
       // colours (focus is already a 2 px primary border), plus Linje's outline on focus.
       root: ({ theme }) => ({
+        minHeight: FIELD_HEIGHT_PX,
+        paddingInline: FIELD_PAD_X_PX,
+        '& .MuiOutlinedInput-input': { padding: `${padY(FIELD_HEIGHT_PX)} 0` },
+        '&.MuiInputBase-sizeSmall': {
+          minHeight: FIELD_HEIGHT_SMALL_PX,
+          paddingInline: FIELD_PAD_X_SMALL_PX,
+        },
+        '&.MuiInputBase-sizeSmall .MuiOutlinedInput-input': {
+          padding: `${padY(FIELD_HEIGHT_SMALL_PX)} 0`,
+        },
+        '&.MuiInputBase-multiline .MuiOutlinedInput-input': { padding: 0 },
+        [`& ${NOTCH} legend`]: { maxWidth: '0.01px' },
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
-        [`&:hover:not(.Mui-disabled):not(.Mui-error) ${NOTCH}`]: {
+        [`&${HOVER}`]: {
           borderColor: theme.palette.primary.main,
         },
         '&.Mui-focused': ring(theme.palette.primary.main, 0),
       }),
     },
   },
+  // Autocomplete pads its input root itself; the field's min height does the sizing.
+  MuiAutocomplete: {
+    styleOverrides: {
+      root: {
+        '& .MuiOutlinedInput-root': {
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft: FIELD_PAD_X_PX - AC_INPUT_PAD_LEFT_PX,
+        },
+        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall': {
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft: FIELD_PAD_X_SMALL_PX - AC_INPUT_PAD_LEFT_SMALL_PX,
+        },
+      },
+    },
+  },
+  // Helper text lines up with the field's edge, under a label that does too.
+  MuiFormHelperText: { styleOverrides: { contained: { marginInline: 0 } } },
   MuiButtonBase: {
     styleOverrides: {
       root: ({ theme }) => ({
@@ -119,12 +187,24 @@ const BASE_COMPONENTS: Components<Theme> = {
     },
   },
   MuiAppBar: {
-    // One class more specific than each ring, which its component inserts later.
+    // One class more specific than each ring, which its component inserts later. A field
+    // sits on the navy itself (the org picker): white text and label, Lavender 40 outline.
     styleOverrides: {
-      root: {
+      root: ({ theme }) => ({
         '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible, & .MuiOutlinedInput-root.Mui-focused':
           { outlineColor: FOCUS_CONTRAST },
-      },
+        '& .MuiInputLabel-root, & .MuiInputLabel-root.Mui-focused': {
+          ...theme.typography.caption,
+          marginBottom: HEADER_LABEL_GAP_PX,
+          color: theme.palette.common.white,
+        },
+        '& .MuiOutlinedInput-root, & .MuiAutocomplete-popupIndicator, & .MuiAutocomplete-clearIndicator':
+          { color: theme.palette.common.white },
+        [`& .MuiOutlinedInput-root ${NOTCH}`]: { borderColor: FOCUS_CONTRAST },
+        [`& .MuiOutlinedInput-root${HOVER}, & .MuiOutlinedInput-root.Mui-focused ${NOTCH}`]: {
+          borderColor: theme.palette.common.white,
+        },
+      }),
     },
   },
   MuiDataGrid: {

@@ -41,9 +41,8 @@ export default function SelectOrganisation() {
               {...params}
               id="organisation-select"
               size="small"
-              aria-label={t('organisations.select.label')}
+              label={t('organisations.select.fieldLabel')}
               variant="outlined"
-              sx={{ bgcolor: 'common.white', borderRadius: 1 }}
             />
           )}
         />

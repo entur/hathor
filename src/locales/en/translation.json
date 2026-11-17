@@ -335,6 +335,7 @@
   "product": "Product",
 
   "organisations.select.label": "Select organisation",
+  "organisations.select.fieldLabel": "Organisation",
   "organisations.select.noOptions": "No organisations available",
   "organisations.loadError": "Could not load organisations.",
   "protectedRoute.loadingAuthStatus": "Checking authentication status...",

@@ -23,14 +23,18 @@ const slot = (theme: Theme, name: 'MuiButton' | 'MuiChip', key: string) => {
 describe('createThemeFromConfig', () => {
   it("lays the theme file's component styles over the base ones, the file winning", () => {
     const theme = createThemeFromConfig(CFG);
-    expect(slot(theme, 'MuiButton', 'root')).toEqual({ textTransform: 'none', borderRadius: 2 });
-    expect(slot(theme, 'MuiButton', 'sizeSmall')).toEqual({ borderRadius: 6 });
+    expect(slot(theme, 'MuiButton', 'root')).toEqual({
+      textTransform: 'none',
+      borderRadius: 2,
+      minHeight: 48,
+    });
+    expect(slot(theme, 'MuiButton', 'sizeSmall')).toEqual({ borderRadius: 6, minHeight: 32 });
     expect(theme.components?.MuiTooltip?.defaultProps).toEqual({ arrow: true });
   });
 
   it('keeps a base slot the theme file leaves alone', () => {
     const theme = createThemeFromConfig({ ...CFG, components: {} });
-    expect(slot(theme, 'MuiButton', 'root')).toEqual({ borderRadius: 8 });
+    expect(slot(theme, 'MuiButton', 'root')).toEqual({ borderRadius: 8, minHeight: 48 });
     expect(slot(theme, 'MuiChip', 'root')).toEqual({ fontSize: theme.typography.body2.fontSize });
   });
 

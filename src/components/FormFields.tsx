@@ -17,12 +17,9 @@ const NUMERIC_SX = {
   [`@container (min-width: ${NUMERIC_FULL_BELOW})`]: { width: NUMERIC_WIDTH },
 };
 
-// Labels stay in the notch above the field, never resting inside it: an editor
-// mounts empty and hydrates, which would otherwise animate every label on open,
-// and a native date input's dd.mm.yyyy mask would overlap a resting label.
-const SHRUNK_LABEL = { inputLabel: { shrink: true } };
-// What every text-like field in a sidebar form shares.
-const FIELD_BASE = { size: 'small', fullWidth: true, slotProps: SHRUNK_LABEL } as const;
+// What every text-like field in a sidebar form shares: Linje's 48 px field, its label
+// pinned above by the theme (createThemeFromConfig `MuiInputLabel`).
+const FIELD_BASE = { fullWidth: true } as const;
 
 interface FieldProps {
   /** DOM id of the control — external selectors and the label both target it. */
@@ -35,7 +32,7 @@ interface FieldProps {
 
 /** `FIELD_BASE` plus the read-only input, when set. */
 const fieldBase = (readOnly?: boolean) =>
-  readOnly ? { ...FIELD_BASE, slotProps: { ...SHRUNK_LABEL, input: { readOnly } } } : FIELD_BASE;
+  readOnly ? { ...FIELD_BASE, slotProps: { input: { readOnly } } } : FIELD_BASE;
 
 interface FormTextFieldProps extends FieldProps {
   value: string;
@@ -210,7 +207,6 @@ export function FormAutocompleteField<
   return (
     <Autocomplete<T, Multiple, DisableClearable, false>
       {...autocompleteProps}
-      size="small"
       fullWidth
       renderInput={params => (
         <TextField
@@ -219,8 +215,6 @@ export function FormAutocompleteField<
           required={required}
           error={error}
           helperText={helperText}
-          // `params.InputLabelProps` carries the label's id/htmlFor wiring.
-          slotProps={{ inputLabel: { ...params.InputLabelProps, ...SHRUNK_LABEL.inputLabel } }}
         />
       )}
     />
