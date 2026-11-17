@@ -32,7 +32,11 @@ export interface Config {
   preferredNameNamespace?: string;
   claimsNamespace?: string;
   oidcConfig?: OidcClientSettings;
-  themeFilePath?: string;
+  /**
+   * Theme JSON URLs (abzu's `themeConfigs`): the first is the default, two or more give a
+   * picker in Settings. Unset or empty → MUI's plain theme.
+   */
+  themeConfigs?: string[];
   /** Per-environment favicon, e.g. `/assets/M-favicon-prod.svg`; unset keeps index.html's. */
   faviconPath?: string;
   sandboxFeatures?: SandboxFeatures;

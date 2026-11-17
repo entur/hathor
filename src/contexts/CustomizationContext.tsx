@@ -1,42 +1,32 @@
-import { createContext, useState, useContext, useEffect, type ReactNode, useCallback } from 'react';
+import { createContext, useState, useContext, type ReactNode } from 'react';
+import { useConfig } from './configContext.ts';
 
-const LOCAL_STORAGE_KEY = 'useCustomFeatures';
+const LOCAL_STORAGE_KEY = 'themeConfig';
 
 interface CustomizationContextType {
-  useCustomFeatures: boolean;
-  toggleCustomFeatures: () => void;
-  setCustomFeatures: (enabled: boolean) => void;
+  /** The deployment's `themeConfigs`; Settings shows a picker when there are two or more. */
+  themes: string[];
+  /** The active theme: the stored pick while the deployment still lists it, else `themes[0]`. */
+  themePath: string | undefined;
+  /** Picks a theme and remembers it in localStorage. */
+  setThemePath: (path: string) => void;
 }
 
 const CustomizationContext = createContext<CustomizationContextType | undefined>(undefined);
 
 export const CustomizationProvider = ({ children }: { children: ReactNode }) => {
-  const [useCustomFeatures, setUseCustomFeaturesState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return storedValue ? JSON.parse(storedValue) : true;
-    }
-    return true;
-  });
+  const themes = useConfig().themeConfigs ?? [];
+  const [stored, setStored] = useState(() => localStorage.getItem(LOCAL_STORAGE_KEY));
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(useCustomFeatures));
-    }
-  }, [useCustomFeatures]);
+  const setThemePath = (path: string) => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, path);
+    setStored(path);
+  };
 
-  const toggleCustomFeatures = useCallback(() => {
-    setUseCustomFeaturesState(prev => !prev);
-  }, []);
-
-  const setCustomFeatures = useCallback((enabled: boolean) => {
-    setUseCustomFeaturesState(enabled);
-  }, []);
+  const themePath = stored && themes.includes(stored) ? stored : themes[0];
 
   return (
-    <CustomizationContext.Provider
-      value={{ useCustomFeatures, toggleCustomFeatures, setCustomFeatures }}
-    >
+    <CustomizationContext.Provider value={{ themes, themePath, setThemePath }}>
       {children}
     </CustomizationContext.Provider>
   );

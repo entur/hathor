@@ -8,7 +8,6 @@
  * scan, no per-call path parsing.
  */
 
-const CUSTOM_FEATURES_LOCAL_STORAGE_KEY = 'useCustomFeatures';
 const FALLBACK_NAME = 'default';
 // path tail -> (custom|default)Icons/<name>.(svg|png)[?query]
 const ICON_PATH = /\/(custom|default)Icons\/([^/]+)\.(svg|png)(?:\?.*)?$/;
@@ -45,26 +44,19 @@ for (const [path, url] of Object.entries(modules)) {
 /** Last-resort `default.*` entry, resolved once. */
 const fallback = index.get(FALLBACK_NAME);
 
-function areCustomFeaturesEnabled(): boolean {
-  if (typeof window === 'undefined' || !window.localStorage) return true;
-  const v = localStorage.getItem(CUSTOM_FEATURES_LOCAL_STORAGE_KEY);
-  return v ? JSON.parse(v) : true;
-}
-
 /**
  * Resolve an icon's URL by bare name (no extension).
  * Priority: custom svg → custom png → default svg → default png →
  * `default.*` fallback → '' (never throws / returns undefined).
  *
  * @param name - bare icon name, e.g. 'menu', 'train'
- * @param useCustom - override the custom-features flag (defaults to localStorage)
  * @returns resolved asset URL, or '' if nothing (incl. fallback) is found
  */
-export function getIconUrl(name: string, useCustom = areCustomFeaturesEnabled()): string {
+export function getIconUrl(name: string): string {
   const e = index.get(name);
   return (
-    (useCustom && e?.customSvg) ||
-    (useCustom && e?.customPng) ||
+    e?.customSvg ||
+    e?.customPng ||
     e?.defaultSvg ||
     e?.defaultPng ||
     fallback?.defaultSvg ||

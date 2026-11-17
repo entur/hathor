@@ -2,66 +2,44 @@ import { useEffect, useMemo, useState } from 'react';
 import { createTheme, type Theme } from '@mui/material/styles';
 import { createThemeFromConfig } from '../theme/createThemeFromConfig';
 import type { ThemeConfig } from '../theme/theme-config';
-import { useConfig } from '../contexts/configContext.ts';
+import { useThemeFonts } from '../theme/themeFonts';
 
-export function useAppTheme(useCustomFeatures: boolean): {
-  theme: Theme;
-  themeError: string | null;
-} {
-  const { themeFilePath } = useConfig();
+/**
+ * The MUI theme built from one theme JSON, plus its font faces in `<head>`. No path,
+ * or a failed load, gives MUI's plain theme (abzu does the same).
+ *
+ * @param {string | undefined} themePath URL of the theme JSON, one of `themeConfigs`
+ * @returns {Theme} the theme
+ */
+export function useAppTheme(themePath: string | undefined): Theme {
   const [cfg, setCfg] = useState<ThemeConfig | null>(null);
-  const [themeError, setThemeError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadConfig() {
-      setThemeError(null);
-      let configToSet: ThemeConfig | null = null;
-
-      try {
-        if (useCustomFeatures) {
-          const customRes = await fetch(themeFilePath!);
-          if (customRes.ok) {
-            configToSet = await customRes.json();
-          } else {
-            console.warn(
-              `Custom theme config '/custom-theme-config.json' not found or failed (status: ${customRes.status}). Falling back to default theme.`
-            );
-            const defaultRes = await fetch('/default-theme-config.json');
-            if (defaultRes.ok) {
-              configToSet = await defaultRes.json();
-            } else {
-              throw new Error(
-                `Default theme config '/default-theme-config.json' also not found (status: ${defaultRes.status}) after custom theme failed.`
-              );
-            }
-          }
-        } else {
-          const defaultRes = await fetch('/default-theme-config.json');
-          if (defaultRes.ok) {
-            configToSet = await defaultRes.json();
-          } else {
-            throw new Error(
-              `Failed to load default theme config '/default-theme-config.json' (status: ${defaultRes.status}).`
-            );
-          }
-        }
-        setCfg(configToSet);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'An unknown error occurred while loading theme configuration.';
-        console.error('Theme loading error:', errorMessage);
-        setThemeError(errorMessage);
-        if (cfg !== null) setCfg(null);
-      }
+    if (!themePath) {
+      setCfg(null);
+      return;
     }
-    loadConfig();
-  }, [useCustomFeatures]);
+    let live = true;
+    fetch(themePath)
+      .then(res => {
+        if (!res.ok)
+          throw new Error(`Theme '${themePath}' failed to load (status: ${res.status}).`);
+        return res.json() as Promise<ThemeConfig>;
+      })
+      .then(next => {
+        if (live) setCfg(next);
+      })
+      .catch((error: unknown) => {
+        if (!live) return;
+        console.error('Theme loading error:', error instanceof Error ? error.message : error);
+        setCfg(null);
+      });
+    return () => {
+      live = false;
+    };
+  }, [themePath]);
 
-  const theme = useMemo(() => {
-    return cfg ? createThemeFromConfig(cfg) : createTheme();
-  }, [cfg]);
+  useThemeFonts(cfg?.fonts?.faces);
 
-  return { theme, themeError };
+  return useMemo(() => (cfg ? createThemeFromConfig(cfg) : createTheme()), [cfg]);
 }

@@ -824,3 +824,31 @@ Epic #252 rebuilt each entity's screens as a collection page (`createEntityColle
 - Search, filter and sort are the collection's own state, per page visit; nothing is global any more (the #141 leak can't recur).
 - `src/components/sidebar/` now holds only the form-page frame (`EditorFrame`) and its stories; the folder name is historical.
 
+
+---
+
+## Themes come from `themeConfigs`; Nationale ships only from the deployment _(2026-11-16)_
+
+### Context
+
+Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & icons"), switching between the deployment's `themeFilePath` and the Inanna demo theme `public/default-theme-config.json` (#202). The theme asked for Entur's font Nationale but nothing loaded it (#255). Nationale is licensed by Playtype for official Entur products only; this repo is public (EUPL) and forked. abzu (`entur/abzu` `23b32c4`) lists themes in `bootstrap.json` `themeConfigs`, loads fonts from a theme's `fonts.faces`, and keeps Nationale out of git (`.gitignore:32-36`, `THEME_CONFIG_GUIDE.md:511-524`).
+
+### Decision
+
+- **`themeConfigs: string[]`** in `config.json` replaces `themeFilePath`; the first entry is the default, two or more give a picker in Settings, the pick is kept in localStorage (`CustomizationContext`). None listed → MUI's plain theme.
+- **A theme loads its own fonts.** `fonts.faces` in the theme JSON becomes `@font-face` rules (`src/theme/themeFonts.ts`), abzu's shape.
+- **Nationale lives in `entur/hathor-deployment-config` only** — the woff2 files, the `fonts.faces` that point at them, and the `"Nationale"` family name (hathor-deployment-config#9). Whatever abzu ships, no theme in this repo asks for a licensed font (`theme-{dev,localhost}.json`: `Arial, sans-serif`); without the deployment theme, hathor renders in Arial.
+- **The demo theme and the custom/default icon switch are gone.** Icons always resolve custom first, default as fallback (`iconLoaderUtils.ts`).
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **`@entur/typography` as a dependency** | Puts Nationale into every build of a public, forkable repo, forks included. |
+| **A config key with a font stylesheet URL (#255's first plan)** | A second mechanism beside the theme; abzu's `fonts.faces` already carries the font with the theme that uses it. |
+| **Keep the demo theme as a second entry** | Nobody uses it; a picker needs a second real theme. |
+
+### Consequences
+
+- Rollout follows hathor-deployment-config#8: the deployment lists `themeConfigs` beside `themeFilePath` before this release, and drops `themeFilePath` after it.
+- A first visit paints in Arial, then swaps to Nationale once `config.json` → theme JSON → font load (`font-display: swap`).
