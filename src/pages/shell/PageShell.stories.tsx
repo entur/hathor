@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Button, Paper, Typography } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
+import NewEntityFab from '../../components/NewEntityFab.tsx';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import PageShell from './PageShell.tsx';
 import CollectionShell from './CollectionShell.tsx';
@@ -68,7 +69,14 @@ const collection = (state: { loading?: boolean; error?: string | null; empty?: b
         subtitle="Mock Org · Total entries: 3"
         loading={state.loading ?? false}
         error={state.error ?? null}
-        actions={<Button variant="contained">New</Button>}
+        actions={
+          <NewEntityFab
+            label="New Thing"
+            shortLabel="New"
+            to="/things/new"
+            testid="create-thing-fab"
+          />
+        }
         empty={state.empty ? <Standin text="empty state — message + New" /> : undefined}
       >
         <Standin text="collection body — EntityCollection (#252 pri 2)" />

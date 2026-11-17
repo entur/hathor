@@ -30,7 +30,7 @@ export default meta;
 
 type Story = StoryObj;
 
-function AllFields({ disabled }: { disabled?: boolean }) {
+function AllFields({ disabled, readOnly }: { disabled?: boolean; readOnly?: boolean }) {
   const [name, setName] = useState('Turvogn 1');
   const [built, setBuilt] = useState('2026-05-29');
   const [length, setLength] = useState<number | undefined>(12.5);
@@ -38,7 +38,14 @@ function AllFields({ disabled }: { disabled?: boolean }) {
   const [lowFloor, setLowFloor] = useState(true);
   return (
     <FormStack>
-      <FormTextField id="s-name" label="Name" value={name} onChange={setName} disabled={disabled} />
+      <FormTextField
+        id="s-name"
+        label="Name"
+        value={name}
+        onChange={setName}
+        disabled={disabled}
+        readOnly={readOnly}
+      />
       <FormTextField
         id="s-built"
         label="Build date"
@@ -46,6 +53,7 @@ function AllFields({ disabled }: { disabled?: boolean }) {
         value={built}
         onChange={setBuilt}
         disabled={disabled}
+        readOnly={readOnly}
       />
       <FormNumberField
         id="s-length"
@@ -53,6 +61,7 @@ function AllFields({ disabled }: { disabled?: boolean }) {
         value={length}
         onChange={setLength}
         disabled={disabled}
+        readOnly={readOnly}
       />
       <FormSelectField
         id="s-mode"
@@ -62,6 +71,7 @@ function AllFields({ disabled }: { disabled?: boolean }) {
         noneLabel="None"
         onChange={setMode}
         disabled={disabled}
+        readOnly={readOnly}
       />
       <FormSwitchField
         id="s-low-floor"
@@ -69,6 +79,7 @@ function AllFields({ disabled }: { disabled?: boolean }) {
         checked={lowFloor}
         onChange={setLowFloor}
         disabled={disabled}
+        readOnly={readOnly}
       />
     </FormStack>
   );
@@ -76,9 +87,12 @@ function AllFields({ disabled }: { disabled?: boolean }) {
 
 export const Editable: Story = { render: () => <AllFields /> };
 
-export const ReadOnly: Story = { render: () => <AllFields disabled /> };
+/** A form page's view mode (#267): no border or hover, the value full contrast. */
+export const ReadOnly: Story = { render: () => <AllFields readOnly /> };
 
-/** Below the container breakpoint the number field goes full width too. */
+export const Disabled: Story = { render: () => <AllFields disabled /> };
+
+/** A narrow container: every field fills it (widths are the form layout's, #283). */
 export const NarrowContainer: Story = {
   render: () => (
     <Box sx={{ width: NARROW_WIDTH, border: '1px dashed', borderColor: 'divider', p: 2 }}>
