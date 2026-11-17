@@ -4,7 +4,13 @@ import { SectionToc } from '../../SectionToc.tsx';
 import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useSectionSpy } from '../hooks/useSectionSpy.ts';
 import { FormFooterContext } from '../formFooterContext.ts';
-import { SCROLL_PAD, SECTION_GAP, TOC_WIDTH, formColumnWidth } from '../utils/formWidth.ts';
+import {
+  RING_GUTTER,
+  SCROLL_PAD,
+  SECTION_GAP,
+  TOC_WIDTH,
+  formColumnWidth,
+} from '../utils/formWidth.ts';
 import { gridSize, tocSections, type ResolvedField, type Section } from '../utils/sections.ts';
 
 // Theme spacing, on Linje's scale (#283): 16 px between fields in a row, 24 px between rows
@@ -14,8 +20,6 @@ const FIELD_GAP = 2,
   ROW_GAP = 3,
   HEADING_GAP = 2,
   SCROLL_MARGIN = 2;
-// From `lg`, the form column scrolls: room at its top for the first row's floating labels.
-const FORM_TOP_PAD = 1;
 // Below `lg`: room above the dropdown for its floating label (theme spacing), and its
 // total height, which a section scrolled to must clear (small TextField 40px + that room).
 const DROPDOWN_PAD = 1,
@@ -177,7 +181,16 @@ export function FormSections<K extends string>({
           useFlexGap // a gap, not child margins: dissolved below `lg`, it must add no spacing
           sx={
             wide
-              ? { gridColumn: 2, gridRow: 1, minWidth: 0, minHeight: 0, overflowY: 'auto' }
+              ? {
+                  gridColumn: 2,
+                  gridRow: 1,
+                  minWidth: 0,
+                  minHeight: 0,
+                  overflowY: 'auto',
+                  // it clips too: a ring's room inside, pulled back out so nothing moves
+                  p: RING_GUTTER,
+                  m: -RING_GUTTER,
+                }
               : { display: 'contents' }
           }
         >
@@ -208,7 +221,15 @@ export function FormSections<K extends string>({
         sx={{
           minWidth: 0,
           pr: SCROLL_PAD, // the fields keep clear of the column's own scrollbar
-          ...(wide && { minHeight: 0, overflowY: 'auto', pt: FORM_TOP_PAD }),
+          // From `lg` the column scrolls, so it clips: a ring's room inside it, on the left
+          // pulled back out, keeping the fields in line with the title row.
+          ...(wide && {
+            minHeight: 0,
+            overflowY: 'auto',
+            py: RING_GUTTER,
+            pl: RING_GUTTER,
+            ml: -RING_GUTTER,
+          }),
           ...(wide && column && { gridColumn: 1, gridRow: 1 }),
         }}
       >

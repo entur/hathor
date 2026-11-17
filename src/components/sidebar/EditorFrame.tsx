@@ -16,6 +16,7 @@ import {
   EditFooter,
   FormFooterContext,
   FORM_PAGE_MAX_WIDTH,
+  RING_GUTTER,
   formColumnWidth,
   NARROW_ATTR,
 } from '../form-layout/index.ts';
@@ -196,6 +197,7 @@ export default function EditorFrame<T, F>({
         display: 'flex',
         flexDirection: 'column',
         overflowY: { xs: 'auto', lg: 'hidden' },
+        p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1, flexShrink: 0 }}>
