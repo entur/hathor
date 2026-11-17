@@ -57,7 +57,7 @@ const HEADING_LINE_HEIGHT = 1.25,
 // Linje secondary fills (`Fill/Secondary/{Hover,Active}/Light`, `.../Contrast`): icon button and
 // chip hover / pressed, light ground and the navy header. Named here rather than read from
 // `action.*`, which installations set differently.
-const HOVER_FILL = '#d9ddf2',
+export const HOVER_FILL = '#d9ddf2',
   PRESSED_FILL = '#aeb7e2',
   HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4',

@@ -3,7 +3,9 @@ import { alpha } from '@mui/material/styles';
 import { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Add } from '@mui/icons-material';
 import MenuIcon, { type MenuIconName } from '../icons/MenuIcon.tsx';
+import SquareButton from '../SquareButton.tsx';
 import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 import { useIsFeatureOn } from '../../config/featureFlags.ts';
 import { SR_ONLY } from '../../utils/srOnly.ts';
@@ -143,7 +145,11 @@ export function CreateRow({ types = TYPES }: { types?: SiteType[] }) {
           flexWrap: 'wrap',
           alignItems: 'stretch',
           borderRadius: TILE_RADIUS,
-          bgcolor: 'action.hover',
+          // White, not the action.hover tint: the SquareButtons' border (3.6:1) and hover fill
+          // need a white ground (2.7:1 and invisible on the tint).
+          bgcolor: 'background.paper',
+          border: 1,
+          borderColor: 'divider',
           overflow: 'hidden',
         }}
       >
@@ -407,22 +413,23 @@ function ComboCard({
       </Box>
       <Divider />
       <Box
-        component={Link}
-        to={createPath(x.path)}
         sx={{
-          ...area,
+          position: 'relative',
+          zIndex: 2, // above the backdrop, as the browse area's children
           display: 'flex',
-          alignItems: 'center',
           justifyContent: createAlign === 'right' ? 'flex-end' : 'flex-start',
-          gap: 1,
           px: 2.5,
           py: 1.5,
-          color: 'primary.main',
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 'fontWeightBold' }}>
-          + {t(x.createKey)}
-        </Typography>
+        <SquareButton
+          icon={<Add />}
+          size="small"
+          to={createPath(x.path)}
+          aria-label={`${t('home.createNew.title')} ${t(x.createKey)}`}
+        >
+          {t(x.createKey)}
+        </SquareButton>
       </Box>
     </Box>
   );
@@ -469,28 +476,13 @@ function NavTile({
   );
 }
 
-/** One create-action cell: flat, hover-tinted link. */
+/** One create-action cell: Linje's SquareButton with the type's glyph. */
 function CreateAction({ to, icon, label }: { to: string; icon: MenuIconName; label: string }) {
   return (
-    <Box
-      component={Link}
-      to={to}
-      sx={{
-        flex: { xs: '1 1 100%', sm: '1 1 0' },
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        p: 2.5,
-        textDecoration: 'none',
-        color: 'text.primary',
-        transition: theme => theme.transitions.create('background-color', { duration: HOVER_MS }),
-        '&:hover': { bgcolor: 'action.selected' },
-      }}
-    >
-      <Glyph name={icon} size={ACTION_ICON} />
-      <Typography variant="subtitle2" sx={{ fontWeight: 'fontWeightBold' }}>
+    <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 0' }, display: 'flex', p: 2.5 }}>
+      <SquareButton icon={<Glyph name={icon} size={ACTION_ICON} />} to={to}>
         {label}
-      </Typography>
+      </SquareButton>
     </Box>
   );
 }

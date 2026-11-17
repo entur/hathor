@@ -1,7 +1,7 @@
 import { Add } from '@mui/icons-material';
-import { Box, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { NEW_SELECTION } from '../hooks/useEntityEditor.ts';
+import SquareButton from './SquareButton.tsx';
 
 interface NewEntityFabProps {
   /** Displayed label and aria-label. */
@@ -15,22 +15,18 @@ interface NewEntityFabProps {
 }
 
 /**
- * Generic "New &lt;Entity&gt;" call-to-action button. Routes to the supplied
+ * Generic "New &lt;Entity&gt;" call to action: Linje's SquareButton, a link to the supplied
  * `to` URL (the entity's create page); shared by every collection page.
  */
 export default function NewEntityFab({ label, to, testid, shortLabel }: NewEntityFabProps) {
-  const navigate = useNavigate();
   return (
-    <Button
-      variant="contained"
-      color="primary"
-      startIcon={<Add />}
-      onClick={() => navigate(to)}
+    <SquareButton
+      icon={<Add />}
+      to={to}
       data-testid={testid}
       aria-label={label}
       // Closing the create pane hands focus back here (`CollectionShell`).
       data-edit-id={NEW_SELECTION}
-      sx={{ textTransform: 'none' }}
     >
       {shortLabel ? (
         <>
@@ -44,6 +40,6 @@ export default function NewEntityFab({ label, to, testid, shortLabel }: NewEntit
       ) : (
         label
       )}
-    </Button>
+    </SquareButton>
   );
 }
