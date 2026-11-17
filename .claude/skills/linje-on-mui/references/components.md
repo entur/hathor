@@ -20,6 +20,7 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- Skeleton
 - SquareButton
 - Switch
 - TagChip / Chip
@@ -37,9 +38,15 @@ checked this one).
   `CHIP_ROW_GAP_PX`, `BUTTON_HEIGHT_*`, the heading sizes.
 - **Helpers**: `ring(color, offset)`, `edge(color)` (inset-shadow border), `NOTCH`, `HOVER`,
   `INSET_RING`.
-- `BASE_COMPONENTS` holds the per-component overrides.
-- `mergeComponents` lays a theme file's `components` over it per slot (e.g. theme-dev's
-  `MuiButton.root.textTransform: none`).
+- `baseComponents(theme)` returns the per-component overrides as plain style objects,
+  resolved against the theme built in step one.
+- `createThemeFromConfig` composes in MUI's two steps (#390): `createTheme` with the palette and
+  `deepmerge(TYPE_SCALE, typography)`, then `createTheme(theme, { components:
+  deepmerge(baseComponents(theme), file components) })`, so a theme file's slot adds to the
+  base one (e.g. theme-dev's `MuiButton.root.textTransform: none`). `action.active` defaults
+  to `primary.main` there.
+- Shared Linje fills are exported (`HOVER_FILL`, `PRESSED_FILL`, …) for components that draw
+  their own parts (`SquareButton`, `FormCheckboxField`).
 - Theme JSON (`.github/environments/theme-*.json`, `entur/hathor-deployment-config`) is data:
   palette (`primary.main` #181C56), fonts, logo, `applicationName`. The rules live in code.
 - ADRs: `FORK_DECISIONS.md` 2026-11-16 (themes, Nationale) and 2026-11-17 (label inside the box).
@@ -212,12 +219,6 @@ Cross-cutting traps:
   (same specificity), and pressed takes the accent icon (`Contrast/Icon-Active` #181c56).
 - **Status: done (#389).**
 
-## Tooltip
-
-- **Linje**: `packages/tooltip/src/Tooltip.scss:6-7,20-32`: fill #181c56, white 14 px text,
-  padding 5 / 10, radius legacy 4.
-- **MUI**: theme `MuiTooltip` `tooltip` + `arrow` slots. **Status: done (#389).**
-
 ## Loader
 
 - **Linje**: `apps/documentation/src/pages/komponenter/feedback/loader.mdx:40-56`.
@@ -230,18 +231,6 @@ Cross-cutting traps:
   follow enki, by decision; see the `enki` skill. `CircularProgress` appears elsewhere.
 - **Status: partial; E7 open (#135).** `ProtectedRoute.tsx:30,38` still renders bare `<div>`
   text. Use `<LoadingPage text={…} />`.
-
-## Skeleton
-
-- **Linje**: `packages/loader/src/BaseSkeleton.scss:19-24`; `loader/skeleton/Standard/*`: fill
-  #eaeaf1, shimmer #f6f6f9.
-- **MUI**: theme `MuiSkeleton`: that fill, the `wave` shimmer in #f6f6f9, still under reduced
-  motion. A form page loads as `FormSkeleton` (`form-layout/components/FormSkeleton.tsx`):
-  `FormSections` over the form's own sections, a rounded block per control (48 px field, 42 px
-  checkbox row, radius 8), `PictureSkeleton` (16:10) in column 3; each feature exports its
-  `<Entity>SectionsSkeleton`, and `EditorFrame` draws it in the loaded page's frame below a
-  title-row skeleton.
-- **Status: done (#389).**
 
 ## MultiSelect / SearchableDropdown (Autocomplete)
 
@@ -259,25 +248,40 @@ Cross-cutting traps:
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
 
+## Skeleton
+
+- **Linje**: `packages/loader/src/BaseSkeleton.scss:19-24`; `loader/skeleton/Standard/*`: fill
+  #eaeaf1, shimmer #f6f6f9.
+- **MUI**: theme `MuiSkeleton`: that fill, the `wave` shimmer in #f6f6f9, still under reduced
+  motion. A form page loads as `FormSkeleton` (`form-layout/components/FormSkeleton.tsx`):
+  `FormSections` over the form's own sections, a rounded block per control (48 px field, 42 px
+  checkbox row, radius 8), `PictureSkeleton` (16:10) in column 3; each feature exports its
+  `<Entity>SectionsSkeleton`, and `EditorFrame` draws it in the loaded page's frame below a
+  title-row skeleton.
+- **Status: done (#389).**
+
 ## SquareButton
 
 - **Linje**: `packages/button/src/SquareButton.scss:23-31,45-53,62-90`; `Square secondary/*`
   tokens.
   - Square at the button heights (32 / 48 / 64), radius 6 / 8 / 8.
   - Border #8284ab, hover #d9ddf2, active #aeb7e2, icon #181c56.
-- **MUI**: none yet. Build it as `Button variant="outlined"` with `minWidth = height`, padding 0
-  ("New", card create).
-- **Status: open, #389.**
+- **MUI**: none in MUI; `src/components/SquareButton.tsx` on `ButtonBase`: icon in a 48 / 32 px
+  square (medium / small), 2 px border, radius 8 / 6, label 8 / 4 px beside it; hover inside
+  `@media (hover: hover)`; the ring on the square only (root outline off); `to` makes it a
+  router link. Used by `NewEntityFab` and `SiteNavCards` (card footer, CreateRow).
+- **Trap**: on a tinted ground (#d9ddf2) the border is 2.67:1 and hover invisible; keep it on
+  white (the CreateRow tile is `background.paper`).
+- **Status: done (#389).**
 
 ## Switch
 
 - **Linje**: on #1a8e60, off #949699, knob white (`Switch/*` tokens).
   `apps/documentation/src/pages/komponenter/skjemaelementer/switch.mdx:54-57`: only for
   binary settings that apply immediately, without Save.
-- **MUI**: `FormSwitchField` (`FormFields.tsx`) on form yes/no fields. That breaks the
-  guidance.
-- **Status: open, #389** (becomes a Checkbox). No `MuiSwitch` theme entry is needed unless a
-  real immediate toggle appears.
+- **MUI**: none in the forms: yes/no fields are `FormCheckboxField` (see Checkbox). No
+  `MuiSwitch` theme entry is needed unless a real immediate toggle appears.
+- **Status: done (#389)**: `FormSwitchField` was removed.
 
 ## TagChip / Chip
 
@@ -352,12 +356,6 @@ Cross-cutting traps:
 
 ## Tooltip
 
-- **Linje**: `packages/tooltip/src/Tooltip.scss:20-32`; `tooltip/Tooltip/Standard/*` tokens.
-  Fill #181c56, white text, 14 px, padding 5 / 10, radius legacy 4, max-width 32rem. Negative
-  variant: fill #ffcece, text #181c56.
-- **MUI**: `Tooltip` in `NetexId.tsx`, `Menu.tsx`, `TransportModeIcon.tsx`,
-  `CollectionToolbar.tsx`, `QueryField.tsx`. There's no `MuiTooltip` entry, so it shows MUI's
-  grey `rgba(97,97,97,.92)` at about 11 px.
-- **Status: open, no issue yet.** Add `MuiTooltip.tooltip`: `backgroundColor primary.main`,
-  `fontSize body2`, padding `5px 10px`; `arrow` colour to match. File it with #389 or as a
-  new issue.
+- **Linje**: `packages/tooltip/src/Tooltip.scss:6-7,20-32`: fill #181c56, white 14 px text,
+  padding 5 / 10, radius legacy 4.
+- **MUI**: theme `MuiTooltip` `tooltip` + `arrow` slots. **Status: done (#389).**
