@@ -5,9 +5,10 @@
  */
 import type { FieldEntry, FieldSpec } from '../collection/types.ts';
 
-/** Share of a form row a control takes. Consecutive narrow controls pack onto
+/** Share of a form row a control takes: at most two per row, since a Linje field's label
+ *  rests inside it and a narrower box would cut it off (#283). Consecutive halves pack onto
  *  one row; `full` always starts its own. */
-export type FieldWidth = 'full' | '1/2' | '1/3' | '1/4';
+export type FieldWidth = 'full' | '1/2';
 
 /** Form-level width per control kind, over the defaults (`KIND_WIDTH`). */
 export type KindWidths = Partial<Record<FieldSpec['kind'], FieldWidth>>;

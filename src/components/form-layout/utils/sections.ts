@@ -35,7 +35,7 @@ export interface Section<K extends string = string> {
 /** Default share of a row per control kind: a number or a date doesn't need a
  *  name's width, so narrow kinds pack side by side. */
 export const KIND_WIDTH: Record<FieldSpec['kind'], FieldWidth> = {
-  number: '1/3',
+  number: '1/2',
   date: '1/2',
   datetime: '1/2',
   switch: '1/2',
@@ -48,7 +48,7 @@ export const KIND_WIDTH: Record<FieldSpec['kind'], FieldWidth> = {
 };
 
 /** Columns a width spans on the default 12-column MUI `Grid`. */
-const WIDTH_SPAN: Record<FieldWidth, number> = { full: 12, '1/2': 6, '1/3': 4, '1/4': 3 };
+const WIDTH_SPAN: Record<FieldWidth, number> = { full: 12, '1/2': 6 };
 
 /**
  * The responsive `Grid` `size` for a width: full below `sm`, the fraction from

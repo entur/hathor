@@ -36,6 +36,9 @@ const FIELD_HEIGHT_PX = 48,
   LABEL_TOP_Y_PX = 5,
   // Linje `Text/Subdued`, 5.6:1 on white.
   LABEL_COLOR = '#626493';
+// Linje disabled field (`BaseFormControl.scss` `--disabled`): grey fill, no border, grey text.
+const DISABLED_FILL = '#cfd2d4',
+  DISABLED_TEXT = '#6e6f73';
 // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy: the header picker's label.
 const HEADER_LABEL = '#d9dae8';
 // MUI's Autocomplete input keeps its own padding (7.5 px vertical, 5 px left).
@@ -127,6 +130,7 @@ const BASE_COMPONENTS: Components<Theme> = {
     styleOverrides: {
       root: {
         color: LABEL_COLOR,
+        '&.Mui-disabled': { color: DISABLED_TEXT },
         [LABEL_MEDIUM]: {
           transform: `translate(${FIELD_PAD_X_PX}px, ${LABEL_REST_Y_PX}px) scale(1)`,
           maxWidth: `calc(100% - ${2 * FIELD_PAD_X_PX}px)`,
@@ -156,16 +160,29 @@ const BASE_COMPONENTS: Components<Theme> = {
           paddingInline: FIELD_PAD_X_PX,
           borderRadius: FIELD_RADIUS_PX,
         },
-        [`&${MEDIUM} .MuiOutlinedInput-input`]: { padding: `${VALUE_PAD_Y} 0` },
+        // Block and left only: a Select's own right padding keeps its text off the arrow.
+        [`&${MEDIUM} .MuiOutlinedInput-input`]: { paddingBlock: VALUE_PAD_Y, paddingLeft: 0 },
         [`${LABELLED} .MuiOutlinedInput-input`]: {
-          padding: `${VALUE_PAD_TOP} 0 ${VALUE_PAD_BOTTOM_PX}px`,
+          paddingBlock: `${VALUE_PAD_TOP} ${VALUE_PAD_BOTTOM_PX}px`,
         },
+        // shortcut: a labelled multiline field isn't laid out for the label inside (its first
+        // line would sit under the label); style it when a form gets a textarea.
         [`&${MEDIUM} ${NOTCH} legend`]: { maxWidth: '0.01px' },
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [`&${HOVER}`]: {
           borderColor: theme.palette.primary.main,
         },
-        '&.Mui-focused': ring(theme.palette.primary.main, 0),
+        '&.Mui-focused:not(.MuiInputBase-readOnly)': ring(theme.palette.primary.main, 0),
+        // Linje read-only (view mode, #267): no border, no hover, no focus outline.
+        [`&.MuiInputBase-readOnly ${NOTCH}, &.MuiInputBase-readOnly${HOVER}`]: {
+          borderColor: 'transparent',
+        },
+        '&.Mui-disabled': { backgroundColor: DISABLED_FILL },
+        [`&.Mui-disabled ${NOTCH}`]: { borderColor: 'transparent' },
+        '& .MuiInputBase-input.Mui-disabled': {
+          color: DISABLED_TEXT,
+          WebkitTextFillColor: DISABLED_TEXT,
+        },
       }),
     },
   },
@@ -177,14 +194,21 @@ const BASE_COMPONENTS: Components<Theme> = {
           paddingBlock: `calc((${FIELD_HEIGHT_PX}px - 1.4375em - ${2 * AC_INPUT_PAD_Y_PX}px) / 2)`,
           paddingLeft: FIELD_PAD_X_PX - AC_INPUT_PAD_LEFT_PX,
         },
+        // Outranks the field's value padding, which would zero the input's own.
+        [`& .MuiOutlinedInput-root${MEDIUM} .MuiAutocomplete-input`]: {
+          paddingBlock: AC_INPUT_PAD_Y_PX,
+          paddingLeft: AC_INPUT_PAD_LEFT_PX,
+        },
         [`& ${LABELLED_ROOT}`]: {
           paddingTop: VALUE_PAD_TOP,
           paddingBottom: VALUE_PAD_BOTTOM_PX,
         },
-        // Outranks the field's labelled-value padding, which would zero its left padding.
-        [`& ${LABELLED_ROOT} .MuiAutocomplete-input`]: {
-          paddingBlock: 0,
-          paddingLeft: AC_INPUT_PAD_LEFT_PX,
+        [`& ${LABELLED_ROOT} .MuiAutocomplete-input`]: { paddingBlock: 0 },
+        // Chips sit on the value's line, inside the 48 px box, lined up with the label.
+        [`& ${LABELLED_ROOT} .MuiAutocomplete-tag`]: {
+          marginBlock: 0,
+          marginLeft: AC_INPUT_PAD_LEFT_PX,
+          height: '1.4375em',
         },
       },
     },

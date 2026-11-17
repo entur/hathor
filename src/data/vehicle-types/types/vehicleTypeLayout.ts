@@ -8,10 +8,7 @@ import type { VehicleTypeField } from './vehicleTypeFields.ts';
  */
 export const vehicleTypeSections = {
   general: ['name', 'transportMode', 'lowFloor'],
-  dimensions: (['length', 'width', 'height', 'weight'] as const).map(field => ({
-    field,
-    width: '1/4' as const,
-  })),
+  dimensions: ['length', 'width', 'height', 'weight'],
   propulsion: [
     'propulsionTypes',
     'fuelTypes',
