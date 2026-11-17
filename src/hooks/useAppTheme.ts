@@ -38,7 +38,8 @@ export function useAppTheme(themePath: string | undefined): Theme | null {
       .catch((error: unknown) => {
         if (!live) return;
         console.error('Theme loading error:', error instanceof Error ? error.message : error);
-        setCfg(null);
+        // Plain MUI only while nothing has loaded: a failed switch keeps the current theme.
+        setCfg(prev => (prev === undefined ? null : prev));
       });
     return () => {
       live = false;

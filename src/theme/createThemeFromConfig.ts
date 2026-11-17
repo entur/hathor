@@ -7,6 +7,7 @@ import {
 } from '@mui/material/styles';
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type { ThemeConfig } from './theme-config';
+import { REDUCED_MOTION_MEDIA } from '../utils/motion';
 
 // Linje focus ring (WCAG 2.4.7, #256): `outlines.focus` / `outlineOffsets.focus` 2 px, in
 // `--stroke-focus-standard` (primary) on light surfaces and `--stroke-focus-contrast`
@@ -121,6 +122,7 @@ const BASE_COMPONENTS: Components<Theme> = {
         '&.Mui-disabled': { color: DISABLED_TEXT },
         // MUI's own moves, nudged to Linje's indent: `translate` adds to its `transform`.
         '&.MuiInputLabel-filled': { translate: `${FIELD_INDENT_SHIFT_PX}px 0` },
+        [REDUCED_MOTION_MEDIA]: { transition: 'none' },
       },
     },
   },
@@ -142,8 +144,8 @@ const BASE_COMPONENTS: Components<Theme> = {
         },
         // Read-only too, unlike Linje: view-mode fields stay in the tab order (WCAG 2.4.7).
         '&.Mui-focused': ring(theme.palette.primary.main, 0),
-        // Linje read-only (view mode, #267): no border, no hover.
-        [`&.MuiInputBase-readOnly ${NOTCH}, &.MuiInputBase-readOnly${HOVER}`]: {
+        // Linje read-only (view mode, #267): no border, no hover — an error still shows.
+        [`&.MuiInputBase-readOnly:not(.Mui-error) ${NOTCH}, &.MuiInputBase-readOnly${HOVER}`]: {
           borderColor: 'transparent',
         },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL },
@@ -171,8 +173,8 @@ const BASE_COMPONENTS: Components<Theme> = {
         },
         '&.Mui-error': edge(theme.palette.error.main),
         '&.Mui-error.Mui-focused': ring(theme.palette.error.main, 0),
-        // Linje read-only (view mode, #267): no border, no hover.
-        '&.MuiInputBase-readOnly': { boxShadow: 'none' },
+        // Linje read-only (view mode, #267): no border, no hover — an error still shows.
+        '&.MuiInputBase-readOnly:not(.Mui-error)': { boxShadow: 'none' },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL, boxShadow: 'none' },
       }),
       // A Select's own `&&&` right padding still wins, keeping its text off the arrow.

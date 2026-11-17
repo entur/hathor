@@ -9,14 +9,6 @@ import {
 } from '@mui/material';
 import { blankToUndefined } from '../utils/blankToUndefined.ts';
 
-const NUMERIC_WIDTH = '66.667%',
-  NUMERIC_FULL_BELOW = '16rem';
-// A number rarely needs the whole rail: two thirds wide, unless the form is so
-// narrow that two thirds would cramp the value (`fullWidth` then applies).
-const NUMERIC_SX = {
-  [`@container (min-width: ${NUMERIC_FULL_BELOW})`]: { width: NUMERIC_WIDTH },
-};
-
 // What every text-like field in a sidebar form shares: Linje's 48 px field, its label inside
 // the box until focused or filled — MUI's small filled field (createThemeFromConfig
 // `MuiFilledInput`). Its width is the form layout's (`KIND_WIDTH`, at most two per row).
@@ -118,7 +110,6 @@ export function FormNumberField({
       onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
       disabled={disabled}
       {...fieldBase(readOnly)}
-      sx={NUMERIC_SX}
     />
   );
 }
