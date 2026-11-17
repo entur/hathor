@@ -57,7 +57,15 @@ export default function MultiImportColumnMapper({
     onConfirm({ regNumberCol, operationalRefCol: value === NONE ? null : value });
   };
 
-  const columns = headers.map(h => ({ value: h, label: h }));
+  // Options keyed by column index: a header may be blank (''), which a Select reads as "none".
+  const columns = headers.map((h, i) => ({
+    value: String(i),
+    label: h || t('import.multi.columnN', { n: i + 1 }),
+  }));
+  const optionOf = (header: string) => {
+    const i = headers.indexOf(header);
+    return i < 0 ? undefined : String(i);
+  };
   const previewRows = rows.slice(0, PREVIEW_ROWS);
   const highlightCols = new Set([
     regNumberCol,
@@ -83,17 +91,17 @@ export default function MultiImportColumnMapper({
         <FormSelectField
           id="column-mapper-reg-number"
           label={t('import.multi.regNumberColumn')}
-          value={regNumberCol}
+          value={optionOf(regNumberCol)}
           options={columns}
-          onChange={v => v && handleRegNumberColChange(v)}
+          onChange={v => v !== undefined && handleRegNumberColChange(headers[Number(v)])}
         />
         <FormSelectField
           id="column-mapper-operational-ref"
           label={t('import.multi.operationalRefColumn')}
-          value={operationalRefCol === NONE ? undefined : operationalRefCol}
+          value={operationalRefCol === NONE ? undefined : optionOf(operationalRefCol)}
           options={columns}
           noneLabel={t('import.multi.none')}
-          onChange={v => handleOperationalRefColChange(v ?? NONE)}
+          onChange={v => handleOperationalRefColChange(v === undefined ? NONE : headers[Number(v)])}
         />
       </Box>
 

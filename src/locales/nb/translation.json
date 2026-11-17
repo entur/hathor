@@ -290,6 +290,7 @@
   "import.multi.columnMapperDescription": "Vi fant {{count}} kolonner i filen. Koble kolonnene til riktige felt.",
   "import.multi.regNumberColumn": "Registreringsnummer",
   "import.multi.operationalRefColumn": "Driftsnummer (valgfritt)",
+  "import.multi.columnN": "Kolonne {{n}}",
   "import.multi.none": "Ingen",
   "import.multi.preview": "Forhåndsvisning (første {{count}} rader)",
   "import.multi.moreRows": "...og {{count}} rader til",
