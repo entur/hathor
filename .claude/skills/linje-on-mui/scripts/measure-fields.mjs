@@ -3,7 +3,7 @@
 // Usage: node measure-fields.mjs <story-id> [...story-id]   (env: SB=http://127.0.0.1:6006, OUT=<dir for screenshots>)
 // One JSON line per field: label rect/transform/colour, root height/radius/padding, input padding and
 // offsets, notch border, outline, chip count, Select text box vs arrow (selectOverlapPx > 0 = text runs under the arrow), helper text placement.
-import { chromium } from '/home/kdm/entur/hathor/node_modules/playwright/index.mjs';
+import { chromium } from 'playwright';
 
 const SB = process.env.SB ?? 'http://127.0.0.1:6006',
   OUT = process.env.OUT,

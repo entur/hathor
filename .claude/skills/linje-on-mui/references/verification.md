@@ -8,7 +8,8 @@ Code reading misses specificity outcomes, so measure computed styles. State as o
   the main checkout. Vitest browser mode breaks in worktrees, but plain Storybook is fine.
 - Story ids: `curl -s http://127.0.0.1:6006/index.json | jq -r '.entries|keys[]'`.
   Load a story through `/iframe.html?id=<id>&viewMode=story`.
-- Playwright: import from `/home/kdm/entur/hathor/node_modules/playwright/index.mjs`. Put
+- Playwright: `import { chromium } from 'playwright'` in a script under the repo; a scratchpad
+  script sits outside it, so it imports `<checkout>/node_modules/playwright/index.mjs`. Put
   scripts and screenshots in the session scratchpad, never in the repo. For the e2e suite
   (version skew on main), run `node node_modules/@playwright/test/cli.js test`.
 - `node scripts/measure-fields.mjs <story-id>…`: one JSON line per text field (filled or
