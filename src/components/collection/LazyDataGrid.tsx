@@ -46,7 +46,7 @@ export function LazyDataGrid({
         >
           <CircularProgress size={SPINNER_PX} />
           {fallbackLabel ? (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {fallbackLabel}
             </Typography>
           ) : null}

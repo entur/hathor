@@ -54,7 +54,7 @@ const control =
     const { kind } = fields[key];
     if (kind === 'grid')
       return (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {label}: the host draws the related records here (chips today)
         </Typography>
       );
@@ -73,7 +73,7 @@ const MediaPlaceholder = () => (
       placeItems: 'center',
     }}
   >
-    <Typography variant="caption" color="text.secondary">
+    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
       3D bus · {CARD_MEDIA_ASPECT}
     </Typography>
   </Box>

@@ -401,7 +401,7 @@ function ComboCard({
           </Typography>
         </Box>
         {counts && <Count fn={x.count} ctx={ctx} />}
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {t(x.descKey)}
         </Typography>
       </Box>
@@ -462,7 +462,7 @@ function NavTile({
       <Typography variant="subtitle1" sx={{ fontWeight: 'fontWeightBold' }}>
         {title}
       </Typography>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
         {desc}
       </Typography>
     </Box>

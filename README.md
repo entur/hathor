@@ -14,7 +14,7 @@ Frontend for [Sobek](https://github.com/entur/sobek) — Entur's national vehicl
 
 - React 19 + TypeScript
 - Vite
-- Material UI v7
+- Material UI v9
 - GraphQL (`graphql-request`)
 - OIDC authentication (`react-oidc-context`)
 

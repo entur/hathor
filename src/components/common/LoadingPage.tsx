@@ -22,12 +22,15 @@ export default function LoadingPage({
   return (
     <Box
       role="status"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      flexDirection="column"
-      mt={4}
-      sx={{ p: 2, color }}
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        mt: 4,
+        p: 2,
+        color,
+      }}
     >
       <LoadingIcon />
       <Typography sx={{ mt: 1, fontWeight: 'fontWeightMedium' }}>

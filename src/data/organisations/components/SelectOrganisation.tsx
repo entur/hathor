@@ -44,8 +44,12 @@ export default function SelectOrganisation() {
               label={t('organisations.select.label')}
               variant="outlined"
               // Shrink set here, not left to the theme default: TextField opens the outline's
-              // notch only for an explicit `shrink`, and the header label sits in it.
-              slotProps={{ inputLabel: { ...params.InputLabelProps, shrink: true } }}
+              // notch only for an explicit `shrink`, and the header label sits in it. MUI 9
+              // passes the input's ref / handlers in `params.slotProps`: keep them all.
+              slotProps={{
+                ...params.slotProps,
+                inputLabel: { ...params.slotProps?.inputLabel, shrink: true },
+              }}
             />
           )}
         />

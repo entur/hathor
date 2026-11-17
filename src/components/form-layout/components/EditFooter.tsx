@@ -157,7 +157,7 @@ export function EditFooter({
       ]}
     >
       {/* `role=status` so the dirty/saving transition is announced, not just drawn. */}
-      <Stack direction="row" alignItems="center" spacing={1} role="status">
+      <Stack direction="row" spacing={1} role="status" sx={{ alignItems: 'center' }}>
         {/* The live region stays mounted while silent, so the first status is still announced. */}
         <Box
           sx={{

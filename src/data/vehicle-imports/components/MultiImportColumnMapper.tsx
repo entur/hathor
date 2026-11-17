@@ -152,7 +152,7 @@ export default function MultiImportColumnMapper({
       </TableContainer>
 
       {rows.length > PREVIEW_ROWS && (
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
           {t('import.multi.moreRows', {
             count: rows.length - PREVIEW_ROWS,
           })}
