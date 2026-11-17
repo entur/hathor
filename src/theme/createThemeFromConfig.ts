@@ -9,7 +9,7 @@ import {
 import { deepmerge } from '@mui/utils';
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type { ThemeConfig } from './theme-config';
-import { REDUCED_MOTION_MEDIA } from '../utils/motion';
+import { REDUCED_MOTION_MEDIA, STILL_SKELETON } from '../utils/motion';
 
 // Linje focus ring (WCAG 2.4.7, #256): `outlines.focus` / `outlineOffsets.focus` 2 px, in
 // `--stroke-focus-standard` (primary) on light surfaces and `--stroke-focus-contrast`
@@ -241,7 +241,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
     styleOverrides: {
       root: {
         backgroundColor: SKELETON_FILL,
-        [REDUCED_MOTION_MEDIA]: { animation: 'none', '&::after': { display: 'none' } },
+        ...STILL_SKELETON,
       },
       wave: {
         '&::after': {

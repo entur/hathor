@@ -5,6 +5,7 @@ import { SectionToc } from './SectionToc';
 import { ThemeProvider } from '@mui/material/styles';
 import { REDUCED_MOTION_QUERY } from '../utils/motion';
 import { createThemeFromConfig } from '../theme/createThemeFromConfig';
+import { fallbackTheme } from '../hooks/useAppTheme';
 import type { ThemeConfig } from '../theme/theme-config';
 
 const sections = ['Edit', 'Dim.', 'Cargo'];
@@ -145,10 +146,15 @@ const stilled = (root: HTMLElement): string[] => {
 
 // MUI's wave runs on the skeleton's ::after, and `animation` is not inherited: the app
 // theme's `MuiSkeleton` guard must reach the ::after, not only the root.
+const THEMES = { app: () => createThemeFromConfig({} as ThemeConfig), fallback: fallbackTheme };
 describe('SectionToc loading under reduced motion stops the skeleton wave', () => {
-  it.each(['list', 'dropdown'] as const)('%s', variant => {
+  it.each(
+    (['list', 'dropdown'] as const).flatMap(variant =>
+      (['app', 'fallback'] as const).map(theme => [variant, theme] as const)
+    )
+  )('%s, %s theme', (variant, theme) => {
     const { container } = render(
-      <ThemeProvider theme={createThemeFromConfig({} as ThemeConfig)}>
+      <ThemeProvider theme={THEMES[theme]()}>
         <SectionToc sections={['A', 'B']} onSelect={() => {}} variant={variant} loading />
       </ThemeProvider>
     );
