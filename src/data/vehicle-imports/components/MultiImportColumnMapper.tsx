@@ -9,14 +9,10 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import type { TableMeta } from '../utils/inputTextAnalyzer';
+import type { ColumnMapping } from '../utils/mapColumns';
 import { FormSelectField } from '../../../components/FormFields.tsx';
 
 const PREVIEW_ROWS = 5;
-
-export interface ColumnMapping {
-  regNumberCol: string;
-  operationalRefCol: string | null;
-}
 
 interface MultiImportColumnMapperProps {
   tableMeta: TableMeta;
