@@ -17,29 +17,30 @@ const FOCUS_PX = 2,
 const BODY_WEIGHT = 500,
   HEADING_WEIGHT = 600;
 // Linje corners, standard density (#258): cards `--border-radiuses-large`, buttons
-// `--components-button-radius-*`; fields keep `shape.borderRadius` 4, chips stay pills.
+// `--components-button-radius-*`; small fields keep `shape.borderRadius` 4, chips stay pills.
 const CARD_RADIUS_PX = 8,
   BUTTON_RADIUS_PX = 8,
   BUTTON_RADIUS_SMALL_PX = 6;
 // Linje field border, `--components-form-baseform-standard-border-default`; navy on hover/focus.
 const FIELD_BORDER_PX = 2,
   FIELD_BORDER = '#8284ab';
-// Linje form fields, standard density (S5, #260): `base form/height/Default` Medium 48 /
-// Small 32 px, inline padding 16 / 12 px, the label pinned 8 px above (`gap/vertical/Medium`).
+// Linje TextField / Dropdown, standard density (`@entur/form` BaseFormControl.scss,
+// InputGroupLabel.scss): one 48 px box, 16 px inline padding, radius 8. The label rests
+// inside at 16 px and moves to the box's top at 12 px once focused or filled; the value sits
+// under it, 4 px off the bottom. Offsets are for MUI's 1.4375em (23 px) line.
 const FIELD_HEIGHT_PX = 48,
-  FIELD_HEIGHT_SMALL_PX = 32,
   FIELD_PAD_X_PX = 16,
-  FIELD_PAD_X_SMALL_PX = 12,
-  LABEL_GAP_PX = 8;
-// The header's org picker is the one field that keeps MUI's outlined label in the notch,
-// as enki's provider picker does: MUI small height, label at MUI's 16 px × 0.75 shrink.
-const HEADER_FIELD_HEIGHT_PX = 40,
-  NOTCH_LABEL_TRANSFORM = 'translate(14px, -9px) scale(0.75)',
-  // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy.
-  HEADER_LABEL = '#d9dae8';
-// MUI's Autocomplete input keeps its own left padding (5 px, small 8 px); the root adds the rest.
-const AC_INPUT_PAD_LEFT_PX = 5,
-  AC_INPUT_PAD_LEFT_SMALL_PX = 8;
+  FIELD_RADIUS_PX = 8,
+  VALUE_PAD_BOTTOM_PX = 4,
+  LABEL_REST_Y_PX = 12.5,
+  LABEL_TOP_Y_PX = 5,
+  // Linje `Text/Subdued`, 5.6:1 on white.
+  LABEL_COLOR = '#626493';
+// Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy: the header picker's label.
+const HEADER_LABEL = '#d9dae8';
+// MUI's Autocomplete input keeps its own padding (7.5 px vertical, 5 px left).
+const AC_INPUT_PAD_Y_PX = 7.5,
+  AC_INPUT_PAD_LEFT_PX = 5;
 // Linje buttons, `button/height/horizontal content` Small / Medium / Large.
 const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48,
@@ -93,8 +94,17 @@ const NOTCH = '.MuiOutlinedInput-notchedOutline';
 // MUI's own field-hover selector: matching it is the only way to outrank it.
 const HOVER = `:hover:not(.Mui-disabled):not(.Mui-error) ${NOTCH}`;
 
-/** Vertical input padding that centres MUI's one-line input (1.4375em) in `height` px. */
-const padY = (height: number) => `calc((${height}px - 1.4375em) / 2)`;
+// Form-size fields; small ones (toolbar, filters, the header picker) keep MUI's 40 px,
+// the label in the outline's notch: a Linje small field (32 px) has no room for it inside.
+const MEDIUM = ':not(.MuiInputBase-sizeSmall)';
+const LABEL_MEDIUM = '&.MuiInputLabel-outlined:not(.MuiInputLabel-sizeSmall)';
+// A field with a label: its value sits under the label, at the bottom of the box.
+const LABELLED = `.MuiInputLabel-root + &${MEDIUM}`,
+  LABELLED_ROOT = `.MuiInputLabel-root + .MuiOutlinedInput-root${MEDIUM}`;
+/** Top padding that puts MUI's one-line value 4 px off the bottom of the 48 px box. */
+const VALUE_PAD_TOP = `calc(${FIELD_HEIGHT_PX}px - 1.4375em - ${VALUE_PAD_BOTTOM_PX}px)`;
+/** Vertical padding that centres MUI's one-line value in the 48 px box (no label). */
+const VALUE_PAD_Y = `calc((${FIELD_HEIGHT_PX}px - 1.4375em) / 2)`;
 
 /**
  * Linje's component look on MUI: corners, chip text, field borders, and one focus ring for
@@ -112,20 +122,20 @@ const BASE_COMPONENTS: Components<Theme> = {
       sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX },
     },
   },
-  // Labels pinned above the field (S5), never floating in it: static in the FormControl's
-  // column, the outline's notch closed (TextField sets `notched` itself, so CSS closes it).
+  // Linje's label inside the box: resting mid-field, at the top once focused or filled.
   MuiInputLabel: {
-    defaultProps: { shrink: true },
     styleOverrides: {
-      root: ({ theme }) => ({
-        ...theme.typography.body2,
-        position: 'static',
-        transform: 'none',
-        maxWidth: '100%',
-        whiteSpace: 'normal',
-        marginBottom: LABEL_GAP_PX,
-        color: theme.palette.text.primary,
-      }),
+      root: {
+        color: LABEL_COLOR,
+        [LABEL_MEDIUM]: {
+          transform: `translate(${FIELD_PAD_X_PX}px, ${LABEL_REST_Y_PX}px) scale(1)`,
+          maxWidth: `calc(100% - ${2 * FIELD_PAD_X_PX}px)`,
+        },
+        [`${LABEL_MEDIUM}.MuiInputLabel-shrink`]: {
+          transform: `translate(${FIELD_PAD_X_PX}px, ${LABEL_TOP_Y_PX}px) scale(0.75)`,
+          maxWidth: `calc(133% - ${(2 * FIELD_PAD_X_PX * 4) / 3}px)`,
+        },
+      },
     },
   },
   MuiChip: {
@@ -138,19 +148,19 @@ const BASE_COMPONENTS: Components<Theme> = {
     styleOverrides: {
       // Hover uses MUI's own selector to outrank it; focus, error and disabled keep MUI's
       // colours (focus is already a 2 px primary border), plus Linje's outline on focus.
+      // The label lives inside the box, so the outline's notch stays closed (TextField
+      // sets `notched` itself, so CSS closes it).
       root: ({ theme }) => ({
-        minHeight: FIELD_HEIGHT_PX,
-        paddingInline: FIELD_PAD_X_PX,
-        '& .MuiOutlinedInput-input': { padding: `${padY(FIELD_HEIGHT_PX)} 0` },
-        '&.MuiInputBase-sizeSmall': {
-          minHeight: FIELD_HEIGHT_SMALL_PX,
-          paddingInline: FIELD_PAD_X_SMALL_PX,
+        [`&${MEDIUM}`]: {
+          minHeight: FIELD_HEIGHT_PX,
+          paddingInline: FIELD_PAD_X_PX,
+          borderRadius: FIELD_RADIUS_PX,
         },
-        '&.MuiInputBase-sizeSmall .MuiOutlinedInput-input': {
-          padding: `${padY(FIELD_HEIGHT_SMALL_PX)} 0`,
+        [`&${MEDIUM} .MuiOutlinedInput-input`]: { padding: `${VALUE_PAD_Y} 0` },
+        [`${LABELLED} .MuiOutlinedInput-input`]: {
+          padding: `${VALUE_PAD_TOP} 0 ${VALUE_PAD_BOTTOM_PX}px`,
         },
-        '&.MuiInputBase-multiline .MuiOutlinedInput-input': { padding: 0 },
-        [`& ${NOTCH} legend`]: { maxWidth: '0.01px' },
+        [`&${MEDIUM} ${NOTCH} legend`]: { maxWidth: '0.01px' },
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [`&${HOVER}`]: {
           borderColor: theme.palette.primary.main,
@@ -159,19 +169,22 @@ const BASE_COMPONENTS: Components<Theme> = {
       }),
     },
   },
-  // Autocomplete pads its input root itself; the field's min height does the sizing.
+  // Autocomplete pads its input root itself: the same 48 px box, value under the label.
   MuiAutocomplete: {
     styleOverrides: {
       root: {
-        '& .MuiOutlinedInput-root': {
-          paddingTop: 0,
-          paddingBottom: 0,
+        [`& .MuiOutlinedInput-root${MEDIUM}`]: {
+          paddingBlock: `calc((${FIELD_HEIGHT_PX}px - 1.4375em - ${2 * AC_INPUT_PAD_Y_PX}px) / 2)`,
           paddingLeft: FIELD_PAD_X_PX - AC_INPUT_PAD_LEFT_PX,
         },
-        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall': {
-          paddingTop: 0,
-          paddingBottom: 0,
-          paddingLeft: FIELD_PAD_X_SMALL_PX - AC_INPUT_PAD_LEFT_SMALL_PX,
+        [`& ${LABELLED_ROOT}`]: {
+          paddingTop: VALUE_PAD_TOP,
+          paddingBottom: VALUE_PAD_BOTTOM_PX,
+        },
+        // Outranks the field's labelled-value padding, which would zero its left padding.
+        [`& ${LABELLED_ROOT} .MuiAutocomplete-input`]: {
+          paddingBlock: 0,
+          paddingLeft: AC_INPUT_PAD_LEFT_PX,
         },
       },
     },
@@ -193,8 +206,8 @@ const BASE_COMPONENTS: Components<Theme> = {
   },
   MuiAppBar: {
     // One class more specific than each ring, which its component inserts later. A field
-    // sits on the navy itself (the org picker), enki-style: label back in the outline's
-    // notch (not pinned above, S5 is for forms), Blue 30 label, Lavender 40 outline, white text.
+    // sits on the navy itself (the org picker), enki-style: MUI's small field, its label in
+    // the outline's notch; Blue 30 label, Lavender 40 outline, white text.
     styleOverrides: {
       root: ({ theme }) => ({
         '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible': {
@@ -203,23 +216,8 @@ const BASE_COMPONENTS: Components<Theme> = {
         // No ring on the picker: an outline is a plain box and would strike through the
         // notched label. Its focus shows as the outline turning white, as in enki.
         '& .MuiOutlinedInput-root.Mui-focused': { outline: 'none' },
-        '& .MuiInputLabel-root': {
-          ...theme.typography.body1,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: NOTCH_LABEL_TRANSFORM,
-          transformOrigin: 'top left',
-          maxWidth: 'calc(133% - 32px)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          marginBottom: 0,
-          color: HEADER_LABEL,
-        },
+        '& .MuiInputLabel-root': { color: HEADER_LABEL },
         '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.common.white },
-        [`& .MuiOutlinedInput-root ${NOTCH} legend`]: { maxWidth: '100%' },
-        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall': { minHeight: HEADER_FIELD_HEIGHT_PX },
         '& .MuiOutlinedInput-root, & .MuiAutocomplete-popupIndicator, & .MuiAutocomplete-clearIndicator':
           { color: theme.palette.common.white },
         [`& .MuiOutlinedInput-root ${NOTCH}`]: { borderColor: FOCUS_CONTRAST },

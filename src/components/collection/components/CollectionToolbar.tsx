@@ -144,8 +144,7 @@ export function CollectionToolbar({
   const visible = columns.filter(c => hidden[c.key] !== false).length;
 
   return (
-    // Bottom-aligned: the sort field's label sits above it, the other controls have none.
-    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
+    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'center' }}>
       <QueryField
         search={has('search')}
         filter={has('filter')}
@@ -168,8 +167,6 @@ export function CollectionToolbar({
               })
             }
             sx={{ width: SORT_W }}
-            // The label sits above now, so the empty field names its choice: "None".
-            slotProps={{ select: { displayEmpty: true } }}
           >
             <MenuItem value={NO_SORT}>{labels.sortNone}</MenuItem>
             {columns.map(c => (

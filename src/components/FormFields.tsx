@@ -18,7 +18,7 @@ const NUMERIC_SX = {
 };
 
 // What every text-like field in a sidebar form shares: Linje's 48 px field, its label
-// pinned above by the theme (createThemeFromConfig `MuiInputLabel`).
+// inside the box until focused or filled (createThemeFromConfig `MuiInputLabel`).
 const FIELD_BASE = { fullWidth: true } as const;
 
 interface FieldProps {
@@ -30,9 +30,17 @@ interface FieldProps {
   readOnly?: boolean;
 }
 
-/** `FIELD_BASE` plus the read-only input, when set. */
-const fieldBase = (readOnly?: boolean) =>
-  readOnly ? { ...FIELD_BASE, slotProps: { input: { readOnly } } } : FIELD_BASE;
+/**
+ * `FIELD_BASE` plus the read-only input, and a label held at the top when `pinLabel` is
+ * set: a native date input always shows its dd/mm/yyyy mask, which a resting label overlaps.
+ */
+const fieldBase = (readOnly?: boolean, pinLabel?: boolean) => ({
+  ...FIELD_BASE,
+  slotProps: {
+    ...(readOnly && { input: { readOnly } }),
+    ...(pinLabel && { inputLabel: { shrink: true } }),
+  },
+});
 
 interface FormTextFieldProps extends FieldProps {
   value: string;
@@ -69,7 +77,7 @@ export function FormTextField({
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
-      {...fieldBase(readOnly)}
+      {...fieldBase(readOnly, type === 'date')}
     />
   );
 }
