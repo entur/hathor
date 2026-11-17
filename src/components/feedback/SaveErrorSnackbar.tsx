@@ -20,7 +20,7 @@ export default function SaveErrorSnackbar({
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
-      <Alert severity={severity} onClose={onClose} variant="filled">
+      <Alert severity={severity} onClose={onClose}>
         {error}
       </Alert>
     </Snackbar>

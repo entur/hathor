@@ -53,6 +53,17 @@ const HEADING_LINE_HEIGHT = 1.25,
   H1_REM = 2,
   H_PAGE_REM = 1.5,
   H_SECTION_REM = 1.25;
+// Linje AlertBox (`@entur/alert` BaseAlertBox.scss, `alert/AlertBox/<severity>/Standard/*`):
+// a light fill, Linje text, a coloured border and icon; 1 px border, legacy radius 4.
+const ALERT_TEXT = '#181c56',
+  ALERT_BORDER_PX = 1,
+  ALERT_RADIUS_PX = 4;
+const ALERT_COLOURS = {
+  Success: { fill: '#d0f1e3', border: '#1a8e60', icon: '#1a8e60' },
+  Info: { fill: '#e1eff8', border: '#067eb2', icon: '#067eb2' },
+  Error: { fill: '#ffcece', border: '#d31b1b', icon: '#d31b1b' },
+  Warning: { fill: '#fff4cd', border: '#e9b10c', icon: '#181c56' },
+};
 // Table row tint: hover, selected, selected + hover (primary alpha); selected row's left stripe.
 const ROW_HOVER_ALPHA = 0.08,
   ROW_SELECTED_ALPHA = 0.18,
@@ -129,6 +140,24 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         '&.MuiInputLabel-filled': { translate: `${FIELD_INDENT_SHIFT_PX}px 0` },
         [REDUCED_MOTION_MEDIA]: { transition: 'none' },
       },
+    },
+  },
+  // MUI's standard alert, as Linje's AlertBox; MUI's own tints put white or dark-tinted text
+  // on status colours (white on success is 4.1:1).
+  MuiAlert: {
+    styleOverrides: {
+      root: Object.fromEntries(
+        Object.entries(ALERT_COLOURS).map(([severity, c]) => [
+          `&.MuiAlert-standard.MuiAlert-color${severity}`,
+          {
+            color: ALERT_TEXT,
+            backgroundColor: c.fill,
+            border: `${ALERT_BORDER_PX}px solid ${c.border}`,
+            borderRadius: ALERT_RADIUS_PX,
+            '& .MuiAlert-icon': { color: c.icon },
+          },
+        ])
+      ),
     },
   },
   MuiChip: {
