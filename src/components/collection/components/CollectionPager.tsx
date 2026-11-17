@@ -2,8 +2,8 @@
  * The pager under both views — Linje's `Pagination` (@entur/menu) rebuilt with
  * MUI: its markup (one <nav>: the rows shown with a rows-per-page menu, then the
  * page buttons) and its stylesheet. Colours come from the theme, which is set per
- * installation: on hathor's Entur themes `primary` is Linje's accent (#181c56) and
- * `action.active` its selected fill (#aeb7e2). MUI's `usePagination` lists the
+ * installation: on hathor's Entur themes `primary` is Linje's accent (#181c56); the current
+ * page's fill is Linje's own (below). MUI's `usePagination` lists the
  * pages; its default (one boundary, one sibling) is Linje's ellipsis rule.
  * Source: entur/design-system packages/menu/src/Pagination.*
  */
@@ -21,6 +21,7 @@ const PAGE_PX = 32, // --space-extra-large
   ELLIPSIS_FONT_PX = 24, // --font-sizes-extra-large2
   FOCUS_PX = 2, // outlines.focus, outlineOffsets.focus
   FAST_S = 0.1; // timings.fast
+const CURRENT_FILL = '#aeb7e2'; // menu/Pagination/Standard/Active (Lavender 40)
 
 const PAGE_SX = {
   appearance: 'none',
@@ -48,7 +49,7 @@ const PAGE_SX = {
   },
   // As Linje: no hover on the current page (it stays focusable by keyboard).
   '&[aria-current="page"]': {
-    bgcolor: 'action.active',
+    bgcolor: CURRENT_FILL,
     borderColor: 'primary.main',
     pointerEvents: 'none',
   },

@@ -296,6 +296,8 @@ export function createThemeFromConfig(cfg: ThemeConfig): Theme {
     typography: deepmerge(TYPE_SCALE, (typography ?? {}) as TypographyVariantsOptions),
   });
   return createTheme(theme, {
+    // Icons (icon buttons, Select / Autocomplete arrows) in Linje's accent, not MUI's 54 % black.
+    palette: { action: { active: options.palette?.action?.active ?? theme.palette.primary.main } },
     components: deepmerge(baseComponents(theme), (components ?? {}) as Components<Theme>),
   });
 }

@@ -195,7 +195,8 @@ Cross-cutting traps:
   - Focus 2 px offset 2.
 - **MUI**: `IconButton`, used in `NetexId.tsx`, `Menu.tsx`, `header/HeaderActions.tsx`,
   `CollectionToolbar.tsx`, `QueryField.tsx`. There's no theme entry, so it is a round MUI icon
-  button with `action.active` grey.
+  button; its icon is `action.active`, which `createThemeFromConfig` defaults to `primary.main`
+  (#181c56) unless a theme file sets it.
 - **Status: open, #389.** Add `MuiIconButton`: `borderRadius`, `color: primary.main`, hover and
   active backgrounds. Under `MuiAppBar`, use the contrast values.
 

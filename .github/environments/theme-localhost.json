@@ -9,7 +9,7 @@
     "error": { "main": "#d31b1b" },
     "success": { "main": "#1a8e60" },
     "warning": { "main": "#ffca28" },
-    "action": { "hover": "#d9ddf2", "active": "#aeb7e2" }
+    "action": { "hover": "#d9ddf2" }
   },
   "typography": {
     "fontFamily": "Arial, sans-serif"

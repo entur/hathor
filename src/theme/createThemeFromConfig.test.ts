@@ -38,6 +38,13 @@ describe('createThemeFromConfig', () => {
     expect(slot(theme, 'MuiChip', 'root')).toEqual({ fontSize: theme.typography.body2.fontSize });
   });
 
+  it('colours icons (action.active) in primary unless the theme file sets it', () => {
+    const palette = { primary: { main: '#181c56' } };
+    expect(createThemeFromConfig({ ...CFG, palette }).palette.action.active).toBe('#181c56');
+    const own = { ...palette, action: { active: '#123456' } };
+    expect(createThemeFromConfig({ ...CFG, palette: own }).palette.action.active).toBe('#123456');
+  });
+
   it("keeps the scale's heading weight and line height under a theme's h1 size", () => {
     // the deployed themes still carry `h1: { fontSize: '3rem' }`
     const theme = createThemeFromConfig({
