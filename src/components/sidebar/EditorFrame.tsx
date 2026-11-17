@@ -4,7 +4,6 @@ import { Box, Button, Divider, IconButton, Stack, Typography } from '@mui/materi
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
-import { FormLayout } from '../FormLayout.tsx';
 import FormLayoutSkeleton from '../FormLayoutSkeleton.tsx';
 import BodyState from '../feedback/BodyState.tsx';
 import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
@@ -36,6 +35,8 @@ export interface EditorCopy {
 const focusOnMount = (el: HTMLElement | null) => el?.focus();
 // Not in the tab order, so no focus ring — clipped by the frame, it showed as a stray edge.
 const HEADING_NO_RING = { '&:focus': { outline: 'none' } };
+// Below this the title block takes the whole row and the actions wrap under it.
+const TITLE_MIN = '16rem';
 
 interface EditorFrameProps<T, F> {
   editor: EntityEditor<T, F>;
@@ -207,8 +208,31 @@ export default function EditorFrame<T, F>({
         p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1, flexShrink: 0 }}>
-        <FormLayout sx={{ flex: 1, minWidth: 0 }}>
+      {/* On a narrow page the actions wrap onto their own line. */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 2,
+          mb: 1,
+          flexShrink: 0,
+        }}
+      >
+        {/* The name takes the room it needs, the id badge what is left; on a narrow row the
+            badge wraps below. Only a name wider than the row is cut, and below `md` it wraps
+            instead (WCAG 1.4.10, #389). */}
+        <Box
+          sx={{
+            flex: `1 1 ${TITLE_MIN}`,
+            minWidth: 0,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            columnGap: 2,
+            rowGap: 0.5,
+          }}
+        >
           <Typography
             variant="h5"
             component={heading}
@@ -216,7 +240,15 @@ export default function EditorFrame<T, F>({
             noWrap
             title={trimmed || undefined}
             data-testid={`${testId}-details-title`}
-            sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', ...HEADING_NO_RING }}
+            sx={{
+              minWidth: 0,
+              maxWidth: '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: { xs: 'normal', md: 'nowrap' },
+              overflowWrap: 'anywhere',
+              ...HEADING_NO_RING,
+            }}
           >
             {trimmed || (
               <>
@@ -242,10 +274,10 @@ export default function EditorFrame<T, F>({
               version={entity.version}
               copy="onHover"
               size="small"
-              sx={{ justifySelf: 'start' }}
+              sx={{ flexShrink: 0, maxWidth: '100%' }}
             />
           )}
-        </FormLayout>
+        </Box>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexShrink: 0 }}>
           {frozen && (
             <Typography

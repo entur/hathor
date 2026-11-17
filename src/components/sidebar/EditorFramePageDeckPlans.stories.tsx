@@ -25,7 +25,7 @@ const COPY: EditorCopy = {
 const DECK_PLAN: DeckPlan = {
   id: 'NMR:DeckPlan:1',
   version: 1,
-  name: { value: 'Wagon 1' },
+  name: { value: 'Type 75 middle car, lower deck with bicycle area' },
   description: { value: 'Regional wagon, one deck' },
 };
 const wagon1 = wagon1Raw.replace(/"DeckPlan\/id\/1"/g, `"${DECK_PLAN.id}"`);

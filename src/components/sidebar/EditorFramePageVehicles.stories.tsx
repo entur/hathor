@@ -34,7 +34,7 @@ const COPY: EditorCopy = {
 const VEHICLE: Vehicle = {
   id: 'NMR:Vehicle:1',
   version: 2,
-  name: { value: 'Bus 4021' },
+  name: { value: 'Ruter 4021 Solaris Urbino 18 electric (Alnabru depot)' },
   registrationNumber: 'EL 12345',
   operationalNumber: '4021',
   transportType: { id: 'NMR:VehicleType:1', name: { value: 'Type Alpha' }, transportMode: 'BUS' },

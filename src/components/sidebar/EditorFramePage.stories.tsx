@@ -32,7 +32,7 @@ type Story = StoryObj;
 const VT: VehicleType = {
   id: 'NMR:VehicleType:1',
   version: 3,
-  name: { value: 'Solaris Urbino 12 electric' },
+  name: { value: 'Solaris Urbino 18 electric articulated, Ruter 2024 series' },
   shortName: { value: 'Urbino 12e' },
   transportMode: 'BUS',
   length: 12,
