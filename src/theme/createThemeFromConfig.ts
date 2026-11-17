@@ -197,8 +197,12 @@ const BASE_COMPONENTS: Components<Theme> = {
     // notch (not pinned above, S5 is for forms), Blue 30 label, Lavender 40 outline, white text.
     styleOverrides: {
       root: ({ theme }) => ({
-        '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible, & .MuiOutlinedInput-root.Mui-focused':
-          { outlineColor: FOCUS_CONTRAST },
+        '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible': {
+          outlineColor: FOCUS_CONTRAST,
+        },
+        // No ring on the picker: an outline is a plain box and would strike through the
+        // notched label. Its focus shows as the outline turning white, as in enki.
+        '& .MuiOutlinedInput-root.Mui-focused': { outline: 'none' },
         '& .MuiInputLabel-root': {
           ...theme.typography.body1,
           position: 'absolute',
