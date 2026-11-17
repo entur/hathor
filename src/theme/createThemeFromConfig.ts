@@ -133,6 +133,7 @@ const NOTCH = '.MuiOutlinedInput-notchedOutline';
 const HOVER = `:hover:not(.Mui-disabled):not(.Mui-error):not(.MuiInputBase-readOnly) ${NOTCH}`;
 // Hover only where a pointer hovers: a tap leaves `:hover` stuck (MUI gates its own the same way).
 const CAN_HOVER = '@media (hover: hover)';
+const FORCED_COLORS = '@media (forced-colors: active)';
 const CANNOT_HOVER = '@media (hover: none)',
   STUCK_HOVER = `:hover:not(.Mui-focused):not(.Mui-error):not(.Mui-disabled):not(.MuiInputBase-readOnly) ${NOTCH}`;
 
@@ -248,6 +249,10 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         backgroundColor: theme.palette.common.white,
         borderRadius: FIELD_RADIUS_PX,
         ...edge(FIELD_BORDER),
+        // Forced colours (Windows High Contrast) drop box-shadows but paint a transparent
+        // outline in the system colour, so the field keeps a visible edge there.
+        outline: `${FIELD_BORDER_PX}px solid transparent`,
+        outlineOffset: -FIELD_BORDER_PX,
         '&:hover': {
           backgroundColor: theme.palette.common.white,
           ...edge(theme.palette.primary.main),
@@ -263,6 +268,16 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         // Linje read-only (view mode, #267): no border, no hover — an error still shows.
         '&.MuiInputBase-readOnly:not(.Mui-error)': { boxShadow: 'none' },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL, boxShadow: 'none' },
+        // Forced colours: focus must differ from the edge by more than its offset — a thicker
+        // Highlight ring. Last in the slot, so it beats the focus rings above.
+        [FORCED_COLORS]: {
+          '&.Mui-focused, &.Mui-error.Mui-focused': {
+            outlineWidth: 2 * FIELD_BORDER_PX,
+            outlineOffset: -FIELD_BORDER_PX,
+            outlineColor: 'Highlight',
+          },
+          '&.Mui-disabled': { outlineColor: 'GrayText' },
+        },
       },
       // A Select's own `&&&` right padding still wins, keeping its text off the arrow.
       input: { paddingInline: FIELD_PAD_X_PX },
