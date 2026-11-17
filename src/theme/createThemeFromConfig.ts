@@ -286,6 +286,10 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   // Linje disabled text, either field variant (MUI's own is ~2.6:1).
   MuiInputBase: {
     styleOverrides: {
+      // Linje placeholder, `Base form/Standard/Text-Label` (BaseFormControl.scss:51-53): MUI's
+      // 0.42 opacity is 2.6:1, and a placeholder may carry the format (the import's add
+      // field). MUI's own `!important` still hides it under a resting label.
+      input: { '&::placeholder': { color: LABEL_COLOR, opacity: 1 } },
       root: {
         '& .MuiInputBase-input.Mui-disabled': {
           color: DISABLED_TEXT,
