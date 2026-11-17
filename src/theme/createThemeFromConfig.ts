@@ -1,6 +1,7 @@
 import {
   alpha,
   createTheme,
+  getContrastRatio,
   type Components,
   type Theme,
   type TypographyVariantsOptions,
@@ -69,6 +70,16 @@ const ROW_HOVER_ALPHA = 0.08,
   ROW_SELECTED_ALPHA = 0.18,
   ROW_SELECTED_HOVER_ALPHA = 0.24,
   ROW_STRIPE_PX = 3;
+
+// WCAG minimum contrast: text (1.4.3), borders and focus rings (1.4.11, 2.4.11).
+const TEXT_MIN = 4.5,
+  NON_TEXT_MIN = 3;
+
+/** A colour on the header (`primary.main`), or its contrast text where the colour fails `min`. */
+const onBar = (theme: Theme, color: string, min: number) =>
+  getContrastRatio(color, theme.palette.primary.main) >= min
+    ? color
+    : theme.palette.primary.contrastText;
 
 const ring = (color: string, offset = FOCUS_PX) => ({
   outline: `${FOCUS_PX}px solid ${color}`,
@@ -261,26 +272,31 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   MuiAppBar: {
     // One class more specific than each ring, which its component inserts later. A field
     // sits on the navy itself (the org picker), enki-style: MUI's small field, its label in
-    // the outline's notch; Blue 30 label, Lavender 40 outline, white text.
+    // the outline's notch; Blue 30 label, Lavender 40 outline, white text. Each falls back to
+    // the bar's contrast text where it would fail on another installation's header colour.
     styleOverrides: {
       root: {
         '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible': {
-          outlineColor: FOCUS_CONTRAST,
+          outlineColor: onBar(theme, FOCUS_CONTRAST, NON_TEXT_MIN),
         },
-        '& .MuiInputLabel-root': { color: HEADER_LABEL },
-        '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.common.white },
+        '& .MuiInputLabel-root': { color: onBar(theme, HEADER_LABEL, TEXT_MIN) },
+        '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.primary.contrastText },
         '& .MuiOutlinedInput-root, & .MuiAutocomplete-popupIndicator, & .MuiAutocomplete-clearIndicator':
-          { color: theme.palette.common.white },
-        [`& .MuiOutlinedInput-root ${NOTCH}`]: { borderColor: FOCUS_CONTRAST },
+          { color: theme.palette.primary.contrastText },
+        [`& .MuiOutlinedInput-root ${NOTCH}`]: {
+          borderColor: onBar(theme, FOCUS_CONTRAST, NON_TEXT_MIN),
+        },
         [CANNOT_HOVER]: {
-          [`& .MuiOutlinedInput-root${STUCK_HOVER}`]: { borderColor: FOCUS_CONTRAST },
+          [`& .MuiOutlinedInput-root${STUCK_HOVER}`]: {
+            borderColor: onBar(theme, FOCUS_CONTRAST, NON_TEXT_MIN),
+          },
         },
         // The picker's focus: the outline turning white, as in enki.
         [`& .MuiOutlinedInput-root.Mui-focused ${NOTCH}`]: {
-          borderColor: theme.palette.common.white,
+          borderColor: theme.palette.primary.contrastText,
         },
         [CAN_HOVER]: {
-          [`& .MuiOutlinedInput-root${HOVER}`]: { borderColor: theme.palette.common.white },
+          [`& .MuiOutlinedInput-root${HOVER}`]: { borderColor: theme.palette.primary.contrastText },
         },
       },
     },

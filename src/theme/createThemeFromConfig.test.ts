@@ -45,6 +45,21 @@ describe('createThemeFromConfig', () => {
     expect(createThemeFromConfig({ ...CFG, palette: own }).palette.action.active).toBe('#123456');
   });
 
+  it('keeps Linje header colours on navy, the bar text where they would fail', () => {
+    const bar = (main: string) => {
+      const root = createThemeFromConfig({ ...CFG, palette: { primary: { main } } }).components
+        ?.MuiAppBar?.styleOverrides?.root as Record<string, Record<string, string>>;
+      return {
+        ring: root['& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible']
+          .outlineColor,
+        label: root['& .MuiInputLabel-root'].color,
+      };
+    };
+    expect(bar('#181c56')).toEqual({ ring: '#aeb7e2', label: '#d9dae8' });
+    // the green header in theme-picker.spec.ts: Lavender 40 is 2.6:1 there
+    expect(bar('#008000')).toEqual({ ring: '#fff', label: '#fff' });
+  });
+
   it("keeps the scale's heading weight and line height under a theme's h1 size", () => {
     // the deployed themes still carry `h1: { fontSize: '3rem' }`
     const theme = createThemeFromConfig({
