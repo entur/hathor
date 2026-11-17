@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Theme } from '@mui/material/styles';
-import { createThemeFromConfig, mergeComponents } from './createThemeFromConfig';
+import { createThemeFromConfig } from './createThemeFromConfig';
 import type { ThemeConfig } from './theme-config';
 
 const CFG = {
@@ -36,24 +36,6 @@ describe('createThemeFromConfig', () => {
     const theme = createThemeFromConfig({ ...CFG, components: {} });
     expect(slot(theme, 'MuiButton', 'root')).toEqual({ borderRadius: 8, minHeight: 48 });
     expect(slot(theme, 'MuiChip', 'root')).toEqual({ fontSize: theme.typography.body2.fontSize });
-  });
-
-  it('merges function and object slots', () => {
-    const merged = mergeComponents(
-      { MuiChip: { styleOverrides: { root: () => ({ a: 1, b: 1 }) } } },
-      { MuiChip: { styleOverrides: { root: { b: 2 } } } }
-    );
-    const root = merged.MuiChip?.styleOverrides?.root as (p: object) => object;
-    expect(root({})).toEqual({ a: 1, b: 2 });
-  });
-
-  it('keeps an array-valued slot as an interpolation list, the theme file last', () => {
-    const merged = mergeComponents(
-      { MuiChip: { styleOverrides: { root: { a: 1 } } } },
-      { MuiChip: { styleOverrides: { root: [{ color: 'red' }] } } }
-    );
-    const root = merged.MuiChip?.styleOverrides?.root as (p: object) => unknown;
-    expect(root({})).toEqual([{ a: 1 }, [{ color: 'red' }]]);
   });
 
   it("keeps the scale's heading weight and line height under a theme's h1 size", () => {

@@ -5,6 +5,7 @@ import {
   type Theme,
   type TypographyVariantsOptions,
 } from '@mui/material/styles';
+import { deepmerge } from '@mui/utils';
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import type { ThemeConfig } from './theme-config';
 import { REDUCED_MOTION_MEDIA } from '../utils/motion';
@@ -106,7 +107,7 @@ const edge = (color: string) => ({ boxShadow: `inset 0 0 0 ${FIELD_BORDER_PX}px 
  * focus-visible. Items flush in a clipping box (menus, the nav rail, tabs, grid cells) draw
  * the ring inset.
  */
-const BASE_COMPONENTS: Components<Theme> = {
+const baseComponents = (theme: Theme): Components<Theme> => ({
   MuiCard: { styleOverrides: { root: { borderRadius: CARD_RADIUS_PX } } },
   MuiButton: {
     styleOverrides: {
@@ -128,8 +129,8 @@ const BASE_COMPONENTS: Components<Theme> = {
   },
   MuiChip: {
     styleOverrides: {
-      root: ({ theme }) => ({ fontSize: theme.typography.body2.fontSize }),
-      sizeSmall: ({ theme }) => ({ fontSize: theme.typography.caption.fontSize }),
+      root: { fontSize: theme.typography.body2.fontSize },
+      sizeSmall: { fontSize: theme.typography.caption.fontSize },
     },
   },
   MuiOutlinedInput: {
@@ -137,7 +138,7 @@ const BASE_COMPONENTS: Components<Theme> = {
       // Outlined fields are the small ones — toolbar, filters, the header picker — the label
       // in the outline's notch. Hover uses MUI's own selector to outrank it; focus and error
       // keep MUI's colours (focus is already a 2 px primary border), plus Linje's outline.
-      root: ({ theme }) => ({
+      root: {
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [`&${HOVER}`]: {
           borderColor: theme.palette.primary.main,
@@ -150,14 +151,14 @@ const BASE_COMPONENTS: Components<Theme> = {
         },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL },
         [`&.Mui-disabled ${NOTCH}`]: { borderColor: 'transparent' },
-      }),
+      },
     },
   },
   // Form fields (`FormFields.tsx`): MUI's small filled field, dressed as Linje's.
   MuiFilledInput: {
     defaultProps: { disableUnderline: true },
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: {
         backgroundColor: theme.palette.common.white,
         borderRadius: FIELD_RADIUS_PX,
         ...edge(FIELD_BORDER),
@@ -176,7 +177,7 @@ const BASE_COMPONENTS: Components<Theme> = {
         // Linje read-only (view mode, #267): no border, no hover — an error still shows.
         '&.MuiInputBase-readOnly:not(.Mui-error)': { boxShadow: 'none' },
         '&.Mui-disabled': { backgroundColor: DISABLED_FILL, boxShadow: 'none' },
-      }),
+      },
       // A Select's own `&&&` right padding still wins, keeping its text off the arrow.
       input: { paddingInline: FIELD_PAD_X_PX },
     },
@@ -207,15 +208,15 @@ const BASE_COMPONENTS: Components<Theme> = {
   MuiFormHelperText: { styleOverrides: { contained: { marginInline: 0 } } },
   MuiButtonBase: {
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: {
         '&.Mui-focusVisible': ring(theme.palette.primary.main),
         [INSET_RING]: { outlineOffset: -FOCUS_PX },
-      }),
+      },
     },
   },
   MuiLink: {
     styleOverrides: {
-      root: ({ theme }) => ({ '&:focus-visible': ring(theme.palette.primary.main) }),
+      root: { '&:focus-visible': ring(theme.palette.primary.main) },
     },
   },
   MuiAppBar: {
@@ -223,7 +224,7 @@ const BASE_COMPONENTS: Components<Theme> = {
     // sits on the navy itself (the org picker), enki-style: MUI's small field, its label in
     // the outline's notch; Blue 30 label, Lavender 40 outline, white text.
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: {
         '& .MuiButtonBase-root.Mui-focusVisible, & .MuiLink-root:focus-visible': {
           outlineColor: FOCUS_CONTRAST,
         },
@@ -238,17 +239,17 @@ const BASE_COMPONENTS: Components<Theme> = {
         [`& .MuiOutlinedInput-root${HOVER}, & .MuiOutlinedInput-root.Mui-focused ${NOTCH}`]: {
           borderColor: theme.palette.common.white,
         },
-      }),
+      },
     },
   },
   MuiDataGrid: {
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: {
         '& .MuiDataGrid-columnHeader:focus-visible, & .MuiDataGrid-cell:focus-visible': ring(
           theme.palette.primary.main,
           -FOCUS_PX
         ),
-      }),
+      },
     },
   },
   // A subtle primary tint for row hover: the opaque action.hover drowns out Chip/Button
@@ -256,7 +257,7 @@ const BASE_COMPONENTS: Components<Theme> = {
   // hover-while-selected nudges one stop further, never back to an unselected look.
   MuiTableRow: {
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: {
         '&.MuiTableRow-hover:hover': {
           backgroundColor: alpha(theme.palette.primary.main, ROW_HOVER_ALPHA),
         },
@@ -267,88 +268,27 @@ const BASE_COMPONENTS: Components<Theme> = {
         '&.Mui-selected.MuiTableRow-hover:hover': {
           backgroundColor: alpha(theme.palette.primary.main, ROW_SELECTED_HOVER_ALPHA),
         },
-      }),
+      },
     },
   },
-};
-
-type Style = Record<string, unknown>;
-type Slots = Record<string, unknown>;
-type Entry = { styleOverrides?: Slots } & Record<string, unknown>;
-
-const resolve = (style: unknown, props: object): Style =>
-  (typeof style === 'function' ? style(props) : style) as Style;
+});
 
 /**
- * A slot both sides style: each resolved, then shallow-merged, the theme file winning. An
- * array (an MUI interpolation list) can't be spread, so it stays a list, the theme file last.
- */
-const mergeSlot = (base: unknown, user: unknown) =>
-  base === undefined
-    ? user
-    : user === undefined
-      ? base
-      : (props: object) => {
-          const b = resolve(base, props),
-            u = resolve(user, props);
-          return Array.isArray(b) || Array.isArray(u) ? [b, u] : { ...b, ...u };
-        };
-
-/**
- * Lays a theme file's `components` over the base ones per style slot, so a theme's
- * `MuiButton.root` adds to the base corners rather than replacing them.
+ * The app theme for a theme file, in MUI's two steps: the palette and type scale first, then
+ * the base component styles resolved against it, the theme file's `components` laid over them.
+ * Both merges are deep, so a theme's `h1: { fontSize }` keeps the scale's weight and its
+ * `MuiButton.root` adds to the base corners.
  *
- * @param {Components<Theme>} base the app's component defaults
- * @param {Components<Theme>} [user] the theme file's entries; it wins on a shared property
- * @returns {Components<Theme>} both, merged
+ * @param {ThemeConfig} cfg the theme file
+ * @returns {Theme} the MUI theme
  */
-export function mergeComponents(
-  base: Components<Theme>,
-  user: Components<Theme> = {}
-): Components<Theme> {
-  const b = base as Record<string, Entry>,
-    u = user as Record<string, Entry>;
-  return Object.fromEntries(
-    [...new Set([...Object.keys(b), ...Object.keys(u)])].map(name => {
-      const slots = { ...b[name]?.styleOverrides, ...u[name]?.styleOverrides };
-      const styleOverrides = Object.fromEntries(
-        Object.keys(slots).map(slot => [
-          slot,
-          mergeSlot(b[name]?.styleOverrides?.[slot], u[name]?.styleOverrides?.[slot]),
-        ])
-      );
-      return [name, { ...b[name], ...u[name], styleOverrides }];
-    })
-  );
-}
-
-const isStyle = (v: unknown): v is Style => typeof v === 'object' && v !== null;
-
-/**
- * Lays a theme file's `typography` over the type scale per variant, so a theme's
- * `h1: { fontSize }` keeps the scale's heading weight and line height.
- *
- * @param {TypographyVariantsOptions} [user] the theme file's typography
- * @returns {TypographyVariantsOptions} the type scale with the theme's values on top
- */
-export function mergeTypography(user: TypographyVariantsOptions = {}): TypographyVariantsOptions {
-  const b = TYPE_SCALE as Style,
-    u = user as Style;
-  return Object.fromEntries(
-    [...new Set([...Object.keys(b), ...Object.keys(u)])].map(key => [
-      key,
-      isStyle(b[key]) && isStyle(u[key]) ? { ...b[key], ...u[key] } : (u[key] ?? b[key]),
-    ])
-  );
-}
-
 export function createThemeFromConfig(cfg: ThemeConfig): Theme {
-  const { logoUrl, ...themeOptions } = cfg;
-
-  return createTheme({
-    ...themeOptions,
-    logoUrl,
-    typography: mergeTypography(themeOptions.typography as TypographyVariantsOptions),
-    components: mergeComponents(BASE_COMPONENTS, themeOptions.components as Components<Theme>),
+  const { components, typography, ...options } = cfg;
+  const theme = createTheme({
+    ...options,
+    typography: deepmerge(TYPE_SCALE, (typography ?? {}) as TypographyVariantsOptions),
+  });
+  return createTheme(theme, {
+    components: deepmerge(baseComponents(theme), (components ?? {}) as Components<Theme>),
   });
 }
