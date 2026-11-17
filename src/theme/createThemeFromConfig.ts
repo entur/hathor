@@ -164,6 +164,13 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
     styleOverrides: {
       root: { fontSize: theme.typography.body2.fontSize },
       sizeSmall: { fontSize: theme.typography.caption.fontSize },
+      // Linje TagChip's close button (`chip/TagChip.scss`): the chip's own text colour (MUI's
+      // 26 % black is 1.9:1, WCAG 1.4.11), a round hover fill.
+      deleteIcon: {
+        color: 'inherit',
+        borderRadius: '50%',
+        '&:hover': { color: 'inherit', backgroundColor: theme.palette.action.hover },
+      },
     },
   },
   MuiOutlinedInput: {
