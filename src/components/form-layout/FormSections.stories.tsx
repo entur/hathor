@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
-import { Box, FormControlLabel, Paper, Switch, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, Paper, Typography } from '@mui/material';
+import { FormNumberField, FormSwitchField, FormTextField } from '../FormFields.tsx';
 import { CARD_MEDIA_ASPECT, type FieldSpec } from '../collection/index.ts';
 import en from '../../locales/en/translation.json';
 import {
@@ -32,7 +34,20 @@ const vehicleTypeLayout: Layout<VehicleTypeField> = Object.fromEntries(
     vehicleTypeSections[s],
   ])
 );
-/** Story stand-in for the host's controls; real forms draw their own `FormFields`. */
+/** The forms' own controls (`FormFields`), each holding its story value. */
+function StoryField({ kind, id, label }: { kind: FieldSpec['kind']; id: string; label: string }) {
+  const [text, setText] = useState('');
+  const [num, setNum] = useState<number>();
+  const [on, setOn] = useState(false);
+  if (kind === 'switch')
+    return <FormSwitchField id={id} label={label} checked={on} onChange={setOn} />;
+  if (kind === 'number')
+    return <FormNumberField id={id} label={label} value={num} onChange={setNum} />;
+  const type = kind === 'date' ? 'date' : 'text';
+  return <FormTextField id={id} label={label} type={type} value={text} onChange={setText} />;
+}
+
+/** Draws each field as the form pages do: `FormFields`, or a note where the host draws records. */
 const control =
   (fields: Record<string, FieldSpec>) =>
   ({ key, label }: ResolvedField) => {
@@ -43,18 +58,7 @@ const control =
           {label}: the host draws the related records here (chips today)
         </Typography>
       );
-    if (kind === 'switch') return <FormControlLabel control={<Switch />} label={label} />;
-    return (
-      <TextField
-        size="small"
-        fullWidth
-        label={label}
-        type={kind === 'number' ? 'number' : kind === 'date' ? 'date' : 'text'}
-        multiline={key === 'xml' || key === 'description'}
-        minRows={key === 'xml' ? 12 : undefined}
-        slotProps={{ inputLabel: { shrink: true } }}
-      />
-    );
+    return <StoryField kind={kind} id={`story-${key}`} label={label} />;
   };
 
 /** Stand-in for the iteru-3dbus picture the form pages will put in column 3. */
