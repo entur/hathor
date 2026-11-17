@@ -45,9 +45,9 @@ function AppShell({ children }: { children: ReactNode }) {
 
 export default function App() {
   const { t } = useTranslation();
-  const { themePath } = useCustomization();
+  const { themePath, setThemePath } = useCustomization();
 
-  const theme = useAppTheme(themePath);
+  const theme = useAppTheme(themePath, setThemePath);
   const isFeatureOn = useIsFeatureOn();
   const deckPlans = (page: ReactNode) =>
     isFeatureOn('DeckPlans') ? page : <Navigate to="/" replace />;

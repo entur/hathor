@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, type ReactNode } from 'react';
+import { createContext, useCallback, useState, useContext, type ReactNode } from 'react';
 import { useConfig } from './configContext.ts';
 
 const LOCAL_STORAGE_KEY = 'themeConfig';
@@ -18,10 +18,11 @@ export const CustomizationProvider = ({ children }: { children: ReactNode }) => 
   const themes = useConfig().themeConfigs ?? [];
   const [stored, setStored] = useState(() => localStorage.getItem(LOCAL_STORAGE_KEY));
 
-  const setThemePath = (path: string) => {
+  // Stable: `useAppTheme` calls it back when a switch fails.
+  const setThemePath = useCallback((path: string) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, path);
     setStored(path);
-  };
+  }, []);
 
   const themePath = stored && themes.includes(stored) ? stored : themes[0];
 
