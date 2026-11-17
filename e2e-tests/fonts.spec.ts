@@ -14,12 +14,12 @@ import { setConfig } from './live-auth-helpers';
  *   - mock and live alike: no backend involved
  */
 
-const GOOGLE_FONTS = /fonts\.(googleapis|gstatic)\.com/;
+const GOOGLE_FONTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com']);
 
 test.describe('Fonts', () => {
   test('loads no web font from Google', async ({ page }) => {
     const google: string[] = [];
-    page.on('request', r => GOOGLE_FONTS.test(r.url()) && google.push(r.url()));
+    page.on('request', r => GOOGLE_FONTS.has(new URL(r.url()).hostname) && google.push(r.url()));
     await setConfig(page, 'auth-off');
     await page.goto('/');
     await expect(page.locator('.app-content')).toBeVisible();
