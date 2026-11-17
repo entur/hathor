@@ -115,8 +115,11 @@ export default function MultiImportReviewInput({
         ))}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+        {/* Linje's 48 px field, level with the 48 px Add button beside it. */}
         <TextField
+          variant="filled"
           size="small"
+          label={t('import.multi.regNumberColumn')}
           value={newEntry}
           onChange={e => setNewEntry(e.target.value)}
           onKeyDown={handleEntryKeyDown}

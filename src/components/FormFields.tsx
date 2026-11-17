@@ -157,8 +157,8 @@ export function FormNumberField({
 interface FormSelectFieldProps<T extends string> extends FieldProps {
   value?: T;
   options: readonly { value: T; label: string }[];
-  /** Label of the leading blank option that clears the field. */
-  noneLabel: string;
+  /** Label of a leading blank option that clears the field; none without it (a required pick). */
+  noneLabel?: string;
   onChange: (value: T | undefined) => void;
 }
 
@@ -170,7 +170,7 @@ interface FormSelectFieldProps<T extends string> extends FieldProps {
  * @param label     Field label.
  * @param value     Selected option value; `undefined` selects the blank option.
  * @param options   Choices, in display order.
- * @param noneLabel Label of the blank option.
+ * @param noneLabel Label of the blank option; omit it for a required pick.
  * @param onChange  Fired with the chosen value, or `undefined` for the blank option.
  * @param disabled  Render the field greyed out.
  * @param readOnly  Render the field read-only (the menu doesn't open), not greyed out.
@@ -196,9 +196,11 @@ export function FormSelectField<T extends string>({
       disabled={disabled}
       {...fieldBase(readOnly)}
     >
-      <MenuItem value="">
-        <em>{noneLabel}</em>
-      </MenuItem>
+      {noneLabel !== undefined && (
+        <MenuItem value="">
+          <em>{noneLabel}</em>
+        </MenuItem>
+      )}
       {options.map(o => (
         <MenuItem key={o.value} value={o.value}>
           {o.label}

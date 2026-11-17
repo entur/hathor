@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -13,6 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import type { TableMeta } from '../utils/inputTextAnalyzer';
+import { FormSelectField } from '../../../components/FormFields.tsx';
 
 const NONE = '__none__';
 const PREVIEW_ROWS = 5;
@@ -60,6 +57,7 @@ export default function MultiImportColumnMapper({
     onConfirm({ regNumberCol, operationalRefCol: value === NONE ? null : value });
   };
 
+  const columns = headers.map(h => ({ value: h, label: h }));
   const previewRows = rows.slice(0, PREVIEW_ROWS);
   const highlightCols = new Set([
     regNumberCol,
@@ -72,41 +70,31 @@ export default function MultiImportColumnMapper({
         {t('import.multi.columnMapperDescription', { count: headers.length })}
       </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>{t('import.multi.regNumberColumn')}</InputLabel>
-          <Select
-            value={regNumberCol}
-            label={t('import.multi.regNumberColumn')}
-            onChange={e => handleRegNumberColChange(e.target.value)}
-            data-testid="column-mapper-reg-number"
-          >
-            {headers.map(h => (
-              <MenuItem key={h} value={h}>
-                {h}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>{t('import.multi.operationalRefColumn')}</InputLabel>
-          <Select
-            value={operationalRefCol}
-            label={t('import.multi.operationalRefColumn')}
-            onChange={e => handleOperationalRefColChange(e.target.value)}
-            data-testid="column-mapper-operational-ref"
-          >
-            <MenuItem value={NONE}>
-              <em>{t('import.multi.none')}</em>
-            </MenuItem>
-            {headers.map(h => (
-              <MenuItem key={h} value={h}>
-                {h}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      {/* The form's Linje fields, at most two per row (FormSections, #283). */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { sm: '1fr 1fr' },
+          columnGap: 2,
+          rowGap: 3,
+          mb: 3,
+        }}
+      >
+        <FormSelectField
+          id="column-mapper-reg-number"
+          label={t('import.multi.regNumberColumn')}
+          value={regNumberCol}
+          options={columns}
+          onChange={v => v && handleRegNumberColChange(v)}
+        />
+        <FormSelectField
+          id="column-mapper-operational-ref"
+          label={t('import.multi.operationalRefColumn')}
+          value={operationalRefCol === NONE ? undefined : operationalRefCol}
+          options={columns}
+          noneLabel={t('import.multi.none')}
+          onChange={v => handleOperationalRefColChange(v ?? NONE)}
+        />
       </Box>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
