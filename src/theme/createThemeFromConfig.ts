@@ -52,6 +52,10 @@ const HEADER_LABEL = '#d9dae8';
 const AC_INPUT_PAD_LEFT_PX = 4,
   CHIP_GAP_PX = 4, // + 2 × 2 px chip margin = 8
   AC_PAD_BOTTOM_PX = 4; // + 2 px chip margin − 2 px inset border = 4 clear
+// Linje opens every dropdown below its field, `offset(space.extraSmall2)` (`Dropdown.tsx`,
+// `MultiSelect.tsx`): clear of the 2 px focus ring, which a flush popup cuts off.
+const POPUP_OFFSET_PX = 4,
+  LIST_MAX_HEIGHT = '15rem'; // Linje `DropdownList.scss` `--list-max-height`; fits below the field
 // Linje buttons, `button/height/horizontal content` Small / Medium / Large.
 export const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48;
@@ -362,6 +366,22 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         },
         // Same selector weight as MUI's own small `paddingBottom: 1`, so this one wins.
         '& .MuiFilledInput-root.MuiInputBase-sizeSmall': { paddingBottom: AC_PAD_BOTTOM_PX },
+      },
+      popper: {
+        '&[data-popper-placement^="bottom"] .MuiAutocomplete-paper': { marginTop: POPUP_OFFSET_PX },
+        '&[data-popper-placement^="top"] .MuiAutocomplete-paper': {
+          marginBottom: POPUP_OFFSET_PX,
+        },
+      },
+    },
+  },
+  // A Select's menu: below the field like Linje's Dropdown, not MUI's overlay on top of it.
+  MuiSelect: {
+    defaultProps: {
+      MenuProps: {
+        anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+        transformOrigin: { vertical: 'top', horizontal: 'left' },
+        slotProps: { paper: { sx: { mt: `${POPUP_OFFSET_PX}px`, maxHeight: LIST_MAX_HEIGHT } } },
       },
     },
   },

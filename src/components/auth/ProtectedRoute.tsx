@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
 import LoginRedirect from '../../auth/LoginRedirect';
+import LoadingPage from '../common/LoadingPage.tsx';
 import { useOrganisationsContext } from '../../contexts/useOrganisationsContext.ts';
 import { Navigate } from 'react-router-dom';
 
@@ -27,7 +28,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (isLoading) {
-    return <div>{t('protectedRoute.loadingAuthStatus')}</div>;
+    return <LoadingPage text={t('protectedRoute.loadingAuthStatus')} />;
   }
 
   if (!isAuthenticated) {
@@ -35,7 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (organisationsLoading) {
-    return <div>{t('protectedRoute.loadingOrganisations')}</div>;
+    return <LoadingPage text={t('protectedRoute.loadingOrganisations')} />;
   }
 
   if (organisationsError) {

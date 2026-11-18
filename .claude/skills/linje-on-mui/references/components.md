@@ -148,6 +148,11 @@ Cross-cutting traps:
 - **MUI**: `FormSelectField` = `TextField select` with `FIELD_BASE` (filled, small). It
   inherits every TextField rule.
 - **Status: done.** Measured: text stops 1 px before the arrow (`selectOverlapPx -1`).
+  - Menu: Linje opens it below the field, `offset(space.extraSmall2)` (`Dropdown.tsx:200`),
+    list at most `--list-max-height` 15 rem (`DropdownList.scss:18`). Theme `MuiSelect`
+    `defaultProps.MenuProps`: anchored bottom-left, `mt` `POPUP_OFFSET_PX` 4,
+    `maxHeight` `LIST_MAX_HEIGHT`. Without the cap a long menu doesn't fit below and MUI
+    shifts it up over the field and its focus ring. Measured: 4 px below the field.
 - **Traps**:
   - MUI's Select sets `'&&&': { paddingRight: 32 }` (specificity 0,3,0). The theme's
     `MuiFilledInput.input` sets `paddingInline` at 0,1,0, so the Select's right padding still
@@ -229,8 +234,11 @@ Cross-cutting traps:
 - **MUI**: enki's ring loader (`src/components/icons/LoadingIcon.tsx`) and
   `src/components/common/LoadingPage.tsx` (`text` prop, defaults to `data.loading`). They
   follow enki, by decision; see the `enki` skill. `CircularProgress` appears elsewhere.
-- **Status: partial; E7 open (#135).** `ProtectedRoute.tsx:30,38` still renders bare `<div>`
-  text. Use `<LoadingPage text={…} />`.
+  - Label (`Loader.tsx`, `Loader.scss`): `Heading5` at heading weight, 8 px
+    (`$space-extra-small`) from the bar; the loader is centred, at most 20 rem wide.
+- **Status: done.** `LoadingPage`: `subtitle1` (16 px, our scale has no 18) at `fontWeightBold`,
+  as a `<p>` (`subtitle1` maps to `<h6>`), 8 px under the rings, centred, `maxWidth` 20 rem.
+  Every loader uses it, the auth gates (`ProtectedRoute`, `LoginRedirect`) too.
 
 ## MultiSelect / SearchableDropdown (Autocomplete)
 
@@ -243,6 +251,9 @@ Cross-cutting traps:
     `paddingBottom AC_PAD_BOTTOM_PX` 4 (MUI's is 1, which left the chips on the inset border).
   - Measured: 51 px with one chip row; chips 21 px from the top, 6 px from the bottom
     (4 clear of the 2 px border, as Linje); 8 px between chips, across and between rows.
+- Popup: theme `MuiAutocomplete.popper` puts `POPUP_OFFSET_PX` 4 between the field and the
+  paper (`data-popper-placement` bottom / top), as Linje's `offset(space.extraSmall2)`. Flush,
+  it covered the bottom of the 2 px focus ring.
 - **Status: done, with one nit.** The first chip starts at x14 while the label starts at x16
   (root 12 + chip margin 2). Not covered yet: collapsing to "+N" like Linje's MultiSelect.
 - **Traps**:
