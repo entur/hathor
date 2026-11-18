@@ -23,7 +23,16 @@ import {
   type ResolvedCard,
   type RowEdit,
 } from '../types.ts';
-import { displayValue, EMPTY_TEXT, fullTitle, valueList } from '../utils/values.ts';
+import {
+  displayValue,
+  EMPTY_TEXT,
+  formatValue,
+  fullTitle,
+  isIdSpec,
+  rowVersion,
+  valueList,
+} from '../utils/values.ts';
+import NetexId from '../../NetexId.tsx';
 import { EditLink } from './EditLink.tsx';
 
 // A card never gets narrower than this (or the whole row, on a screen narrower
@@ -37,23 +46,28 @@ const SCRIM_ALPHA = 0.85;
 const COMPACT = '[data-card-media-compact]';
 const CHIP_KINDS: readonly Column['spec']['kind'][] = ['enum', 'enumMulti'];
 
-/** One value as text: the shown form as a card reads it, the full one on hover, a dash when
- *  empty — or the column's `render`. The identity is muted. */
+/** One value as text: the shown form, the full one on hover, a dash when empty — or the
+ *  column's `render`. The identity is the {@link NetexId} chip with the row's version. */
 const ValueText = ({
   row,
   col,
   labels,
   ...typography
-}: { row: unknown; col: Column; labels: CollectionLabels } & TypographyProps) => (
-  <Typography
-    noWrap
-    title={fullTitle(row, col)}
-    sx={col.muted ? { color: 'text.secondary' } : undefined}
-    {...typography}
-  >
-    {col.render ? col.render(row) : col.cardText(displayValue(row, col, labels), row) || EMPTY_TEXT}
-  </Typography>
-);
+}: { row: unknown; col: Column; labels: CollectionLabels } & TypographyProps) => {
+  const id = !col.render && isIdSpec(col.spec) ? formatValue(row, col.spec) : '';
+  return id ? (
+    <NetexId id={id} version={rowVersion(row)} size="small" />
+  ) : (
+    <Typography
+      noWrap
+      title={fullTitle(row, col)}
+      sx={col.muted ? { color: 'text.secondary' } : undefined}
+      {...typography}
+    >
+      {col.render ? col.render(row) : displayValue(row, col, labels) || EMPTY_TEXT}
+    </Typography>
+  );
+};
 
 const CardValue = ({
   row,
