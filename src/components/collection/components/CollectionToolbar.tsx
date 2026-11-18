@@ -159,8 +159,18 @@ export function CollectionToolbar({
           <TextField
             select
             size="small"
-            label={labels.sortBy}
+            // No notch label: it would cross Linje's focus ring (#392). The caption sits in the box.
             value={sorted?.field ?? NO_SORT}
+            slotProps={{
+              htmlInput: { 'aria-label': labels.sortBy },
+              select: {
+                displayEmpty: true,
+                renderValue: v => {
+                  const col = columns.find(c => c.key === v);
+                  return col ? `${labels.sortBy}: ${col.label}` : labels.sortBy;
+                },
+              },
+            }}
             onChange={e =>
               onQuery({
                 sort: e.target.value ? { field: e.target.value, dir: sorted?.dir ?? 'asc' } : null,

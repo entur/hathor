@@ -60,6 +60,11 @@ const POPUP_OFFSET_PX = 4,
 export const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48;
 const BUTTON_HEIGHT_LARGE_PX = 64;
+// Linje button inline padding (`button/inlinepadding/{small,large}`); medium is MUI's 16 already.
+const BUTTON_PAD_X_SMALL_PX = 12,
+  BUTTON_PAD_X_LARGE_PX = 24;
+// Linje PrimaryButton hover (`Button.scss`); MUI's `primary.dark` is darker.
+const PRIMARY_HOVER = '#393d79';
 // Heading sizes (rem) on Linje's 32 / 24 / 20 px steps, one line height for all.
 const HEADING_LINE_HEIGHT = 1.25,
   H1_REM = 2,
@@ -213,6 +218,18 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
           '&.Mui-disabled': { borderWidth: FIELD_BORDER_PX },
         },
       },
+      {
+        props: { variant: 'contained', color: 'primary' },
+        style: { [CAN_HOVER]: { '&:hover': { '--variant-containedBg': PRIMARY_HOVER } } },
+      },
+      {
+        props: { variant: 'contained', size: 'small' },
+        style: { paddingInline: BUTTON_PAD_X_SMALL_PX },
+      },
+      {
+        props: { variant: 'contained', size: 'large' },
+        style: { paddingInline: BUTTON_PAD_X_LARGE_PX },
+      },
       // MUI's 3 px padding plus the 2 px border makes 32.75; Linje small is 32.
       { props: { variant: 'outlined', size: 'small' }, style: { padding: '2px 8px' } },
       {
@@ -318,8 +335,11 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
     styleOverrides: {
       // Outlined fields are the small ones — toolbar, filters, the header picker — the label
       // in the outline's notch. Focus and error keep MUI's colours: focus is the 2 px border
-      // turning primary. No ring: an outline is a plain box and would strike the label.
+      // turning primary. A labelled one gets no ring: an outline is a plain box and would
+      // strike the label; a label-less one (search, sort) gets Linje's (`notranslate` marks
+      // MUI's empty legend).
       root: {
+        [`&.Mui-focused:has(> ${NOTCH} .notranslate)`]: ring(theme.palette.primary.main),
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [CAN_HOVER]: { [`&${HOVER}`]: { borderColor: theme.palette.primary.main } },
         // Touch: MUI's own reset paints a stuck `:hover` 0.23 black (1.7:1, WCAG 1.4.11); keep ours.

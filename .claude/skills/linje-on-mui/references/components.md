@@ -89,12 +89,12 @@ Cross-cutting traps:
 - **Status: partial.** Sizes and radius are done. Outlined is Secondary, and outlined
   `color="error"` is Negative: `MuiButton.variants` sets MUI's `--variant-outlined*` vars
   (`:active` after hover). Small outlined pads 2 / 8 so the 2 px border keeps 32 px. In use:
-  Deactivate (`EditorFrame`), `DeactivateDialog`, `DiscardDialog`. Still open (#392):
-  - The contained hover uses MUI's `primary.dark`, which is darker; Linje's hover #393d79 is
-    lighter. Set `palette.primary.dark`, or use `&:hover` in `MuiButton.contained`.
-  - Inline padding is MUI's 10 / 16 / 22.
+  Deactivate (`EditorFrame`), `DeactivateDialog`, `DiscardDialog`. Contained (#392):
+  primary hover `PRIMARY_HOVER` #393d79 via `--variant-containedBg` (MUI's `primary.dark` is
+  darker); inline padding `BUTTON_PAD_X_*` 12 / 16 / 24. Measured: small Save pad 12, hover
+  #393d79. Deactivate, disabled while dirty, says why in a tooltip ("Save or cancel first").
 - **Traps:** red text on the #ffcece hover is about 3.8:1 (Linje's own spec, under WCAG 1.4.3's
-  4.5:1). A Negative button disabled while the form is dirty gives no reason (#392).
+  4.5:1). Open (#392): accept or darken.
 
 ## Checkbox
 
@@ -205,6 +205,11 @@ Cross-cutting traps:
   - `INSET_RING` (menu items, list buttons, tabs, grid cells) and `MuiDataGrid` cells and
     headers use offset −2.
   - Fields: the ring at offset 0 plus the navy border (`edge`).
+  - Small outlined fields without a notch label (toolbar search, Sort by): offset 2, via
+    `:has(> NOTCH .notranslate)` (MUI's empty legend). Labelled ones (filter panel, header,
+    TOC dropdown) keep only the navy border: a box ring would strike the notched label.
+  - A clipping box keeps `RING_GUTTER` (4 px) inside, pulled back out: `FormSections`,
+    `EditorFrame`, the collection scroller (`CollectionShell`).
   - Header: `FOCUS_CONTRAST`.
 - **Status: done (#256).** Read-only fields keep the ring (WCAG 2.4.7, deviates from Linje).
 
@@ -368,7 +373,8 @@ Cross-cutting traps:
   - A real `border` would grow the 48 px box; use `edge()`.
   - Small fields stay outlined (`MuiOutlinedInput`: 2 px #8284ab notch, hover via the exact
     `HOVER` selector, focus ring, read-only and disabled). They are the toolbar, filter
-    panel and header picker.
+    panel and header picker. Sort by has no notch label (#392): `displayEmpty` +
+    `renderValue` shows "Sort by" / "Sort by: <column>", `aria-label` keeps its name.
   - MUI 9's own outlined hover is `&:hover .MuiOutlinedInput-notchedOutline`
     (`node_modules/@mui/material/OutlinedInput/OutlinedInput.js:54`), reset under
     `@media (hover: none)`. Hathor's `HOVER` (`:hover:not(.Mui-disabled):not(.Mui-error) …`) is
