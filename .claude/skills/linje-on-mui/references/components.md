@@ -35,7 +35,7 @@ checked this one).
 - **Constants block** at the top of the theme. Each constant quotes its Linje source:
   `FOCUS_*`, `CARD/BUTTON_RADIUS_*`, `FIELD_BORDER*`, `FIELD_PAD_X_PX`, `FIELD_INDENT_SHIFT_PX`,
   `FIELD_RADIUS_PX`, `LABEL_COLOR`, `DISABLED_*`, `HEADER_LABEL`, `AC_INPUT_PAD_LEFT_PX`,
-  `CHIP_ROW_GAP_PX`, `BUTTON_HEIGHT_*`, the heading sizes.
+  `CHIP_GAP_PX`, `AC_PAD_BOTTOM_PX`, `BUTTON_HEIGHT_*`, the heading sizes.
 - **Helpers**: `ring(color, offset)`, `edge(color)` (inset-shadow border), `NOTCH`, `HOVER`,
   `INSET_RING`.
 - `baseComponents(theme)` returns the per-component overrides as plain style objects,
@@ -235,12 +235,14 @@ Cross-cutting traps:
 ## MultiSelect / SearchableDropdown (Autocomplete)
 
 - **Linje**: `packages/dropdown/src/` (MultiSelect, SearchableDropdown). Selected items show as
-  tags inside the 48 px box.
+  tags inside the box; `Dropdown.scss` `--multiselect … --filled`: padding 20 / 4, gap 8.
 - **MUI**: `FormAutocompleteField` (`FormFields.tsx`), e.g. the vehicle-type propulsion and
   fuel types.
   - Theme `MuiAutocomplete.root`, `& .MuiFilledInput-root`: `paddingLeft` 16−4 = 12,
-    `rowGap CHIP_ROW_GAP_PX` 4. MUI pads the filled Autocomplete itself.
-  - Measured: 48 px with one chip row; chips at y21–45.
+    `gap CHIP_GAP_PX` 4 (+ the chips' 2 px margins = 8). `& .MuiFilledInput-root.MuiInputBase-sizeSmall`
+    `paddingBottom AC_PAD_BOTTOM_PX` 4 (MUI's is 1, which left the chips on the inset border).
+  - Measured: 51 px with one chip row; chips 21 px from the top, 6 px from the bottom
+    (4 clear of the 2 px border, as Linje); 8 px between chips, across and between rows.
 - **Status: done, with one nit.** The first chip starts at x14 while the label starts at x16
   (root 12 + chip margin 2). Not covered yet: collapsing to "+N" like Linje's MultiSelect.
 - **Traps**:
@@ -331,6 +333,10 @@ Cross-cutting traps:
     - no transition under reduced motion
   - **`MuiInputBase`**: disabled text `DISABLED_TEXT`, plus `WebkitTextFillColor`, or Chrome
     keeps MUI's grey.
+  - **Numbers**: Linje has no stepper (a number is a plain TextField), so `MuiInputBase.input`
+    hides the browser spin buttons (squashed to ~23 px by the label-inside padding);
+    `FormNumberField` keeps `type="number"` (arrow keys still step) and adds
+    `inputMode="decimal"`.
 - **Measured** (vehicle-types edit):
   - root 48, radius 8
   - label x16, resting y13 (16 px), raised y4 (12 px)

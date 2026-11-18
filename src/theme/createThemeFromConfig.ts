@@ -47,8 +47,11 @@ const DISABLED_FILL = '#cfd2d4',
 // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy: the header picker's label.
 const HEADER_LABEL = '#d9dae8';
 // MUI's filled Autocomplete input keeps 4 px of its own left padding; the root adds the rest.
+// Linje MultiSelect (`dropdown/src/Dropdown.scss`, `--filled`): 8 px between chips, 4 px clear
+// below them. MUI's chips carry a 2 px margin each side, and the 2 px border is inset.
 const AC_INPUT_PAD_LEFT_PX = 4,
-  CHIP_ROW_GAP_PX = 4; // between wrapped chip rows
+  CHIP_GAP_PX = 4, // + 2 × 2 px chip margin = 8
+  AC_PAD_BOTTOM_PX = 4; // + 2 px chip margin − 2 px inset border = 4 clear
 // Linje buttons, `button/height/horizontal content` Small / Medium / Large.
 export const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48;
@@ -331,7 +334,16 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       // Linje placeholder, `Base form/Standard/Text-Label` (BaseFormControl.scss:51-53): MUI's
       // 0.42 opacity is 2.6:1, and a placeholder may carry the format (the import's add
       // field). MUI's own `!important` still hides it under a resting label.
-      input: { '&::placeholder': { color: LABEL_COLOR, opacity: 1 } },
+      // Linje has no stepper: a number is a plain text field, so drop the browser's spin
+      // buttons (squashed by the label-inside padding). Arrow keys still step.
+      input: {
+        '&::placeholder': { color: LABEL_COLOR, opacity: 1 },
+        '&[type=number]': { MozAppearance: 'textfield' },
+        '&::-webkit-inner-spin-button, &::-webkit-outer-spin-button': {
+          WebkitAppearance: 'none',
+          margin: 0,
+        },
+      },
       root: {
         '& .MuiInputBase-input.Mui-disabled': {
           color: DISABLED_TEXT,
@@ -346,8 +358,10 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       root: {
         '& .MuiFilledInput-root': {
           paddingLeft: FIELD_PAD_X_PX - AC_INPUT_PAD_LEFT_PX,
-          rowGap: CHIP_ROW_GAP_PX,
+          gap: CHIP_GAP_PX,
         },
+        // Same selector weight as MUI's own small `paddingBottom: 1`, so this one wins.
+        '& .MuiFilledInput-root.MuiInputBase-sizeSmall': { paddingBottom: AC_PAD_BOTTOM_PX },
       },
     },
   },

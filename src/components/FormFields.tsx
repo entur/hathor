@@ -140,6 +140,7 @@ export function FormNumberField({
   disabled,
   readOnly,
 }: FormNumberFieldProps) {
+  const { slotProps, ...base } = fieldBase(readOnly);
   return (
     <TextField
       id={id}
@@ -148,7 +149,9 @@ export function FormNumberField({
       value={value ?? ''}
       onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
       disabled={disabled}
-      {...fieldBase(readOnly)}
+      {...base}
+      // Phones show a number keypad; the theme hides the spin buttons (Linje has none).
+      slotProps={{ ...slotProps, htmlInput: { inputMode: 'decimal' } }}
     />
   );
 }
