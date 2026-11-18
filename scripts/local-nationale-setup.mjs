@@ -27,8 +27,15 @@ const gh = (path, raw) =>
 
 /** Lists the Nationale theme first in public/config.json, once. */
 const link = () => {
-  if (!existsSync(THEME_FILE) || !existsSync(CONFIG_FILE)) return;
-  const config = readJson(CONFIG_FILE);
+  if (!existsSync(THEME_FILE)) return;
+  // Read, not existsSync-then-write: a check before the write is a race (CodeQL js/file-system-race).
+  let config;
+  try {
+    config = readJson(CONFIG_FILE);
+  } catch (e) {
+    if (e.code === 'ENOENT') return;
+    throw e;
+  }
   const themes = config.themeConfigs ?? [];
   if (themes.includes(THEME_PATH)) return;
   writeFileSync(
