@@ -5,13 +5,14 @@ import { FormPage, STORY_SAVE_MS } from './formPageStory.tsx';
 import { withOrganisations } from '../../contexts/mockOrganisations.tsx';
 import { withSobekUrl } from '../../contexts/mockSobek.tsx';
 import { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';
-import DeckPlanSections from '../../data/deck-plans/components/DeckPlanSections.tsx';
+import DeckPlanSections, {
+  DeckPlanSectionsSkeleton,
+} from '../../data/deck-plans/components/DeckPlanSections.tsx';
 import { deckPlanForm } from '../../data/deck-plans/stores/deckPlanFormState.ts';
 import type { DeckPlan } from '../../data/deck-plans/types/deckPlanTypes.ts';
 import wagon1Raw from '../../../story-fixtures/deck-plans/Wagon_1.xml?raw';
 
 const CREATED_ID = 'NMR:DeckPlan:2';
-const SKELETON_ROWS = 2;
 
 const COPY: EditorCopy = {
   title: 'deckPlans.detailsTitle',
@@ -25,7 +26,7 @@ const COPY: EditorCopy = {
 const DECK_PLAN: DeckPlan = {
   id: 'NMR:DeckPlan:1',
   version: 1,
-  name: { value: 'Wagon 1' },
+  name: { value: 'Type 75 middle car, lower deck with bicycle area' },
   description: { value: 'Regional wagon, one deck' },
 };
 const wagon1 = wagon1Raw.replace(/"DeckPlan\/id\/1"/g, `"${DECK_PLAN.id}"`);
@@ -56,7 +57,7 @@ function StoryDeckPlanDetails(host: EntityEditorHostProps) {
       entity={form}
       testId="deck-plan"
       copy={COPY}
-      skeleton={SKELETON_ROWS}
+      skeleton={<DeckPlanSectionsSkeleton />}
     >
       <DeckPlanSections
         value={form}

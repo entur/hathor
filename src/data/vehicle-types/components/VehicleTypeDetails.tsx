@@ -4,7 +4,7 @@ import { createFormState } from '../../../hooks/useFormState.ts';
 import { deactivateVehicleTypeRequest } from '../../../graphql/vehicles/mutations/deactivateVehicleType.ts';
 import { fetchVehicleType } from '../api/fetchVehicleTypes.ts';
 import { useVehicleTypeSave } from '../hooks/useVehicleTypeSave.ts';
-import VehicleTypeSections from './VehicleTypeSections.tsx';
+import VehicleTypeSections, { VehicleTypeSectionsSkeleton } from './VehicleTypeSections.tsx';
 import type { VehicleType, VehicleTypeKind } from '../types/vehicleTypeTypes.ts';
 import { VEHICLE_TYPE_KIND_CONFIG } from '../utils/vehicleTypeKindConfig.ts';
 import { useCodeValues } from '../../code-values/hooks/useCodeValues.ts';
@@ -12,7 +12,6 @@ import { EMISSION_STANDARD } from '../../code-values/types/codeValueTypes.ts';
 import { vehicleTypeTitle } from '../utils/vehicleTypeTitle.ts';
 
 const EMPTY_VTYPE: VehicleType = { id: '', version: 0 };
-const SKELETON_ROWS = 8;
 
 /**
  * Coerce flag booleans so a Switch's `false` (off) compares equal to an absent
@@ -70,7 +69,7 @@ export default function VehicleTypeDetails({
       title={vehicleTypeTitle(form)}
       testId={editorTestId}
       copy={copy satisfies EditorCopy}
-      skeleton={SKELETON_ROWS}
+      skeleton={<VehicleTypeSectionsSkeleton />}
     >
       {/* Bare: from `lg` its columns fill the page's height (#293). */}
       <VehicleTypeSections {...body} isCreate={editor.isCreate} showVehicles={showVehicles} />

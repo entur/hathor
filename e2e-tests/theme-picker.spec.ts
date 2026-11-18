@@ -12,13 +12,16 @@ import { setConfig } from './live-auth-helpers';
  *   - one theme: Settings has no theme picker
  *   - two themes: picking the second recolours the header and sets its font stack;
  *     the pick survives a reload (the @font-face text is unit-tested: themeFonts.test.ts)
+ *   - while the theme JSON loads: a neutral loader, no header in MUI's default blue; the
+ *     loader holds still under reduced motion
  * Modes:
  *   - mock and live alike: themes are static files, no backend involved
  */
 
 const BASE_THEME = '/theme-dev.json',
   ALT_THEME = '/alt-theme.json';
-const ALT_PRIMARY = 'rgb(0, 128, 0)';
+const ALT_PRIMARY = 'rgb(0, 128, 0)',
+  ENTUR_PRIMARY = 'rgb(24, 28, 86)';
 const ALT_FAMILY = 'AltFace';
 const ALT_THEME_BODY = {
   applicationName: 'Alt',
@@ -48,6 +51,8 @@ test.describe('Theme picker', () => {
     await openSettings(page);
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(themePicker(page)).toHaveCount(0);
+    // The repo theme names no installation: the header shows the app's own title (#389).
+    await expect(page.locator('header').first()).toContainText('Vehicle Registry');
   });
 
   test('two themes: picking the second applies it and survives a reload', async ({ page }) => {
@@ -61,9 +66,30 @@ test.describe('Theme picker', () => {
 
     const header = page.locator('header').first();
     await expect(header).toHaveCSS('background-color', ALT_PRIMARY);
+    await expect(header).toContainText('Alt'); // the theme's `applicationName` overrides it
     await expect(page.locator('body')).toHaveCSS('font-family', new RegExp(ALT_FAMILY));
 
     await page.reload();
     await expect(header).toHaveCSS('background-color', ALT_PRIMARY);
+  });
+
+  test('until the theme loads: a loader, never a default-blue header', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await setConfig(page, 'auth-off');
+    let release!: () => void;
+    const held = new Promise<void>(resolve => (release = resolve));
+    await page.route(`**${BASE_THEME}`, async route => {
+      await held;
+      await route.continue();
+    });
+    await page.goto('/');
+
+    await expect(page.getByRole('status')).toHaveText('Loading…');
+    await expect(page.locator('header')).toHaveCount(0);
+    await expect(page.getByRole('status').locator('animateTransform')).toHaveCount(0);
+
+    release();
+    await expect(page.locator('header').first()).toHaveCSS('background-color', ENTUR_PRIMARY);
+    await expect(page.getByRole('status')).toHaveCount(0);
   });
 });

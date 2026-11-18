@@ -2,8 +2,8 @@
  * The pager under both views — Linje's `Pagination` (@entur/menu) rebuilt with
  * MUI: its markup (one <nav>: the rows shown with a rows-per-page menu, then the
  * page buttons) and its stylesheet. Colours come from the theme, which is set per
- * installation: on hathor's Entur themes `primary` is Linje's accent (#181c56) and
- * `action.active` its selected fill (#aeb7e2). MUI's `usePagination` lists the
+ * installation: on hathor's Entur themes `primary` is Linje's accent (#181c56); the current
+ * page's fill is Linje's own (below). MUI's `usePagination` lists the
  * pages; its default (one boundary, one sibling) is Linje's ellipsis rule.
  * Source: entur/design-system packages/menu/src/Pagination.*
  */
@@ -14,6 +14,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SR_ONLY } from '../../../utils/srOnly.ts';
+import { PRESSED_FILL } from '../../../theme/createThemeFromConfig.ts';
 import { pageSizesFor, type CollectionLabels, type CollectionQuery } from '../types.ts';
 
 // Linje's pager sizes (tokens named on the right).
@@ -48,7 +49,7 @@ const PAGE_SX = {
   },
   // As Linje: no hover on the current page (it stays focusable by keyboard).
   '&[aria-current="page"]': {
-    bgcolor: 'action.active',
+    bgcolor: PRESSED_FILL, // menu/Pagination/Standard/Active = Linje's pressed fill
     borderColor: 'primary.main',
     pointerEvents: 'none',
   },

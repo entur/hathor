@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { BusPictureFrame } from '../../../components/bus-picture/index.ts';
 import {
   FormSections,
+  FormSkeleton,
+  PictureSkeleton,
   resolveSections,
   type Layout,
 } from '../../../components/form-layout/index.ts';
@@ -20,6 +22,8 @@ import type { VehicleType } from '../types/vehicleTypeTypes.ts';
 import type { CodeValue } from '../../code-values/types/codeValueTypes.ts';
 
 const PICTURE_DEBOUNCE_MS = 400;
+// Loading an existing type: every section, its vehicles too.
+const ALL_SECTIONS = resolveSections(vehicleTypeFields, vehicleTypeSections);
 
 interface VehicleTypeSectionsProps {
   value: VehicleType;
@@ -76,6 +80,26 @@ export default function VehicleTypeSections({
           <BusPictureFrame dims={dims} paint="vehicleType" mode={value.transportMode} />
         ) : undefined
       }
+    />
+  );
+}
+
+/**
+ * The form's shape while the record loads: every section in skeleton blocks, the picture's
+ * place in column 3.
+ *
+ * @returns {JSX.Element} the skeleton sections
+ */
+export function VehicleTypeSectionsSkeleton() {
+  const { t } = useTranslation();
+  const busPictures = useIsFeatureOn()('BusPictures');
+  return (
+    <FormSkeleton
+      sections={ALL_SECTIONS}
+      fields={vehicleTypeFields}
+      tocLabel={t('formSections.toc')}
+      sectionLabel={id => t(VEHICLE_TYPE_SECTION_LABEL[id as VehicleTypeSection])}
+      aside={busPictures ? <PictureSkeleton /> : undefined}
     />
   );
 }

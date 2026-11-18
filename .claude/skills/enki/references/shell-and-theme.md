@@ -72,8 +72,9 @@ e2e depends on `#organisation-select` — keep that id.
 `Typography variant="h6"` with `ml: 1`, `fontWeight: 'bold'`, `color: 'inherit'`, text = `appTitle`
 ("Nplan"). Fallback without an extension is the title alone (`src/scenes/App/DefaultLogo.tsx`).
 
-Hathor's `HeaderBranding.tsx` has the same structure; the deltas are data: `theme.logoHeight` is 20
-and `applicationName` is `"App"` in `.github/environments/theme-*.json`.
+Hathor's `HeaderBranding.tsx` has the same structure: `theme.logoHeight` is 20, and the title is the
+translated `app.shortTitle` ("Vehicle Registry" / "Materiellregister"), which an installation's
+theme can override with `applicationName` (#389).
 
 ## Content frame
 
@@ -107,7 +108,7 @@ navigate to the editor.
 | `shape.borderRadius` | `4` |
 | `spacing` | `8` |
 
-Typography — same `"Nationale", Arial, …` stack as hathor. Scale is fixed px:
+Typography — `"Nationale", Arial, …`. Hathor's in-repo themes use `Arial, sans-serif`; Nationale reaches hathor only through the deployment theme's `fonts.faces` (FORK_DECISIONS 2026-11-16). Scale is fixed px:
 
 | Variant | size / weight / line-height |
 | --- | --- |

@@ -1,28 +1,58 @@
 import type { ReactNode } from 'react';
 import {
   Autocomplete,
+  Box,
+  Checkbox,
   FormControlLabel,
   MenuItem,
-  Switch,
   TextField,
   type AutocompleteProps,
 } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
 import { blankToUndefined } from '../utils/blankToUndefined.ts';
+import { CAN_HOVER, FIELD_BORDER, HOVER_FILL, ringOn } from '../theme/createThemeFromConfig.ts';
 
-const NUMERIC_WIDTH = '66.667%',
-  NUMERIC_FULL_BELOW = '16rem';
-// A number rarely needs the whole rail: two thirds wide, unless the form is so
-// narrow that two thirds would cramp the value (`fullWidth` then applies).
-const NUMERIC_SX = {
-  [`@container (min-width: ${NUMERIC_FULL_BELOW})`]: { width: NUMERIC_WIDTH },
-};
+// What every text-like field in a sidebar form shares: Linje's 48 px field, its label inside
+// the box until focused or filled — MUI's small filled field (createThemeFromConfig
+// `MuiFilledInput`). Its width is the form layout's (`KIND_WIDTH`, at most two per row).
+export const FIELD_BASE = { fullWidth: true, variant: 'filled', size: 'small' } as const;
 
-// Labels stay in the notch above the field, never resting inside it: an editor
-// mounts empty and hydrates, which would otherwise animate every label on open,
-// and a native date input's dd.mm.yyyy mask would overlap a resting label.
-const SHRUNK_LABEL = { inputLabel: { shrink: true } };
-// What every text-like field in a sidebar form shares.
-const FIELD_BASE = { size: 'small', fullWidth: true, slotProps: SHRUNK_LABEL } as const;
+// Linje Checkbox (`@entur/form` Checkbox.scss:170-183, `form/Checkbox/Standard/*`): a 20 px box,
+// 2 px accent border, radius 2 (legacy medium / 2), accent fill and white check when checked.
+// Read-only keeps the field border: Linje's #e3e6e8 is 1.25:1 on white (WCAG 1.4.11).
+const BOX_PX = 20,
+  BOX_BORDER_PX = 2,
+  BOX_RADIUS_PX = 2,
+  CHECK_PX = 16,
+  CHECKED_HOVER = '#393d79', // Fill-SelectedHover
+  // MUI's FormControlLabel pulls the control in by 11 px: an 11 px pad puts the box on the
+  // field edge, with a 42 px target (WCAG 2.5.8).
+  CHECKBOX_PAD_PX = 11;
+/** A checkbox row's height: the box and its padding (`FormSkeleton` draws it). */
+export const CHECKBOX_ROW_PX = BOX_PX + 2 * CHECKBOX_PAD_PX;
+const BOX = 'FormCheckbox-box';
+
+/** The drawn box: MUI's checkbox takes it as `icon` / `checkedIcon`. */
+const CheckBoxIcon = ({ checked, readOnly }: { checked?: boolean; readOnly?: boolean }) => (
+  <Box
+    component="span"
+    className={BOX}
+    sx={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: BOX_PX,
+      height: BOX_PX,
+      border: `${BOX_BORDER_PX}px solid`,
+      borderRadius: `${BOX_RADIUS_PX}px`,
+      borderColor: readOnly ? FIELD_BORDER : 'primary.main',
+      bgcolor: checked && !readOnly ? 'primary.main' : 'transparent',
+      color: readOnly ? 'primary.main' : 'common.white',
+    }}
+  >
+    {checked && <CheckIcon sx={{ fontSize: CHECK_PX }} />}
+  </Box>
+);
 
 interface FieldProps {
   /** DOM id of the control — external selectors and the label both target it. */
@@ -33,9 +63,17 @@ interface FieldProps {
   readOnly?: boolean;
 }
 
-/** `FIELD_BASE` plus the read-only input, when set. */
-const fieldBase = (readOnly?: boolean) =>
-  readOnly ? { ...FIELD_BASE, slotProps: { ...SHRUNK_LABEL, input: { readOnly } } } : FIELD_BASE;
+/**
+ * `FIELD_BASE` plus the read-only input, and a label held at the top when `pinLabel` is
+ * set: a native date input always shows its dd/mm/yyyy mask, which a resting label overlaps.
+ */
+const fieldBase = (readOnly?: boolean, pinLabel?: boolean) => ({
+  ...FIELD_BASE,
+  slotProps: {
+    ...(readOnly && { input: { readOnly } }),
+    ...(pinLabel && { inputLabel: { shrink: true } }),
+  },
+});
 
 interface FormTextFieldProps extends FieldProps {
   value: string;
@@ -72,7 +110,7 @@ export function FormTextField({
       value={value}
       onChange={e => onChange(e.target.value)}
       disabled={disabled}
-      {...fieldBase(readOnly)}
+      {...fieldBase(readOnly, type === 'date')}
     />
   );
 }
@@ -84,8 +122,7 @@ interface FormNumberFieldProps extends FieldProps {
 
 /**
  * Numeric field for a sidebar form. An empty input is reported as `undefined`,
- * never `0` or `NaN`. Two thirds wide inside a `FormStack` with room, full
- * width in a narrow one.
+ * never `0` or `NaN`. Its width is the form layout's (`KIND_WIDTH`: half a row).
  *
  * @param id       DOM id of the input.
  * @param label    Field label.
@@ -103,6 +140,7 @@ export function FormNumberField({
   disabled,
   readOnly,
 }: FormNumberFieldProps) {
+  const { slotProps, ...base } = fieldBase(readOnly);
   return (
     <TextField
       id={id}
@@ -111,8 +149,9 @@ export function FormNumberField({
       value={value ?? ''}
       onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
       disabled={disabled}
-      {...fieldBase(readOnly)}
-      sx={NUMERIC_SX}
+      {...base}
+      // Phones show a number keypad; the theme hides the spin buttons (Linje has none).
+      slotProps={{ ...slotProps, htmlInput: { inputMode: 'decimal' } }}
     />
   );
 }
@@ -120,8 +159,8 @@ export function FormNumberField({
 interface FormSelectFieldProps<T extends string> extends FieldProps {
   value?: T;
   options: readonly { value: T; label: string }[];
-  /** Label of the leading blank option that clears the field. */
-  noneLabel: string;
+  /** Label of a leading blank option that clears the field; none without it (a required pick). */
+  noneLabel?: string;
   onChange: (value: T | undefined) => void;
 }
 
@@ -133,7 +172,7 @@ interface FormSelectFieldProps<T extends string> extends FieldProps {
  * @param label     Field label.
  * @param value     Selected option value; `undefined` selects the blank option.
  * @param options   Choices, in display order.
- * @param noneLabel Label of the blank option.
+ * @param noneLabel Label of the blank option; omit it for a required pick.
  * @param onChange  Fired with the chosen value, or `undefined` for the blank option.
  * @param disabled  Render the field greyed out.
  * @param readOnly  Render the field read-only (the menu doesn't open), not greyed out.
@@ -159,9 +198,11 @@ export function FormSelectField<T extends string>({
       disabled={disabled}
       {...fieldBase(readOnly)}
     >
-      <MenuItem value="">
-        <em>{noneLabel}</em>
-      </MenuItem>
+      {noneLabel !== undefined && (
+        <MenuItem value="">
+          <em>{noneLabel}</em>
+        </MenuItem>
+      )}
       {options.map(o => (
         <MenuItem key={o.value} value={o.value}>
           {o.label}
@@ -215,56 +256,66 @@ export function FormAutocompleteField<
       renderInput={params => (
         <TextField
           {...params}
+          variant="filled"
           label={label}
           required={required}
           error={error}
           helperText={helperText}
-          // v9 puts the input's ref/handlers (`htmlInput`, `input`) and the label wiring in
-          // `params.slotProps`; keep them all, only forcing the label shrunk.
-          slotProps={{
-            ...params.slotProps,
-            inputLabel: { ...params.slotProps?.inputLabel, ...SHRUNK_LABEL.inputLabel },
-          }}
         />
       )}
     />
   );
 }
 
-interface FormSwitchFieldProps extends FieldProps {
+interface FormCheckboxFieldProps extends FieldProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
 }
 
 /**
- * On/off switch for a sidebar form.
+ * Yes/no checkbox for a form (user test S12: Linje's Switch is for actions that take effect at
+ * once; a choice saved later is a Checkbox).
  *
- * @param id       DOM id of the switch input.
- * @param label    Label shown beside the switch.
+ * @param id       DOM id of the checkbox input.
+ * @param label    Label shown beside the box; clicking it toggles.
  * @param checked  Current state.
  * @param onChange Fired with the new state on toggle.
- * @param disabled Render the switch greyed out.
- * @param readOnly Render the switch read-only: a toggle is ignored, it isn't greyed out.
- * @returns The labelled switch.
+ * @param disabled Render the checkbox greyed out.
+ * @param readOnly Render the checkbox read-only: a toggle is ignored, it isn't greyed out.
+ * @returns The labelled checkbox.
  */
-export function FormSwitchField({
+export function FormCheckboxField({
   id,
   label,
   checked,
   onChange,
   disabled,
   readOnly,
-}: FormSwitchFieldProps) {
+}: FormCheckboxFieldProps) {
   return (
     <FormControlLabel
       control={
-        <Switch
+        <Checkbox
           id={id}
           checked={checked}
           onChange={e => !readOnly && onChange(e.target.checked)}
           disabled={disabled}
+          disableRipple
+          icon={<CheckBoxIcon readOnly={readOnly} />}
+          checkedIcon={<CheckBoxIcon checked readOnly={readOnly} />}
           slotProps={readOnly ? { input: { readOnly, 'aria-readonly': true } } : undefined}
-          size="small"
+          sx={{
+            p: `${CHECKBOX_PAD_PX}px`,
+            '&:hover': { bgcolor: 'transparent' },
+            ...(!readOnly && {
+              [CAN_HOVER]: {
+                [`&:hover .${BOX}`]: { bgcolor: HOVER_FILL },
+                [`&.Mui-checked:hover .${BOX}`]: { bgcolor: CHECKED_HOVER },
+              },
+            }),
+            '&.Mui-disabled': { opacity: 0.5 },
+            ...ringOn(BOX),
+          }}
         />
       }
       label={label}

@@ -3,7 +3,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import NetexId, { type NetexIdSize } from './NetexId';
 
 const SAMPLE_ID = 'NSR:VehicleType:6f3a9e';
-const SIZES: NetexIdSize[] = ['xsmall', 'small', 'medium', 'large'];
+const SIZES: NetexIdSize[] = ['small', 'medium', 'large'];
 
 const meta: Meta<typeof NetexId> = {
   title: 'components/NetexId',

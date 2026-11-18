@@ -41,7 +41,6 @@ export default function SaveSuccessSnackbar({
       <Alert
         severity="success"
         onClose={onClose}
-        variant="filled"
         action={
           action ? (
             <Button color="inherit" size="small" onClick={action.onClick}>

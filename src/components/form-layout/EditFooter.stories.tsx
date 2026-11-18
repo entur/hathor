@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
-import { Box, TextField } from '@mui/material';
+import { Box } from '@mui/material';
+import { FormTextField } from '../FormFields.tsx';
 import type { FieldSpec } from '../collection/types.ts';
 import { EditFooter, FormSections, resolveSections, type Layout } from './index.ts';
 
@@ -42,14 +43,13 @@ const LongForm = () => {
       <FormSections
         sections={sections}
         renderField={({ key, label }) => (
-          <TextField
-            size="small"
-            fullWidth
+          <FormTextField
+            id={`story-${key}`}
             label={label}
             value={values[key] ?? ''}
-            onChange={e => {
+            onChange={value => {
               setSaved(false);
-              setValues(v => ({ ...v, [key]: e.target.value }));
+              setValues(v => ({ ...v, [key]: value }));
             }}
           />
         )}

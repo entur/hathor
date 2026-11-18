@@ -33,7 +33,8 @@ export default function SelectOrganisation() {
           onChange={(_e, v) => (isEditorDirty ? setPending(v) : setCurrentOrganisation(v))}
           size="small"
           sx={{
-            width: { xs: 'clamp(8rem, 36vw, 11rem)', sm: '14rem', md: '16rem' },
+            // Down to 6rem on a 320 px phone, so the header's last action stays on screen (1.4.10).
+            width: { xs: 'clamp(6rem, 30vw, 11rem)', sm: '14rem', md: '16rem' },
             mr: 1,
           }}
           renderInput={params => (
@@ -41,9 +42,15 @@ export default function SelectOrganisation() {
               {...params}
               id="organisation-select"
               size="small"
-              aria-label={t('organisations.select.label')}
+              label={t('organisations.select.label')}
               variant="outlined"
-              sx={{ bgcolor: 'common.white', borderRadius: 1 }}
+              // Shrink set here, not left to the theme default: TextField opens the outline's
+              // notch only for an explicit `shrink`, and the header label sits in it. MUI 9
+              // passes the input's ref / handlers in `params.slotProps`: keep them all.
+              slotProps={{
+                ...params.slotProps,
+                inputLabel: { ...params.slotProps?.inputLabel, shrink: true },
+              }}
             />
           )}
         />

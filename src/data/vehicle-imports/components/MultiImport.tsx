@@ -17,7 +17,8 @@ import { type RegNumbersStatus, deduplicateEntries } from '../utils/regNumbersTe
 import type { ImportEntry } from '../types/importTypes';
 import { fetchVehiclesFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
 import { extractVehicleTypeIds } from '../api/parseImportResponse';
-import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
+import MultiImportColumnMapper from './MultiImportColumnMapper';
+import { mapColumns, type ColumnMapping } from '../utils/mapColumns';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
@@ -87,17 +88,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const applyColumnMapping = () => {
     if (!tableMeta || !columnMappingRef.current) return;
-    const { regNumberCol, operationalRefCol } = columnMappingRef.current;
-    const mapped: ImportEntry[] = tableMeta.rows
-      .map(row => ({
-        queryRegNumber: (row[regNumberCol] ?? '').trim(),
-        operationalRef: operationalRefCol
-          ? (row[operationalRefCol] ?? '').trim() || undefined
-          : undefined,
-      }))
-      .filter(e => e.queryRegNumber);
-
-    const result = deduplicateEntries(mapped);
+    const result = deduplicateEntries(mapColumns(tableMeta.rows, columnMappingRef.current));
     setEntries(result.entries);
     setStatus(result.status);
   };

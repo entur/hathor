@@ -5,7 +5,7 @@
  * `aria-sort` on sorted headers. The ported suites cover the rest.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { createTheme } from '@mui/material/styles';
 import { defaultCollectionQuery, type EntityCollectionProps, type FieldSpec } from '../types.ts';
@@ -61,13 +61,10 @@ describe('identity under `id`', () => {
     expect(id.matches('NMR:VehicleType:1', '1')).toBe(true);
   });
 
-  it('is muted in the grid and on a card', async () => {
+  it('is muted in the grid', async () => {
     await mount({ view: 'grid' });
     const cell = within((await gridRows())[0]).getByText('1');
     expect(getComputedStyle(cell).color).toBe(MUTED);
-    cleanup();
-    await mount({ view: 'cards' });
-    expect(getComputedStyle(screen.getByText('1/ver2')).color).toBe(MUTED);
   });
 });
 
@@ -126,7 +123,7 @@ describe('Edit link', () => {
     const link = within((await gridRows())[0]).getByRole('link', { name: 'Edit Flirt' });
     expect(link.getAttribute('href')).toBe('/vehicle-types/NMR%3AVehicleType%3A1');
     expect(link.getAttribute('data-edit-id')).toBe('NMR:VehicleType:1');
-    expect(link.textContent).toBe('Edit');
+    expect(link.querySelector('[data-testid="EditOutlinedIcon"]')).not.toBeNull(); // Linje pencil IconButton
   });
 
   it("carries the host's router state to the details page", async () => {

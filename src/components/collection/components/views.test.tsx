@@ -201,11 +201,11 @@ describe('local-part id', () => {
     expect(screen.queryByText('VEH:VehicleType:1004')).toBeNull();
   });
 
-  it('reads the id on a card as NUM/verNUM when the row has a version', () => {
+  it('shows the id on a card as the NetexId chip, with the row version', () => {
     renderCards([{ netexId: 'VEH:VehicleType:1004', version: '3', name: { value: 'Flirt' } }]);
-    expect(screen.getByText('1004/ver3').closest('[title]')?.getAttribute('title')).toBe(
-      'VEH:VehicleType:1004'
-    );
+    expect(screen.getByTestId('netex-id').textContent).toBe('VEH:VehicleType:1004v3');
+    expect(screen.getByTestId('netex-id-version').textContent).toBe('v3');
+    expect(screen.getByTestId('netex-id').getAttribute('title')).toBe('VEH:VehicleType:1004 v3');
   });
 
   it('leaves the version off the grid cell, which has its own Version column', async () => {
@@ -215,11 +215,11 @@ describe('local-part id', () => {
     expect(screen.queryByText('1004/ver3')).toBeNull();
   });
 
-  it('shows the local part on a card, with the full id on hover', () => {
+  it('leaves the version chip off a card whose row has none', () => {
     renderCards(ROWS_IDS);
-    expect(screen.getByText('1004').closest('[title]')?.getAttribute('title')).toBe(
-      'VEH:VehicleType:1004'
-    );
+    expect(screen.getByTestId('netex-id').textContent).toBe('VEH:VehicleType:1004');
+    expect(screen.queryByTestId('netex-id-version')).toBeNull();
+    expect(screen.getByTestId('netex-id').getAttribute('title')).toBe('VEH:VehicleType:1004');
   });
 });
 

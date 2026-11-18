@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { parseEntryInput } from '../utils/parseEntryInput';
 import type { RegNumbersStatus } from '../utils/regNumbersTextTransformer';
+import { FIELD_BASE } from '../../../components/FormFields.tsx';
 import type { ImportEntry } from '../types/importTypes';
 
 interface MultiImportReviewInputProps {
@@ -32,8 +33,8 @@ function EntryChipLabel({ entry }: { entry: ImportEntry }) {
         sx={{
           bgcolor: 'secondary.main',
           color: 'secondary.contrastText',
-          fontSize: '0.7rem',
-          fontWeight: 600,
+          typography: 'caption',
+          fontWeight: 'fontWeightBold',
           px: 0.75,
           py: 0.125,
           borderRadius: 1,
@@ -115,13 +116,14 @@ export default function MultiImportReviewInput({
         ))}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+        {/* Linje's 48 px field, level with the 48 px Add button beside it. */}
         <TextField
-          size="small"
+          {...FIELD_BASE}
+          label={t('import.multi.regNumberColumn')}
           value={newEntry}
           onChange={e => setNewEntry(e.target.value)}
           onKeyDown={handleEntryKeyDown}
           placeholder={t('import.multi.addPlaceholder')}
-          fullWidth
           data-testid="multi-import-add-input"
         />
         <Button

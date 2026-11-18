@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
-import { Box, FormControlLabel, Paper, Switch, TextField, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Box, Paper, Typography } from '@mui/material';
+import { FormNumberField, FormCheckboxField, FormTextField } from '../FormFields.tsx';
 import { CARD_MEDIA_ASPECT, type FieldSpec } from '../collection/index.ts';
 import en from '../../locales/en/translation.json';
 import {
@@ -17,6 +19,8 @@ import { deckPlanFields, deckPlanLayout } from '../../data/deck-plans/types/deck
 import {
   EditFooter,
   FormSections,
+  FormSkeleton,
+  PictureSkeleton,
   resolveSections,
   type Layout,
   type ResolvedField,
@@ -32,7 +36,20 @@ const vehicleTypeLayout: Layout<VehicleTypeField> = Object.fromEntries(
     vehicleTypeSections[s],
   ])
 );
-/** Story stand-in for the host's controls; real forms draw their own `FormFields`. */
+/** The forms' own controls (`FormFields`), each holding its story value. */
+function StoryField({ kind, id, label }: { kind: FieldSpec['kind']; id: string; label: string }) {
+  const [text, setText] = useState('');
+  const [num, setNum] = useState<number>();
+  const [on, setOn] = useState(false);
+  if (kind === 'switch')
+    return <FormCheckboxField id={id} label={label} checked={on} onChange={setOn} />;
+  if (kind === 'number')
+    return <FormNumberField id={id} label={label} value={num} onChange={setNum} />;
+  const type = kind === 'date' ? 'date' : 'text';
+  return <FormTextField id={id} label={label} type={type} value={text} onChange={setText} />;
+}
+
+/** Draws each field as the form pages do: `FormFields`, or a note where the host draws records. */
 const control =
   (fields: Record<string, FieldSpec>) =>
   ({ key, label }: ResolvedField) => {
@@ -43,18 +60,7 @@ const control =
           {label}: the host draws the related records here (chips today)
         </Typography>
       );
-    if (kind === 'switch') return <FormControlLabel control={<Switch />} label={label} />;
-    return (
-      <TextField
-        size="small"
-        fullWidth
-        label={label}
-        type={kind === 'number' ? 'number' : kind === 'date' ? 'date' : 'text'}
-        multiline={key === 'xml' || key === 'description'}
-        minRows={key === 'xml' ? 12 : undefined}
-        slotProps={{ inputLabel: { shrink: true } }}
-      />
-    );
+    return <StoryField kind={kind} id={`story-${key}`} label={label} />;
   };
 
 /** Stand-in for the iteru-3dbus picture the form pages will put in column 3. */
@@ -84,10 +90,12 @@ interface DemoProps {
   footer: boolean;
   /** Footer state: tinted band, live Save. */
   dirty: boolean;
+  /** The form's loading state instead: `FormSkeleton` over the same sections. */
+  loading?: boolean;
 }
 
 /** Menu | form (| picture + TOC), as the form page will place it; `FormSections` draws column 3. */
-const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
+const Demo = ({ fields, layout, media, footer, dirty, loading }: DemoProps) => (
   <Box
     sx={{
       display: 'grid',
@@ -100,12 +108,20 @@ const Demo = ({ fields, layout, media, footer, dirty }: DemoProps) => (
     <Paper variant="outlined" sx={{ position: 'sticky', top: 0, height: '100vh' }} />
     {/* Fixed height, as the form page: from `lg` the form column scrolls on its own (#293). */}
     <Box sx={{ height: 'calc(100vh - 32px)', display: 'flex', flexDirection: 'column' }}>
-      <FormSections
-        sections={resolveSections(fields, layout)}
-        renderField={control(fields)}
-        aside={media && <MediaPlaceholder />}
-        footer={footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
-      />
+      {loading ? (
+        <FormSkeleton
+          sections={resolveSections(fields, layout)}
+          fields={fields}
+          aside={media && <PictureSkeleton />}
+        />
+      ) : (
+        <FormSections
+          sections={resolveSections(fields, layout)}
+          renderField={control(fields)}
+          aside={media && <MediaPlaceholder />}
+          footer={footer && <EditFooter dirty={dirty} onSave={fn()} onCancel={fn()} />}
+        />
+      )}
     </Box>
   </Box>
 );
@@ -143,3 +159,9 @@ export const Vehicle: Story = { args: { fields: vehicleFields, layout: vehicleLa
 
 /** The deck-plan form page's own section (#287): one → flat, no heading, no TOC. */
 export const DeckPlan: Story = { args: { fields: deckPlanFields, layout: deckPlanLayout } };
+
+/** The vehicle-type form loading: the same sections in skeleton blocks (48 px fields, 42 px
+ *  checkbox rows), so the page doesn't jump when the record lands. */
+export const VehicleTypeLoading: Story = {
+  args: { fields: vehicleTypeFields, layout: vehicleTypeLayout, loading: true },
+};

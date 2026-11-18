@@ -30,14 +30,14 @@ describe('FormSections', () => {
   });
 
   it('sizes each field by its resolved width', () => {
-    const layout = { All: ['name', { field: 'length', width: '1/4' as const }, 'built'] };
+    const layout = { All: ['name', { field: 'length', width: 'full' as const }, 'built'] };
     const { container } = render(
       <FormSections sections={resolveSections(FIELDS, layout)} renderField={field} />
     );
     const widths = [...container.querySelectorAll('[data-width]')].map(n =>
       n.getAttribute('data-width')
     );
-    expect(widths).toEqual(['full', '1/4', '1/2']);
+    expect(widths).toEqual(['full', 'full', '1/2']);
   });
 });
 

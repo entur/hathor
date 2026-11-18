@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './index';
 import { useLocation } from 'react-router-dom';
+import LoadingPage from '../components/common/LoadingPage.tsx';
 
 const LoginRedirect = () => {
   const { t } = useTranslation();
@@ -17,9 +18,9 @@ const LoginRedirect = () => {
   }, [isLoading, isAuthenticated, login, returnUrl]);
 
   // Same wording as ProtectedRoute's pre-auth gate — one key, both places.
-  if (isLoading) return <div>{t('protectedRoute.loadingAuthStatus')}</div>;
+  if (isLoading) return <LoadingPage text={t('protectedRoute.loadingAuthStatus')} />;
 
-  return <div>{t('auth.redirecting')}</div>;
+  return <LoadingPage text={t('auth.redirecting')} />;
 };
 
 export default LoginRedirect;

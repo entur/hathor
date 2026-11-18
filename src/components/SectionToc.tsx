@@ -20,7 +20,6 @@ import {
   TextField,
 } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
-import { STILL_SKELETONS } from '../utils/motion';
 
 /** Width of the rail marking the active entry; the idle rail is the same width,
  *  so selecting an entry never shifts its text. */
@@ -91,13 +90,7 @@ export const SectionToc: FC<SectionTocProps> = ({
   sx,
 }) =>
   sections.length === 0 ? null : loading ? (
-    <Box
-      component="nav"
-      aria-label={label}
-      aria-busy="true"
-      data-nmr-skeleton="toc"
-      sx={[STILL_SKELETONS, ...(Array.isArray(sx) ? sx : [sx])]}
-    >
+    <Box component="nav" aria-label={label} aria-busy="true" data-nmr-skeleton="toc" sx={sx}>
       {/* Each skeleton wraps the real control, so it takes that control's size:
           the loaded TOC lands exactly where its placeholder stood. */}
       {variant === 'dropdown' ? (

@@ -8,11 +8,9 @@ import { useDeckPlanXml } from '../hooks/useDeckPlanXml.ts';
 import { useDeckPlanSave } from '../hooks/useDeckPlanSave.ts';
 import { patchDeckPlanXml } from '../utils/patchDeckPlanXml.ts';
 import { deckPlanForm } from '../stores/deckPlanFormState.ts';
-import DeckPlanSections from './DeckPlanSections.tsx';
+import DeckPlanSections, { DeckPlanSectionsSkeleton } from './DeckPlanSections.tsx';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import { deckPlanTitle } from '../utils/deckPlanTitle.ts';
-
-const SKELETON_ROWS = 2; // name + description
 
 const COPY: EditorCopy = {
   title: 'deckPlans.detailsTitle',
@@ -97,7 +95,7 @@ export default function DeckPlanDetails(host: EntityEditorHostProps) {
       title={deckPlanTitle(form)}
       testId="deck-plan"
       copy={COPY}
-      skeleton={SKELETON_ROWS}
+      skeleton={<DeckPlanSectionsSkeleton />}
     >
       <DeckPlanSections {...body} />
     </EditorFrame>

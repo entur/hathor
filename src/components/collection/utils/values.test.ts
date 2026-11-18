@@ -11,7 +11,7 @@ import {
   rawValue,
   rowKeys,
   valueList,
-  withVersion,
+  rowVersion,
 } from './values.ts';
 
 const spec = (kind: FieldSpec['kind'], ...path: string[]): FieldSpec => ({ kind, path });
@@ -183,11 +183,10 @@ describe('keyRows', () => {
   });
 });
 
-describe('withVersion', () => {
-  it('appends the version as /verNUM, and leaves text without one alone', () => {
-    expect(withVersion('1004', { version: '3' })).toBe('1004/ver3');
-    expect(withVersion('1004', { version: '' })).toBe('1004');
-    expect(withVersion('1004', {})).toBe('1004');
-    expect(withVersion('', { version: '3' })).toBe('');
+describe('rowVersion', () => {
+  it('reads the version as text, and undefined without one', () => {
+    expect(rowVersion({ version: 3 })).toBe('3');
+    expect(rowVersion({ version: '' })).toBeUndefined();
+    expect(rowVersion({})).toBeUndefined();
   });
 });

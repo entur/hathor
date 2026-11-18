@@ -19,7 +19,6 @@ const POSITION_PREFIX = 'row:'; // id-less rows; a real id never starts with it
 const REPEAT_SEP = '#'; // a repeated identity's 2nd, 3rd… occurrence
 const ID_SEP = ':',
   LEGACY_MARK = '::'; // the old compact form `::1004`, still accepted when typed
-const VERSION_MARK = '/ver'; // `1004/ver3` on a card
 const DATE_LEN = 10,
   MINUTE_LEN = 16; // 'YYYY-MM-DD', 'YYYY-MM-DDTHH:mm'
 /** Shown for a missing value, in every view. */
@@ -116,8 +115,8 @@ export const rowKeys = (rows: readonly unknown[], offset = 0): string[] => {
   const base = rows.map((row, i) => {
     const id = rowId(row);
     if (id === undefined) return `${POSITION_PREFIX}${offset + i}`;
-    const version = (row as Record<string, unknown>)[VERSION_KEY];
-    return version == null || version === '' ? id : `${id}${VERSION_SEP}${String(version)}`;
+    const version = rowVersion(row);
+    return version === undefined ? id : `${id}${VERSION_SEP}${version}`;
   });
   const taken = new Set(base);
   const seen = new Set<string>();
@@ -242,16 +241,12 @@ export const fullTitle = (row: unknown, col: Column): string | undefined => {
 };
 
 /**
- * An identity as a card reads it: the shown id plus the row's version,
- * `::1004/ver3`. Without a version (or without an id) the text is unchanged.
+ * The row's version, for the id chip on a card (the grid has a Version column).
  *
- * @param shown the shown id
- * @param row   the entity
- * @returns the id with its version
+ * @param row the entity
+ * @returns the version as text; `undefined` when the row has none
  */
-export const withVersion = (shown: string, row: unknown): string => {
+export const rowVersion = (row: unknown): string | undefined => {
   const version = (row as Record<string, unknown> | null | undefined)?.[VERSION_KEY];
-  return shown && version != null && version !== ''
-    ? `${shown}${VERSION_MARK}${String(version)}`
-    : shown;
+  return version == null || version === '' ? undefined : String(version);
 };

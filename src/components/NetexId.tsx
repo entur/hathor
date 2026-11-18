@@ -10,7 +10,7 @@ const SEP = ':';
 const MISSING = '???';
 const RADIUS_FACTOR = 3;
 
-export type NetexIdSize = 'xsmall' | 'small' | 'medium' | 'large';
+export type NetexIdSize = 'small' | 'medium' | 'large';
 
 interface SizeSpec {
   idFont: string;
@@ -23,18 +23,9 @@ interface SizeSpec {
 }
 
 const SIZES: Record<NetexIdSize, SizeSpec> = {
-  xsmall: {
-    idFont: '0.625rem',
-    verFont: '0.5rem',
-    outer: 20,
-    ver: 13,
-    btn: 14,
-    icon: 9,
-    gap: 0.375,
-  },
   small: {
     idFont: '0.75rem',
-    verFont: '0.625rem',
+    verFont: '0.75rem',
     outer: 24,
     ver: 16,
     btn: 16,
@@ -43,7 +34,7 @@ const SIZES: Record<NetexIdSize, SizeSpec> = {
   },
   medium: {
     idFont: '0.875rem',
-    verFont: '0.6875rem',
+    verFont: '0.75rem',
     outer: 32,
     ver: 20,
     btn: 20,
@@ -160,7 +151,7 @@ export default function NetexId({
     <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: dim.gap }}>
       <span>
         {`${code}${SEP}${type}${SEP}`}
-        <Box component="strong" sx={{ fontWeight: 700 }}>
+        <Box component="strong" sx={{ fontWeight: 'fontWeightBold' }}>
           {value}
         </Box>
       </span>

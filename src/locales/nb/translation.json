@@ -1,5 +1,7 @@
 {
   "app.title": "Nasjonalt Materiellregister",
+  "app.shortTitle": "Materiellregister",
+  "app.loading": "Laster…",
   "close": "Lukk",
   "back": "Tilbake",
   "save": "Lagre",
@@ -211,7 +213,6 @@
   "vehicles.editChipLabel": "Rediger",
   "vehicles.viewChipLabel": "Vis",
   "vehicles.notFound": "Kjøretøy ikke funnet",
-  "vehicles.loading": "Laster kjøretøy…",
   "vehicles.saveSuccess": "Kjøretøy lagret",
   "vehicles.deactivateSuccess": "Kjøretøy deaktivert",
   "vehicle.deactivateConfirmTitle": "Deaktivere kjøretøy?",
@@ -289,6 +290,7 @@
   "import.multi.columnMapperDescription": "Vi fant {{count}} kolonner i filen. Koble kolonnene til riktige felt.",
   "import.multi.regNumberColumn": "Registreringsnummer",
   "import.multi.operationalRefColumn": "Driftsnummer (valgfritt)",
+  "import.multi.columnN": "Kolonne {{n}}",
   "import.multi.none": "Ingen",
   "import.multi.preview": "Forhåndsvisning (første {{count}} rader)",
   "import.multi.moreRows": "...og {{count}} rader til",

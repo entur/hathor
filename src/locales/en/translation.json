@@ -1,5 +1,7 @@
 {
   "app.title": "National Vehicle Registry",
+  "app.shortTitle": "Vehicle Registry",
+  "app.loading": "Loading…",
   "close": "Close",
   "back": "Back",
   "save": "Save",
@@ -212,7 +214,6 @@
   "vehicles.editChipLabel": "Edit",
   "vehicles.viewChipLabel": "View",
   "vehicles.notFound": "Vehicle not found",
-  "vehicles.loading": "Loading vehicle…",
   "vehicles.saveSuccess": "Vehicle saved",
   "vehicles.deactivateSuccess": "Vehicle deactivated",
   "vehicle.deactivateConfirmTitle": "Deactivate vehicle?",
@@ -290,6 +291,7 @@
   "import.multi.columnMapperDescription": "We detected {{count}} columns in your file. Map the columns to the correct fields.",
   "import.multi.regNumberColumn": "Registration number",
   "import.multi.operationalRefColumn": "Operational ID (optional)",
+  "import.multi.columnN": "Column {{n}}",
   "import.multi.none": "None",
   "import.multi.preview": "Preview (first {{count}} rows)",
   "import.multi.moreRows": "...and {{count}} more rows",

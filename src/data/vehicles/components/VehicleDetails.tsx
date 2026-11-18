@@ -1,8 +1,7 @@
 import EditorFrame, { type EditorCopy } from '../../../components/sidebar/EditorFrame.tsx';
 import { useEntityEditor, type EntityEditorHostProps } from '../../../hooks/useEntityEditor.ts';
 import { deactivateVehicleRequest } from '../../../graphql/vehicles/mutations/deactivateVehicle.ts';
-import VehicleSections from './VehicleSections.tsx';
-import VehicleDetailsSkeleton from './VehicleDetailsSkeleton.tsx';
+import VehicleSections, { VehicleSectionsSkeleton } from './VehicleSections.tsx';
 import { fetchVehicle } from '../api/fetchVehicles.ts';
 import { useVehiclePairSave } from '../hooks/useVehiclePairSave.ts';
 import { canSubmit, vehicleForm } from '../stores/vehicleFormState.ts';
@@ -46,7 +45,7 @@ export default function VehicleDetails(host: EntityEditorHostProps) {
       title={vehicleTitle(form.vehicle)}
       testId="vehicle"
       copy={COPY}
-      skeleton={<VehicleDetailsSkeleton />}
+      skeleton={<VehicleSectionsSkeleton />}
     >
       <VehicleSections
         value={form.vehicle}

@@ -11,6 +11,9 @@ export const FORM_PAGE_MAX_WIDTH = '75rem';
 // fields — room for the form column's own scrollbar from `lg` (#293).
 export const SECTION_GAP = 4,
   SCROLL_PAD = 2;
+/** Theme spacing (4 px) a clipping box keeps around fields and buttons, so their focus ring
+ *  (2 px, 2 px off a button, 0 off a field) isn't cut. */
+export const RING_GUTTER = 0.5;
 
 /**
  * The width of a form with no column 3: fields at most {@link FIELD_MAX_PX}, plus the

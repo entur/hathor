@@ -852,3 +852,28 @@ Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & ic
 
 - Rollout follows hathor-deployment-config#8: the deployment lists `themeConfigs` beside `themeFilePath` before this release, and drops `themeFilePath` after it.
 - A first visit paints in Arial, then swaps to Nationale once `config.json` → theme JSON → font load (`font-display: swap`).
+- The type scale and weights live in code (`TYPE_SCALE`, `createThemeFromConfig.ts`, #258); a theme JSON carries data only — palette, logo, `fonts.faces`, `fontFamily` — so the deployment themes set no `fontWeight*` (hathor-deployment-config#10).
+
+## Form fields are Linje's TextField: the label inside the box _(2026-11-17)_
+
+### Context
+
+User test II (S5, #260) found MUI's floating labels animating while a form hydrates, and colliding with a native date input's mask; the first fix pinned every label above its field. Linje's TextField and Dropdown keep the label inside one 48 px box instead: resting mid-field, moving to the box's top at 12 px once focused or filled (`@entur/form` `BaseFormControl.scss`, `InputGroupLabel.scss`). Hathor follows Linje.
+
+### Decision
+
+- **Form-size fields (48 px) are Linje's box** (`MuiInputLabel` / `MuiOutlinedInput` / `MuiAutocomplete` in `createThemeFromConfig.ts`): 16 px inline padding, radius 8, label inside in `Text/Subdued`, the value 4 px off the bottom, the outline's notch closed. Selects and autocompletes are the same box, as Linje's Dropdown.
+- **A native date input pins its label at the top** (`FormFields.tsx` `fieldBase`): its dd/mm/yyyy mask is always drawn, so a resting label would overlap it.
+- **Small fields keep MUI's 40 px, the label in the outline's notch**: the collection toolbar, the filter panel, the header's organisation picker. A Linje small field (32 px) has no room for a label inside.
+- **The header's organisation picker** matches enki's provider picker: label pinned in the notch ("Select organisation"), transparent on the navy — white text, Linje `Text/SubduedAlt` label, `--stroke-contrast` outline, focus as the outline turning white (a ring is a plain box and would strike through the label) (`MuiAppBar` override).
+
+### Alternatives considered
+
+- **Labels pinned above every field** (S5's first fix) — no animation, but not Linje's anatomy; in the 64 px header, label and field took 56 px.
+- **Pinned labels inside** (Linje's `disableLabelAnimation`) — no hydrate animation, but an empty form would show every label at the top; Linje's default moves the label.
+- **No visible label on the header picker** (aria-label only, as before) — fails WCAG 3.3.2.
+
+### Consequences
+
+- A form page's labels move up as the editor hydrates its values, as Linje's do.
+- The header picker's 40 px is MUI's small height, as in enki, off Linje's 32 / 48 scale.

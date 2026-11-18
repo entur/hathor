@@ -1,16 +1,17 @@
 {
-  "applicationName": "App",
   "companyName": "Entur",
   "palette": {
     "primary": { "main": "#181C56" },
     "secondary": { "main": "#ff5959" },
     "background": { "default": "#ffffff" },
-    "info": { "main": "#ff5959" },
-    "action": { "hover": "#aeb7e2", "active": "#aeb7e2" }
+    "info": { "main": "#067eb2" },
+    "error": { "main": "#d31b1b" },
+    "success": { "main": "#1a8e60" },
+    "warning": { "main": "#ffca28" },
+    "action": { "hover": "#d9ddf2" }
   },
   "typography": {
-    "fontFamily": "Arial, sans-serif",
-    "h1": { "fontSize": "3rem" }
+    "fontFamily": "Arial, sans-serif"
   },
   "shape": {
     "borderRadius": 4

@@ -10,7 +10,7 @@ import {
   type FieldSpec,
   type ResolvedCard,
 } from '../types.ts';
-import { compactId, compactIdEntry, idMatches, isIdSpec, rowWith, withVersion } from './values.ts';
+import { compactId, compactIdEntry, idMatches, isIdSpec, rowWith } from './values.ts';
 
 /** A bare key as an entry, so every column reads alike. */
 const norm = (item: string | FieldEntry): FieldEntry =>
@@ -24,14 +24,13 @@ const CARD_DEFAULT_FIELDS = 6;
 const eligible = (spec: FieldSpec | undefined): spec is FieldSpec =>
   !!spec && spec.kind !== 'grid' && !spec.patched;
 
-type Rules = Pick<Column, 'display' | 'matches' | 'entryLabel' | 'cardText' | 'muted'>;
+type Rules = Pick<Column, 'display' | 'matches' | 'entryLabel' | 'muted'>;
 const same = (text: string): string => text;
 /** Every field but the identity shows and matches its text as is. */
 const PLAIN: Rules = {
   display: same,
   matches: (have, typed) => have === typed,
   entryLabel: same,
-  cardText: same,
   muted: false,
 };
 /** The identity shows compact and matches on its last segment, full id as a fallback. */
@@ -39,7 +38,6 @@ const IDENTITY: Rules = {
   display: compactId,
   matches: idMatches,
   entryLabel: compactIdEntry,
-  cardText: withVersion,
   muted: true,
 };
 
