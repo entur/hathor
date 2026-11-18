@@ -42,8 +42,10 @@ export default function DeactivateDialog({
         <DialogContentText>{message ?? t('common.deactivateConfirmMessage')}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>{t('cancel')}</Button>
-        <Button color="error" variant="contained" onClick={onConfirm}>
+        <Button variant="outlined" onClick={onCancel}>
+          {t('cancel')}
+        </Button>
+        <Button variant="outlined" color="error" onClick={onConfirm}>
           {t('common.deactivate')}
         </Button>
       </DialogActions>

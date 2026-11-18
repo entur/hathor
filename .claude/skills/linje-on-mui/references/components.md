@@ -83,11 +83,18 @@ Cross-cutting traps:
 - **MUI**: `Button` `variant="contained"` (primary) and `"outlined"` (secondary). Theme
   `MuiButton`: `BUTTON_RADIUS_PX` 8 / `BUTTON_RADIUS_SMALL_PX` 6, min-heights
   `BUTTON_HEIGHT_*`.
-- **Status: partial.** Sizes and radius are done. Still open:
+- **Negative** (`Button.scss:171`, tokens `Components/button/Negative/Standard/*`): transparent,
+  2 px #d31b1b border and text, hover #ffcece, pressed #d31b1b fill with white text. Linje has
+  no filled red button; a destructive action is always confirmed.
+- **Status: partial.** Sizes and radius are done. Outlined is Secondary, and outlined
+  `color="error"` is Negative: `MuiButton.variants` sets MUI's `--variant-outlined*` vars
+  (`:active` after hover). Small outlined pads 2 / 8 so the 2 px border keeps 32 px. In use:
+  Deactivate (`EditorFrame`), `DeactivateDialog`, `DiscardDialog`. Still open (#392):
   - The contained hover uses MUI's `primary.dark`, which is darker; Linje's hover #393d79 is
     lighter. Set `palette.primary.dark`, or use `&:hover` in `MuiButton.contained`.
-  - Outlined is 1 px `alpha(primary, .5)`; Linje is 2 px #8284ab with a #d9ddf2 hover.
   - Inline padding is MUI's 10 / 16 / 22.
+- **Traps:** red text on the #ffcece hover is about 3.8:1 (Linje's own spec, under WCAG 1.4.3's
+  4.5:1). A Negative button disabled while the form is dirty gives no reason (#392).
 
 ## Checkbox
 

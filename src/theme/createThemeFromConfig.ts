@@ -70,6 +70,8 @@ const HEADING_LINE_HEIGHT = 1.25,
 // `action.*`, which installations set differently.
 export const HOVER_FILL = '#d9ddf2',
   PRESSED_FILL = '#aeb7e2';
+// Linje NegativeButton hover (`Components/button/Negative/Standard/Hover`).
+const NEGATIVE_HOVER = '#ffcece';
 const HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4';
 // Linje Tooltip (`tooltip/Tooltip.scss`): accent fill, 14 px text, 5 / 10 px padding, radius 4.
@@ -189,6 +191,48 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       sizeSmall: { borderRadius: BUTTON_RADIUS_SMALL_PX, minHeight: BUTTON_HEIGHT_SMALL_PX },
       sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX },
     },
+    // Linje SecondaryButton (outlined) and NegativeButton (outlined, `color="error"`,
+    // `button/Button.scss:171`): a 2 px border, filled on hover and press. Through MUI's own
+    // `--variant-outlined*` vars; `:active` after hover, so a press wins.
+    variants: [
+      {
+        props: { variant: 'outlined' },
+        style: {
+          borderWidth: FIELD_BORDER_PX,
+          '--variant-outlinedBorder': FIELD_BORDER,
+          [CAN_HOVER]: {
+            '&:hover': {
+              '--variant-outlinedBorder': FIELD_BORDER,
+              '--variant-outlinedBg': HOVER_FILL,
+            },
+          },
+          '&:active': {
+            '--variant-outlinedBorder': theme.palette.primary.main,
+            '--variant-outlinedBg': PRESSED_FILL,
+          },
+          '&.Mui-disabled': { borderWidth: FIELD_BORDER_PX },
+        },
+      },
+      // MUI's 3 px padding plus the 2 px border makes 32.75; Linje small is 32.
+      { props: { variant: 'outlined', size: 'small' }, style: { padding: '2px 8px' } },
+      {
+        props: { variant: 'outlined', color: 'error' },
+        style: {
+          '--variant-outlinedBorder': theme.palette.error.main,
+          [CAN_HOVER]: {
+            '&:hover': {
+              '--variant-outlinedBorder': theme.palette.error.main,
+              '--variant-outlinedBg': NEGATIVE_HOVER,
+            },
+          },
+          '&:active': {
+            '--variant-outlinedBorder': theme.palette.error.main,
+            '--variant-outlinedBg': theme.palette.error.main,
+            '--variant-outlinedColor': theme.palette.error.contrastText,
+          },
+        },
+      },
+    ],
   },
   MuiInputLabel: {
     styleOverrides: {

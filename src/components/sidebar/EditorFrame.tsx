@@ -305,6 +305,7 @@ export default function EditorFrame<T, F>({
               <Divider orientation="vertical" flexItem />
               <Button
                 size="small"
+                variant="outlined"
                 color="error"
                 // Unsaved edits first: a deactivate would leave them in limbo. No handler
                 // while a save or deactivate settles.

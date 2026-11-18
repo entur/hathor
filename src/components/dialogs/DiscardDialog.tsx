@@ -34,8 +34,10 @@ export default function DiscardDialog({ open, onCancel, onDiscard, onSave }: Dis
         <DialogContentText>{t('common.discardBody')}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>{t('cancel')}</Button>
-        <Button color="error" onClick={onDiscard}>
+        <Button variant="outlined" onClick={onCancel}>
+          {t('cancel')}
+        </Button>
+        <Button variant="outlined" color="error" onClick={onDiscard}>
           {t('discard')}
         </Button>
         {onSave && (
