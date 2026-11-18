@@ -205,6 +205,7 @@ describe('local-part id', () => {
     renderCards([{ netexId: 'VEH:VehicleType:1004', version: '3', name: { value: 'Flirt' } }]);
     expect(screen.getByTestId('netex-id').textContent).toBe('VEH:VehicleType:1004v3');
     expect(screen.getByTestId('netex-id-version').textContent).toBe('v3');
+    expect(screen.getByTestId('netex-id').getAttribute('title')).toBe('VEH:VehicleType:1004 v3');
   });
 
   it('leaves the version off the grid cell, which has its own Version column', async () => {
@@ -218,6 +219,7 @@ describe('local-part id', () => {
     renderCards(ROWS_IDS);
     expect(screen.getByTestId('netex-id').textContent).toBe('VEH:VehicleType:1004');
     expect(screen.queryByTestId('netex-id-version')).toBeNull();
+    expect(screen.getByTestId('netex-id').getAttribute('title')).toBe('VEH:VehicleType:1004');
   });
 });
 

@@ -55,8 +55,10 @@ const ValueText = ({
   ...typography
 }: { row: unknown; col: Column; labels: CollectionLabels } & TypographyProps) => {
   const id = !col.render && isIdSpec(col.spec) ? formatValue(row, col.spec) : '';
+  const version = rowVersion(row);
   return id ? (
-    <NetexId id={id} version={rowVersion(row)} size="small" />
+    // The chip clips at the column width; the title keeps the full id readable.
+    <NetexId id={id} version={version} size="small" title={version ? `${id} v${version}` : id} />
   ) : (
     <Typography
       noWrap
