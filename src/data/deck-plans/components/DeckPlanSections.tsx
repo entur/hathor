@@ -72,7 +72,7 @@ export default function DeckPlanSections({
               onRetry={onRetry}
             />
             {/* shortcut: no-op in epic #252, wire to an XML view after the cut-over */}
-            <Button size="small" data-testid="deck-plan-show-xml">
+            <Button variant="outlined" size="small" data-testid="deck-plan-show-xml">
               {t('deckPlans.showXml')}
             </Button>
           </Stack>
