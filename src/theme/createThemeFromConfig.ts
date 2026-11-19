@@ -24,7 +24,7 @@ const LEGACY_RADIUS_PX = 4;
 const BODY_WEIGHT = 500,
   HEADING_WEIGHT = 600;
 // Linje corners, standard density (#258): cards `--border-radiuses-large`, buttons
-// `--components-button-radius-*`; small fields keep `shape.borderRadius` 4, chips stay pills.
+// `--components-button-radius-*`; chips stay pills.
 const CARD_RADIUS_PX = 8;
 export const BUTTON_RADIUS_PX = 8,
   BUTTON_RADIUS_SMALL_PX = 6;
@@ -38,7 +38,9 @@ export const FIELD_BORDER_PX = 2,
 // indent (MUI's is 12).
 const FIELD_PAD_X_PX = 16,
   FIELD_INDENT_SHIFT_PX = 4;
-export const FIELD_RADIUS_PX = 8;
+// Linje `form/base form/radius/Medium` / `Small`: form fields / small outlined ones (toolbar).
+export const FIELD_RADIUS_PX = 8,
+  FIELD_RADIUS_SMALL_PX = 6;
 // Linje `Text/Subdued`, 5.6:1 on white.
 const LABEL_COLOR = '#626493';
 // Linje disabled field (`BaseFormControl.scss` `--disabled`): grey fill, no border, grey text.
@@ -380,6 +382,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       // strike the label; a label-less one (search, sort) gets Linje's field ring, offset 0
       // (`notranslate` marks MUI's empty legend).
       root: {
+        borderRadius: FIELD_RADIUS_SMALL_PX,
         [`&.Mui-focused:has(> ${NOTCH} .notranslate)`]: ring(theme.palette.primary.main, 0),
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [CAN_HOVER]: { [`&${HOVER}`]: { borderColor: theme.palette.primary.main } },

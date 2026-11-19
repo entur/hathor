@@ -392,9 +392,10 @@ Cross-cutting traps:
   - Don't set `transform` on the label. MUI's variant and size transforms (rest and shrink)
     own it. The CSS `translate` property adds to them.
   - A real `border` would grow the 48 px box; use `edge()`.
-  - Small fields stay outlined (`MuiOutlinedInput`: 2 px #8284ab notch, hover via the exact
-    `HOVER` selector, focus ring, read-only and disabled). They are the toolbar, filter
-    panel and header picker. Sort by has no notch label (#392): `displayEmpty` +
+  - Small fields stay outlined (`MuiOutlinedInput`: 2 px #8284ab notch, radius 6
+    (`FIELD_RADIUS_SMALL_PX`, Figma `form/base form/radius/Small`, as the small buttons),
+    hover via the exact `HOVER` selector, focus ring, read-only and disabled). They are the
+    toolbar, filter panel and header picker. Sort by has no notch label (#392): `displayEmpty` +
     `renderValue` shows "Sort by" / "Sort by: <column>", `aria-label` keeps its name.
   - MUI 9's own outlined hover is `&:hover .MuiOutlinedInput-notchedOutline`
     (`node_modules/@mui/material/OutlinedInput/OutlinedInput.js:54`), reset under
