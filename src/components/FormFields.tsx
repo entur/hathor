@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Autocomplete,
   Box,
@@ -120,9 +121,21 @@ interface FormNumberFieldProps extends FieldProps {
   onChange: (value: number | undefined) => void;
 }
 
+/** A typed number: digits, an optional sign, `.` or `,` as the decimal mark. */
+const NUMBER_RE = /^[-+]?(\d+([.,]\d*)?|[.,]\d+)$/;
+
+/** Parse what was typed: `undefined` when blank, `null` when it is not a number. */
+const parseNumber = (text: string): number | undefined | null => {
+  const s = text.trim();
+  if (s === '') return undefined;
+  return NUMBER_RE.test(s) ? Number(s.replace(',', '.')) : null;
+};
+
 /**
- * Numeric field for a sidebar form. An empty input is reported as `undefined`,
- * never `0` or `NaN`. Its width is the form layout's (`KIND_WIDTH`: half a row).
+ * Numeric field for a sidebar form: a text input with a number keypad, as Linje has no
+ * stepper. A blank input is reported as `undefined`, never `0` or `NaN`; text that is not a
+ * number shows an error and is not reported, so the form keeps its last number. Its width is
+ * the form layout's (`KIND_WIDTH`: half a row).
  *
  * @param id       DOM id of the input.
  * @param label    Field label.
@@ -140,17 +153,35 @@ export function FormNumberField({
   disabled,
   readOnly,
 }: FormNumberFieldProps) {
+  const { t } = useTranslation();
+  // The typed text, kept so a bad entry stays visible; reset when the value changes elsewhere
+  // (load, cancel).
+  const [text, setText] = useState(value === undefined ? '' : String(value));
+  const [shown, setShown] = useState(value);
+  if (value !== shown) {
+    setShown(value);
+    if (parseNumber(text) !== value) setText(value === undefined ? '' : String(value));
+  }
+  const bad = parseNumber(text) === null;
   const { slotProps, ...base } = fieldBase(readOnly);
   return (
     <TextField
       id={id}
       label={label}
-      type="number"
-      value={value ?? ''}
-      onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+      value={text}
+      onChange={e => {
+        setText(e.target.value);
+        const n = parseNumber(e.target.value);
+        if (n !== null) {
+          setShown(n);
+          onChange(n);
+        }
+      }}
       disabled={disabled}
+      error={bad}
+      helperText={bad ? t('common.notANumber') : undefined}
       {...base}
-      // Phones show a number keypad; the theme hides the spin buttons (Linje has none).
+      // Phones show a number keypad.
       slotProps={{ ...slotProps, htmlInput: { inputMode: 'decimal' } }}
     />
   );

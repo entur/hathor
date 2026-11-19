@@ -347,6 +347,7 @@
   "common.deactivateConfirmTitle": "Deactivate this item?",
   "common.deactivateConfirmMessage": "This action deactivates the selected item. Do you want to continue?",
   "common.deactivate": "Deactivate",
+  "common.notANumber": "Enter a number",
   "common.deactivated": "Deactivated",
   "common.retry": "Retry",
   "common.unnamed": "unnamed",

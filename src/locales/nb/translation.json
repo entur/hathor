@@ -346,6 +346,7 @@
   "common.deactivateConfirmTitle": "Deaktivere dette elementet?",
   "common.deactivateConfirmMessage": "Denne handlingen deaktiverer det valgte elementet. Vil du fortsette?",
   "common.deactivate": "Deaktiver",
+  "common.notANumber": "Skriv inn et tall",
   "common.deactivated": "Deaktivert",
   "common.retry": "Prøv igjen",
   "common.unnamed": "uten navn",
