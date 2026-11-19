@@ -7,6 +7,8 @@ import {
   BUTTON_RADIUS_PX,
   BUTTON_RADIUS_SMALL_PX,
   CAN_HOVER,
+  DISABLED_STROKE,
+  DISABLED_TEXT,
   FIELD_BORDER,
   FIELD_BORDER_PX,
   HOVER_FILL,
@@ -26,8 +28,9 @@ const SQUARE = 'SquareButton-square';
 export interface SquareButtonProps extends Omit<ButtonBaseProps, 'children'> {
   /** Drawn inside the square. */
   icon: ReactNode;
-  /** The label beside the square; also the accessible name unless `aria-label` is set. */
-  children: ReactNode;
+  /** The label beside the square; also the accessible name. Omit it for an icon-only square,
+   * which then needs `aria-label`. */
+  children?: ReactNode;
   size?: keyof typeof SIZES;
   /** A route: the button is then a router link. */
   to?: string;
@@ -35,7 +38,8 @@ export interface SquareButtonProps extends Omit<ButtonBaseProps, 'children'> {
 
 /**
  * Linje's secondary SquareButton, which MUI lacks: an icon in a bordered square, its label
- * beside it. Hover and press fill the square; the focus ring sits on the square only.
+ * beside it (or none: icon only). Hover and press fill the square; the focus ring sits on the
+ * square only. Disabled: a dashed grey square.
  *
  * @param {SquareButtonProps} props `icon`, the label as `children`, `size`, an optional `to`,
  *   and any `ButtonBase` prop (`onClick`, `data-*`, `aria-label`, `sx`)
@@ -71,6 +75,8 @@ export default function SquareButton({
           },
           [CAN_HOVER]: { [`&:hover .${SQUARE}`]: { bgcolor: HOVER_FILL } },
           [`&:active .${SQUARE}`]: { bgcolor: PRESSED_FILL, borderColor: 'primary.main' },
+          '&.Mui-disabled': { color: DISABLED_TEXT },
+          [`&.Mui-disabled .${SQUARE}`]: { borderColor: DISABLED_STROKE, borderStyle: 'dashed' },
           ...ringOn(SQUARE),
         },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -79,7 +85,7 @@ export default function SquareButton({
       <Box component="span" className={SQUARE}>
         {icon}
       </Box>
-      <span>{children}</span>
+      {children != null && <span>{children}</span>}
     </ButtonBase>
   );
 }

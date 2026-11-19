@@ -254,7 +254,11 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
         <Button onClick={onClose} variant="outlined">
           {t('close')}
         </Button>
-        <Button disabled={activeStep === 0 || fetching || submitting} onClick={handleBack}>
+        <Button
+          variant="outlined"
+          disabled={activeStep === 0 || fetching || submitting}
+          onClick={handleBack}
+        >
           {t('import.multi.back')}
         </Button>
         <Button variant="contained" onClick={handleNext} disabled={isNextDisabled}>

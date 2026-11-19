@@ -198,7 +198,7 @@ export function QueryField({
         ref={anchorRef}
         sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 40 }}
       >
-        <Button ref={buttonRef} size="small" startIcon={badge} {...triggerProps}>
+        <Button ref={buttonRef} variant="outlined" size="small" startIcon={badge} {...triggerProps}>
           {labels.filters}
         </Button>
         {tokens}
