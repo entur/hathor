@@ -15,7 +15,6 @@ import { useState, type ReactNode } from 'react';
 import {
   Box,
   Checkbox,
-  IconButton,
   Menu,
   MenuItem,
   Stack,
@@ -39,6 +38,7 @@ import type {
   Column,
   FilterFields,
 } from '../types.ts';
+import SquareButton from '../../SquareButton.tsx';
 import { QueryField } from './QueryField.tsx';
 
 const DENSITIES: GridDensity[] = ['compact', 'standard', 'comfortable'];
@@ -52,7 +52,7 @@ const VIEW_ICONS: Record<CollectionView, ReactNode> = {
 };
 const VIEWS = Object.keys(VIEW_ICONS) as CollectionView[];
 
-/** An icon button that opens a menu; owns its anchor. `children` gets `close`. */
+/** A square icon button (Linje SquareButton) that opens a menu; owns its anchor. `children` gets `close`. */
 function ToolMenu({
   label,
   icon,
@@ -67,15 +67,14 @@ function ToolMenu({
   return (
     <>
       <Tooltip title={label}>
-        <IconButton
+        <SquareButton
           size="small"
+          icon={icon}
           aria-label={label}
           aria-haspopup="menu"
           aria-expanded={!!anchor}
           onClick={e => setAnchor(e.currentTarget)}
-        >
-          {icon}
-        </IconButton>
+        />
       </Tooltip>
       <Menu open={!!anchor} anchorEl={anchor} onClose={close}>
         {children(close)}
@@ -187,21 +186,22 @@ export function CollectionToolbar({
           </TextField>
           <Tooltip title={labels.sortDirection}>
             <span>
-              <IconButton
+              <SquareButton
                 size="small"
+                icon={
+                  sorted?.dir === 'desc' ? (
+                    <ArrowDownwardIcon fontSize="small" />
+                  ) : (
+                    <ArrowUpwardIcon fontSize="small" />
+                  )
+                }
                 aria-label={labels.sortDirection}
                 disabled={!sorted}
                 onClick={() =>
                   sorted &&
                   onQuery({ sort: { ...sorted, dir: sorted.dir === 'asc' ? 'desc' : 'asc' } })
                 }
-              >
-                {sorted?.dir === 'desc' ? (
-                  <ArrowDownwardIcon fontSize="small" />
-                ) : (
-                  <ArrowUpwardIcon fontSize="small" />
-                )}
-              </IconButton>
+              />
             </span>
           </Tooltip>
         </>

@@ -42,8 +42,9 @@ export const FIELD_RADIUS_PX = 8;
 // Linje `Text/Subdued`, 5.6:1 on white.
 const LABEL_COLOR = '#626493';
 // Linje disabled field (`BaseFormControl.scss` `--disabled`): grey fill, no border, grey text.
-const DISABLED_FILL = '#cfd2d4',
-  DISABLED_TEXT = '#6e6f73';
+const DISABLED_FILL = '#cfd2d4';
+export const DISABLED_TEXT = '#6e6f73',
+  DISABLED_STROKE = '#949699'; // `Base colors/Stroke/Disabled`: a disabled SquareButton's dashes
 // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy: the header picker's label.
 const HEADER_LABEL = '#d9dae8';
 // MUI's filled Autocomplete input keeps 4 px of its own left padding; the root adds the rest.

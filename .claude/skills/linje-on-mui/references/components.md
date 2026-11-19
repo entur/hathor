@@ -288,7 +288,7 @@ Cross-cutting traps:
   `disableRipple`: the focus ripple tinted the white choice). Ring from `MuiButtonBase`. Used by
   the collection toolbar's Table / Cards (`CollectionToolbar.tsx`, `size="small"`, 20 px icons).
 - **Status: done (#392).** Medium only; no large or contrast variant (nothing uses them).
-- **Trap**: the track is 32 px in a toolbar of 40 px fields (#394).
+- **Trap**: the track and the toolbar's SquareButtons are 32 px beside 40 px fields (#394).
 
 ## Skeleton
 
@@ -308,10 +308,14 @@ Cross-cutting traps:
   tokens.
   - Square at the button heights (32 / 48 / 64), radius 6 / 8 / 8.
   - Border #8284ab, hover #d9ddf2, active #aeb7e2, icon #181c56.
+  - Disabled (`:164-179`): dashed border #949699 (`Base colors/Stroke/Disabled`), icon and
+    label #6e6f73.
 - **MUI**: none in MUI; `src/components/SquareButton.tsx` on `ButtonBase`: icon in a 48 / 32 px
-  square (medium / small), 2 px border, radius 8 / 6, label 8 / 4 px beside it; hover inside
-  `@media (hover: hover)`; the ring on the square only (root outline off); `to` makes it a
-  router link. Used by `NewEntityFab` and `SiteNavCards` (card footer, CreateRow).
+  square (medium / small), 2 px border, radius 8 / 6, label 8 / 4 px beside it (no label: icon
+  only, needs `aria-label`); hover inside `@media (hover: hover)`; the ring on the square only
+  (root outline off); `to` makes it a router link. Used by `NewEntityFab`, `SiteNavCards` (card
+  footer, CreateRow) and the collection toolbar's sort direction, Columns and Density (small,
+  icon only, #392).
 - **Trap**: on a tinted ground (#d9ddf2) the border is 2.67:1 and hover invisible; keep it on
   white (the CreateRow tile is `background.paper`).
 - **Status: done (#389).**
