@@ -18,8 +18,8 @@ export const FOCUS_PX = 2;
 const FOCUS_CONTRAST = '#aeb7e2';
 // Linje's accent (`Text/Accent`, Lavender/90): tooltip fill, alert text, pressed icons.
 const ACCENT = '#181c56';
-// Linje's legacy `border-radiuses-medium`: icon buttons, tooltips, alert boxes.
-export const LEGACY_RADIUS_PX = 4;
+// Linje's legacy `border-radiuses-medium`: icon buttons, tooltips, alert boxes, popups.
+const LEGACY_RADIUS_PX = 4;
 // Linje `--font-weights-*` (#258): Nationale ships only these two.
 const BODY_WEIGHT = 500,
   HEADING_WEIGHT = 600;
@@ -39,8 +39,8 @@ export const FIELD_BORDER_PX = 2,
 const FIELD_PAD_X_PX = 16,
   FIELD_INDENT_SHIFT_PX = 4;
 // Linje `form/base form/radius/Medium` / `Small`: form fields / small outlined ones (toolbar).
-export const FIELD_RADIUS_PX = 8,
-  FIELD_RADIUS_SMALL_PX = 6;
+export const FIELD_RADIUS_PX = 8;
+const FIELD_RADIUS_SMALL_PX = 6;
 // Linje `Text/Subdued`, 5.6:1 on white.
 const LABEL_COLOR = '#626493';
 // Linje disabled field (`BaseFormControl.scss` `--disabled`): grey fill, no border, grey text.
@@ -83,20 +83,24 @@ const NEGATIVE_HOVER = '#ffcece';
 const HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4';
 // Linje `shadows.boxShadow` (`legacy-tokens.ts`): a selected segment, a popover.
-export const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
+const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
 // Linje Popover (`tooltip/Popover.scss`, `tooltip/Popover/Standard/*`): fill, 1 px border.
-export const POPOVER_FILL = '#f6f6f9',
+const POPOVER_FILL = '#f6f6f9',
   POPOVER_BORDER = '#54568c66';
 // Linje's dropdown list (`dropdown/components/DropdownList.scss:3-13`) and OverflowMenu
 // (`menu/OverflowMenu.scss:3-9`): `Base menu/Fill-Default` and `Border` (= the field border),
 // radius legacy 4, `boxShadow`. The list's border is 2 px, the menu's 1 px.
 const MENU_FILL = '#f2f5f7';
-const menuSurface = (borderPx: number) => ({
-  backgroundColor: MENU_FILL,
-  border: `${borderPx}px solid ${FIELD_BORDER}`,
-  borderRadius: LEGACY_RADIUS_PX,
+// The radius is a px string: in `sx` a bare number is a multiple of `shape.borderRadius`.
+const surface = (fill: string, borderPx: number, borderColor: string) => ({
+  backgroundColor: fill,
+  border: `${borderPx}px solid ${borderColor}`,
+  borderRadius: `${LEGACY_RADIUS_PX}px`,
   boxShadow: BOX_SHADOW,
 });
+const menuSurface = (borderPx: number) => surface(MENU_FILL, borderPx, FIELD_BORDER);
+/** Linje Popover's surface, for a `Popover` paper's `sx` (FilterPanel). */
+export const POPOVER_SURFACE = surface(POPOVER_FILL, 1, POPOVER_BORDER);
 // Linje SegmentedControl (`form/segmentedControl/*.scss`, `form/Segmented Control/Standard/*`):
 // track, unselected hover; choices 24 px with 4 px around them (32 px track).
 const SEGMENT_TRACK = '#d9dae8',
@@ -348,16 +352,9 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       },
     },
   },
-  // Every popup one surface, not MUI's elevation 8 (menus) and 1 (autocompletes). A Select's
-  // menu (`role="listbox"`) is Linje's dropdown list, the rest its OverflowMenu.
-  MuiMenu: {
-    styleOverrides: {
-      paper: {
-        ...menuSurface(1),
-        '&:has(> [role="listbox"])': { borderWidth: FIELD_BORDER_PX },
-      },
-    },
-  },
+  // Every popup one surface, not MUI's elevation 8 (menus) and 1 (autocompletes): Linje's
+  // OverflowMenu here; a Select's menu widens the border to its dropdown list's (MuiSelect).
+  MuiMenu: { styleOverrides: { paper: menuSurface(1) } },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
@@ -514,7 +511,15 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       MenuProps: {
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        slotProps: { paper: { sx: { mt: `${POPUP_OFFSET_PX}px`, maxHeight: LIST_MAX_HEIGHT } } },
+        slotProps: {
+          paper: {
+            sx: {
+              mt: `${POPUP_OFFSET_PX}px`,
+              maxHeight: LIST_MAX_HEIGHT,
+              borderWidth: `${FIELD_BORDER_PX}px`,
+            },
+          },
+        },
       },
     },
   },

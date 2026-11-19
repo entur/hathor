@@ -281,8 +281,8 @@ Cross-cutting traps:
 - **Linje**: `packages/tooltip/src/Popover.scss:3-9`; `tooltip/Popover/Standard/*`.
   - Fill #f6f6f9, 1 px border #54568c66, radius legacy medium 4, shadow `boxShadow`
     (`0 1px 3px` black 25 %). Text and icons #181c56.
-- **MUI**: `Popover` paper `sx` in `FilterPanel.tsx` (`POPOVER_FILL`, `POPOVER_BORDER`,
-  `LEGACY_RADIUS_PX`, `BOX_SHADOW`), not MUI's elevation 8. Not a theme `MuiPopover` rule:
+- **MUI**: `Popover` paper `sx` in `FilterPanel.tsx` spreads the theme's `POPOVER_SURFACE`
+  (`POPOVER_FILL`, `POPOVER_BORDER`, `LEGACY_RADIUS_PX`, `BOX_SHADOW`), not MUI's elevation 8. Not a theme `MuiPopover` rule:
   `Menu` and Select popups are Popovers too, and Linje draws those as its dropdown list.
   - Fields inside are the form's (`FIELD_BASE`, filled Autocomplete): label inside, Linje's
     ring at offset 0, white on the #f6f6f9 fill. The "not filterable" `ListSubheader` inherits
@@ -291,7 +291,7 @@ Cross-cutting traps:
 - **Other popups** (theme `menuSurface()`): `MuiMenu.paper` and `MuiAutocomplete.paper` are
   Linje's dropdown list (`DropdownList.scss:3-13`) / OverflowMenu (`OverflowMenu.scss:3-9`):
   fill #f2f5f7 (`Base menu/Fill-Default`), border #8284ab, radius 4, `BOX_SHADOW`. Border 2 px
-  on lists (Select menus via `:has(> [role="listbox"])`, autocompletes), 1 px on menus
+  on lists (Select menus via `MuiSelect` `MenuProps` paper `sx`, autocompletes), 1 px on menus
   (Columns, Density). Was MUI elevation 8 (menus) vs 1 (autocompletes). Item hover / selected
   are still MUI's (Linje: #d9ddf2 / #aeb7e2).
 

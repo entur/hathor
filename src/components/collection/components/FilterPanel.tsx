@@ -18,12 +18,7 @@ import {
   TextField,
 } from '@mui/material';
 import { FIELD_BASE } from '../../FormFields.tsx';
-import {
-  BOX_SHADOW,
-  LEGACY_RADIUS_PX,
-  POPOVER_BORDER,
-  POPOVER_FILL,
-} from '../../../theme/createThemeFromConfig.ts';
+import { POPOVER_SURFACE } from '../../../theme/createThemeFromConfig.ts';
 import type { CollectionFilters, CollectionLabels, Column, FilterFields } from '../types.ts';
 import { asList, asText, cleanList, withFilter } from '../utils/filters.ts';
 import { rowWith } from '../utils/values.ts';
@@ -82,14 +77,7 @@ export function FilterPanel({
           role: 'dialog',
           'aria-label': labels.filters,
           // Linje Popover, not MUI's elevation 8.
-          sx: {
-            width: POPOVER_W,
-            mt: 0.5,
-            bgcolor: POPOVER_FILL,
-            border: `1px solid ${POPOVER_BORDER}`,
-            borderRadius: `${LEGACY_RADIUS_PX}px`,
-            boxShadow: BOX_SHADOW,
-          },
+          sx: { width: POPOVER_W, mt: 0.5, ...POPOVER_SURFACE },
         },
       }}
     >
@@ -130,7 +118,7 @@ export function FilterPanel({
                 })
               }
               // The form's field: label inside, so Linje's focus ring has no notch to cross.
-              renderInput={params => <TextField {...params} variant="filled" label={c.label} />}
+              renderInput={params => <TextField {...params} {...FIELD_BASE} label={c.label} />}
             />
           )
         )}
