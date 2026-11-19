@@ -87,6 +87,16 @@ export const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
 // Linje Popover (`tooltip/Popover.scss`, `tooltip/Popover/Standard/*`): fill, 1 px border.
 export const POPOVER_FILL = '#f6f6f9',
   POPOVER_BORDER = '#54568c66';
+// Linje's dropdown list (`dropdown/components/DropdownList.scss:3-13`) and OverflowMenu
+// (`menu/OverflowMenu.scss:3-9`): `Base menu/Fill-Default` and `Border` (= the field border),
+// radius legacy 4, `boxShadow`. The list's border is 2 px, the menu's 1 px.
+const MENU_FILL = '#f2f5f7';
+const menuSurface = (borderPx: number) => ({
+  backgroundColor: MENU_FILL,
+  border: `${borderPx}px solid ${FIELD_BORDER}`,
+  borderRadius: LEGACY_RADIUS_PX,
+  boxShadow: BOX_SHADOW,
+});
 // Linje SegmentedControl (`form/segmentedControl/*.scss`, `form/Segmented Control/Standard/*`):
 // track, unselected hover; choices 24 px with 4 px around them (32 px track).
 const SEGMENT_TRACK = '#d9dae8',
@@ -338,6 +348,16 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       },
     },
   },
+  // Every popup one surface, not MUI's elevation 8 (menus) and 1 (autocompletes). A Select's
+  // menu (`role="listbox"`) is Linje's dropdown list, the rest its OverflowMenu.
+  MuiMenu: {
+    styleOverrides: {
+      paper: {
+        ...menuSurface(1),
+        '&:has(> [role="listbox"])': { borderWidth: FIELD_BORDER_PX },
+      },
+    },
+  },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
@@ -479,6 +499,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         // Same selector weight as MUI's own small `paddingBottom: 1`, so this one wins.
         '& .MuiFilledInput-root.MuiInputBase-sizeSmall': { paddingBottom: AC_PAD_BOTTOM_PX },
       },
+      paper: menuSurface(FIELD_BORDER_PX),
       popper: {
         '&[data-popper-placement^="bottom"] .MuiAutocomplete-paper': { marginTop: POPUP_OFFSET_PX },
         '&[data-popper-placement^="top"] .MuiAutocomplete-paper': {

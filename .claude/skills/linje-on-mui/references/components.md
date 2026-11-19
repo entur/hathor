@@ -20,7 +20,7 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
-- Popover (filter panel)
+- Popover (filter panel) and popup surfaces
 - SegmentedControl (ToggleButtonGroup)
 - Skeleton
 - SquareButton
@@ -276,7 +276,7 @@ Cross-cutting traps:
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
 
-## Popover (filter panel)
+## Popover (filter panel) and popup surfaces
 
 - **Linje**: `packages/tooltip/src/Popover.scss:3-9`; `tooltip/Popover/Standard/*`.
   - Fill #f6f6f9, 1 px border #54568c66, radius legacy medium 4, shadow `boxShadow`
@@ -287,7 +287,13 @@ Cross-cutting traps:
   - Fields inside are the form's (`FIELD_BASE`, filled Autocomplete): label inside, Linje's
     ring at offset 0, white on the #f6f6f9 fill. The "not filterable" `ListSubheader` inherits
     the fill.
-- **Status: done (#392).** Menus (Columns, Density) and Select popups keep MUI's paper.
+- **Status: done (#392).**
+- **Other popups** (theme `menuSurface()`): `MuiMenu.paper` and `MuiAutocomplete.paper` are
+  Linje's dropdown list (`DropdownList.scss:3-13`) / OverflowMenu (`OverflowMenu.scss:3-9`):
+  fill #f2f5f7 (`Base menu/Fill-Default`), border #8284ab, radius 4, `BOX_SHADOW`. Border 2 px
+  on lists (Select menus via `:has(> [role="listbox"])`, autocompletes), 1 px on menus
+  (Columns, Density). Was MUI elevation 8 (menus) vs 1 (autocompletes). Item hover / selected
+  are still MUI's (Linje: #d9ddf2 / #aeb7e2).
 
 ## SegmentedControl (ToggleButtonGroup)
 
