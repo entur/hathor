@@ -38,6 +38,27 @@ describe('createThemeFromConfig', () => {
     expect(slot(theme, 'MuiChip', 'root')).toEqual({ fontSize: theme.typography.body2.fontSize });
   });
 
+  it("gives buttons Linje's text and inset per size, a transparent border on contained", () => {
+    const theme = createThemeFromConfig({ ...CFG, components: {} });
+    const font = (key: string) => {
+      const { fontSize, lineHeight } = slot(theme, 'MuiButton', key);
+      return { fontSize, lineHeight };
+    };
+    expect(['sizeSmall', 'root', 'sizeLarge'].map(font)).toEqual([
+      { fontSize: '0.875rem', lineHeight: '1.25rem' },
+      { fontSize: '1rem', lineHeight: '1.5rem' },
+      { fontSize: '1.5rem', lineHeight: '2rem' },
+    ]);
+    const variants = theme.components?.MuiButton?.variants ?? [];
+    const style = (props: object) =>
+      variants.filter(v => JSON.stringify(v.props) === JSON.stringify(props)).map(v => v.style);
+    expect(['small', 'medium', 'large'].map(size => style({ variant: 'contained', size }))).toEqual(
+      [[{ paddingInline: 12 }], [{ paddingInline: 16 }], [{ paddingInline: 24 }]]
+    );
+    expect(style({ variant: 'outlined', size: 'medium' })).toEqual([{ paddingInline: 16 }]);
+    expect(style({ variant: 'contained' })).toContainEqual({ border: '2px solid transparent' });
+  });
+
   it('colours icons (action.active) in primary unless the theme file sets it', () => {
     const palette = { primary: { main: '#181c56' } };
     expect(createThemeFromConfig({ ...CFG, palette }).palette.action.active).toBe('#181c56');
