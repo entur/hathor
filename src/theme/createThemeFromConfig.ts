@@ -382,16 +382,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       // Linje placeholder, `Base form/Standard/Text-Label` (BaseFormControl.scss:51-53): MUI's
       // 0.42 opacity is 2.6:1, and a placeholder may carry the format (the import's add
       // field). MUI's own `!important` still hides it under a resting label.
-      // Linje has no stepper: a number is a plain text field, so drop the browser's spin
-      // buttons (squashed by the label-inside padding). Arrow keys still step.
-      input: {
-        '&::placeholder': { color: LABEL_COLOR, opacity: 1 },
-        '&[type=number]': { MozAppearance: 'textfield' },
-        '&::-webkit-inner-spin-button, &::-webkit-outer-spin-button': {
-          WebkitAppearance: 'none',
-          margin: 0,
-        },
-      },
+      input: { '&::placeholder': { color: LABEL_COLOR, opacity: 1 } },
       root: {
         '& .MuiInputBase-input.Mui-disabled': {
           color: DISABLED_TEXT,

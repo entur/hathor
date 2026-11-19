@@ -877,3 +877,31 @@ User test II (S5, #260) found MUI's floating labels animating while a form hydra
 
 - A form page's labels move up as the editor hydrates its values, as Linje's do.
 - The header picker's 40 px is MUI's small height, as in enki, off Linje's 32 / 48 scale.
+
+## Linje is a reference, not a dependency; Base UI fills MUI's gaps _(2026-11-19)_
+
+### Context
+
+Hathor follows Linje's look on MUI (`linje-on-mui` skill), and the 2026-11-16 ADR already keeps `@entur/typography` out because of Nationale. A scan of the published packages (`@entur/button` 5.2.2, `form` 10.3.2, `alert` 0.22.2, `chip` 0.14.0) found more than the font:
+- `@entur/typography` 3.2.1 bundles the Nationale files, and 10 of the packages depend on it.
+- Focus rings are a hardcoded `outline: 2px solid #181c56` (11 rules in form and button), so no token reaches them.
+- `Switch` sets its colour from JavaScript as an inline style.
+- The default labels are Norwegian (`Lukk`, `Fjern …`, `Velg alle`).
+
+PR #396 (#395) then hand-wrote a number parser, because MUI 9.5 has no number field (`@mui/material` docs: "does not include a number field component out of the box"). Base UI's `NumberField` has one.
+
+### Decision
+
+- **No `@entur/*` package in hathor.** Linje's docs, checkout and token JSON are the spec, and the values are copied into the theme.
+- **Behaviour comes from a library.** Use an MUI component if there is one. If not, use Base UI's headless part (`@base-ui/react`), styled from the MUI theme and trimmed to Linje's anatomy. Write your own only when neither library has it, with a `shortcut:` comment.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **`@entur/*` components** | Nationale reaches every fork's build. Focus rings and the switch colour ignore the theme. Labels are Norwegian by default. |
+| **Hand-rolled behaviour where MUI stops** | Re-invents parsing, keyboard and ARIA, and each copy is tested only by its own unit tests. |
+
+### Consequences
+
+- `@base-ui/react` is a dependency, first used by `FormNumberField` (#395, `FormFields.tsx`): it refuses letters as you type, so #396's first version, a hand-written error state and editor wiring, is gone. Its behaviour is listed under Numbers in the `linje-on-mui` skill's `components.md`.
