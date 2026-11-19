@@ -79,6 +79,14 @@ export const HOVER_FILL = '#d9ddf2',
 const NEGATIVE_HOVER = '#ffcece';
 const HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4';
+// Linje SegmentedControl (`form/segmentedControl/*.scss`, `form/Segmented Control/Standard/*`):
+// track, unselected hover, selected shadow; choices 24 px with 4 px around them (32 px track).
+const SEGMENT_TRACK = '#d9dae8',
+  SEGMENT_HOVER = '#eaeaf1',
+  SEGMENT_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
+const SEGMENT_HEIGHT_PX = 24,
+  SEGMENT_MARGIN_PX = 4,
+  SEGMENT_PAD = '2px 12px';
 // Linje Tooltip (`tooltip/Tooltip.scss`): accent fill, 14 px text, 5 / 10 px padding, radius 4.
 const TOOLTIP_PAD = '5px 10px';
 // Linje Skeleton (`loader/BaseSkeleton.scss`, `loader/skeleton/Standard/*`): fill, shimmer.
@@ -291,6 +299,38 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       },
     },
   },
+  // Linje SegmentedControl: choices on a tinted track, the selected one white and raised.
+  MuiToggleButtonGroup: {
+    styleOverrides: {
+      root: { backgroundColor: SEGMENT_TRACK, borderRadius: CARD_RADIUS_PX },
+      // MUI joins the buttons (shared borders, square inner corners); Linje spaces them.
+      grouped: {
+        margin: SEGMENT_MARGIN_PX,
+        border: 0,
+        borderRadius: LEGACY_RADIUS_PX,
+        '&&': { marginLeft: SEGMENT_MARGIN_PX, borderRadius: LEGACY_RADIUS_PX },
+      },
+    },
+  },
+  MuiToggleButton: {
+    // The focus ripple tints the white selected choice; Linje has the ring alone.
+    defaultProps: { disableRipple: true },
+    styleOverrides: {
+      root: {
+        height: SEGMENT_HEIGHT_PX,
+        padding: SEGMENT_PAD,
+        border: 0,
+        color: theme.palette.primary.main,
+        fontSize: theme.typography.body2.fontSize,
+        [CAN_HOVER]: { '&:hover': { backgroundColor: SEGMENT_HOVER } },
+        '&.Mui-selected, &.Mui-selected:hover': {
+          color: theme.palette.primary.main,
+          backgroundColor: theme.palette.common.white,
+          boxShadow: SEGMENT_SHADOW,
+        },
+      },
+    },
+  },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
@@ -336,10 +376,10 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       // Outlined fields are the small ones — toolbar, filters, the header picker — the label
       // in the outline's notch. Focus and error keep MUI's colours: focus is the 2 px border
       // turning primary. A labelled one gets no ring: an outline is a plain box and would
-      // strike the label; a label-less one (search, sort) gets Linje's (`notranslate` marks
-      // MUI's empty legend).
+      // strike the label; a label-less one (search, sort) gets Linje's field ring, offset 0
+      // (`notranslate` marks MUI's empty legend).
       root: {
-        [`&.Mui-focused:has(> ${NOTCH} .notranslate)`]: ring(theme.palette.primary.main),
+        [`&.Mui-focused:has(> ${NOTCH} .notranslate)`]: ring(theme.palette.primary.main, 0),
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [CAN_HOVER]: { [`&${HOVER}`]: { borderColor: theme.palette.primary.main } },
         // Touch: MUI's own reset paints a stuck `:hover` 0.23 black (1.7:1, WCAG 1.4.11); keep ours.

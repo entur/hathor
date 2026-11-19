@@ -20,6 +20,7 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- SegmentedControl (ToggleButtonGroup)
 - Skeleton
 - SquareButton
 - Switch
@@ -205,8 +206,9 @@ Cross-cutting traps:
   - `INSET_RING` (menu items, list buttons, tabs, grid cells) and `MuiDataGrid` cells and
     headers use offset −2.
   - Fields: the ring at offset 0 plus the navy border (`edge`).
-  - Small outlined fields without a notch label (toolbar search, Sort by): offset 2, via
-    `:has(> NOTCH .notranslate)` (MUI's empty legend). Labelled ones (filter panel, header,
+  - Small outlined fields without a notch label (toolbar search, Sort by): offset 0 like the
+    form fields (Linje `BaseFormControl.scss:41-43`), via `:has(> NOTCH .notranslate)` (MUI's
+    empty legend). Labelled ones (filter panel, header,
     TOC dropdown) keep only the navy border: a box ring would strike the notched label.
   - A clipping box keeps `RING_GUTTER` (4 px) inside, pulled back out: `FormSections`,
     `EditorFrame`, the collection scroller (`CollectionShell`).
@@ -272,6 +274,21 @@ Cross-cutting traps:
   - Spread `params.slotProps` in `renderInput` (MUI 9).
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
+
+## SegmentedControl (ToggleButtonGroup)
+
+- **Linje**: `packages/form/src/segmentedControl/SegmentedChoice.scss:3-24,41-74`,
+  `SegmentedControl.scss:8-18`; `form/Segmented Control/Standard/*`.
+  - Track #d9dae8, radius 8. Choice 24 px, margin 4 (32 px track, 8 px between), padding
+    2 / 12, radius 4 (`border-widths-large`), 14 px text, icon and text #181c56.
+  - Unselected transparent, hover #eaeaf1. Selected white, shadow `0 1px 3px` black 25 %.
+  - Focus 2 px offset 2. Large: choice 40 px (48 px track), 16 px text.
+- **MUI**: theme `MuiToggleButtonGroup` (track; `grouped` drops MUI's joined borders and square
+  inner corners, `&&` to beat its first / last / middle rules) and `MuiToggleButton` (choice,
+  `disableRipple`: the focus ripple tinted the white choice). Ring from `MuiButtonBase`. Used by
+  the collection toolbar's Table / Cards (`CollectionToolbar.tsx`, `size="small"`, 20 px icons).
+- **Status: done (#392).** Medium only; no large or contrast variant (nothing uses them).
+- **Trap**: the track is 32 px in a toolbar of 40 px fields (#394).
 
 ## Skeleton
 
