@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { FormFieldLink } from '../components/form-layout/formFieldContext.ts';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { runDeactivate, runSave, type FlowCtx, type WriteResult } from './entityEditorFlow.ts';
 import { useDirtyFormBlock } from './useDirtyFormBlock.ts';
@@ -72,11 +71,6 @@ export interface EntityEditor<T, F> {
   notFound: boolean;
   form: F;
   setForm: (form: F) => void;
-  /** For `FormFieldContext`: the reset key (bumped on Cancel and each read of the record) and
-   *  the fields' invalid reports. */
-  fieldLink: FormFieldLink;
-  /** A field holds text it cannot pass on: why Save waits. */
-  hasInvalid: boolean;
   saveError: string | null;
   clearSaveError: () => void;
   warning: string | null;
@@ -117,21 +111,6 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const [warning, setWarning] = useState<string | null>(null);
   // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
-  const [resetKey, setResetKey] = useState(0);
-  // Fields holding text they cannot pass on (a number field's "12a"): Save waits, leaving asks.
-  const [invalid, setInvalid] = useState<ReadonlySet<string>>(new Set());
-  const onInvalid = useCallback(
-    (id: string, bad: boolean) =>
-      setInvalid(s => {
-        if (s.has(id) === bad) return s;
-        const next = new Set(s);
-        if (bad) next.add(id);
-        else next.delete(id);
-        return next;
-      }),
-    []
-  );
-  const fieldLink = useMemo(() => ({ resetKey, onInvalid }), [resetKey, onInvalid]);
 
   const {
     data: record,
@@ -143,14 +122,11 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
 
   // Re-baseline on every read of the record — the first one and each post-save re-read.
   useEffect(() => {
-    if (record) {
-      setState(s => fs.hydrate(s, record));
-      setResetKey(k => k + 1);
-    }
+    if (record) setState(s => fs.hydrate(s, record));
   }, [record, fs]);
 
-  const isDirty = fs.isDirty(state) || invalid.size > 0;
-  const canSubmit = invalid.size === 0 && (cfg.canSubmit?.(state.form, isCreate) ?? true);
+  const isDirty = fs.isDirty(state);
+  const canSubmit = cfg.canSubmit?.(state.form, isCreate) ?? true;
   useDirtyFormBlock(isDirty);
   useLiftEditorDirty(isDirty);
 
@@ -226,8 +202,6 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     notFound: !isCreate && !record && !loading && !fetchError,
     form: state.form,
     setForm: form => setState(s => fs.edit(s, form)),
-    fieldLink,
-    hasInvalid: invalid.size > 0,
     saveError,
     clearSaveError: () => setSaveError(null),
     warning,
@@ -249,10 +223,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
         record && !deactivated && !settling && !deactivating ? onDeactivate(record) : undefined,
       // The committed baseline, not `record`: after a create whose list reload failed
       // there is no record yet, and the baseline holds the new id.
-      onCancel: () => {
-        setState(fs.restore);
-        setResetKey(k => k + 1);
-      },
+      onCancel: () => setState(fs.restore),
       onSave,
     },
   };

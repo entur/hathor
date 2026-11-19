@@ -10,15 +10,33 @@ description: >-
   restyles or reviews fields, labels, helper text, buttons, focus rings, checkboxes or switches, loaders, chips, tooltips,
   the header org picker, or FormSections spacing and widths; when it mentions "Linje",
   linje.entur.no, "Entur design system", eds-, or UU for a visual; or when it asks to verify a
-  theme commit in Storybook, even without naming Linje. Not for enki/NPlan alignment (use the
-  `enki` skill).
+  theme commit in Storybook, even without naming Linje. Also use it before hand-writing
+  component behaviour (a parser, key handling, focus) that MUI lacks: it points to Base UI.
+  Not for enki/NPlan alignment (use the `enki` skill).
 ---
 
 # Linje on MUI (hathor)
 
-Hathor uses MUI 9.5, not `@entur/*`. Linje is the **spec**: copy its numbers and colours into
-the MUI theme, then prove the result by measuring computed styles in Storybook. Code reading
-alone misses specificity outcomes.
+Hathor uses MUI 9.5 and **never installs an `@entur/*` package**. Linje is the **spec**: copy
+its numbers and colours from its docs, the local checkout and the token JSON into the MUI theme.
+Then prove the result by measuring computed styles in Storybook, because reading the code alone
+misses specificity outcomes. The packages ship Nationale and leak Entur into every fork
+(`FORK_DECISIONS.md` 2026-11-19).
+
+## Behaviour: MUI first, then Base UI, never invented
+
+Linje gives the look. Keyboard handling, parsing, focus and ARIA come from a library:
+1. **An MUI component**, themed (`components.md`).
+2. **If MUI has none, Base UI's headless part** (`@base-ui/react`).
+   - Style it with the same theme values, through `sx` or `styled()`, so a theme JSON still
+     re-colours it.
+   - Leave out the parts Linje lacks, e.g. NumberField's increment and decrement buttons.
+3. **Own code** only when neither library has the behaviour, with a `shortcut:` comment that
+   names the gap.
+
+Before you write a parser, a key handler or focus management, check Base UI's component list
+(https://base-ui.com/react/components). First case: `FormNumberField` (#395), Base UI's
+NumberField rendered as the form's TextField.
 
 ## Upstream
 

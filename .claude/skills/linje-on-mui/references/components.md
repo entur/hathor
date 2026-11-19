@@ -352,12 +352,11 @@ Cross-cutting traps:
   - **`MuiInputBase`**: disabled text `DISABLED_TEXT`, plus `WebkitTextFillColor`, or Chrome
     keeps MUI's grey.
   - **Numbers**: Linje has no stepper (a number is a plain TextField), so `FormNumberField`
-    is a text input with `inputMode="decimal"`: no spin buttons, `,` or `.` decimal. Text
-    that is not a number keeps showing, turns the field to error ("Enter a number") and is
-    not reported; the editor holds Save ("Fix the fields with errors") and asks before
-    leaving until it is fixed or cancelled (`FormFieldContext`). `type="number"` let Firefox
-    take letters as an empty value: the label fell back over them and the form lost its
-    number.
+    is Base UI's NumberField rendered as the form's TextField, without the increment and
+    decrement buttons. It refuses keys that can't make a number, reads the decimal and
+    thousands marks of the UI language (`i18n.resolvedLanguage`), formats when you leave the
+    field, and steps with the arrow keys. `type="number"` let Firefox take letters as an empty
+    value: the label fell back over them and the form lost its number (#395).
 - **Measured** (vehicle-types edit):
   - root 48, radius 8
   - label x16, resting y13 (16 px), raised y4 (12 px)

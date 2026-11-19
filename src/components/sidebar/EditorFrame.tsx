@@ -14,7 +14,6 @@ import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   EditFooter,
   FormFooterContext,
-  FormFieldContext,
   FORM_PAGE_MAX_WIDTH,
   RING_GUTTER,
   formColumnWidth,
@@ -210,7 +209,7 @@ export default function EditorFrame<T, F>({
         cancel: t('cancel'),
         dirty: t('editFooter.dirty'),
         saving: t('saving'),
-        missing: t(editor.hasInvalid ? 'editFooter.invalid' : 'editFooter.missing'),
+        missing: t('editFooter.missing'),
         nothing: t('editFooter.nothing'),
         saved: t('editFooter.saved'),
       }}
@@ -329,9 +328,7 @@ export default function EditorFrame<T, F>({
             onRetry={() => void editor.refetch().catch(() => {})}
             testIdPrefix={`${testId}-record`}
           >
-            <FormFieldContext.Provider value={editor.fieldLink}>
-              {children}
-            </FormFieldContext.Provider>
+            {children}
           </BodyState>
         </Box>
       </FormFooterContext.Provider>

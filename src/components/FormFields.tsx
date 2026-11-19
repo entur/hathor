@@ -1,5 +1,6 @@
-import { useContext, useEffect, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { NumberField } from '@base-ui/react/number-field';
 import {
   Autocomplete,
   Box,
@@ -11,16 +12,12 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { blankToUndefined } from '../utils/blankToUndefined.ts';
-import { FormFieldContext } from './form-layout/formFieldContext.ts';
 import { CAN_HOVER, FIELD_BORDER, HOVER_FILL, ringOn } from '../theme/createThemeFromConfig.ts';
 
 // What every text-like field in a sidebar form shares: Linje's 48 px field, its label inside
 // the box until focused or filled — MUI's small filled field (createThemeFromConfig
 // `MuiFilledInput`). Its width is the form layout's (`KIND_WIDTH`, at most two per row).
 export const FIELD_BASE = { fullWidth: true, variant: 'filled', size: 'small' } as const;
-// A typed number: an optional sign, digits, `.` or `,` as the decimal mark, an exponent (how
-// `String()` writes a very small or large one).
-const NUMBER_RE = /^[-+]?(\d+([.,]\d*)?|[.,]\d+)([eE][-+]?\d+)?$/;
 
 // Linje Checkbox (`@entur/form` Checkbox.scss:170-183, `form/Checkbox/Standard/*`): a 20 px box,
 // 2 px accent border, radius 2 (legacy medium / 2), accent fill and white check when checked.
@@ -125,26 +122,15 @@ interface FormNumberFieldProps extends FieldProps {
   onChange: (value: number | undefined) => void;
 }
 
-/** Parse what was typed: `undefined` when blank, `null` when it is not a number. */
-const parseNumber = (text: string): number | undefined | null => {
-  const s = text.trim();
-  if (s === '') return undefined;
-  if (!NUMBER_RE.test(s)) return null;
-  const n = Number(s.replace(',', '.'));
-  // Too many digits read as Infinity, which JSON sends as null: not a number either.
-  return Number.isFinite(n) ? n : null;
-};
-
 /**
- * Numeric field for a sidebar form: a text input with a number keypad, as Linje has no
- * stepper. A blank input is reported as `undefined`, never `0` or `NaN`; text that is not a
- * number shows an error and is not reported, so the form keeps its last number, and the
- * editor (`FormFieldContext`) holds Save until it is fixed or cancelled. Its width is
- * the form layout's (`KIND_WIDTH`: half a row).
+ * Numeric field for a sidebar form: Base UI's NumberField (parsing, keys, ARIA) in the
+ * form's text field, with no stepper buttons, as Linje has none. It takes only what can make a
+ * number, with the decimal and thousands marks of the UI language. A blank input is reported
+ * as `undefined`, never `0` or `NaN`. Its width is the form layout's (`KIND_WIDTH`: half a row).
  *
  * @param id       DOM id of the input.
  * @param label    Field label.
- * @param value    Current number; `undefined` or `null` renders an empty input.
+ * @param value    Current number; `undefined` or `null` (Sobek's unset count) renders empty.
  * @param onChange Fired with the parsed number, or `undefined` when cleared.
  * @param disabled Render the field greyed out.
  * @param readOnly Render the field read-only, not greyed out.
@@ -153,56 +139,35 @@ const parseNumber = (text: string): number | undefined | null => {
 export function FormNumberField({
   id,
   label,
+  value,
   onChange,
   disabled,
   readOnly,
-  value: rawValue,
 }: FormNumberFieldProps) {
-  const { t } = useTranslation();
-  // Sobek sends an unset count inside a type's capacity as `null`; `null` is also the parser's
-  // "not a number", so blank is `undefined` here.
-  const value = rawValue ?? undefined;
-  // The typed text, kept so a bad entry stays visible; reset when the value changes elsewhere
-  // (load, cancel).
-  const [text, setText] = useState(String(value ?? ''));
-  const [shown, setShown] = useState(value);
-  // Cancel or a re-read can put back the very number shown: the reset key says so.
-  const { resetKey, onInvalid } = useContext(FormFieldContext);
-  const [seenReset, setSeenReset] = useState(resetKey);
-  const parsed = parseNumber(text);
-  if (value !== shown || resetKey !== seenReset) {
-    setShown(value);
-    setSeenReset(resetKey);
-    if (parsed !== value) setText(String(value ?? ''));
-  }
-  const bad = parsed === null;
-  // While it shows text that is not a number, the editor holds Save and asks before leaving.
-  useEffect(() => {
-    if (!bad) return;
-    onInvalid?.(id, true);
-    return () => onInvalid?.(id, false);
-  }, [bad, id, onInvalid]);
+  const { i18n } = useTranslation();
   const { slotProps, ...base } = fieldBase(readOnly);
   return (
-    <TextField
-      id={id}
-      label={label}
-      value={text}
-      onChange={e => {
-        setText(e.target.value);
-        const n = parseNumber(e.target.value);
-        if (n !== null) {
-          setShown(n);
-          onChange(n);
-        }
-      }}
+    <NumberField.Root
+      value={value ?? null}
+      onValueChange={n => onChange(n ?? undefined)}
+      locale={i18n.resolvedLanguage ?? 'en'}
       disabled={disabled}
-      error={bad}
-      helperText={bad ? t('common.notANumber') : undefined}
-      {...base}
-      // Phones show a number keypad.
-      slotProps={{ ...slotProps, htmlInput: { inputMode: 'decimal' } }}
-    />
+      readOnly={readOnly}
+    >
+      <NumberField.Input
+        id={id}
+        render={props => (
+          <TextField
+            id={id}
+            label={label}
+            disabled={disabled}
+            {...base}
+            // MUI's input runs Base UI's handlers, ref and value from here.
+            slotProps={{ ...slotProps, htmlInput: props }}
+          />
+        )}
+      />
+    </NumberField.Root>
   );
 }
 
