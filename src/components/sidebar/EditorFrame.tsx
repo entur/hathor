@@ -1,6 +1,15 @@
 import { useState, type ReactElement, type ReactNode } from 'react';
 import { useBlocker } from 'react-router-dom';
-import { Box, Button, Divider, IconButton, Skeleton, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Skeleton,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
@@ -303,18 +312,23 @@ export default function EditorFrame<T, F>({
           {!frozen && editor.record && !editor.isCreate && (
             <>
               <Divider orientation="vertical" flexItem />
-              <Button
-                size="small"
-                variant="outlined"
-                color="error"
-                // Unsaved edits first: a deactivate would leave them in limbo. No handler
-                // while a save or deactivate settles.
-                disabled={!actions.onDeactivate || actions.isDirty}
-                onClick={() => setConfirmDeactivate(true)}
-                data-testid="editor-page-deactivate"
-              >
-                {t('common.deactivate')}
-              </Button>
+              {/* The span takes the hover and focus a disabled button doesn't; the tooltip says why. */}
+              <Tooltip title={actions.isDirty ? t('common.deactivateDirty') : ''} describeChild>
+                <span tabIndex={actions.isDirty ? 0 : undefined}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    // Unsaved edits first: a deactivate would leave them in limbo. No handler
+                    // while a save or deactivate settles.
+                    disabled={!actions.onDeactivate || actions.isDirty}
+                    onClick={() => setConfirmDeactivate(true)}
+                    data-testid="editor-page-deactivate"
+                  >
+                    {t('common.deactivate')}
+                  </Button>
+                </span>
+              </Tooltip>
             </>
           )}
         </Stack>

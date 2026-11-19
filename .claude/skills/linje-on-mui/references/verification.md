@@ -26,7 +26,7 @@ Code reading misses specificity outcomes, so measure computed styles. State as o
 | `components-editorframe-fullpage-vehicle-types--deactivated` | read-only throughout a whole form page |
 | `components-editorframe-fullpage-vehicles--edit` / `--create` | vehicle form, required VehicleType picker, the `required` star |
 | `components-form-layout-formsections--vehicle-type` | gaps and ≤ 2 per row (`[data-width]`, `[data-section]`, `h2`) |
-| `components-entitycollection-vehicles--grid` | small outlined fields: toolbar search and sort, filter panel |
+| `components-entitycollection-vehicles--grid` | small outlined fields: toolbar search and sort; filter panel (Linje Popover, form-size fields) |
 | `pages-home--complete` | header org picker on the navy |
 
 To reach disabled, error or focus states that no story renders, add the state class just

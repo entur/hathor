@@ -15,7 +15,6 @@ import { useState, type ReactNode } from 'react';
 import {
   Box,
   Checkbox,
-  IconButton,
   Menu,
   MenuItem,
   Stack,
@@ -39,11 +38,12 @@ import type {
   Column,
   FilterFields,
 } from '../types.ts';
+import SquareButton from '../../SquareButton.tsx';
 import { QueryField } from './QueryField.tsx';
 
 const DENSITIES: GridDensity[] = ['compact', 'standard', 'comfortable'];
 const GRID_ONLY: readonly CollectionTool[] = ['columns', 'density'];
-const SORT_W = 180;
+const SORT_W = 180; // the least; "Sort by: <column>" widens it
 const NO_SORT = ''; // select value for "unsorted"
 // The view switch, in its order: rows, then cards.
 const VIEW_ICONS: Record<CollectionView, ReactNode> = {
@@ -52,7 +52,7 @@ const VIEW_ICONS: Record<CollectionView, ReactNode> = {
 };
 const VIEWS = Object.keys(VIEW_ICONS) as CollectionView[];
 
-/** An icon button that opens a menu; owns its anchor. `children` gets `close`. */
+/** A square icon button (Linje SquareButton) that opens a menu; owns its anchor. `children` gets `close`. */
 function ToolMenu({
   label,
   icon,
@@ -67,15 +67,14 @@ function ToolMenu({
   return (
     <>
       <Tooltip title={label}>
-        <IconButton
+        <SquareButton
           size="small"
+          icon={icon}
           aria-label={label}
           aria-haspopup="menu"
           aria-expanded={!!anchor}
           onClick={e => setAnchor(e.currentTarget)}
-        >
-          {icon}
-        </IconButton>
+        />
       </Tooltip>
       <Menu open={!!anchor} anchorEl={anchor} onClose={close}>
         {children(close)}
@@ -159,14 +158,24 @@ export function CollectionToolbar({
           <TextField
             select
             size="small"
-            label={labels.sortBy}
+            // No notch label: it would cross Linje's focus ring (#392). The caption sits in the box.
             value={sorted?.field ?? NO_SORT}
+            slotProps={{
+              htmlInput: { 'aria-label': labels.sortBy },
+              select: {
+                displayEmpty: true,
+                renderValue: v => {
+                  const col = columns.find(c => c.key === v);
+                  return col ? `${labels.sortBy}: ${col.label}` : labels.sortBy;
+                },
+              },
+            }}
             onChange={e =>
               onQuery({
                 sort: e.target.value ? { field: e.target.value, dir: sorted?.dir ?? 'asc' } : null,
               })
             }
-            sx={{ width: SORT_W }}
+            sx={{ minWidth: SORT_W }}
           >
             <MenuItem value={NO_SORT}>{labels.sortNone}</MenuItem>
             {columns.map(c => (
@@ -177,21 +186,22 @@ export function CollectionToolbar({
           </TextField>
           <Tooltip title={labels.sortDirection}>
             <span>
-              <IconButton
+              <SquareButton
                 size="small"
+                icon={
+                  sorted?.dir === 'desc' ? (
+                    <ArrowDownwardIcon fontSize="small" />
+                  ) : (
+                    <ArrowUpwardIcon fontSize="small" />
+                  )
+                }
                 aria-label={labels.sortDirection}
                 disabled={!sorted}
                 onClick={() =>
                   sorted &&
                   onQuery({ sort: { ...sorted, dir: sorted.dir === 'asc' ? 'desc' : 'asc' } })
                 }
-              >
-                {sorted?.dir === 'desc' ? (
-                  <ArrowDownwardIcon fontSize="small" />
-                ) : (
-                  <ArrowUpwardIcon fontSize="small" />
-                )}
-              </IconButton>
+              />
             </span>
           </Tooltip>
         </>

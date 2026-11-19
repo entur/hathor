@@ -20,6 +20,8 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- Popover (filter panel) and popup surfaces
+- SegmentedControl (ToggleButtonGroup)
 - Skeleton
 - SquareButton
 - Switch
@@ -89,12 +91,12 @@ Cross-cutting traps:
 - **Status: partial.** Sizes and radius are done. Outlined is Secondary, and outlined
   `color="error"` is Negative: `MuiButton.variants` sets MUI's `--variant-outlined*` vars
   (`:active` after hover). Small outlined pads 2 / 8 so the 2 px border keeps 32 px. In use:
-  Deactivate (`EditorFrame`), `DeactivateDialog`, `DiscardDialog`. Still open (#392):
-  - The contained hover uses MUI's `primary.dark`, which is darker; Linje's hover #393d79 is
-    lighter. Set `palette.primary.dark`, or use `&:hover` in `MuiButton.contained`.
-  - Inline padding is MUI's 10 / 16 / 22.
+  Deactivate (`EditorFrame`), `DeactivateDialog`, `DiscardDialog`. Contained (#392):
+  primary hover `PRIMARY_HOVER` #393d79 via `--variant-containedBg` (MUI's `primary.dark` is
+  darker); inline padding `BUTTON_PAD_X_*` 12 / 16 / 24. Measured: small Save pad 12, hover
+  #393d79. Deactivate, disabled while dirty, says why in a tooltip ("Save or cancel first").
 - **Traps:** red text on the #ffcece hover is about 3.8:1 (Linje's own spec, under WCAG 1.4.3's
-  4.5:1). A Negative button disabled while the form is dirty gives no reason (#392).
+  4.5:1). Open (#392): accept or darken.
 
 ## Checkbox
 
@@ -205,6 +207,12 @@ Cross-cutting traps:
   - `INSET_RING` (menu items, list buttons, tabs, grid cells) and `MuiDataGrid` cells and
     headers use offset −2.
   - Fields: the ring at offset 0 plus the navy border (`edge`).
+  - Small outlined fields without a notch label (toolbar search, Sort by): offset 0 like the
+    form fields (Linje `BaseFormControl.scss:41-43`), via `:has(> NOTCH .notranslate)` (MUI's
+    empty legend). Labelled ones (header, TOC dropdown) keep only the navy border: a box ring
+    would strike the notched label. The filter panel uses form-size fields instead (#392).
+  - A clipping box keeps `RING_GUTTER` (4 px) inside, pulled back out: `FormSections`,
+    `EditorFrame`, the collection scroller (`CollectionShell`).
   - Header: `FOCUS_CONTRAST`.
 - **Status: done (#256).** Read-only fields keep the ring (WCAG 2.4.7, deviates from Linje).
 
@@ -268,6 +276,40 @@ Cross-cutting traps:
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
 
+## Popover (filter panel) and popup surfaces
+
+- **Linje**: `packages/tooltip/src/Popover.scss:3-9`; `tooltip/Popover/Standard/*`.
+  - Fill #f6f6f9, 1 px border #54568c66, radius legacy medium 4, shadow `boxShadow`
+    (`0 1px 3px` black 25 %). Text and icons #181c56.
+- **MUI**: `Popover` paper `sx` in `FilterPanel.tsx` spreads the theme's `POPOVER_SURFACE`
+  (`POPOVER_FILL`, `POPOVER_BORDER`, `LEGACY_RADIUS_PX`, `BOX_SHADOW`), not MUI's elevation 8. Not a theme `MuiPopover` rule:
+  `Menu` and Select popups are Popovers too, and Linje draws those as its dropdown list.
+  - Fields inside are the form's (`FIELD_BASE`, filled Autocomplete): label inside, Linje's
+    ring at offset 0, white on the #f6f6f9 fill. The "not filterable" `ListSubheader` inherits
+    the fill.
+- **Status: done (#392).**
+- **Other popups** (theme `menuSurface()`): `MuiMenu.paper` and `MuiAutocomplete.paper` are
+  Linje's dropdown list (`DropdownList.scss:3-13`) / OverflowMenu (`OverflowMenu.scss:3-9`):
+  fill #f2f5f7 (`Base menu/Fill-Default`), border #8284ab, radius 4, `BOX_SHADOW`. Border 2 px
+  on lists (Select menus via `MuiSelect` `MenuProps` paper `sx`, autocompletes), 1 px on menus
+  (Columns, Density). Was MUI elevation 8 (menus) vs 1 (autocompletes). Item hover / selected
+  are still MUI's (Linje: #d9ddf2 / #aeb7e2).
+
+## SegmentedControl (ToggleButtonGroup)
+
+- **Linje**: `packages/form/src/segmentedControl/SegmentedChoice.scss:3-24,41-74`,
+  `SegmentedControl.scss:8-18`; `form/Segmented Control/Standard/*`.
+  - Track #d9dae8, radius 8. Choice 24 px, margin 4 (32 px track, 8 px between), padding
+    2 / 12, radius 4 (`border-widths-large`), 14 px text, icon and text #181c56.
+  - Unselected transparent, hover #eaeaf1. Selected white, shadow `0 1px 3px` black 25 %.
+  - Focus 2 px offset 2. Large: choice 40 px (48 px track), 16 px text.
+- **MUI**: theme `MuiToggleButtonGroup` (track; `grouped` drops MUI's joined borders and square
+  inner corners, `&&` to beat its first / last / middle rules) and `MuiToggleButton` (choice,
+  `disableRipple`: the focus ripple tinted the white choice). Ring from `MuiButtonBase`. Used by
+  the collection toolbar's Table / Cards (`CollectionToolbar.tsx`, `size="small"`, 20 px icons).
+- **Status: done (#392).** Medium only; no large or contrast variant (nothing uses them).
+- **Trap**: the track and the toolbar's SquareButtons are 32 px beside 40 px fields (#394).
+
 ## Skeleton
 
 - **Linje**: `packages/loader/src/BaseSkeleton.scss:19-24`; `loader/skeleton/Standard/*`: fill
@@ -286,10 +328,14 @@ Cross-cutting traps:
   tokens.
   - Square at the button heights (32 / 48 / 64), radius 6 / 8 / 8.
   - Border #8284ab, hover #d9ddf2, active #aeb7e2, icon #181c56.
+  - Disabled (`:164-179`): dashed border #949699 (`Base colors/Stroke/Disabled`), icon and
+    label #6e6f73.
 - **MUI**: none in MUI; `src/components/SquareButton.tsx` on `ButtonBase`: icon in a 48 / 32 px
-  square (medium / small), 2 px border, radius 8 / 6, label 8 / 4 px beside it; hover inside
-  `@media (hover: hover)`; the ring on the square only (root outline off); `to` makes it a
-  router link. Used by `NewEntityFab` and `SiteNavCards` (card footer, CreateRow).
+  square (medium / small), 2 px border, radius 8 / 6, label 8 / 4 px beside it (no label: icon
+  only, needs `aria-label`); hover inside `@media (hover: hover)`; the ring on the square only
+  (root outline off); `to` makes it a router link. Used by `NewEntityFab`, `SiteNavCards` (card
+  footer, CreateRow) and the collection toolbar's sort direction, Columns and Density (small,
+  icon only, #392).
 - **Trap**: on a tinted ground (#d9ddf2) the border is 2.67:1 and hover invisible; keep it on
   white (the CreateRow tile is `background.paper`).
 - **Status: done (#389).**
@@ -368,9 +414,11 @@ Cross-cutting traps:
   - Don't set `transform` on the label. MUI's variant and size transforms (rest and shrink)
     own it. The CSS `translate` property adds to them.
   - A real `border` would grow the 48 px box; use `edge()`.
-  - Small fields stay outlined (`MuiOutlinedInput`: 2 px #8284ab notch, hover via the exact
-    `HOVER` selector, focus ring, read-only and disabled). They are the toolbar, filter
-    panel and header picker.
+  - Small fields stay outlined (`MuiOutlinedInput`: 2 px #8284ab notch, radius 6
+    (`FIELD_RADIUS_SMALL_PX`, Figma `form/base form/radius/Small`, as the small buttons),
+    hover via the exact `HOVER` selector, focus ring, read-only and disabled). They are the
+    toolbar and header picker (the filter panel has form-size fields, #392). Sort by has no notch label (#392): `displayEmpty` +
+    `renderValue` shows "Sort by" / "Sort by: <column>", `aria-label` keeps its name.
   - MUI 9's own outlined hover is `&:hover .MuiOutlinedInput-notchedOutline`
     (`node_modules/@mui/material/OutlinedInput/OutlinedInput.js:54`), reset under
     `@media (hover: none)`. Hathor's `HOVER` (`:hover:not(.Mui-disabled):not(.Mui-error) …`) is
