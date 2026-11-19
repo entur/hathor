@@ -19,7 +19,7 @@ const FOCUS_CONTRAST = '#aeb7e2';
 // Linje's accent (`Text/Accent`, Lavender/90): tooltip fill, alert text, pressed icons.
 const ACCENT = '#181c56';
 // Linje's legacy `border-radiuses-medium`: icon buttons, tooltips, alert boxes.
-const LEGACY_RADIUS_PX = 4;
+export const LEGACY_RADIUS_PX = 4;
 // Linje `--font-weights-*` (#258): Nationale ships only these two.
 const BODY_WEIGHT = 500,
   HEADING_WEIGHT = 600;
@@ -82,11 +82,15 @@ export const HOVER_FILL = '#d9ddf2',
 const NEGATIVE_HOVER = '#ffcece';
 const HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4';
+// Linje `shadows.boxShadow` (`legacy-tokens.ts`): a selected segment, a popover.
+export const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
+// Linje Popover (`tooltip/Popover.scss`, `tooltip/Popover/Standard/*`): fill, 1 px border.
+export const POPOVER_FILL = '#f6f6f9',
+  POPOVER_BORDER = '#54568c66';
 // Linje SegmentedControl (`form/segmentedControl/*.scss`, `form/Segmented Control/Standard/*`):
-// track, unselected hover, selected shadow; choices 24 px with 4 px around them (32 px track).
+// track, unselected hover; choices 24 px with 4 px around them (32 px track).
 const SEGMENT_TRACK = '#d9dae8',
-  SEGMENT_HOVER = '#eaeaf1',
-  SEGMENT_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
+  SEGMENT_HOVER = '#eaeaf1';
 const SEGMENT_HEIGHT_PX = 24,
   SEGMENT_MARGIN_PX = 4,
   SEGMENT_PAD = '2px 12px';
@@ -329,7 +333,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         '&.Mui-selected, &.Mui-selected:hover': {
           color: theme.palette.primary.main,
           backgroundColor: theme.palette.common.white,
-          boxShadow: SEGMENT_SHADOW,
+          boxShadow: BOX_SHADOW,
         },
       },
     },
@@ -376,7 +380,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   },
   MuiOutlinedInput: {
     styleOverrides: {
-      // Outlined fields are the small ones — toolbar, filters, the header picker — the label
+      // Outlined fields are the small ones — toolbar, the header picker — the label
       // in the outline's notch. Focus and error keep MUI's colours: focus is the 2 px border
       // turning primary. A labelled one gets no ring: an outline is a plain box and would
       // strike the label; a label-less one (search, sort) gets Linje's field ring, offset 0

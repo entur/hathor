@@ -20,6 +20,7 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- Popover (filter panel)
 - SegmentedControl (ToggleButtonGroup)
 - Skeleton
 - SquareButton
@@ -208,8 +209,8 @@ Cross-cutting traps:
   - Fields: the ring at offset 0 plus the navy border (`edge`).
   - Small outlined fields without a notch label (toolbar search, Sort by): offset 0 like the
     form fields (Linje `BaseFormControl.scss:41-43`), via `:has(> NOTCH .notranslate)` (MUI's
-    empty legend). Labelled ones (filter panel, header,
-    TOC dropdown) keep only the navy border: a box ring would strike the notched label.
+    empty legend). Labelled ones (header, TOC dropdown) keep only the navy border: a box ring
+    would strike the notched label. The filter panel uses form-size fields instead (#392).
   - A clipping box keeps `RING_GUTTER` (4 px) inside, pulled back out: `FormSections`,
     `EditorFrame`, the collection scroller (`CollectionShell`).
   - Header: `FOCUS_CONTRAST`.
@@ -274,6 +275,19 @@ Cross-cutting traps:
   - Spread `params.slotProps` in `renderInput` (MUI 9).
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
+
+## Popover (filter panel)
+
+- **Linje**: `packages/tooltip/src/Popover.scss:3-9`; `tooltip/Popover/Standard/*`.
+  - Fill #f6f6f9, 1 px border #54568c66, radius legacy medium 4, shadow `boxShadow`
+    (`0 1px 3px` black 25 %). Text and icons #181c56.
+- **MUI**: `Popover` paper `sx` in `FilterPanel.tsx` (`POPOVER_FILL`, `POPOVER_BORDER`,
+  `LEGACY_RADIUS_PX`, `BOX_SHADOW`), not MUI's elevation 8. Not a theme `MuiPopover` rule:
+  `Menu` and Select popups are Popovers too, and Linje draws those as its dropdown list.
+  - Fields inside are the form's (`FIELD_BASE`, filled Autocomplete): label inside, Linje's
+    ring at offset 0, white on the #f6f6f9 fill. The "not filterable" `ListSubheader` inherits
+    the fill.
+- **Status: done (#392).** Menus (Columns, Density) and Select popups keep MUI's paper.
 
 ## SegmentedControl (ToggleButtonGroup)
 
@@ -395,7 +409,7 @@ Cross-cutting traps:
   - Small fields stay outlined (`MuiOutlinedInput`: 2 px #8284ab notch, radius 6
     (`FIELD_RADIUS_SMALL_PX`, Figma `form/base form/radius/Small`, as the small buttons),
     hover via the exact `HOVER` selector, focus ring, read-only and disabled). They are the
-    toolbar, filter panel and header picker. Sort by has no notch label (#392): `displayEmpty` +
+    toolbar and header picker (the filter panel has form-size fields, #392). Sort by has no notch label (#392): `displayEmpty` +
     `renderValue` shows "Sort by" / "Sort by: <column>", `aria-label` keeps its name.
   - MUI 9's own outlined hover is `&:hover .MuiOutlinedInput-notchedOutline`
     (`node_modules/@mui/material/OutlinedInput/OutlinedInput.js:54`), reset under

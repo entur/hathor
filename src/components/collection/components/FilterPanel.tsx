@@ -17,6 +17,13 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
+import { FIELD_BASE } from '../../FormFields.tsx';
+import {
+  BOX_SHADOW,
+  LEGACY_RADIUS_PX,
+  POPOVER_BORDER,
+  POPOVER_FILL,
+} from '../../../theme/createThemeFromConfig.ts';
 import type { CollectionFilters, CollectionLabels, Column, FilterFields } from '../types.ts';
 import { asList, asText, cleanList, withFilter } from '../utils/filters.ts';
 import { rowWith } from '../utils/values.ts';
@@ -71,7 +78,19 @@ export function FilterPanel({
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       slotProps={{
-        paper: { role: 'dialog', 'aria-label': labels.filters, sx: { width: POPOVER_W, mt: 0.5 } },
+        paper: {
+          role: 'dialog',
+          'aria-label': labels.filters,
+          // Linje Popover, not MUI's elevation 8.
+          sx: {
+            width: POPOVER_W,
+            mt: 0.5,
+            bgcolor: POPOVER_FILL,
+            border: `1px solid ${POPOVER_BORDER}`,
+            borderRadius: `${LEGACY_RADIUS_PX}px`,
+            boxShadow: BOX_SHADOW,
+          },
+        },
       }}
     >
       <Stack spacing={2} sx={{ p: 2 }}>
@@ -79,7 +98,7 @@ export function FilterPanel({
           filterFields[c.key].op === 'contains' ? (
             <TextField
               key={c.key}
-              size="small"
+              {...FIELD_BASE}
               label={c.label}
               value={asText(filters[c.key])}
               onChange={e => onChange(withFilter(filters, c.key, e.target.value))}
@@ -110,7 +129,8 @@ export function FilterPanel({
                   return <Chip key={key} size="small" label={drawn(c, v)} {...item} />;
                 })
               }
-              renderInput={params => <TextField {...params} label={c.label} />}
+              // The form's field: label inside, so Linje's focus ring has no notch to cross.
+              renderInput={params => <TextField {...params} variant="filled" label={c.label} />}
             />
           )
         )}
@@ -127,7 +147,9 @@ export function FilterPanel({
             aria-labelledby={blockedHeading}
             sx={{ maxHeight: BLOCKED_MAX_H, overflowY: 'auto' }}
           >
-            <ListSubheader id={blockedHeading}>{labels.notFilterable}</ListSubheader>
+            <ListSubheader id={blockedHeading} sx={{ bgcolor: 'inherit' }}>
+              {labels.notFilterable}
+            </ListSubheader>
             {blocked.map(c => (
               <ListItem key={c.key} sx={{ color: 'text.secondary' }}>
                 <ListItemText primary={c.label} />
