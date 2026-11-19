@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { NumberField } from '@base-ui/react/number-field';
 import {
   Autocomplete,
   Box,
@@ -116,17 +118,19 @@ export function FormTextField({
 }
 
 interface FormNumberFieldProps extends FieldProps {
-  value?: number;
+  value?: number | null;
   onChange: (value: number | undefined) => void;
 }
 
 /**
- * Numeric field for a sidebar form. An empty input is reported as `undefined`,
- * never `0` or `NaN`. Its width is the form layout's (`KIND_WIDTH`: half a row).
+ * Numeric field for a sidebar form: Base UI's NumberField (parsing, keys, ARIA) in the
+ * form's text field, with no stepper buttons, as Linje has none. It takes only what can make a
+ * number, with the decimal and thousands marks of the UI language. A blank input is reported
+ * as `undefined`, never `0` or `NaN`. Its width is the form layout's (`KIND_WIDTH`: half a row).
  *
  * @param id       DOM id of the input.
  * @param label    Field label.
- * @param value    Current number; `undefined` renders an empty input.
+ * @param value    Current number; `undefined` or `null` (Sobek's unset count) renders empty.
  * @param onChange Fired with the parsed number, or `undefined` when cleared.
  * @param disabled Render the field greyed out.
  * @param readOnly Render the field read-only, not greyed out.
@@ -140,19 +144,30 @@ export function FormNumberField({
   disabled,
   readOnly,
 }: FormNumberFieldProps) {
+  const { i18n } = useTranslation();
   const { slotProps, ...base } = fieldBase(readOnly);
   return (
-    <TextField
-      id={id}
-      label={label}
-      type="number"
-      value={value ?? ''}
-      onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+    <NumberField.Root
+      value={value ?? null}
+      onValueChange={n => onChange(n ?? undefined)}
+      locale={i18n.resolvedLanguage ?? 'en'}
       disabled={disabled}
-      {...base}
-      // Phones show a number keypad; the theme hides the spin buttons (Linje has none).
-      slotProps={{ ...slotProps, htmlInput: { inputMode: 'decimal' } }}
-    />
+      readOnly={readOnly}
+    >
+      <NumberField.Input
+        id={id}
+        render={props => (
+          <TextField
+            id={id}
+            label={label}
+            disabled={disabled}
+            {...base}
+            // MUI's input runs Base UI's handlers, ref and value from here.
+            slotProps={{ ...slotProps, htmlInput: props }}
+          />
+        )}
+      />
+    </NumberField.Root>
   );
 }
 
