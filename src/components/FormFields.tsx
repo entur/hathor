@@ -129,7 +129,8 @@ const NUMBER_RE = /^[-+]?(\d+([.,]\d*)?|[.,]\d+)$/;
 const parseNumber = (text: string): number | undefined | null => {
   const s = text.trim();
   if (s === '') return undefined;
-  const n = NUMBER_RE.test(s) ? Number(s.replace(',', '.')) : NaN;
+  if (!NUMBER_RE.test(s)) return null;
+  const n = Number(s.replace(',', '.'));
   // Too many digits read as Infinity, which JSON sends as null: not a number either.
   return Number.isFinite(n) ? n : null;
 };
@@ -159,17 +160,18 @@ export function FormNumberField({
   const { t } = useTranslation();
   // The typed text, kept so a bad entry stays visible; reset when the value changes elsewhere
   // (load, cancel).
-  const [text, setText] = useState(value === undefined ? '' : String(value));
+  const [text, setText] = useState(String(value ?? ''));
   const [shown, setShown] = useState(value);
   // Cancel or a re-read can put back the very number shown: the reset key says so.
   const reset = useContext(FormResetContext);
   const [seenReset, setSeenReset] = useState(reset);
+  const parsed = parseNumber(text);
   if (value !== shown || reset !== seenReset) {
     setShown(value);
     setSeenReset(reset);
-    if (parseNumber(text) !== value) setText(value === undefined ? '' : String(value));
+    if (parsed !== value) setText(String(value ?? ''));
   }
-  const bad = parseNumber(text) === null;
+  const bad = parsed === null;
   const { slotProps, ...base } = fieldBase(readOnly);
   return (
     <TextField
