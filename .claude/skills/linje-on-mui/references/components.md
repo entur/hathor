@@ -354,8 +354,10 @@ Cross-cutting traps:
   - **Numbers**: Linje has no stepper (a number is a plain TextField), so `FormNumberField`
     is a text input with `inputMode="decimal"`: no spin buttons, `,` or `.` decimal. Text
     that is not a number keeps showing, turns the field to error ("Enter a number") and is
-    not reported. `type="number"` let Firefox take letters as an empty value: the label fell
-    back over them and the form lost its number.
+    not reported; the editor holds Save ("Fix the fields with errors") and asks before
+    leaving until it is fixed or cancelled (`FormFieldContext`). `type="number"` let Firefox
+    take letters as an empty value: the label fell back over them and the form lost its
+    number.
 - **Measured** (vehicle-types edit):
   - root 48, radius 8
   - label x16, resting y13 (16 px), raised y4 (12 px)

@@ -396,6 +396,7 @@
   "busPicture.unavailable": "Picture unavailable",
   "editFooter.dirty": "Unsaved changes",
   "editFooter.missing": "Required fields missing",
+  "editFooter.invalid": "Fix the fields with errors",
   "editFooter.nothing": "No changes to save",
   "editFooter.saved": "All changes saved",
   "vehicleType.section.propulsion": "Propulsion and performance",
