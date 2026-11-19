@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useContext, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Autocomplete,
@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import { blankToUndefined } from '../utils/blankToUndefined.ts';
+import { FormResetContext } from './form-layout/formResetContext.ts';
 import { CAN_HOVER, FIELD_BORDER, HOVER_FILL, ringOn } from '../theme/createThemeFromConfig.ts';
 
 // What every text-like field in a sidebar form shares: Linje's 48 px field, its label inside
@@ -128,7 +129,9 @@ const NUMBER_RE = /^[-+]?(\d+([.,]\d*)?|[.,]\d+)$/;
 const parseNumber = (text: string): number | undefined | null => {
   const s = text.trim();
   if (s === '') return undefined;
-  return NUMBER_RE.test(s) ? Number(s.replace(',', '.')) : null;
+  const n = NUMBER_RE.test(s) ? Number(s.replace(',', '.')) : NaN;
+  // Too many digits read as Infinity, which JSON sends as null: not a number either.
+  return Number.isFinite(n) ? n : null;
 };
 
 /**
@@ -158,8 +161,12 @@ export function FormNumberField({
   // (load, cancel).
   const [text, setText] = useState(value === undefined ? '' : String(value));
   const [shown, setShown] = useState(value);
-  if (value !== shown) {
+  // Cancel or a re-read can put back the very number shown: the reset key says so.
+  const reset = useContext(FormResetContext);
+  const [seenReset, setSeenReset] = useState(reset);
+  if (value !== shown || reset !== seenReset) {
     setShown(value);
+    setSeenReset(reset);
     if (parseNumber(text) !== value) setText(value === undefined ? '' : String(value));
   }
   const bad = parseNumber(text) === null;

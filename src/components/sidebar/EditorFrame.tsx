@@ -14,6 +14,7 @@ import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   EditFooter,
   FormFooterContext,
+  FormResetContext,
   FORM_PAGE_MAX_WIDTH,
   RING_GUTTER,
   formColumnWidth,
@@ -328,7 +329,9 @@ export default function EditorFrame<T, F>({
             onRetry={() => void editor.refetch().catch(() => {})}
             testIdPrefix={`${testId}-record`}
           >
-            {children}
+            <FormResetContext.Provider value={editor.resetKey}>
+              {children}
+            </FormResetContext.Provider>
           </BodyState>
         </Box>
       </FormFooterContext.Provider>

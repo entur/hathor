@@ -71,6 +71,8 @@ export interface EntityEditor<T, F> {
   notFound: boolean;
   form: F;
   setForm: (form: F) => void;
+  /** Bumped on Cancel and each read of the record: the baseline is back in the fields. */
+  resetKey: number;
   saveError: string | null;
   clearSaveError: () => void;
   warning: string | null;
@@ -111,6 +113,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
   const [warning, setWarning] = useState<string | null>(null);
   // 'stale' = deactivated, list not refreshed (yet): Edit blocked, no green.
   const [deactivated, setDeactivated] = useState<'ok' | 'stale' | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   const {
     data: record,
@@ -122,7 +125,10 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
 
   // Re-baseline on every read of the record — the first one and each post-save re-read.
   useEffect(() => {
-    if (record) setState(s => fs.hydrate(s, record));
+    if (record) {
+      setState(s => fs.hydrate(s, record));
+      setResetKey(k => k + 1);
+    }
   }, [record, fs]);
 
   const isDirty = fs.isDirty(state);
@@ -202,6 +208,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     notFound: !isCreate && !record && !loading && !fetchError,
     form: state.form,
     setForm: form => setState(s => fs.edit(s, form)),
+    resetKey,
     saveError,
     clearSaveError: () => setSaveError(null),
     warning,
@@ -223,7 +230,10 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
         record && !deactivated && !settling && !deactivating ? onDeactivate(record) : undefined,
       // The committed baseline, not `record`: after a create whose list reload failed
       // there is no record yet, and the baseline holds the new id.
-      onCancel: () => setState(fs.restore),
+      onCancel: () => {
+        setState(fs.restore);
+        setResetKey(k => k + 1);
+      },
       onSave,
     },
   };
