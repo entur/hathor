@@ -329,7 +329,6 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         margin: SEGMENT_MARGIN_PX,
         border: 0,
         borderRadius: LEGACY_RADIUS_PX,
-        '&&': { marginLeft: SEGMENT_MARGIN_PX, borderRadius: LEGACY_RADIUS_PX },
       },
     },
   },

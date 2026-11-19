@@ -133,7 +133,8 @@ export function FilterPanel({
             dense
             disablePadding
             aria-labelledby={blockedHeading}
-            sx={{ maxHeight: BLOCKED_MAX_H, overflowY: 'auto' }}
+            // The sticky heading inherits the panel's fill through the list: rows scroll under it.
+            sx={{ maxHeight: BLOCKED_MAX_H, overflowY: 'auto', bgcolor: 'inherit' }}
           >
             <ListSubheader id={blockedHeading} sx={{ bgcolor: 'inherit' }}>
               {labels.notFilterable}

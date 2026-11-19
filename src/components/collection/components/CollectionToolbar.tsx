@@ -43,7 +43,7 @@ import { QueryField } from './QueryField.tsx';
 
 const DENSITIES: GridDensity[] = ['compact', 'standard', 'comfortable'];
 const GRID_ONLY: readonly CollectionTool[] = ['columns', 'density'];
-const SORT_W = 180;
+const SORT_W = 180; // the least; "Sort by: <column>" widens it
 const NO_SORT = ''; // select value for "unsorted"
 // The view switch, in its order: rows, then cards.
 const VIEW_ICONS: Record<CollectionView, ReactNode> = {
@@ -175,7 +175,7 @@ export function CollectionToolbar({
                 sort: e.target.value ? { field: e.target.value, dir: sorted?.dir ?? 'asc' } : null,
               })
             }
-            sx={{ width: SORT_W }}
+            sx={{ minWidth: SORT_W }}
           >
             <MenuItem value={NO_SORT}>{labels.sortNone}</MenuItem>
             {columns.map(c => (
