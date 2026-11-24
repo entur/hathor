@@ -1,10 +1,13 @@
 import { createContext, useState, useCallback, useMemo, useContext, type ReactNode } from 'react';
 
-// Linje SideNavigation (#418): always open on desktop. 336 px (21 rem) fits the longest label,
-// nb "Kontraktuelle kjøretøytyper" in bold (209 px Nationale, 208 px Arial) + 40 + 16 icon +
-// 16 gap + 40 = 321 px, under Linje's 26 rem max. Re-measure when a menu label grows.
-/** Side navigation width in pixels (desktop rail and mobile drawer). */
-export const RAIL_W = 336;
+// Linje SideNavigation (#418): always open on desktop. 21 rem (336 px at 16 px) fits the
+// longest label, nb "Kontraktuelle kjøretøytyper" in bold (209 px Nationale, 208 px Arial)
+// + 40 + 16 icon + 16 gap + 40 = 321 px, under Linje's 26 rem max; in rem it grows with the
+// font size, and a longer label wraps. Re-measure when a menu label grows.
+/** Side navigation width (desktop rail and mobile drawer). */
+export const RAIL_W = '21rem';
+/** Linje's desktop breakpoint (`breakpoints.large`): below it the side navigation is a drawer. */
+export const NAV_DESKTOP_PX = 800;
 
 interface NavRailContextType {
   /** Mobile temporary-Drawer open state; session-only. */

@@ -275,24 +275,30 @@ Cross-cutting traps:
   `componentVariables.scss` (`--components-menu-sidenavigation-standard-*`).
   - Background `Fill/Background/Tint/Neutral` #f2f5f7, hover `Fill/Background/Subdued/Light`
     #d9dae8, 1 px divider `Stroke/Neutral` #e3e6e8 under each item.
-  - Item: padding 16 / 40 (`space-medium` / `space-extra-large2`), label 16 px, text and icon
-    `Text/Accent` / `Shape/Accent` #181c56, icon 1em (16 px) with a 16 px gap.
+  - Item: padding 16 / 40 (`space-medium` / `space-extra-large2`), label 16 px (wraps, no
+    ellipsis), text and icon `Text/Accent` / `Shape/Accent` #181c56, icon 1em (16 px) with a
+    16 px gap.
   - Active: no fill, `inset 4px 0 0` `Stroke/Accent` bar, label weight 600.
-  - Desktop max width 26 rem. `CollapsibleSideNavigation` (80 px, edge button) exists but is
-    **not used**: hathor's side navigation is always open on desktop.
+  - Desktop (`for-desktop`, `breakpoints.large` 800 px) max width 26 rem.
+    `CollapsibleSideNavigation` (80 px, edge button) exists but is **not used**: hathor's side
+    navigation is always open on desktop (ADR 2026-11-24).
 - **MUI**: `src/components/Menu.tsx`, local `sx` on `ListItemButton` (not the theme:
-  `SectionToc` uses `ListItemButton` too); the Linje values are named constants at the top.
-  Width `RAIL_W` 336 px (`NavRailContext.tsx`), measured: longest label (nb "Kontraktuelle
-  kjøretøytyper", bold) 209 px Nationale / 208 px Arial + 40 + 16 + 16 + 40 = 321. Mobile: the
-  same items in a temporary Drawer, opened by the header's menu button, width capped at
-  `100% − 56 px`.
+  `SectionToc` uses `ListItemButton` too); the Linje values are named constants at the top, the
+  accent is the theme's exported `ACCENT` (fixed, not `primary.main`). `NavRailContext.tsx`:
+  - `RAIL_W` 21 rem, measured: longest label (nb "Kontraktuelle kjøretøytyper", bold) 209 px
+    Nationale / 208 px Arial + 40 + 16 + 16 + 40 = 321 px at 16 px.
+  - `NAV_DESKTOP_PX` 800: below it the same items sit in a temporary Drawer (`<nav>` landmark),
+    opened by the header's menu button (`Header.tsx` uses the same breakpoint), width capped at
+    `100% − 56 px`. `App.tsx` sets `--nav-rail-width` with a CSS media query, no JS.
 - **Traps**:
   - A longer menu label (new item, translation): re-measure `RAIL_W` in both fonts and both
     languages, bold.
+  - Hover goes inside `CAN_HOVER`. MUI tints `Mui-selected` and `Mui-selected:hover` in primary,
+    the latter also under `(hover: none)`: reset both before the `CAN_HOVER` rule.
   - Focus ring: `INSET_RING` (offset −2) covers `ListItemButton`; Linje's is offset +2. The
     rail scrolls (`overflowY: auto`), which would clip a ring drawn outside.
-  - MUI's `Mui-selected` fill and `Mui-selected:hover` both need overriding, or the active item
-    gets primary 8 % again.
+  - Storybook: the Desktop story needs the `desktop` viewport; below 800 px Menu renders the
+    (closed) drawer.
 - **Status: done (#418)**, except the focus-ring offset.
 
 ## Skeleton

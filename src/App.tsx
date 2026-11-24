@@ -5,12 +5,12 @@ import LoadingPage from './components/common/LoadingPage.tsx';
 import Header from './components/header/Header.tsx';
 import Menu from './components/Menu.tsx';
 import Home from './pages/Home';
-import { CssBaseline, Toolbar, Box, ThemeProvider, useMediaQuery, useTheme } from '@mui/material';
+import { CssBaseline, Toolbar, Box, ThemeProvider } from '@mui/material';
 import { useCustomization } from './contexts/CustomizationContext.tsx';
 import { useAppTheme } from './hooks/useAppTheme';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { EditingProvider } from './contexts/EditingContext.tsx';
-import { NavRailProvider, RAIL_W } from './contexts/NavRailContext.tsx';
+import { NavRailProvider, RAIL_W, NAV_DESKTOP_PX } from './contexts/NavRailContext.tsx';
 import SessionExpiredDialog from './components/dialogs/SessionExpiredDialog.tsx';
 import PageShell from './pages/shell/PageShell.tsx';
 import VehicleTypeCollectionPage from './data/vehicle-types/components/VehicleTypeCollectionPage.tsx';
@@ -26,12 +26,15 @@ import { MAIN_CONTENT_ID } from './components/header/Header.tsx';
 import './theme/transportModeTokens.css';
 
 function AppShell({ children }: { children: ReactNode }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  // Mobile renders Menu as a temporary Drawer (overlay), so no rail gutter — emit 0.
-  const railWidth = isMobile ? 0 : RAIL_W;
+  // Below the desktop breakpoint Menu is a temporary Drawer (overlay): no rail gutter.
   return (
-    <Box className="app-root" sx={{ '--nav-rail-width': `${railWidth}px` }}>
+    <Box
+      className="app-root"
+      sx={{
+        '--nav-rail-width': '0px',
+        [`@media (min-width: ${NAV_DESKTOP_PX}px)`]: { '--nav-rail-width': RAIL_W },
+      }}
+    >
       {children}
     </Box>
   );

@@ -9,18 +9,19 @@ import {
   Box,
   useTheme,
   useMediaQuery,
-  styled,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useNavRail, RAIL_W } from '../contexts/NavRailContext.tsx';
+import { useNavRail, RAIL_W, NAV_DESKTOP_PX } from '../contexts/NavRailContext.tsx';
+import { ACCENT, CAN_HOVER } from '../theme/createThemeFromConfig.ts';
 import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useIsFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
 
 export const APP_HEADER_HEIGHT_PX = 64;
 // Linje SideNavigation (`menu/src/SideNavigation.scss`, `--components-menu-sidenavigation-standard-*`,
-// #418): tint background, subdued hover, neutral divider under each item, 4 px accent bar on the
-// active one. Item padding 16 / 40, icon 16 px (1em of the 16 px label) with a 16 px gap.
+// #418): tint background, subdued hover, neutral divider under each item, 4 px bar on the active
+// one. Text, icons and bar use Linje's fixed Accent, not the theme's primary. Item padding
+// 16 / 40, icon 16 px (1em of the 16 px label) with a 16 px gap.
 const RAIL_BG = '#f2f5f7', // Fill/Background/Tint/Neutral
   ITEM_HOVER = '#d9dae8', // Fill/Background/Subdued/Light
   ITEM_DIVIDE = '#e3e6e8'; // Stroke/Neutral
@@ -68,10 +69,6 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-const StyledDrawer = styled(Drawer)({
-  '& .MuiDrawer-paper': { boxSizing: 'border-box', backgroundColor: RAIL_BG },
-});
-
 function isActive(pathname: string, path: string): boolean {
   if (path === '/') return pathname === '/';
   return pathname === path || pathname.startsWith(path + '/');
@@ -100,24 +97,23 @@ function NavItem({ textKey, path, iconKey, onNavigate }: NavItemProps) {
         sx={{
           py: `${ITEM_PAD_Y_PX}px`,
           px: `${ITEM_PAD_X_PX}px`,
-          color: 'primary.main',
+          color: ACCENT,
           borderBottom: `1px solid ${ITEM_DIVIDE}`,
-          '&:hover, &.Mui-selected:hover': { backgroundColor: ITEM_HOVER },
-          '&.Mui-selected': {
+          // Selected + hover too: MUI tints both in primary, also on touch (hover: none).
+          '&.Mui-selected, &.Mui-selected:hover': {
             backgroundColor: 'transparent',
-            boxShadow: theme => `inset ${ACTIVE_BAR_PX}px 0 0 ${theme.palette.primary.main}`,
+            boxShadow: `inset ${ACTIVE_BAR_PX}px 0 0 ${ACCENT}`,
           },
+          [CAN_HOVER]: { '&:hover, &.Mui-selected:hover': { backgroundColor: ITEM_HOVER } },
         }}
       >
-        <ListItemIcon sx={{ minWidth: NAV_ICON_PX + ICON_GAP_PX, color: 'primary.main' }}>
+        <ListItemIcon sx={{ minWidth: NAV_ICON_PX + ICON_GAP_PX, color: ACCENT }}>
           <MenuIcon name={iconKey} size={NAV_ICON_PX} />
         </ListItemIcon>
         <ListItemText
           primary={t(textKey)}
           sx={{ my: 0 }}
-          slotProps={{
-            primary: { noWrap: true, sx: { fontWeight: active ? 'fontWeightBold' : undefined } },
-          }}
+          slotProps={{ primary: { sx: { fontWeight: active ? 'fontWeightBold' : undefined } } }}
         />
       </ListItemButton>
     </ListItem>
@@ -127,16 +123,25 @@ function NavItem({ textKey, path, iconKey, onNavigate }: NavItemProps) {
 export default function Menu() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down(NAV_DESKTOP_PX));
   const { mobileOpen, closeMobile } = useNavRail();
   const { currentOrganisation } = useOrganisationsContext();
   const isFeatureOn = useIsFeatureOn();
-  const items = menuItems.filter(item => isFeatureOn(item.flag));
+  const items = menuItems.filter(
+    item => isFeatureOn(item.flag) && (!item.requiresOrg || currentOrganisation)
+  );
+  const list = (onNavigate?: () => void) => (
+    <List disablePadding>
+      {items.map(item => (
+        <NavItem key={item.path} {...item} onNavigate={onNavigate} />
+      ))}
+    </List>
+  );
 
-  // Mobile: a temporary Drawer, opened by the header's menu button.
+  // Below Linje's desktop breakpoint: a temporary Drawer, opened by the header's menu button.
   if (isMobile) {
     return (
-      <StyledDrawer
+      <Drawer
         variant="temporary"
         anchor="left"
         open={mobileOpen}
@@ -145,6 +150,8 @@ export default function Menu() {
         slotProps={{
           paper: {
             sx: {
+              boxSizing: 'border-box',
+              backgroundColor: RAIL_BG,
               width: RAIL_W,
               maxWidth: `calc(100% - ${DRAWER_SCRIM_PX}px)`,
               borderRight: 'none',
@@ -152,12 +159,10 @@ export default function Menu() {
           },
         }}
       >
-        <List disablePadding>
-          {items.map(item => (
-            <NavItem key={item.path} {...item} onNavigate={closeMobile} />
-          ))}
-        </List>
-      </StyledDrawer>
+        <Box component="nav" aria-label={t('rail.label')}>
+          {list(closeMobile)}
+        </Box>
+      </Drawer>
     );
   }
 
@@ -178,13 +183,7 @@ export default function Menu() {
         zIndex: theme.zIndex.appBar - 1,
       }}
     >
-      <List disablePadding>
-        {items
-          .filter(item => !item.requiresOrg || currentOrganisation)
-          .map(item => (
-            <NavItem key={item.path} {...item} />
-          ))}
-      </List>
+      {list()}
     </Box>
   );
 }

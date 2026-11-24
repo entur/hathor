@@ -22,7 +22,7 @@ const meta: Meta<typeof Menu> = {
     docs: {
       description: {
         component:
-          'Primary navigation as Linje SideNavigation (#418). Desktop renders it always open, 336px, fixed below the header; the active route gets the accent bar. Mobile (<600px) renders the same items in a left-anchored temporary Drawer, opened by the header menu button.',
+          'Primary navigation as Linje SideNavigation (#418). From 800px (the Linje desktop breakpoint) it is always open, 21rem, fixed below the header; the active route gets the accent bar. Below 800px the same items sit in a left-anchored temporary Drawer, opened by the header menu button.',
       },
     },
   },
@@ -44,10 +44,13 @@ export default meta;
 type Story = StoryObj<typeof Menu>;
 
 /** Desktop side navigation, always open; Vehicle types is the active route. */
-export const Desktop: Story = {};
+export const Desktop: Story = {
+  // The rail needs ≥ 800 px (Linje's desktop breakpoint); below it Menu is the drawer.
+  globals: { viewport: { value: 'desktop', isRotated: false } },
+};
 
 /**
- * Mobile temporary Drawer (336px, left-anchored). Forced open on mount; the
+ * Mobile temporary Drawer (21rem, left-anchored). Forced open on mount; the
  * `mobile1` viewport flips Menu's `useMediaQuery` mobile branch on.
  */
 export const MobileDrawer: Story = {

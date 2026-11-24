@@ -17,7 +17,7 @@ import { REDUCED_MOTION_MEDIA, STILL_SKELETON } from '../utils/motion';
 export const FOCUS_PX = 2;
 const FOCUS_CONTRAST = '#aeb7e2';
 // Linje's accent (`Text/Accent`, Lavender/90): tooltip fill, alert text, pressed icons.
-const ACCENT = '#181c56';
+export const ACCENT = '#181c56';
 // Linje's legacy `border-radiuses-medium`: icon buttons, tooltips, alert boxes.
 const LEGACY_RADIUS_PX = 4;
 // Linje `--font-weights-*` (#258): Nationale ships only these two.

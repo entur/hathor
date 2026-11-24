@@ -4,7 +4,7 @@ import SettingsDialog from '../dialogs/SettingsDialog.tsx';
 import UserDialog from '../dialogs/UserDialog.tsx';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
-import { useNavRail } from '../../contexts/NavRailContext.tsx';
+import { useNavRail, NAV_DESKTOP_PX } from '../../contexts/NavRailContext.tsx';
 import { useTranslation } from 'react-i18next';
 import HeaderBranding from './HeaderBranding.tsx';
 import HeaderActions from './HeaderActions.tsx';
@@ -22,7 +22,7 @@ export default function Header() {
   const { t } = useTranslation();
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down(NAV_DESKTOP_PX));
   return (
     <>
       <Link

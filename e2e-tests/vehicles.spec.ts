@@ -84,6 +84,7 @@ test.describe('/vehicles', () => {
 
     const cards = page.getByRole('button', { name: 'Cards' });
     await cards.click();
+    await expect(cards).toBeFocused();
     await expect(cards).toHaveCSS('outline-style', 'none');
   });
 
