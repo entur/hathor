@@ -20,6 +20,7 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- SideNavigation (nav rail)
 - Skeleton
 - SquareButton
 - Switch
@@ -267,6 +268,32 @@ Cross-cutting traps:
   - Spread `params.slotProps` in `renderInput` (MUI 9).
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
+
+## SideNavigation (nav rail)
+
+- **Linje**: `packages/menu/src/SideNavigation.scss`, `SideNavigationItem.tsx`,
+  `componentVariables.scss` (`--components-menu-sidenavigation-standard-*`).
+  - Background `Fill/Background/Tint/Neutral` #f2f5f7, hover `Fill/Background/Subdued/Light`
+    #d9dae8, 1 px divider `Stroke/Neutral` #e3e6e8 under each item.
+  - Item: padding 16 / 40 (`space-medium` / `space-extra-large2`), label 16 px, text and icon
+    `Text/Accent` / `Shape/Accent` #181c56, icon 1em (16 px) with a 16 px gap.
+  - Active: no fill, `inset 4px 0 0` `Stroke/Accent` bar, label weight 600.
+  - Desktop max width 26 rem. `CollapsibleSideNavigation` (80 px, edge button) exists but is
+    **not used**: hathor's side navigation is always open on desktop.
+- **MUI**: `src/components/Menu.tsx`, local `sx` on `ListItemButton` (not the theme:
+  `SectionToc` uses `ListItemButton` too); the Linje values are named constants at the top.
+  Width `RAIL_W` 336 px (`NavRailContext.tsx`), measured: longest label (nb "Kontraktuelle
+  kjøretøytyper", bold) 209 px Nationale / 208 px Arial + 40 + 16 + 16 + 40 = 321. Mobile: the
+  same items in a temporary Drawer, opened by the header's menu button, width capped at
+  `100% − 56 px`.
+- **Traps**:
+  - A longer menu label (new item, translation): re-measure `RAIL_W` in both fonts and both
+    languages, bold.
+  - Focus ring: `INSET_RING` (offset −2) covers `ListItemButton`; Linje's is offset +2. The
+    rail scrolls (`overflowY: auto`), which would clip a ring drawn outside.
+  - MUI's `Mui-selected` fill and `Mui-selected:hover` both need overriding, or the active item
+    gets primary 8 % again.
+- **Status: done (#418)**, except the focus-ring offset.
 
 ## Skeleton
 
