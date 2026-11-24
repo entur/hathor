@@ -533,6 +533,11 @@ test.describe('/vehicle-types page shell', () => {
     await name.fill(edited(loaded));
     await expect(page.getByText('Unsaved changes')).toBeVisible();
     await expect(page.getByTestId('editor-page-deactivate')).toBeDisabled();
+    // Keyboard users reach the why through the wrapper; the disabled button skips Tab.
+    await page.getByTestId('editor-page-deactivate').locator('..').focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('tooltip')).toHaveText(/save or cancel first/i);
     await footerCancel(page).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click();
     await expect(name).toHaveValue(loaded);

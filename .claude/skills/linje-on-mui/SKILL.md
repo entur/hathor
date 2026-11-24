@@ -64,7 +64,7 @@ ADRs at the end of `FORK_DECISIONS.md`.
 - **2026-11-17**: form fields are Linje's TextField, built as MUI's **small filled** field
   (48 px, label inside).
 - Small fields keep MUI's 40 px **outlined** field with the label in the notch. These are the
-  toolbar, the filter panel and the header org picker (enki's style).
+  toolbar and the header org picker (enki's style). The filter panel uses form-size fields.
 - Native date inputs pin their label at the top.
 - **2026-11-16**: Arial in the repo. Nationale ships only from the deployment config.
 - The label goes navy on focus and red on error (MUI's colours); Linje keeps it subdued.
