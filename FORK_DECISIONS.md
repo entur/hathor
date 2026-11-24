@@ -12,6 +12,8 @@ Companion to [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md): that file holds *unresolv
 
 ## Version bumps go through pull requests (2026-11-11)
 
+> **Superseded 2026-11-12** — the Build workflow pushes the bump straight to `main` again (#363, `0cfc6a1`); see README *Releases*.
+
 ### Context
 
 The Build workflow's direct push of its version-bump commit is rejected by the
@@ -108,7 +110,7 @@ Inanna's initial scaffold shipped two near-twin list-chrome pages: `src/pages/Ge
 
 ### Decision
 
-Delete `src/pages/GenericDataEditPage.tsx`. If inline-cell editing is ever wanted, reintroduce it as a deliberate feature on top of `GenericDataViewPage`, not as a parallel page. Follows the inanna-fork skill's "collapse duplicates" precedent — see `OPEN_QUESTIONS.md` Q7 for the analogous `src/map/` ↔ `src/components/map/` split.
+Delete `src/pages/GenericDataEditPage.tsx`. If inline-cell editing is ever wanted, reintroduce it as a deliberate feature on top of `GenericDataViewPage`, not as a parallel page.
 
 ### Consequences
 
@@ -191,7 +193,7 @@ Concrete contract:
 
 Two enabling chrome changes shipped alongside the rail:
 
-- **`Sidebar.tsx` z-index 20 → 30.** The sidebar Box and the resizer Box were both at `zIndex: 20` since Inanna's initial scaffold (see memory note `project_sidebar_zindex_inanna.md`). Equal z-indices made the DOM-later resizer paint atop the sidebar's stacking context — which now contains the position:fixed rail at `theme.zIndex.fab`. Bumping the sidebar one tier lifts its whole stacking context (rail included) above the resizer. Latent bug, exposed by the rail.
+- **`Sidebar.tsx` z-index 20 → 30.** The sidebar Box and the resizer Box were both at `zIndex: 20` since Inanna's initial scaffold. Equal z-indices made the DOM-later resizer paint atop the sidebar's stacking context — which now contains the position:fixed rail at `theme.zIndex.fab`. Bumping the sidebar one tier lifts its whole stacking context (rail included) above the resizer. Latent bug, exposed by the rail.
 - **Inner-edge divider line removed.** `Sidebar.tsx` previously rendered `1px solid theme.palette.divider` on the content-facing edge. With the rail flush against that edge, the 1 px gray seam ran straight through the rail's right side, breaking the "rail is part of details" illusion. Removed — the rail's paper bg now flows seamlessly into the sidebar's.
 
 `ToggleButton.tsx` is deleted. With selection-driven slider state already in place (row click → `editingItem` → chrome's effect at `GenericDataViewPage.tsx:118` calls `toggleSidebar()`), the manual expand affordance is redundant. The rail handles close-while-open; selection handles open-when-closed.
@@ -314,7 +316,7 @@ The per-row `EditActionCell` → standalone `itemId`-editor convention is retire
 ### Consequences
 
 - `EditActionCell.tsx` and `VehicleTypeEditor.tsx` are removed; `cells/` under `vehicle-types/` keeps only `VehicleListCell.tsx`.
-- The `DEV_GUIDE.md` tutorial that taught the editor-component + `EditActionCell` steps is gone — `DEV_GUIDE.md` is now a stub pointing at the global `inanna-fork` skill, the maintained source for the data-table pattern.
+- The `DEV_GUIDE.md` tutorial that taught the editor-component + `EditActionCell` steps is gone.
 - **In-cell affordances are inconsistent by page:** `vehicle-types` puts a `<Link>` on the *ID* chip, `deck-plans` adds a separate *Edit* button column. Same destination shape (a `/<entity>/:id` route), two cell idioms. Converging them is a deliberate follow-up, not done here.
 - The [`?selected=` ADR](#vehicle-deep-link-via-selected-query-param-retroactive-captured-2026-05-12)'s line-56 Consequences bullet is corrected to mark this supersession.
 - `OPEN_QUESTIONS.md`'s entry that cited `EditActionCell.tsx:19` as the `{ id, EditorComponent }` contract exemplar has been reworded to drop the dead-file reference and describe the convention in the past tense; its underlying question — who owns slider selection — remains open.
@@ -458,11 +460,8 @@ Concrete contract:
 
 ### Consequences
 
-- Hathor's `iconLoaderUtils.ts` remains byte-identical to Inanna's. The
-  divergence is purely additive: a new component class that Inanna doesn't yet
-  have.
-- Inanna issue #5's `getIconKey` resolver-prop refactor still applies to every
-  other icon class; transport modes are simply outside its scope.
+- `iconLoaderUtils.ts` is untouched: transport modes sit outside the
+  file-per-icon resolver.
 - Adding a new transport-mode glyph is a single PR that adds a `<symbol>` block
   to `TransportModeSprite.tsx` plus a `--tm-<mode>` token. No file drop into
   `defaultIcons/`, no resolver change.
@@ -556,7 +555,7 @@ Replace the Drawer entirely with a Material 3 Navigation Rail (MUI Mini-Variant 
 ### Consequences
 
 - New `src/contexts/NavRailContext.tsx` (provider + hook + exported width consts). Parallels the existing one-context-per-concern pattern (`EditingContext`, `SearchContext`, `ConfigContext`).
-- `Menu.tsx` keeps its filename (filenames after Inanna stay stable for `git blame` continuity) but is fully rewritten; the surviving `git mv`-free rewrite shows in diff as full file replacement, which is honest about the scope of the change.
+- `Menu.tsx` keeps its filename (kept for `git blame` continuity) but is fully rewritten; the surviving `git mv`-free rewrite shows in diff as full file replacement, which is honest about the scope of the change.
 - `Header.tsx` shrinks: local `drawerOpen` state gone, `useNavRail()` provides the toggle.
 - Every page reflows. `.app-content` gains a transitioning `margin-left`. Pages that previously assumed full-viewport width no longer have it; none do today, but new full-bleed views must apply `margin-left: 0` explicitly to escape.
 - Nav state persisted across reloads under `localStorage` key `hathor:navRailExpanded`. Recognize during any future localStorage-clearing migration.
@@ -633,7 +632,6 @@ The Autosys bulk import had two entry points: the list-head button on `/vehicle-
 ### Consequences
 
 - No cross-feature import into `vehicle-imports/` remains; the 2026-05-22 ADR's "deliberate cross-feature import" bullet no longer applies.
-- `GenericDataViewPage` / `DataPageContent` / `viewConfigTypes.ts` diverge from Inanna by one removed prop — expect a small conflict there when pulling upstream changes to the list-head.
 - A completed import still redirects to `/vehicle-types?filter=<ids>`; because it now always starts on Home, the redirect pushes a history entry and Back returns to Home.
 - e2e opens the dialog from `/` via `home-bulk-import-svv` (`autosys-multi-import.spec.ts`, `import-state-refresh.spec.ts`). The button renders only when authenticated with an organisation selected, so those specs wait for org selection first.
 - `vehicle-imports/` is no longer on the 2026-05-28 ADR's "reshaped the next time they're touched" list.
@@ -827,11 +825,65 @@ Epic #252 rebuilt each entity's screens as a collection page (`createEntityColle
 
 ---
 
+## Contractual vehicle types share the vehicle-type pages, keyed by `kind` _(2026-11-12)_
+
+### Context
+
+Sobek stores two vehicle-type kinds behind one GraphQL type, told apart by `vehicleTypeKind` (`PHYSICAL`, `CONTRACTUAL`). Hathor only read and wrote `PHYSICAL` (#358).
+
+### Decision
+
+- One page set (`VehicleTypeCollectionPage`, `VehicleTypeDetailsPage`) takes `kind`; each kind gets its own routes and menu item: `/vehicle-types`, `/contractual-vehicle-types` (`App.tsx`).
+- What differs per kind — route, i18n keys, test ids, `showVehicles` — is one entry in `vehicleTypeKindConfig.ts`. Fetch, fetch-by-id and serialize pass the kind to Sobek.
+- `kind` defaults to `PHYSICAL`, so the vehicle form's type picker and the Autosys import are unchanged.
+- No Vehicles section on a contractual type: a vehicle may only refer to a physical one.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **A `contractual-vehicle-types` feature folder** | A copy of every vehicle-type file for one changed filter value. |
+| **One list with a kind filter chip** | Mixes two things users manage separately, and a create would need to ask for the kind first. |
+
+### Consequences
+
+- Fields, sections and controls are shared, so a field added to one kind shows on both.
+- No e2e spec covers the contractual pages yet.
+
+---
+
+## Lists use the page width, ids show their local part, bus pictures sit behind a flag _(2026-11-13)_
+
+### Context
+
+The review comments on PR #296, carried to #364, found three things on the new pages: lists stopped at 1200 px with empty space to the right and the vehicle form used under half the width (#370); the Id column read `::1004` (#372); and the bus pictures were not ready for every environment (#369).
+
+### Decision
+
+- **Width** (#375): `PageShell` drops its 1200 px cap, so lists fill the page. A form page centres in a frame of up to `FORM_PAGE_MAX_WIDTH` (75rem, `formWidth.ts`); its form column takes what the aside or table of contents leaves. With neither, it is one 500 px column, centred.
+- **Ids** (#374): `compactId` shows the local part (`1004`); the full id is on hover, and the id filter still matches the local part, `::1004` or the full id (`idMatches`, `values.ts`).
+- **Pictures** (#373): `sandboxFeatures.BusPictures` gates the card picture and the form page's picture aside; on in dev, localhost, the e2e fixtures and Storybook.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the 1200 px cap, centre it** | The lists have more columns than fit; the space was the complaint. |
+| **Hide the Id column** | The id is how users and Sobek logs name a record. |
+| **Remove the pictures** | They tested well; only the environments not ready for them need them off. |
+
+### Consequences
+
+- jsdom cannot evaluate `:has()`, so no unit test covers the narrow form frame (`[data-form-narrow]`).
+- With the flag off, `@entur/iteru-3dbus` and `three` still ship in the bundle.
+
+---
+
 ## Themes come from `themeConfigs`; Nationale ships only from the deployment _(2026-11-16)_
 
 ### Context
 
-Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & icons"), switching between the deployment's `themeFilePath` and the Inanna demo theme `public/default-theme-config.json` (#202). The theme asked for Entur's font Nationale but nothing loaded it (#255). Nationale is licensed by Playtype for official Entur products only; this repo is public (EUPL) and forked. abzu (`entur/abzu` `23b32c4`) lists themes in `bootstrap.json` `themeConfigs`, loads fonts from a theme's `fonts.faces`, and keeps Nationale out of git (`.gitignore:32-36`, `THEME_CONFIG_GUIDE.md:511-524`).
+Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & icons"), switching between the deployment's `themeFilePath` and the demo theme `public/default-theme-config.json` (#202). The theme asked for Entur's font Nationale but nothing loaded it (#255). Nationale is licensed by Playtype for official Entur products only; this repo is public (EUPL) and forked. abzu (`entur/abzu` `23b32c4`) lists themes in `bootstrap.json` `themeConfigs`, loads fonts from a theme's `fonts.faces`, and keeps Nationale out of git (`.gitignore:32-36`, `THEME_CONFIG_GUIDE.md:511-524`).
 
 ### Decision
 
@@ -905,3 +957,22 @@ PR #396 (#395) then hand-wrote a number parser, because MUI 9.5 has no number fi
 ### Consequences
 
 - `@base-ui/react` is a dependency, first used by `FormNumberField` (#395, `FormFields.tsx`): it refuses letters as you type, so #396's first version, a hand-written error state and editor wiring, is gone. Its behaviour is listed under Numbers in the `linje-on-mui` skill's `components.md`.
+
+---
+
+## Inanna is hathor's origin, not its upstream _(2026-11-19)_
+
+### Context
+
+Hathor began as a fork of Inanna, Entur's React data-registry starter. Since then the list views, sidebar editor, menu, theming and icon switch that came with it were replaced (2026-05-29, 2026-11-11, 2026-11-16), and no Inanna change has been merged in. The docs still told readers to follow the Inanna *extend-fork* workflow and the global `inanna-fork` skill, whose steps describe the Generic Data View pages that hathor deleted.
+
+### Decision
+
+- Hathor does not follow Inanna. Docs name Inanna only where it explains history; the earlier ADRs here keep their "Inanna's scaffold shipped …" context.
+- `DEV_GUIDE.md`, a stub pointing at the `inanna-fork` skill, is deleted; `CLAUDE.md` (*what*) and this file (*why*) replace it.
+
+### Consequences
+
+- How to add an entity lives in `CLAUDE.md` *Collection + form pages*, not in the `inanna-fork` skill.
+- No "smaller diff against Inanna" argument in future ADRs.
+
