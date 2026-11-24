@@ -7,21 +7,30 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
-  Tooltip,
   useTheme,
   useMediaQuery,
-  IconButton,
-  Divider,
   styled,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useNavRail, RAIL_COLLAPSED_W, RAIL_EXPANDED_W } from '../contexts/NavRailContext.tsx';
+import { useNavRail, RAIL_W } from '../contexts/NavRailContext.tsx';
 import MenuIcon, { type MenuIconName } from './icons/MenuIcon.tsx';
 import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts';
 import { useIsFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
 
 export const APP_HEADER_HEIGHT_PX = 64;
-const MOBILE_DRAWER_W = 280;
+// Linje SideNavigation (`menu/src/SideNavigation.scss`, `--components-menu-sidenavigation-standard-*`,
+// #418): tint background, subdued hover, neutral divider under each item, 4 px accent bar on the
+// active one. Item padding 16 / 40, icon 16 px (1em of the 16 px label) with a 16 px gap.
+const RAIL_BG = '#f2f5f7', // Fill/Background/Tint/Neutral
+  ITEM_HOVER = '#d9dae8', // Fill/Background/Subdued/Light
+  ITEM_DIVIDE = '#e3e6e8'; // Stroke/Neutral
+// The drawer leaves the scrim this wide to tap on a narrow phone.
+const DRAWER_SCRIM_PX = 56;
+const ACTIVE_BAR_PX = 4,
+  ITEM_PAD_Y_PX = 16,
+  ITEM_PAD_X_PX = 40,
+  NAV_ICON_PX = 16,
+  ICON_GAP_PX = 16;
 
 // textKey values reuse existing i18n keys so labels translate without
 // new entries (see feedback_i18n_reuse_keys memory).
@@ -59,16 +68,9 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-const StyledDrawer = styled(Drawer)(({ theme }) => ({
-  '& .MuiDrawer-paper': {
-    boxSizing: 'border-box',
-    backgroundColor: theme.palette.background.paper,
-    transition: theme.transitions.create(['width'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-}));
+const StyledDrawer = styled(Drawer)({
+  '& .MuiDrawer-paper': { boxSizing: 'border-box', backgroundColor: RAIL_BG },
+});
 
 function isActive(pathname: string, path: string): boolean {
   if (path === '/') return pathname === '/';
@@ -79,56 +81,46 @@ interface NavItemProps {
   textKey: string;
   path: string;
   iconKey: MenuIconName;
-  expanded: boolean;
   onNavigate?: () => void;
 }
 
-function NavItem({ textKey, path, iconKey, expanded, onNavigate }: NavItemProps) {
+function NavItem({ textKey, path, iconKey, onNavigate }: NavItemProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const active = isActive(location.pathname, path);
-  const label = t(textKey);
-
-  const button = (
-    <ListItemButton
-      component={Link}
-      to={path}
-      onClick={onNavigate}
-      selected={active}
-      aria-current={active ? 'page' : undefined}
-      // Always left-aligned with a fixed icon gutter: the icon sits centered in
-      // the first RAIL_COLLAPSED_W px, so its position is identical whether the
-      // rail is collapsed or expanded. As the width animates, the icon never
-      // moves — only the trailing label fades/clips. (Centering the icon in the
-      // button instead made it snap to the button's mid-point on collapse.)
-      sx={{ minHeight: 48, justifyContent: 'flex-start', pl: 0, pr: 2 }}
-    >
-      <ListItemIcon
-        sx={{
-          minWidth: RAIL_COLLAPSED_W,
-          mr: 0,
-          justifyContent: 'center',
-          // Inherit-driven colour: glyph fills with currentColor, so the
-          // active item recolours to primary while others stay muted.
-          color: active ? 'primary.main' : 'text.secondary',
-        }}
-      >
-        <MenuIcon name={iconKey} size={24} />
-      </ListItemIcon>
-      <ListItemText
-        primary={label}
-        slotProps={{ primary: { noWrap: true } }}
-        // Kept mounted and faded (not unmounted) so the label dissolves in sync
-        // with the width transition rather than vanishing before it starts.
-        sx={{ my: 0, opacity: expanded ? 1 : 0, transition: 'opacity 0.2s ease' }}
-      />
-    </ListItemButton>
-  );
 
   return (
-    <Tooltip title={expanded ? '' : label} placement="right">
-      <ListItem disablePadding>{button}</ListItem>
-    </Tooltip>
+    <ListItem disablePadding>
+      <ListItemButton
+        component={Link}
+        to={path}
+        onClick={onNavigate}
+        selected={active}
+        aria-current={active ? 'page' : undefined}
+        sx={{
+          py: `${ITEM_PAD_Y_PX}px`,
+          px: `${ITEM_PAD_X_PX}px`,
+          color: 'primary.main',
+          borderBottom: `1px solid ${ITEM_DIVIDE}`,
+          '&:hover, &.Mui-selected:hover': { backgroundColor: ITEM_HOVER },
+          '&.Mui-selected': {
+            backgroundColor: 'transparent',
+            boxShadow: theme => `inset ${ACTIVE_BAR_PX}px 0 0 ${theme.palette.primary.main}`,
+          },
+        }}
+      >
+        <ListItemIcon sx={{ minWidth: NAV_ICON_PX + ICON_GAP_PX, color: 'primary.main' }}>
+          <MenuIcon name={iconKey} size={NAV_ICON_PX} />
+        </ListItemIcon>
+        <ListItemText
+          primary={t(textKey)}
+          sx={{ my: 0 }}
+          slotProps={{
+            primary: { noWrap: true, sx: { fontWeight: active ? 'fontWeightBold' : undefined } },
+          }}
+        />
+      </ListItemButton>
+    </ListItem>
   );
 }
 
@@ -136,15 +128,12 @@ export default function Menu() {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { expanded, toggleExpanded, mobileOpen, closeMobile } = useNavRail();
+  const { mobileOpen, closeMobile } = useNavRail();
   const { currentOrganisation } = useOrganisationsContext();
   const isFeatureOn = useIsFeatureOn();
   const items = menuItems.filter(item => isFeatureOn(item.flag));
 
-  // ── Mobile branch — temporary Drawer, anchored left, 280px wide ──
-  // Mobile open state is session-only (mobileOpen), NOT the persisted
-  // desktop `expanded` flag, so a user who left the desktop rail
-  // expanded does not see the mobile drawer auto-open on next visit.
+  // Mobile: a temporary Drawer, opened by the header's menu button.
   if (isMobile) {
     return (
       <StyledDrawer
@@ -156,7 +145,8 @@ export default function Menu() {
         slotProps={{
           paper: {
             sx: {
-              width: MOBILE_DRAWER_W,
+              width: RAIL_W,
+              maxWidth: `calc(100% - ${DRAWER_SCRIM_PX}px)`,
               borderRight: 'none',
             },
           },
@@ -164,14 +154,14 @@ export default function Menu() {
       >
         <List disablePadding>
           {items.map(item => (
-            <NavItem key={item.path} {...item} expanded={true} onNavigate={closeMobile} />
+            <NavItem key={item.path} {...item} onNavigate={closeMobile} />
           ))}
         </List>
       </StyledDrawer>
     );
   }
 
-  // ── Desktop branch — persistent left rail at top:64, full height below AppBar ──
+  // Desktop: Linje's SideNavigation, always open, fixed below the AppBar.
   return (
     <Box
       component="nav"
@@ -182,37 +172,17 @@ export default function Menu() {
         top: APP_HEADER_HEIGHT_PX,
         left: 0,
         bottom: 0,
-        width: expanded ? RAIL_EXPANDED_W : RAIL_COLLAPSED_W,
-        backgroundColor: theme.palette.background.paper,
-        borderRight: `1px solid ${theme.palette.divider}`,
-        transition: 'width 0.2s ease',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        width: RAIL_W,
+        backgroundColor: RAIL_BG,
+        overflowY: 'auto',
         zIndex: theme.zIndex.appBar - 1,
       }}
     >
-      {/* Toggle centered in the same RAIL_COLLAPSED_W gutter as the nav icons,
-          so the hamburger shares their vertical centre-line and stays put as
-          the rail animates. */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-start', py: 1 }}>
-        <Box sx={{ width: RAIL_COLLAPSED_W, display: 'flex', justifyContent: 'center' }}>
-          <IconButton
-            data-testid="nav-rail-toggle"
-            onClick={toggleExpanded}
-            aria-label={expanded ? t('rail.collapse') : t('rail.expand')}
-            aria-expanded={expanded}
-          >
-            <MenuIcon name="menu" size={28} />
-          </IconButton>
-        </Box>
-      </Box>
-      <Divider />
       <List disablePadding>
         {items
           .filter(item => !item.requiresOrg || currentOrganisation)
           .map(item => (
-            <NavItem key={item.path} {...item} expanded={expanded} />
+            <NavItem key={item.path} {...item} />
           ))}
       </List>
     </Box>
