@@ -76,25 +76,33 @@ Cross-cutting traps:
 
 ## Button (Primary / Secondary)
 
-- **Linje**: `packages/button/src/Button.scss:5-8` (medium), `:90-91` (small), `:99-100` (large).
-  Tokens `button/height/horizontal content` 32 / 48 / 64, `button/radius` 6 / 8 / 8, padding
-  12 / 16 / 24, border 2.
+- **Linje**: `packages/button/src/Button.scss:4-26` (medium), `:90-96` (small), `:99-105`
+  (large). Tokens `button/height/horizontal content` 32 / 48 / 64, `button/radius` 6 / 8 / 8,
+  padding 12 / 16 / 24 inside a 2 px border on every variant (Primary's transparent, `:117`):
+  text sits 14 / 18 / 26 px from the edge. Font `body-s` / `body-m` / `body-xl` = 14 / 16 /
+  24 px on 20 / 24 / 32 px lines (`size-7..12`; compact mode drops body-xl to 20).
   - Primary: #181c56, hover #393d79, active #11143c, text white.
   - Secondary: transparent, border #8284ab, hover #d9ddf2, active #aeb7e2 (border becomes
     #181c56), text #181c56.
+  - No text button: Tertiary is deprecated for `SecondaryButton size="small"`
+    (`TertiaryButton.tsx:39`).
 - **MUI**: `Button` `variant="contained"` (primary) and `"outlined"` (secondary). Theme
   `MuiButton`: `BUTTON_RADIUS_PX` 8 / `BUTTON_RADIUS_SMALL_PX` 6, min-heights
-  `BUTTON_HEIGHT_*`.
+  `BUTTON_HEIGHT_*`, `BUTTON_FONT*` in `root` / `sizeSmall` / `sizeLarge`; contained gets a
+  2 px transparent border, then `BUTTON_PAD_X_PX` per size for contained and outlined alike.
+  MUI's text buttons keep their own padding (Alert / Snackbar action slots).
 - **Negative** (`Button.scss:171`, tokens `Components/button/Negative/Standard/*`): transparent,
   2 px #d31b1b border and text, hover #ffcece, pressed #d31b1b fill with white text. Linje has
   no filled red button; a destructive action is always confirmed.
-- **Status: partial.** Sizes and radius are done. Outlined is Secondary, and outlined
-  `color="error"` is Negative: `MuiButton.variants` sets MUI's `--variant-outlined*` vars
-  (`:active` after hover). Small outlined pads 2 / 8 so the 2 px border keeps 32 px. In use:
-  Deactivate (`EditorFrame`), `DeactivateDialog`, `DiscardDialog`. Contained (#392):
-  primary hover `PRIMARY_HOVER` #393d79 via `--variant-containedBg` (MUI's `primary.dark` is
-  darker); inline padding `BUTTON_PAD_X_*` 12 / 16 / 24. Measured: small Save pad 12, hover
-  #393d79. Deactivate, disabled while dirty, says why in a tooltip ("Save or cancel first").
+- **Status: done (#394).** Outlined is Secondary, and outlined `color="error"` is Negative:
+  `MuiButton.variants` sets MUI's `--variant-outlined*` vars (`:active` after hover).
+  Contained (#392): primary hover `PRIMARY_HOVER` #393d79 via `--variant-containedBg` (MUI's
+  `primary.dark` is darker). Measured (`components-button--sizes`): 32 / 48 / 64 px, 14 / 16 /
+  24 px text, inset 14 / 18 / 26 for Primary, Secondary and Negative — matches.
+- **Per call site (#394)**: form footer Save / Cancel are medium, as the Discard and Deactivate
+  dialogs it opens. Title-row Deactivate stays small (destructive = quieter). Former text
+  buttons are outlined: Show XML and Filters small, import wizard Back medium (its dialog row is
+  medium). Alert / Snackbar actions stay MUI text buttons in the action slot.
 - **Traps:** red text on the #ffcece hover is about 3.8:1 (Linje's own spec, under WCAG 1.4.3's
   4.5:1). Open (#392): accept or darken.
 

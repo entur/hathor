@@ -207,20 +207,13 @@ export function EditFooter({
         <Button
           variant="outlined"
           color="inherit"
-          size="small"
           {...slotProps?.cancel}
           disabled={inert}
           onClick={onCancel}
         >
           {l.cancel}
         </Button>
-        <Button
-          variant="contained"
-          size="small"
-          {...slotProps?.save}
-          disabled={locked}
-          onClick={save}
-        >
+        <Button variant="contained" {...slotProps?.save} disabled={locked} onClick={save}>
           {l.save}
         </Button>
       </Stack>

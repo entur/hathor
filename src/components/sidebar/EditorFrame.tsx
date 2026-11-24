@@ -313,7 +313,7 @@ export default function EditorFrame<T, F>({
             <>
               <Divider orientation="vertical" flexItem />
               {/* The span takes the hover and focus a disabled button doesn't; the tooltip says why. */}
-              <Tooltip title={actions.isDirty ? t('common.deactivateDirty') : ''} describeChild>
+              <Tooltip describeChild title={actions.isDirty ? t('common.deactivateDirty') : ''}>
                 <span tabIndex={actions.isDirty ? 0 : undefined}>
                   <Button
                     size="small"

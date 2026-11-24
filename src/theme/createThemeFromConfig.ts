@@ -63,9 +63,13 @@ const POPUP_OFFSET_PX = 4,
 export const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48;
 const BUTTON_HEIGHT_LARGE_PX = 64;
-// Linje button inline padding (`button/inlinepadding/{small,large}`); medium is MUI's 16 already.
-const BUTTON_PAD_X_SMALL_PX = 12,
-  BUTTON_PAD_X_LARGE_PX = 24;
+// Linje button inline padding (`button/inlinepadding/*`), inside the 2 px border every variant
+// carries (`Button.scss:4-26,90-105`): text sits 14 / 18 / 26 px from the edge.
+const BUTTON_PAD_X_PX = { small: 12, medium: 16, large: 24 } as const;
+// Linje button text, `body-s` / `body-m` / `body-xl`: size / line height (rem).
+const BUTTON_FONT_SMALL = { fontSize: '0.875rem', lineHeight: '1.25rem' },
+  BUTTON_FONT = { fontSize: '1rem', lineHeight: '1.5rem' },
+  BUTTON_FONT_LARGE = { fontSize: '1.5rem', lineHeight: '2rem' };
 // Linje PrimaryButton hover (`Button.scss`); MUI's `primary.dark` is darker.
 const PRIMARY_HOVER = '#393d79';
 // Heading sizes (rem) on Linje's 32 / 24 / 20 px steps, one line height for all.
@@ -221,9 +225,13 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   MuiCard: { styleOverrides: { root: { borderRadius: CARD_RADIUS_PX } } },
   MuiButton: {
     styleOverrides: {
-      root: { borderRadius: BUTTON_RADIUS_PX, minHeight: BUTTON_HEIGHT_PX },
-      sizeSmall: { borderRadius: BUTTON_RADIUS_SMALL_PX, minHeight: BUTTON_HEIGHT_SMALL_PX },
-      sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX },
+      root: { borderRadius: BUTTON_RADIUS_PX, minHeight: BUTTON_HEIGHT_PX, ...BUTTON_FONT },
+      sizeSmall: {
+        borderRadius: BUTTON_RADIUS_SMALL_PX,
+        minHeight: BUTTON_HEIGHT_SMALL_PX,
+        ...BUTTON_FONT_SMALL,
+      },
+      sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX, ...BUTTON_FONT_LARGE },
     },
     // Linje SecondaryButton (outlined) and NegativeButton (outlined, `color="error"`,
     // `button/Button.scss:171`): a 2 px border, filled on hover and press. Through MUI's own
@@ -251,16 +259,18 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         props: { variant: 'contained', color: 'primary' },
         style: { [CAN_HOVER]: { '&:hover': { '--variant-containedBg': PRIMARY_HOVER } } },
       },
+      // Linje PrimaryButton's border is transparent (`Button.scss:117`): the same inset as outlined.
       {
-        props: { variant: 'contained', size: 'small' },
-        style: { paddingInline: BUTTON_PAD_X_SMALL_PX },
+        props: { variant: 'contained' },
+        style: { border: `${FIELD_BORDER_PX}px solid transparent` },
       },
-      {
-        props: { variant: 'contained', size: 'large' },
-        style: { paddingInline: BUTTON_PAD_X_LARGE_PX },
-      },
-      // MUI's 3 px padding plus the 2 px border makes 32.75; Linje small is 32.
-      { props: { variant: 'outlined', size: 'small' }, style: { padding: '2px 8px' } },
+      // MUI's text buttons keep their own padding: Linje has none (Tertiary is deprecated).
+      ...(['contained', 'outlined'] as const).flatMap(variant =>
+        (['small', 'medium', 'large'] as const).map(size => ({
+          props: { variant, size },
+          style: { paddingInline: BUTTON_PAD_X_PX[size] },
+        }))
+      ),
       {
         props: { variant: 'outlined', color: 'error' },
         style: {
