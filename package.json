@@ -1,7 +1,7 @@
 {
   "name": "hathor",
   "private": true,
-  "version": "0.136.0",
+  "version": "0.140.0",
   "type": "module",
   "scripts": {
     "predev": "run-p copy:theme copy:config && node scripts/local-nationale-setup.mjs --link",
@@ -46,7 +46,7 @@
     "@mui/x-data-grid": "^9.17.0",
     "@opentrainticketing/netex-deckplan-editor": "^2.0.5",
     "@types/papaparse": "^5.5.2",
-    "fast-xml-parser": "~5.12.0",
+    "fast-xml-parser": "~5.12.1",
     "graphql": "^16.11.0",
     "graphql-request": "^7.3.1",
     "i18next": "^25.2.1",
@@ -58,7 +58,7 @@
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2",
     "react-oidc-context": "^3.3.0",
-    "react-router-dom": "^7.18.5",
+    "react-router-dom": "^7.18.6",
     "three": "^0.180.0"
   },
   "devDependencies": {
@@ -85,11 +85,11 @@
     "jsdom": "^29.1.1",
     "lint-staged": "^16.0.0",
     "ncp": "^2.0.0",
-    "playwright": "1.65.0",
-    "prettier": "^3.10.0",
+    "playwright": "1.65.1",
+    "prettier": "^3.10.1",
     "storybook": "^10.6.6",
     "typescript": "~5.8.3",
-    "typescript-eslint": "^8.72.1",
+    "typescript-eslint": "^8.73.0",
     "vite": "^8.3.8",
     "vitest": "^4.1.11"
   },

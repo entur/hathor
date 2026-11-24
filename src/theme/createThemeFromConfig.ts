@@ -18,13 +18,13 @@ export const FOCUS_PX = 2;
 const FOCUS_CONTRAST = '#aeb7e2';
 // Linje's accent (`Text/Accent`, Lavender/90): tooltip fill, alert text, pressed icons.
 export const ACCENT = '#181c56';
-// Linje's legacy `border-radiuses-medium`: icon buttons, tooltips, alert boxes.
+// Linje's legacy `border-radiuses-medium`: icon buttons, tooltips, alert boxes, popups.
 const LEGACY_RADIUS_PX = 4;
 // Linje `--font-weights-*` (#258): Nationale ships only these two.
 const BODY_WEIGHT = 500,
   HEADING_WEIGHT = 600;
 // Linje corners, standard density (#258): cards `--border-radiuses-large`, buttons
-// `--components-button-radius-*`; small fields keep `shape.borderRadius` 4, chips stay pills.
+// `--components-button-radius-*`; chips stay pills.
 const CARD_RADIUS_PX = 8;
 export const BUTTON_RADIUS_PX = 8,
   BUTTON_RADIUS_SMALL_PX = 6;
@@ -38,12 +38,15 @@ export const FIELD_BORDER_PX = 2,
 // indent (MUI's is 12).
 const FIELD_PAD_X_PX = 16,
   FIELD_INDENT_SHIFT_PX = 4;
+// Linje `form/base form/radius/Medium` / `Small`: form fields / small outlined ones (toolbar).
 export const FIELD_RADIUS_PX = 8;
+const FIELD_RADIUS_SMALL_PX = 6;
 // Linje `Text/Subdued`, 5.6:1 on white.
 const LABEL_COLOR = '#626493';
 // Linje disabled field (`BaseFormControl.scss` `--disabled`): grey fill, no border, grey text.
-const DISABLED_FILL = '#cfd2d4',
-  DISABLED_TEXT = '#6e6f73';
+const DISABLED_FILL = '#cfd2d4';
+export const DISABLED_TEXT = '#6e6f73',
+  DISABLED_STROKE = '#949699'; // `Base colors/Stroke/Disabled`: a disabled SquareButton's dashes
 // Linje `Text/SubduedAlt` (Blue 30), 11.3:1 on the navy: the header picker's label.
 const HEADER_LABEL = '#d9dae8';
 // MUI's filled Autocomplete input keeps 4 px of its own left padding; the root adds the rest.
@@ -60,6 +63,15 @@ const POPUP_OFFSET_PX = 4,
 export const BUTTON_HEIGHT_SMALL_PX = 32,
   BUTTON_HEIGHT_PX = 48;
 const BUTTON_HEIGHT_LARGE_PX = 64;
+// Linje button inline padding (`button/inlinepadding/*`), inside the 2 px border every variant
+// carries (`Button.scss:4-26,90-105`): text sits 14 / 18 / 26 px from the edge.
+const BUTTON_PAD_X_PX = { small: 12, medium: 16, large: 24 } as const;
+// Linje button text, `body-s` / `body-m` / `body-xl`: size / line height (rem).
+const BUTTON_FONT_SMALL = { fontSize: '0.875rem', lineHeight: '1.25rem' },
+  BUTTON_FONT = { fontSize: '1rem', lineHeight: '1.5rem' },
+  BUTTON_FONT_LARGE = { fontSize: '1.5rem', lineHeight: '2rem' };
+// Linje PrimaryButton hover (`Button.scss`); MUI's `primary.dark` is darker.
+const PRIMARY_HOVER = '#393d79';
 // Heading sizes (rem) on Linje's 32 / 24 / 20 px steps, one line height for all.
 const HEADING_LINE_HEIGHT = 1.25,
   H1_REM = 2,
@@ -74,6 +86,32 @@ export const HOVER_FILL = '#d9ddf2',
 const NEGATIVE_HOVER = '#ffcece';
 const HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4';
+// Linje `shadows.boxShadow` (`legacy-tokens.ts`): a selected segment, a popover.
+const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
+// Linje Popover (`tooltip/Popover.scss`, `tooltip/Popover/Standard/*`): fill, 1 px border.
+const POPOVER_FILL = '#f6f6f9',
+  POPOVER_BORDER = '#54568c66';
+// Linje's dropdown list (`dropdown/components/DropdownList.scss:3-13`) and OverflowMenu
+// (`menu/OverflowMenu.scss:3-9`): `Base menu/Fill-Default` and `Border` (= the field border),
+// radius legacy 4, `boxShadow`. The list's border is 2 px, the menu's 1 px.
+const MENU_FILL = '#f2f5f7';
+// The radius is a px string: in `sx` a bare number is a multiple of `shape.borderRadius`.
+const surface = (fill: string, borderPx: number, borderColor: string) => ({
+  backgroundColor: fill,
+  border: `${borderPx}px solid ${borderColor}`,
+  borderRadius: `${LEGACY_RADIUS_PX}px`,
+  boxShadow: BOX_SHADOW,
+});
+const menuSurface = (borderPx: number) => surface(MENU_FILL, borderPx, FIELD_BORDER);
+/** Linje Popover's surface, for a `Popover` paper's `sx` (FilterPanel). */
+export const POPOVER_SURFACE = surface(POPOVER_FILL, 1, POPOVER_BORDER);
+// Linje SegmentedControl (`form/segmentedControl/*.scss`, `form/Segmented Control/Standard/*`):
+// track, unselected hover; choices 24 px with 4 px around them (32 px track).
+const SEGMENT_TRACK = '#d9dae8',
+  SEGMENT_HOVER = '#eaeaf1';
+const SEGMENT_HEIGHT_PX = 24,
+  SEGMENT_MARGIN_PX = 4,
+  SEGMENT_PAD = '2px 12px';
 // Linje Tooltip (`tooltip/Tooltip.scss`): accent fill, 14 px text, 5 / 10 px padding, radius 4.
 const TOOLTIP_PAD = '5px 10px';
 // Linje Skeleton (`loader/BaseSkeleton.scss`, `loader/skeleton/Standard/*`): fill, shimmer.
@@ -187,9 +225,13 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   MuiCard: { styleOverrides: { root: { borderRadius: CARD_RADIUS_PX } } },
   MuiButton: {
     styleOverrides: {
-      root: { borderRadius: BUTTON_RADIUS_PX, minHeight: BUTTON_HEIGHT_PX },
-      sizeSmall: { borderRadius: BUTTON_RADIUS_SMALL_PX, minHeight: BUTTON_HEIGHT_SMALL_PX },
-      sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX },
+      root: { borderRadius: BUTTON_RADIUS_PX, minHeight: BUTTON_HEIGHT_PX, ...BUTTON_FONT },
+      sizeSmall: {
+        borderRadius: BUTTON_RADIUS_SMALL_PX,
+        minHeight: BUTTON_HEIGHT_SMALL_PX,
+        ...BUTTON_FONT_SMALL,
+      },
+      sizeLarge: { minHeight: BUTTON_HEIGHT_LARGE_PX, ...BUTTON_FONT_LARGE },
     },
     // Linje SecondaryButton (outlined) and NegativeButton (outlined, `color="error"`,
     // `button/Button.scss:171`): a 2 px border, filled on hover and press. Through MUI's own
@@ -213,8 +255,22 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
           '&.Mui-disabled': { borderWidth: FIELD_BORDER_PX },
         },
       },
-      // MUI's 3 px padding plus the 2 px border makes 32.75; Linje small is 32.
-      { props: { variant: 'outlined', size: 'small' }, style: { padding: '2px 8px' } },
+      {
+        props: { variant: 'contained', color: 'primary' },
+        style: { [CAN_HOVER]: { '&:hover': { '--variant-containedBg': PRIMARY_HOVER } } },
+      },
+      // Linje PrimaryButton's border is transparent (`Button.scss:117`): the same inset as outlined.
+      {
+        props: { variant: 'contained' },
+        style: { border: `${FIELD_BORDER_PX}px solid transparent` },
+      },
+      // MUI's text buttons keep their own padding: Linje has none (Tertiary is deprecated).
+      ...(['contained', 'outlined'] as const).flatMap(variant =>
+        (['small', 'medium', 'large'] as const).map(size => ({
+          props: { variant, size },
+          style: { paddingInline: BUTTON_PAD_X_PX[size] },
+        }))
+      ),
       {
         props: { variant: 'outlined', color: 'error' },
         style: {
@@ -274,6 +330,40 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       },
     },
   },
+  // Linje SegmentedControl: choices on a tinted track, the selected one white and raised.
+  MuiToggleButtonGroup: {
+    styleOverrides: {
+      root: { backgroundColor: SEGMENT_TRACK, borderRadius: CARD_RADIUS_PX },
+      // MUI joins the buttons (shared borders, square inner corners); Linje spaces them.
+      grouped: {
+        margin: SEGMENT_MARGIN_PX,
+        border: 0,
+        borderRadius: LEGACY_RADIUS_PX,
+      },
+    },
+  },
+  MuiToggleButton: {
+    // The focus ripple tints the white selected choice; Linje has the ring alone.
+    defaultProps: { disableRipple: true },
+    styleOverrides: {
+      root: {
+        height: SEGMENT_HEIGHT_PX,
+        padding: SEGMENT_PAD,
+        border: 0,
+        color: theme.palette.primary.main,
+        fontSize: theme.typography.body2.fontSize,
+        [CAN_HOVER]: { '&:hover': { backgroundColor: SEGMENT_HOVER } },
+        '&.Mui-selected, &.Mui-selected:hover': {
+          color: theme.palette.primary.main,
+          backgroundColor: theme.palette.common.white,
+          boxShadow: BOX_SHADOW,
+        },
+      },
+    },
+  },
+  // Every popup one surface, not MUI's elevation 8 (menus) and 1 (autocompletes): Linje's
+  // OverflowMenu here; a Select's menu widens the border to its dropdown list's (MuiSelect).
+  MuiMenu: { styleOverrides: { paper: menuSurface(1) } },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
@@ -316,10 +406,14 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   },
   MuiOutlinedInput: {
     styleOverrides: {
-      // Outlined fields are the small ones — toolbar, filters, the header picker — the label
+      // Outlined fields are the small ones — toolbar, the header picker — the label
       // in the outline's notch. Focus and error keep MUI's colours: focus is the 2 px border
-      // turning primary. No ring: an outline is a plain box and would strike the label.
+      // turning primary. A labelled one gets no ring: an outline is a plain box and would
+      // strike the label; a label-less one (search, sort) gets Linje's field ring, offset 0
+      // (`notranslate` marks MUI's empty legend).
       root: {
+        borderRadius: FIELD_RADIUS_SMALL_PX,
+        [`&.Mui-focused:has(> ${NOTCH} .notranslate)`]: ring(theme.palette.primary.main, 0),
         [`& ${NOTCH}`]: { borderWidth: FIELD_BORDER_PX, borderColor: FIELD_BORDER },
         [CAN_HOVER]: { [`&${HOVER}`]: { borderColor: theme.palette.primary.main } },
         // Touch: MUI's own reset paints a stuck `:hover` 0.23 black (1.7:1, WCAG 1.4.11); keep ours.
@@ -402,6 +496,7 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         // Same selector weight as MUI's own small `paddingBottom: 1`, so this one wins.
         '& .MuiFilledInput-root.MuiInputBase-sizeSmall': { paddingBottom: AC_PAD_BOTTOM_PX },
       },
+      paper: menuSurface(FIELD_BORDER_PX),
       popper: {
         '&[data-popper-placement^="bottom"] .MuiAutocomplete-paper': { marginTop: POPUP_OFFSET_PX },
         '&[data-popper-placement^="top"] .MuiAutocomplete-paper': {
@@ -416,7 +511,15 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
       MenuProps: {
         anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
         transformOrigin: { vertical: 'top', horizontal: 'left' },
-        slotProps: { paper: { sx: { mt: `${POPUP_OFFSET_PX}px`, maxHeight: LIST_MAX_HEIGHT } } },
+        slotProps: {
+          paper: {
+            sx: {
+              mt: `${POPUP_OFFSET_PX}px`,
+              maxHeight: LIST_MAX_HEIGHT,
+              borderWidth: `${FIELD_BORDER_PX}px`,
+            },
+          },
+        },
       },
     },
   },

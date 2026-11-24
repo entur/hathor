@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { FieldSpec } from '../types.ts';
 import {
   ALL_TOOLS,
@@ -118,6 +118,15 @@ describe('CollectionToolbar', () => {
     const { onQuery } = mount({ query: { sort: { field: 'name', dir: 'asc' } } });
     fireEvent.click(screen.getByRole('button', { name: 'Sort direction' }));
     expect(onQuery).toHaveBeenCalledWith({ sort: { field: 'name', dir: 'desc' } });
+  });
+
+  it('names Sort by, with no notch label, and shows the sort in the box', () => {
+    mount();
+    const empty = screen.getByRole('combobox', { name: 'Sort by' });
+    expect(empty.textContent).toBe('Sort by');
+    cleanup();
+    mount({ query: { sort: { field: 'name', dir: 'asc' } } });
+    expect(screen.getByRole('combobox', { name: 'Sort by' }).textContent).toBe('Sort by: Name');
   });
 
   it('hides a column from the columns menu', () => {

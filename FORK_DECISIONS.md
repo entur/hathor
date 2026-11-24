@@ -866,7 +866,7 @@ User test II (S5, #260) found MUI's floating labels animating while a form hydra
 
 - **Form-size fields (48 px) are Linje's box** (`MuiInputLabel` / `MuiOutlinedInput` / `MuiAutocomplete` in `createThemeFromConfig.ts`): 16 px inline padding, radius 8, label inside in `Text/Subdued`, the value 4 px off the bottom, the outline's notch closed. Selects and autocompletes are the same box, as Linje's Dropdown.
 - **A native date input pins its label at the top** (`FormFields.tsx` `fieldBase`): its dd/mm/yyyy mask is always drawn, so a resting label would overlap it.
-- **Small fields keep MUI's 40 px, the label in the outline's notch**: the collection toolbar, the filter panel, the header's organisation picker. A Linje small field (32 px) has no room for a label inside.
+- **Small fields keep MUI's 40 px outlined field**: the collection toolbar (no label, so Linje's ring at offset 0) and the header's organisation picker (label in the outline's notch). A Linje small field (32 px) has no room for a label inside. The filter panel was one too; since 2026-11-19 (#392) it uses the form-size field: a popover has the room, and a notched label blocks Linje's focus ring.
 - **The header's organisation picker** matches enki's provider picker: label pinned in the notch ("Select organisation"), transparent on the navy — white text, Linje `Text/SubduedAlt` label, `--stroke-contrast` outline, focus as the outline turning white (a ring is a plain box and would strike through the label) (`MuiAppBar` override).
 
 ### Alternatives considered

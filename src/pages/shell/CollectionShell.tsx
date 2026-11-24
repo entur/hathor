@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LoadingPage from '../../components/common/LoadingPage.tsx';
 import ErrorPage from '../../components/common/ErrorPage.tsx';
+import { RING_GUTTER } from '../../components/form-layout/index.ts';
 import { useFocusEditId } from './useFocusEditId.ts';
 
 /** Router state the details page hands back on close: the record whose Edit link regains focus
@@ -100,6 +101,9 @@ export default function CollectionShell({
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
+          // It clips: room for the toolbar's focus rings, pulled back out so nothing moves (#392).
+          p: RING_GUTTER,
+          m: -RING_GUTTER,
         }}
       >
         {error ? (
