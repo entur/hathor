@@ -1,5 +1,7 @@
 .deck-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: 280px repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 0.5rem;
   height: calc(100vh - var(--header-h) - 1rem);
 }
@@ -10,7 +12,16 @@
   height: 100%;
 }
 .deck-grid > .deck-list {
-  flex: 0 0 280px;
+  grid-row: 1 / -1;
+}
+/* The renderers' shared toolbar, over their two columns only: the artwork has
+   nothing to switch. Its row is the grid's, so all three panes still start —
+   and level their headings — on the same line below it. */
+.deck-grid > .pair-tools {
+  grid-column: 2 / 4;
+  height: auto;
+  padding: 8px 16px;
+  overflow: visible;
 }
 /* The three comparison panes: the decks we derived, drawn by two renderers,
    and the drawing they were derived from. Equal shares — none is the
@@ -18,10 +29,19 @@
 .deck-grid > .deck-stage,
 .deck-grid > .deck-v3,
 .deck-grid > .deck-art {
-  flex: 1 1 0;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.deck-grid > .deck-stage {
+  grid-column: 2;
+}
+.deck-grid > .deck-v3 {
+  grid-column: 3;
+}
+.deck-grid > .deck-art {
+  grid-column: 4;
 }
 .deck-render h2 {
   margin-bottom: 12px;
@@ -61,16 +81,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* A third levelled row, between the heading and the drawing. Only the stage
-   pane has a control to put in it; the other panes' copies stay empty and are
-   there to take the same height, so the drawings still start at the same
-   line on the page. */
+/* The toolbar's row: tabs, toggle and explainer button. */
 .deck-render .pane-tools {
-  flex-shrink: 0;
-  padding-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 .deck-render .pane-tools label {
   display: inline-flex;
@@ -90,12 +106,9 @@
   color: var(--clr-accent);
   font-weight: 600;
 }
-/* ── The stage's two readings ── */
+/* ── The renderers' two readings ── */
 /* Exact draws each spot where its coordinates put it; Grid draws the
-   SpotRow/SpotColumn lattice the same document declares. The tabs ride in the
-   tools row rather than taking one of their own: `levelRows` levels three rows
-   against the artwork pane, and a fourth would need a matching empty row over
-   there to keep the drawings starting at the same line. */
+   SpotRow/SpotColumn lattice the same document declares. */
 .deck-render .tab-bar {
   flex: 0 0 auto;
   display: flex;
@@ -124,19 +137,9 @@
   color: var(--clr-accent);
   font-weight: 600;
 }
-/* Same row, different jobs — the toggle belongs to the drawing, not to the
-   choice of drawing, so it sits at the far end of the row. */
-.deck-stage .pane-tools label {
-  margin-left: auto;
-}
-/* Tabs and toggle overflow a narrow pane: wrap instead (`levelRows` evens
-   the row out against the other panes). */
-.deck-stage .pane-tools {
-  flex-wrap: wrap;
-}
 /* The hack and its explainer on Grid, where neither grid reads a coordinate.
-   Dimmed in place rather than removed, so the row keeps its levelled height;
-   on the controls, not the row, so the tabs stay at full strength. */
+   Dimmed in place rather than removed, so the toolbar does not jump; on the
+   controls, not the row, so the tabs stay at full strength. */
 .deck-render .pane-tools label:has(input:disabled),
 .deck-render .pane-tools .info-btn:disabled {
   opacity: 0.45;
