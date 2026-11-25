@@ -127,6 +127,21 @@
 .deck-stage .pane-tools label {
   margin-left: auto;
 }
+/* Two toggles beside the tabs overflow a narrow pane: wrap instead
+   (`levelRows` evens the row out against the artwork pane). Only the first
+   toggle is pushed right; the rest follow it. */
+.deck-stage .pane-tools {
+  flex-wrap: wrap;
+}
+.deck-stage .pane-tools label ~ label {
+  margin-left: 0;
+}
+/* The hack is also off under the v3 renderer, on either tab. */
+.deck-render .pane-tools label:has(input:disabled),
+.deck-render .pane-tools .info-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 /* On Grid the patches have nothing to patch: that reading places spots by
    reference and reads no coordinate. Dimmed in place rather than removed, so
    the row keeps the height the artwork pane was levelled to. Applied to the
