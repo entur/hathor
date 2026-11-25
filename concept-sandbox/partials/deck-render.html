@@ -38,6 +38,13 @@
           Grid
         </button>
       </div>
+      <!-- The v3 editor (GitLab init-v3) is not on npm: vendored by
+           tools/deck-v3/build.mjs. Its renderer reads the deck polygon the
+           2.0.5 patches exist to work around, so the hack is off under v3. -->
+      <label title="Draw with the v3 editor build in vendor/deckplan-v3/">
+        <input type="checkbox" id="deck-v3" />
+        <span>v3 renderer</span>
+      </label>
       <label>
         <input type="checkbox" id="deck-hack" />
         <span>Hack anchoring and rotation</span>
@@ -159,6 +166,11 @@
   /** Custom-element tag the bundle registers. */
   const TAG = 'deck-rendering';
 
+  /** Vendored v3 build (`tools/deck-v3/build.mjs`) and the tag it registers. */
+  // `./`: a bare path is a module specifier to `import()`; this resolves against index.html.
+  const V3_URL = './vendor/deckplan-v3/deck-rendering-v3.js',
+    V3_TAG = 'deck-rendering-v3';
+
   /** Stage padding (px) held back when fitting the drawing to the pane. */
   const FIT_PAD = 48;
 
@@ -182,6 +194,7 @@
   const srcEl = document.getElementById('deck-src');
   const artSrcEl = document.getElementById('deck-art-src');
   const hackEl = document.getElementById('deck-hack');
+  const v3El = document.getElementById('deck-v3');
   const infoBtn = document.getElementById('deck-hack-info');
   const dialogEl = document.getElementById('deck-hack-dialog');
   const infoBodyEl = document.getElementById('deck-hack-dialog-body');
@@ -407,8 +420,13 @@
      */
     const cache = new Map();
 
-    /** Cache key for one plan under one reading. */
-    const keyOf = (plan, hacked) => `${plan.id}|${hacked ? 'hacked' : 'as-written'}`;
+    /** Cache key for one plan under one reading; v3 has only the one. */
+    const keyOf = (plan, hacked, v3) =>
+      `${plan.id}|${v3 ? 'v3' : hacked ? 'hacked' : 'as-written'}`;
+
+    /** The v3 bundle, imported on the first v3 draw. */
+    let v3Mod;
+    const loadV3 = () => (v3Mod ??= import(V3_URL));
 
     /**
      * Renders started, so a slow one can tell it has been overtaken.
@@ -457,8 +475,14 @@
       return text.get(plan.id);
     };
 
-    const deckOf = async (plan, hacked) => {
-      const key = keyOf(plan, hacked);
+    const deckOf = async (plan, hacked, v3) => {
+      const key = keyOf(plan, hacked, v3);
+      // v3 parses with its own models (same `instanceof` rule) and gets the
+      // fragment as written: neither patch is about its renderer.
+      if (v3 && !cache.has(key)) {
+        const [{ loadNeTEx }, frag] = await Promise.all([loadV3(), fragOf(plan)]);
+        cache.set(key, loadNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
+      }
       if (!cache.has(key)) {
         // `hacked` is the reading the caller asked for, not whatever the
         // checkbox says now: the fetch above gives the reader time to flip it,
@@ -538,6 +562,7 @@
     const draw = async plan => {
       const mine = ++gen;
       const hacked = hackEl.checked;
+      const v3 = v3El.checked;
       current = plan;
       titleEl.textContent = plan.name;
       // Announced for the Grid panel, and left on the page as well: that panel
@@ -568,13 +593,13 @@
       drawArt(plan);
       // Only on a first draw: a cached plan resolves within the same task and
       // would show the spinner for a single frame.
-      if (!cache.has(keyOf(plan, hacked))) {
+      if (!cache.has(keyOf(plan, hacked, v3))) {
         metaEl.textContent = '';
         waiting('Fetching the decks fragment…');
       }
       let deck;
       try {
-        deck = await deckOf(plan, hacked);
+        deck = await deckOf(plan, hacked, v3);
       } catch (e) {
         if (gen !== mine) return;
         metaEl.textContent = '';
@@ -589,11 +614,15 @@
       }
 
       const s = statsOf(deck);
+      // v3 sizes the deck from its polygon; the fragment as written has no
+      // Length/Width (the extent patch is what adds them for 2.0.5).
+      const box = v3 ? deck.polygon?.getBoundingBox() : undefined;
+      const [len, wid] = v3 ? [box?.length, box?.width] : [deck.Length, deck.Width];
       metaEl.innerHTML = [
         `${s.spots} spots`,
         `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
         `${s.entrances} entrances`,
-        `${fmtM(deck.Length)}×${fmtM(deck.Width)} m`,
+        `${fmtM(len)}×${fmtM(wid)} m`,
       ]
         .map(t => `<span>${t}</span>`)
         .join('');
@@ -605,10 +634,12 @@
       // may already have fired — so each levels the rows.
       levelRows();
 
-      const el = document.createElement(TAG);
-      Object.assign(el, { deck, ...fit(deck) });
+      // v3 fits itself to the host and brings its own styles; only `vertical`
+      // is the page's, to keep it portrait beside the artwork.
+      const el = document.createElement(v3 ? V3_TAG : TAG);
+      Object.assign(el, v3 ? { deck, vertical: true } : { deck, ...fit(deck) });
       // Adopted before insertion so the drawing never flashes unstyled.
-      if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
+      if (!v3 && el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
       hostEl.replaceChildren(el);
 
       // One scale across both panes — a drawing beside a rendering it is not
@@ -617,7 +648,12 @@
       // the renderer pads its frame, so nothing short of the laid-out element
       // states what the rendering actually occupies. Vue renders it in
       // `connectedCallback`, so it is there to measure the moment it is in.
-      fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
+      const measure = () =>
+        fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
+      // v3 sizes its `<svg>` from a ResizeObserver, so it has a width only
+      // after the observer fires and Vue re-renders: two frames on.
+      if (v3) requestAnimationFrame(() => requestAnimationFrame(() => gen === mine && measure()));
+      else measure();
     };
 
     const row = plan => {
@@ -638,6 +674,22 @@
     // toggle is a comparison control, and one worth making is the same car
     // before and after, not two different cars.
     hackEl.onchange = () => current && draw(current);
+
+    /**
+     * Enable the stage's controls for the reading on screen: both are Exact's,
+     * and the anchoring hack is a 2.0.5 workaround with nothing to patch in v3.
+     */
+    const syncTools = () => {
+      const exact = tabExactEl.classList.contains('active');
+      v3El.disabled = !exact;
+      hackEl.disabled = infoBtn.disabled = !exact || v3El.checked;
+      toolsEl.classList.toggle('geometry-off', !exact);
+    };
+
+    v3El.onchange = () => {
+      syncTools();
+      if (current) draw(current);
+    };
 
     /** The stage's two readings, as `[key, tab, panel]`. */
     const TABS = [
@@ -668,10 +720,8 @@
         tab.setAttribute('aria-selected', String(on));
         panel.classList.toggle('active', on);
       }
-      const exact = key === 'exact';
-      hackEl.disabled = infoBtn.disabled = !exact;
-      toolsEl.classList.toggle('geometry-off', !exact);
-      if (exact && current) draw(current);
+      syncTools();
+      if (key === 'exact' && current) draw(current);
     };
 
     for (const [key, tab] of TABS) tab.onclick = () => showTab(key);
