@@ -76,7 +76,9 @@
   </div>
   <!-- The v3 editor's renderer, extracted from its dev branch (GitLab init-v3):
        not on npm, vendored by tools/deck-v3/build.mjs. It draws the fragment
-       as written unless the anchoring hack is on, which patches both panes. -->
+       as written unless the anchoring hack is on, which patches both panes.
+       Follows the stage's tab: Exact draws `<deck-rendering-v3>`, Grid draws
+       `<deck-grid-v3>` (v3's netexToOsdm → OSDMRenderer). -->
   <div class="card deck-v3">
     <h2>
       <span class="pane-label">v3-alpha.extract</span>
@@ -176,10 +178,11 @@
   /** Custom-element tag the bundle registers. */
   const TAG = 'deck-rendering';
 
-  /** Vendored v3 build (`tools/deck-v3/build.mjs`) and the tag it registers. */
+  /** Vendored v3 build (`tools/deck-v3/build.mjs`) and the tags it registers. */
   // `./`: a bare path is a module specifier to `import()`; this resolves against index.html.
   const V3_URL = './vendor/deckplan-v3/deck-rendering-v3.js',
-    V3_TAG = 'deck-rendering-v3';
+    V3_TAG = 'deck-rendering-v3',
+    V3_GRID_TAG = 'deck-grid-v3';
 
   /** Stage padding (px) held back when fitting the drawing to the pane. */
   const FIT_PAD = 48;
@@ -709,11 +712,11 @@
     let v3Gen = 0;
 
     /**
-     * Draw one plan's first deck in the v3 pane.
+     * Draw one plan's first deck in the v3 pane, in the stage tab's reading.
      *
-     * On a selection and on the hack toggle, not on resize: v3 fits itself to
-     * its host from its own ResizeObserver, so the element is never rebuilt
-     * for a new size. Not
+     * On a selection, a tab change and the hack toggle, not on resize: v3 fits
+     * itself to its host from its own ResizeObserver, so the element is never
+     * rebuilt for a new size. Not
      * scale-matched to the artwork either — that is the 2.0.5 pane's job.
      *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
@@ -725,7 +728,10 @@
         noteIn(v3HostEl, msg, true);
         levelRows();
       };
-      const hacked = hackEl.checked;
+      const grid = tabGridEl.classList.contains('active');
+      // The grid reads refs, not coordinates: nothing for the hack to patch,
+      // and 2.0.5's grid tab reads the fragment as written too.
+      const hacked = !grid && hackEl.checked;
       if (!cache.has(keyOf(plan, hacked, true))) {
         v3MetaEl.textContent = '';
         waitingIn(v3HostEl, 'Fetching the decks fragment…');
@@ -741,6 +747,7 @@
       }
       if (v3Gen !== mine) return;
       if (!deck) return fail('This fragment carries no decks.');
+      if (grid) return drawV3Grid(deck, fail);
 
       // v3 sizes the deck from its polygon.
       const box = deck.polygon?.getBoundingBox();
@@ -750,6 +757,39 @@
       // v3 brings its own styles; only `vertical` is the page's, to keep it
       // portrait beside the artwork.
       Object.assign(el, { deck, vertical: true });
+      v3HostEl.replaceChildren(el);
+    };
+
+    /**
+     * The v3 grid: `netexToOsdm` lays the SpotRow × SpotColumn lattice out as
+     * an OSDM coach deck. It throws on what it cannot place (a spot naming no
+     * cell, a seat with no label or orientation, an unknown grid marker), and
+     * that message is the pane's figure: the deck v3 refuses is the finding.
+     *
+     * @param {object} deck v3 deck, parsed as written.
+     * @param {(msg: string) => void} fail The pane's error note.
+     */
+    const drawV3Grid = async (deck, fail) => {
+      const { netexToOsdm } = await loadV3();
+      let layout;
+      try {
+        layout = netexToOsdm(deck, 'SINGLE_DECK');
+      } catch (e) {
+        return fail(`v3 cannot grid this deck: ${e.message}`);
+      }
+      const places = layout.placeGroups.reduce((n, g) => n + g.places.length, 0);
+      const s = statsOf(deck);
+      v3MetaEl.innerHTML = [
+        `${places} places`,
+        `${layout.serviceIcons.length} markers`,
+        `${deck.spotRows.length}×${deck.spotColumns.length} cells`,
+        `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
+      ]
+        .map(t => `<span>${t}</span>`)
+        .join('');
+      levelRows();
+      const el = document.createElement(V3_GRID_TAG);
+      Object.assign(el, { layout, vertical: true });
       v3HostEl.replaceChildren(el);
     };
 
@@ -803,6 +843,7 @@
         panel.classList.toggle('active', on);
       }
       if (key === 'exact' && current) draw(current);
+      if (current) drawV3(current);
     };
 
     for (const [key, tab] of TABS) tab.onclick = () => showTab(key);
