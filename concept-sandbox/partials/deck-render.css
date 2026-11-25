@@ -12,9 +12,11 @@
 .deck-grid > .deck-list {
   flex: 0 0 280px;
 }
-/* The two comparison panes: the decks we derived, and the drawing they were
-   derived from. Equal shares — neither is the reference copy of the other. */
+/* The three comparison panes: the decks we derived, drawn by two renderers,
+   and the drawing they were derived from. Equal shares — none is the
+   reference copy of the others. */
 .deck-grid > .deck-stage,
+.deck-grid > .deck-v3,
 .deck-grid > .deck-art {
   flex: 1 1 0;
   display: flex;
@@ -60,8 +62,8 @@
   white-space: nowrap;
 }
 /* A third levelled row, between the heading and the drawing. Only the stage
-   pane has a control to put in it; the artwork's copy stays empty and is
-   there to take the same height, so the two drawings still start at the same
+   pane has a control to put in it; the other panes' copies stay empty and are
+   there to take the same height, so the drawings still start at the same
    line on the page. */
 .deck-render .pane-tools {
   flex-shrink: 0;
@@ -127,32 +129,22 @@
 .deck-stage .pane-tools label {
   margin-left: auto;
 }
-/* Two toggles beside the tabs overflow a narrow pane: wrap instead
-   (`levelRows` evens the row out against the artwork pane). Only the first
-   toggle is pushed right; the rest follow it. */
+/* Tabs and toggle overflow a narrow pane: wrap instead (`levelRows` evens
+   the row out against the other panes). */
 .deck-stage .pane-tools {
   flex-wrap: wrap;
 }
-.deck-stage .pane-tools label ~ label {
-  margin-left: 0;
-}
-/* The hack is also off under the v3 renderer, on either tab. */
+/* A control `syncTools` disables: the hack and its explainer on Grid (that
+   reading places spots by reference and reads no coordinate). Dimmed in place rather than removed, so the row keeps the height
+   the artwork pane was levelled to. Applied to the controls rather than to the
+   row, because opacity on the row would take the tabs with it and a child
+   cannot opt back out. */
 .deck-render .pane-tools label:has(input:disabled),
 .deck-render .pane-tools .info-btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
-/* On Grid the patches have nothing to patch: that reading places spots by
-   reference and reads no coordinate. Dimmed in place rather than removed, so
-   the row keeps the height the artwork pane was levelled to. Applied to the
-   two controls rather than to the row, because opacity on the row would take
-   the tabs with it and a child cannot opt back out. */
-.deck-render .pane-tools.geometry-off label,
-.deck-render .pane-tools.geometry-off .info-btn {
-  opacity: 0.45;
-}
-.deck-render .pane-tools.geometry-off label,
-.deck-render .pane-tools.geometry-off label input {
+.deck-render .pane-tools input:disabled {
   cursor: default;
 }
 /* `:not(.active)` rather than a plain `.tab-panel { display: none }`:
@@ -452,6 +444,7 @@
   font-weight: 400;
 }
 .deck-stage .stage-host,
+.deck-v3 .stage-host,
 .deck-art .art-host {
   flex: 1 1 auto;
   display: flex;
@@ -463,6 +456,7 @@
 /* Figures only, now that identity sits in the heading — so the row is short
    enough to stay a single line, and the drawings keep the height. */
 .deck-stage .stage-meta,
+.deck-v3 .stage-meta,
 .deck-art .art-meta {
   flex-shrink: 0;
   padding-top: 12px;
@@ -476,6 +470,7 @@
 }
 /* A figure shrunk to `26.0…` is worse than one that wrapped. */
 .deck-stage .stage-meta > span,
+.deck-v3 .stage-meta > span,
 .deck-art .art-meta > span {
   flex: 0 0 auto;
 }
@@ -540,7 +535,8 @@
   display: flex;
   font-size: 14px;
 }
-.deck-stage .spin {
+.deck-stage .spin,
+.deck-v3 .spin {
   --spin-size: 28px;
   flex-direction: column;
   gap: 12px;
