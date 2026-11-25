@@ -14,18 +14,21 @@ checked this one).
 - Contrast surface and TopNavigation (header)
 - DatePicker
 - Dropdown (Select)
+- Dropdown list items (MenuItem, Autocomplete option)
 - FeedbackText (helper text)
 - Fieldset and form layout (FormSections)
 - Focus outline
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- Pagination (collection pager)
 - Popover (filter panel) and popup surfaces
 - SegmentedControl (ToggleButtonGroup)
 - SideNavigation (nav rail)
 - Skeleton
 - SquareButton
 - Switch
+- Table (DataGrid rows)
 - TagChip / Chip
 - TextArea
 - TextField
@@ -179,6 +182,25 @@ Cross-cutting traps:
     under the arrow (2b592cb, fixed in 720806c).
   - The label is a `<div>` (MUI 9).
 
+## Dropdown list items (MenuItem, Autocomplete option)
+
+- **Linje**: `packages/dropdown/src/components/DropdownList.scss:78-98`, `menu/OverflowMenu.scss:31-36`;
+  `form/Base menu/*`. Highlighted (hover, keyboard) `Fill-Hover` #d9ddf2. Linje's single
+  dropdown fills a selected item with Fill-Hover too; multiselect marks it with a checkbox.
+- **MUI**: theme `OPTION_FILL` (`highlight` = `HOVER_FILL`, `selected` = `Fill-Selected` #aeb7e2,
+  = `PRESSED_FILL`). `MuiMenuItem.root` (Select menus, Columns, Density, rows per page) and
+  `MuiAutocomplete.listbox` `& .MuiAutocomplete-option` (`Mui-focused` = hover and keyboard
+  highlight, `aria-selected`). A selected item keeps its fill when highlighted.
+- **Status: done (#429).** Selected uses the `Fill-Selected` token, not DropdownList's
+  Fill-Hover: hathor's multi Autocompletes have no checkboxes, so the fill is the only mark.
+- **Traps**:
+  - The Autocomplete `option` slot is applied on the popper (`.MuiAutocomplete-popper
+    .MuiAutocomplete-option`) and loses ties to the listbox's own rules: override on `listbox`.
+  - MUI's `Mui-selected.Mui-focusVisible` (MenuItem) and `[aria-selected].Mui-focused` (option)
+    are one class heavier than the plain state: list them, or they keep MUI's primary tint.
+  - Autocomplete resets `Mui-focused` to transparent under `(hover: none)`; keep that reset, or a
+    tap leaves the highlight stuck in a multi list (`disableCloseOnSelect`).
+
 ## FeedbackText (helper text)
 
 - **Linje**: `packages/form/src/FeedbackText.scss`. `margin-top: 4px`.
@@ -285,6 +307,16 @@ Cross-cutting traps:
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
 
+## Pagination (collection pager)
+
+- **Linje**: `packages/menu/src/Pagination.scss:50-100`; `menu/Pagination/Standard/*`. Page
+  32 px, 1 px border `Border-Unselected` #54568c66, hover `Hover` #d9ddf2; current page
+  `Active` #aeb7e2 + navy border, no hover.
+- **MUI**: own markup in `CollectionPager.tsx` (`usePagination`), `PAGE_SX`: `PAGE_BORDER`,
+  `HOVER_FILL`, `PRESSED_FILL`. The rows-per-page button swaps the border for `divider`; its menu
+  is a `MuiMenuItem` list.
+- **Status: done (#261, border and fixed hover #429).**
+
 ## Popover (filter panel) and popup surfaces
 
 - **Linje**: `packages/tooltip/src/Popover.scss:3-9`; `tooltip/Popover/Standard/*`.
@@ -301,8 +333,8 @@ Cross-cutting traps:
   Linje's dropdown list (`DropdownList.scss:3-13`) / OverflowMenu (`OverflowMenu.scss:3-9`):
   fill #f2f5f7 (`Base menu/Fill-Default`), border #8284ab, radius 4, `BOX_SHADOW`. Border 2 px
   on lists (Select menus via `MuiSelect` `MenuProps` paper `sx`, autocompletes), 1 px on menus
-  (Columns, Density). Was MUI elevation 8 (menus) vs 1 (autocompletes). Item hover / selected
-  are still MUI's (Linje: #d9ddf2 / #aeb7e2).
+  (Columns, Density). Was MUI elevation 8 (menus) vs 1 (autocompletes). Item hover / selected:
+  see *Dropdown list items*.
 
 ## SegmentedControl (ToggleButtonGroup)
 
@@ -389,6 +421,16 @@ Cross-cutting traps:
 - **MUI**: none in the forms: yes/no fields are `FormCheckboxField` (see Checkbox). No
   `MuiSwitch` theme entry is needed unless a real immediate toggle appears.
 - **Status: done (#389)**: `FormSwitchField` was removed.
+
+## Table (DataGrid rows)
+
+- **Linje**: `packages/table/src/index.scss:73-90`; row hover and active `table/Standard/Cell-Fill-Hover`
+  #f2f5f7 (`Fill/Background/Tint/Neutral`).
+- **MUI**: the collection grid is `@mui/x-data-grid`. Theme `MuiDataGrid.root`:
+  `& .MuiDataGrid-row:hover` `ROW_HOVER_FILL` inside `CAN_HOVER`. MUI's own hover mixes 4 % of
+  `action.hover` into white. The Edit button's #d9ddf2 hover stays visible on it.
+- **Status: done (#429).** No row selection (`disableRowSelectionOnClick`, no checkboxes), so
+  no selected style. The old `MuiTableRow` tint (pre-#252 list) is gone; nothing used it.
 
 ## TagChip / Chip
 

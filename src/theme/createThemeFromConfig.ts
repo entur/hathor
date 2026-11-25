@@ -1,5 +1,4 @@
 import {
-  alpha,
   createTheme,
   getContrastRatio,
   type Components,
@@ -95,6 +94,12 @@ const POPOVER_FILL = '#f6f6f9',
 // (`menu/OverflowMenu.scss:3-9`): `Base menu/Fill-Default` and `Border` (= the field border),
 // radius legacy 4, `boxShadow`. The list's border is 2 px, the menu's 1 px.
 const MENU_FILL = '#f2f5f7';
+// A list option's highlight (hover, keyboard) and selection: `Base menu/Fill-Hover` and
+// `Fill-Selected` (#aeb7e2, = `PRESSED_FILL`). Linje's `DropdownList.scss:96-98` fills a selected
+// item with Fill-Hover; hathor's multi-selects have no checkboxes, so the token keeps the two apart.
+const OPTION_FILL = { highlight: HOVER_FILL, selected: PRESSED_FILL };
+// Linje Table row hover (`table/Standard/Cell-Fill-Hover`, `table/src/index.scss:73-76`).
+const ROW_HOVER_FILL = '#f2f5f7';
 // The radius is a px string: in `sx` a bare number is a multiple of `shape.borderRadius`.
 const surface = (fill: string, borderPx: number, borderColor: string) => ({
   backgroundColor: fill,
@@ -126,11 +131,6 @@ const ALERT_COLOURS = {
   Error: { fill: '#ffcece', border: '#d31b1b', icon: '#d31b1b' },
   Warning: { fill: '#fff4cd', border: '#e9b10c', icon: ACCENT },
 };
-// Table row tint: hover, selected, selected + hover (primary alpha); selected row's left stripe.
-const ROW_HOVER_ALPHA = 0.08,
-  ROW_SELECTED_ALPHA = 0.18,
-  ROW_SELECTED_HOVER_ALPHA = 0.24,
-  ROW_STRIPE_PX = 3;
 
 // WCAG minimum contrast: text (1.4.3), borders and focus rings (1.4.11, 2.4.11).
 const TEXT_MIN = 4.5,
@@ -364,6 +364,19 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   // Every popup one surface, not MUI's elevation 8 (menus) and 1 (autocompletes): Linje's
   // OverflowMenu here; a Select's menu widens the border to its dropdown list's (MuiSelect).
   MuiMenu: { styleOverrides: { paper: menuSurface(1) } },
+  // Linje's list items (Select menus, Columns, Density, rows per page), not MUI's primary tints.
+  // MUI's same selectors, written again so these win; a selected item keeps its fill on hover.
+  MuiMenuItem: {
+    styleOverrides: {
+      root: {
+        [CAN_HOVER]: { '&:hover': { backgroundColor: OPTION_FILL.highlight } },
+        '&.Mui-focusVisible': { backgroundColor: OPTION_FILL.highlight },
+        '&.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
+          backgroundColor: OPTION_FILL.selected,
+        },
+      },
+    },
+  },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
@@ -497,6 +510,18 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         '& .MuiFilledInput-root.MuiInputBase-sizeSmall': { paddingBottom: AC_PAD_BOTTOM_PX },
       },
       paper: menuSurface(FIELD_BORDER_PX),
+      // Options as `MuiMenuItem`. On the listbox, as MUI's own: the `option` slot sits on the
+      // popper and loses to the listbox's rules. `Mui-focused` is the hover and keyboard highlight.
+      listbox: {
+        '& .MuiAutocomplete-option': {
+          '&.Mui-focused, &.Mui-focusVisible': {
+            backgroundColor: OPTION_FILL.highlight,
+            [CANNOT_HOVER]: { backgroundColor: 'transparent' },
+          },
+          '&[aria-selected="true"], &[aria-selected="true"].Mui-focused, &[aria-selected="true"].Mui-focusVisible':
+            { backgroundColor: OPTION_FILL.selected },
+        },
+      },
       popper: {
         '&[data-popper-placement^="bottom"] .MuiAutocomplete-paper': { marginTop: POPUP_OFFSET_PX },
         '&[data-popper-placement^="top"] .MuiAutocomplete-paper': {
@@ -586,25 +611,8 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
           theme.palette.primary.main,
           -FOCUS_PX
         ),
-      },
-    },
-  },
-  // A subtle primary tint for row hover: the opaque action.hover drowns out Chip/Button
-  // hover states in rows. Selected sits two stops above hover with a left accent stripe;
-  // hover-while-selected nudges one stop further, never back to an unselected look.
-  MuiTableRow: {
-    styleOverrides: {
-      root: {
-        '&.MuiTableRow-hover:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, ROW_HOVER_ALPHA),
-        },
-        '&.Mui-selected': {
-          backgroundColor: alpha(theme.palette.primary.main, ROW_SELECTED_ALPHA),
-          borderLeft: `${ROW_STRIPE_PX}px solid ${theme.palette.primary.main}`,
-        },
-        '&.Mui-selected.MuiTableRow-hover:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, ROW_SELECTED_HOVER_ALPHA),
-        },
+        // MUI mixes 4 % of `action.hover` into white, next to invisible. No rows are selectable.
+        [CAN_HOVER]: { '& .MuiDataGrid-row:hover': { backgroundColor: ROW_HOVER_FILL } },
       },
     },
   },
