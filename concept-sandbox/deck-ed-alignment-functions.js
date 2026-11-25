@@ -59,6 +59,9 @@
  * NeTEx consumer.
  *
  * Verified against `netex-deckplan-editor@2.0.5` over 81 generated fragments.
+ * The v3 renderer (vendored `init-v3 @ 4f8405a2`) shares (2), (3) and (4) —
+ * checked against the hacked 2.0.5 rendering and the artwork on A5-1 and
+ * WLAB-2 (#424) — and not (1): it sizes the deck from the polygon.
  * Evidence for each claim sits with the thing it justifies.
  */
 
@@ -176,6 +179,33 @@ const serialize = (doc, src) =>
   (src.match(DECL_RE)?.[0] ?? '') + new XMLSerializer().serializeToString(doc).replace(DECL_RE, '');
 
 /**
+ * A deck's extent as its outline states it.
+ *
+ * One fixed descent, not a fan-out: Zone > gml:Polygon > gml:exterior >
+ * gml:LinearRing > gml:posList. `pos` is along-then-across, and the ring is
+ * written through the same transpose — so the odd coordinates span the car's
+ * width.
+ *
+ * @param {Element} deck A `<Deck>` element.
+ * @returns {{width: number, length: number}|undefined} Metres, or undefined
+ *   if any step of the descent is missing or the ring is not numbers.
+ */
+const extentOf = deck => {
+  const ring = ['Polygon', 'exterior', 'LinearRing', 'posList'].reduce(
+    (el, name) => el && kids(el, name)[0],
+    deck
+  );
+  if (!ring) return undefined;
+  const co = ring.textContent.trim().split(/\s+/).map(Number);
+  if (co.length < 4 || co.some(Number.isNaN)) return undefined;
+  const span = off => {
+    const vs = co.filter((_, i) => i % 2 === off);
+    return Number((Math.max(...vs) - Math.min(...vs)).toFixed(EXTENT_DP));
+  };
+  return { width: span(1), length: span(0) };
+};
+
+/**
  * Restate every deck's extent in the two elements the renderer reads.
  *
  * A deck's size is the one thing a NeTEx document cannot say and the
@@ -218,27 +248,12 @@ export const invalidateXMLForDeckExtent = validXML => {
 
   for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
     if (kids(deck, 'Width').length) continue;
-
-    // One fixed descent, not a fan-out: Zone > gml:Polygon > gml:exterior >
-    // gml:LinearRing > gml:posList. Missing any step leaves the deck alone.
-    const ring = ['Polygon', 'exterior', 'LinearRing', 'posList'].reduce(
-      (el, name) => el && kids(el, name)[0],
-      deck
-    );
-    if (!ring) continue;
-
-    // `pos` is along-then-across, and the ring is written through the same
-    // transpose — so the odd coordinates span the car's width.
-    const co = ring.textContent.trim().split(/\s+/).map(Number);
-    if (co.length < 4 || co.some(Number.isNaN)) continue;
-    const span = off => {
-      const vs = co.filter((_, i) => i % 2 === off);
-      return Number((Math.max(...vs) - Math.min(...vs)).toFixed(EXTENT_DP));
-    };
+    const ext = extentOf(deck);
+    if (!ext) continue;
 
     for (const [name, m] of [
-      ['Width', span(1)],
-      ['Length', span(0)],
+      ['Width', ext.width],
+      ['Length', ext.length],
     ]) {
       const el = doc.createElementNS(deck.namespaceURI, name);
       el.textContent = String(m);
@@ -302,17 +317,18 @@ export const invalidateXMLForDeckExtent = validXML => {
  *     the mirror is what finally draws it on that side. Swapping it here
  *     would spend the fix twice and land back where we started.
  *
- * `Width` is read from the element the component reads, so the mirror is
- * about the same extent the renderer lays out against; run this after
- * `invalidateXMLForDeckExtent`, which is what puts that element there. A
- * deck without one is left untouched rather than mirrored about a guess.
+ * The mirror is about the deck's `Width` where it carries one — the element
+ * the 2.0.5 component reads, so the same extent it lays out against (run
+ * `invalidateXMLForDeckExtent` first for that renderer) — and otherwise
+ * about the width of its outline, which is what v3 sizes the deck from. A
+ * deck with neither is left untouched rather than mirrored about a guess.
  *
  * Like `invalidateXMLForDeckExtent`, this is a rendering patch and not a
  * correction: the input is the document that is *right*. Hand the result to
  * `parseNeTEx`, never to sobek, and never write it back to disk.
  *
- * @param {string} xml A `<decks>`-rooted fragment whose decks carry
- *   `Width`, declaration included.
+ * @param {string} xml A `<decks>`-rooted fragment whose decks carry `Width`
+ *   or a `gml:Polygon`, declaration included.
  * @returns {string} The same document with every position reflected across
  *   the deck's centreline and every `Orientation` swapped for the value
  *   that makes the renderer draw the seat the way the drawing does.
@@ -322,9 +338,11 @@ export const hackXMLForDeckEdPlacement = xml => {
   const doc = parseFragment(xml);
 
   for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
-    const w = Number(kids(deck, 'Width')[0]?.textContent);
-    // NaN when the deck carries no `Width` at all — see the note above.
-    if (Number.isNaN(w) || w <= 0) continue;
+    // A blank or junk `Width` falls through to the outline, as a missing one does.
+    const stated = Number(kids(deck, 'Width')[0]?.textContent);
+    const w = stated > 0 ? stated : extentOf(deck)?.width;
+    // Neither a `Width` nor an outline to read one from — see the note above.
+    if (!(w > 0)) continue;
 
     /** Reflect one across-coordinate about the deck's centreline. */
     const flip = c => Number((w - c).toFixed(EXTENT_DP));
@@ -339,9 +357,9 @@ export const hackXMLForDeckEdPlacement = xml => {
     }
 
     // The outline, written through the same transpose — odd indices span
-    // the width. Its extent is invariant under the mirror, so this changes
-    // nothing the renderer reads; it keeps the outline around the contents
-    // it is supposed to bound.
+    // the width. Its extent is invariant under the mirror, so 2.0.5 (which
+    // ignores it) sees no change — but v3 draws this outline, so it must move
+    // with the contents it is supposed to bound. Not a no-op.
     for (const list of deck.getElementsByTagNameNS('*', 'posList')) {
       const co = list.textContent.trim().split(/\s+/).map(Number);
       if (co.length % 2 !== 0 || co.some(Number.isNaN)) continue;
@@ -358,9 +376,10 @@ export const hackXMLForDeckEdPlacement = xml => {
     //
     // Every spot, not just the beds: a seat is transposed by the same
     // fault, it is simply harder to see at 0.58 × 0.79 than a berth is at
-    // 1.84 × 0.76. Deck `Width`/`Length` are pointedly left alone — those
-    // are what `invalidateXMLForDeckExtent` just wrote for this renderer,
-    // and it reads them the right way round.
+    // 1.84 × 0.76. Deck `Width`/`Length` are pointedly left alone — for
+    // 2.0.5 they are what `invalidateXMLForDeckExtent` wrote, and it reads
+    // them the right way round; v3 never reads them (it sizes from the
+    // outline).
     for (const spot of deck.getElementsByTagNameNS('*', 'PassengerSpot')) {
       const [wEl, lEl] = ['Width', 'Length'].map(n => kids(spot, n)[0]);
       if (wEl && lEl) [wEl.textContent, lEl.textContent] = [lEl.textContent, wEl.textContent];
