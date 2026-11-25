@@ -22,9 +22,6 @@ export { loadNeTEx, netexToOsdm } from 'netex-deckplan-library';
 export const TAG = 'deck-rendering-v3',
   GRID_TAG = 'deck-grid-v3';
 
-/** Gridline pitch: one `netexToOsdm` cell, as v3's own `MainPanel` passes it. */
-const GRID_SPACING = 100;
-
 /**
  * Host fills its box; `vertical` lays the landscape drawing into a portrait box
  * by giving the renderer the host's swapped dimensions (container-query units)
@@ -82,13 +79,13 @@ const DeckRenderingV3 = defineComponent({
  * the page runs `netexToOsdm` itself and can report the decks it refuses.
  */
 const DeckGridV3 = defineComponent({
-  props: { layout: Object, vertical: Boolean },
+  props: { layout: Object, gridSpacing: Number, vertical: Boolean },
   styles: [tailwind, HOST_CSS, GRID_CSS],
   setup(props) {
     return () =>
       frame(
         props.vertical,
-        props.layout && h(OSDMRenderer, { deck: props.layout, gridSpacing: GRID_SPACING })
+        props.layout && h(OSDMRenderer, { deck: props.layout, gridSpacing: props.gridSpacing })
       );
   },
 });

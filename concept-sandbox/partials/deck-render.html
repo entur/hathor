@@ -760,6 +760,9 @@
         // cell, a seat with no label or orientation, an unknown grid marker),
         // and that message is the pane's figure: the deck v3 refuses is the
         // finding.
+        const [rows, cols] = [deck.spotRows.length, deck.spotColumns.length];
+        // Without a lattice `netexToOsdm` succeeds with a 0×0 deck: say so.
+        if (!rows || !cols) return fail('This deck has no SpotRow × SpotColumn lattice to grid.');
         let layout;
         try {
           layout = v3.netexToOsdm(deck, 'SINGLE_DECK');
@@ -770,12 +773,13 @@
         v3MetaEl.innerHTML = spansHtml([
           `${places} places`,
           `${layout.serviceIcons.length} markers`,
-          `${deck.spotRows.length}×${deck.spotColumns.length} cells`,
+          `${rows}×${cols} cells`,
           spacesOf(statsOf(deck).spaces),
         ]);
         levelRows();
         const el = document.createElement(V3_GRID_TAG);
-        Object.assign(el, { layout, vertical: true });
+        // Gridlines at the cell pitch the layout was built at, not a copy of it.
+        Object.assign(el, { layout, gridSpacing: layout.dimension.width / rows, vertical: true });
         return v3HostEl.replaceChildren(el);
       }
 
@@ -809,10 +813,8 @@
     // Redraws the plan already on screen rather than only the next one: the
     // toggle is a comparison control, and one worth making is the same car
     // before and after, not two different cars.
-    // Exact only: both grids place spots by reference and ignore the hack,
-    // and `showTab` redraws both panes on the way back to Exact.
     hackEl.onchange = () => {
-      if (!current || stageTab !== 'exact') return;
+      if (!current) return;
       draw(current);
       drawV3(current);
     };
@@ -836,6 +838,8 @@
     const showTab = key => {
       if (key === stageTab) return;
       stageTab = key;
+      // Both grids place spots by reference: the hack has nothing to patch.
+      hackEl.disabled = infoBtn.disabled = key !== 'exact';
       for (const [k, tab, panel] of TABS) {
         const on = k === key;
         tab.classList.toggle('active', on);
