@@ -11,7 +11,14 @@
  * Run: `DECKPLAN_V3=<checkout> node concept-sandbox/tools/deck-v3/build.mjs`.
  * Defaults to a sibling `NeTEx-Deckplan-Editor` of the hathor checkout.
  */
-import { copyFileSync, existsSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  readlinkSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -21,6 +28,8 @@ const SANDBOX = resolve(HERE, '../..');
 const V3 = resolve(process.env.DECKPLAN_V3 ?? join(SANDBOX, '../../NeTEx-Deckplan-Editor'));
 const OUT_DIR = join(SANDBOX, 'vendor/deckplan-v3');
 const OUT_NAME = 'deck-rendering-v3';
+/** v3 folders the bundle is built from: untracked files there change it. */
+const BUNDLED = ['components', 'library'];
 
 const v3Modules = join(V3, 'node_modules');
 if (!existsSync(join(v3Modules, 'vite')))
@@ -28,7 +37,19 @@ if (!existsSync(join(v3Modules, 'vite')))
     `No v3 toolchain in ${v3Modules}: run \`npm install --no-package-lock\` in ${V3}`
   );
 const link = join(HERE, 'node_modules');
-if (!existsSync(link)) symlinkSync(v3Modules, link, 'dir');
+// readlinkSync, not existsSync: that follows the link, so a link to another
+// checkout would pass and a dangling one would make symlinkSync throw EEXIST.
+const linked = (() => {
+  try {
+    return readlinkSync(link);
+  } catch {
+    return undefined;
+  }
+})();
+if (linked !== v3Modules) {
+  rmSync(link, { force: true }); // throws on a real directory rather than delete it
+  symlinkSync(v3Modules, link, 'dir');
+}
 
 const [{ build }, { default: vue }, { default: tailwindcss }] = await Promise.all([
   import('vite'),
@@ -63,12 +84,22 @@ await build({
 // MIT: the notice travels with the bundled copy.
 copyFileSync(join(V3, 'LICENSE'), join(OUT_DIR, 'LICENSE'));
 
+/** Remote URL without credentials: BUILD.json is committed. */
+const scrub = remote => {
+  try {
+    const url = new URL(remote);
+    url.username = url.password = '';
+    return url.href;
+  } catch {
+    return remote; // scp-like `git@host:path` is not a URL and carries no secret
+  }
+};
 const git = args => execFileSync('git', ['-C', V3, ...args], { encoding: 'utf8' }).trim();
 const stamp = {
-  source: git(['remote', 'get-url', 'origin']),
+  source: scrub(git(['remote', 'get-url', 'origin'])),
   branch: git(['rev-parse', '--abbrev-ref', 'HEAD']),
   commit: git(['rev-parse', 'HEAD']),
-  dirty: git(['status', '--porcelain', '--untracked-files=no']) !== '',
+  dirty: git(['status', '--porcelain', '--', ...BUNDLED]) !== '',
 };
 writeFileSync(join(OUT_DIR, 'BUILD.json'), `${JSON.stringify(stamp, null, 2)}\n`);
 console.log(
