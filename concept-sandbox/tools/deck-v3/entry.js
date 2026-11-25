@@ -6,7 +6,7 @@
  *
  * v3 ships no web component and no self-contained bundle; this file is the whole
  * adapter. `build.mjs` resolves `@v3/*` to a local v3 checkout and bundles Vue,
- * the library and Tailwind into one ES module. Importing it registers the tag
+ * the library and Tailwind into one ES module. Importing it registers the
  * tags and re-exports the v3 parser, because a v3 element only draws v3 model
  * objects, and `netexToOsdm`, because its throws are the grid's error messages.
  */
@@ -38,7 +38,11 @@ const HOST_CSS = `
     transform-origin: top left; transform: translateX(100cqw) rotate(90deg);
   }`;
 
-/** Upstream draws the grid at half its box (`h-[50%] w-[50%]`); a pane wants all of it. */
+/**
+ * Upstream `OSDMRenderer.vue` draws its `<svg>` at half its box
+ * (`block h-[50%] w-[50%]`); a pane wants all of it. Matched by the svg's
+ * `aria-label`: if upstream renames it, the grid drops to a quarter of the pane.
+ */
 const GRID_CSS = 'svg[aria-label="Deck layout"] { width: 100%; height: 100%; }';
 
 /**
@@ -56,15 +60,17 @@ export const countSeats = deck => {
   return { placed: seats.filter(seat => seat.Centroid).length, total: seats.length };
 };
 
+/** The host's frame around a renderer: `.vertical` turns it portrait (`HOST_CSS`). */
+const frame = (vertical, child) => h('div', { class: ['frame', { vertical }] }, child);
+
 const DeckRenderingV3 = defineComponent({
   props: { deck: Object, vertical: Boolean },
   styles: [tailwind, HOST_CSS],
   setup(props) {
     return () => {
       const box = props.deck?.polygon?.getBoundingBox();
-      return h(
-        'div',
-        { class: ['frame', { vertical: props.vertical }] },
+      return frame(
+        props.vertical,
         box ? h(DeckExactRenderer, { deck: props.deck, boundingBox: box }) : 'No deck polygon'
       );
     };
@@ -80,16 +86,12 @@ const DeckGridV3 = defineComponent({
   styles: [tailwind, HOST_CSS, GRID_CSS],
   setup(props) {
     return () =>
-      h(
-        'div',
-        { class: ['frame', { vertical: props.vertical }] },
+      frame(
+        props.vertical,
         props.layout && h(OSDMRenderer, { deck: props.layout, gridSpacing: GRID_SPACING })
       );
   },
 });
 
-for (const [tag, component] of [
-  [TAG, DeckRenderingV3],
-  [GRID_TAG, DeckGridV3],
-])
-  if (!customElements.get(tag)) customElements.define(tag, defineCustomElement(component));
+if (!customElements.get(TAG)) customElements.define(TAG, defineCustomElement(DeckRenderingV3));
+if (!customElements.get(GRID_TAG)) customElements.define(GRID_TAG, defineCustomElement(DeckGridV3));

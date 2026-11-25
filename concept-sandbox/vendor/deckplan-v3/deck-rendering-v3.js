@@ -6528,7 +6528,7 @@ var wl = class {
 		placed: t.filter((e) => e.Centroid).length,
 		total: t.length
 	};
-}, _u = /* @__PURE__ */ Xn({
+}, _u = (e, t) => Ea("div", { class: ["frame", { vertical: e }] }, t), vu = /* @__PURE__ */ Xn({
 	props: {
 		deck: Object,
 		vertical: Boolean
@@ -6537,13 +6537,13 @@ var wl = class {
 	setup(e) {
 		return () => {
 			let t = e.deck?.polygon?.getBoundingBox();
-			return Ea("div", { class: ["frame", { vertical: e.vertical }] }, t ? Ea(Yl, {
+			return _u(e.vertical, t ? Ea(Yl, {
 				deck: e.deck,
 				boundingBox: t
 			}) : "No deck polygon");
 		};
 	}
-}), vu = /* @__PURE__ */ Xn({
+}), yu = /* @__PURE__ */ Xn({
 	props: {
 		layout: Object,
 		vertical: Boolean
@@ -6554,11 +6554,11 @@ var wl = class {
 		hu
 	],
 	setup(e) {
-		return () => Ea("div", { class: ["frame", { vertical: e.vertical }] }, e.layout && Ea(lu, {
+		return () => _u(e.vertical, e.layout && Ea(lu, {
 			deck: e.layout,
 			gridSpacing: pu
 		}));
 	}
 });
-for (let [e, t] of [[du, _u], [fu, vu]]) customElements.get(e) || customElements.define(e, /* @__PURE__ */ ho(t));
+customElements.get("deck-rendering-v3") || customElements.define(du, /* @__PURE__ */ ho(vu)), customElements.get("deck-grid-v3") || customElements.define(fu, /* @__PURE__ */ ho(yu));
 export { fu as GRID_TAG, du as TAG, gu as countSeats, Tl as loadNeTEx, Fl as netexToOsdm };
