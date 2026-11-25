@@ -9,47 +9,49 @@
       <li><span class="spin" role="status">Loading…</span></li>
     </ul>
   </div>
+  <!-- One toolbar over both renderers: each reading (Exact | Grid) and the
+       hack apply to the 2.0.5 and v3 panes alike, so neither pane owns them. -->
+  <div class="card pane-tools pair-tools">
+    <!-- Two readings of the same deck, not two views of the page: the panes'
+           headings, figures and the artwork all stay as they are. -->
+    <div class="tab-bar" role="tablist" aria-label="Reading">
+      <button
+        type="button"
+        id="deck-tab-exact"
+        class="active"
+        role="tab"
+        aria-selected="true"
+        aria-controls="deck-host"
+      >
+        Exact
+      </button>
+      <button
+        type="button"
+        id="deck-tab-grid"
+        role="tab"
+        aria-selected="false"
+        aria-controls="deck-grid-panel"
+      >
+        Grid
+      </button>
+    </div>
+    <label>
+      <input type="checkbox" id="deck-hack" />
+      <span>Hack anchoring and rotation</span>
+    </label>
+    <!-- Outside the label: a button inside one is a second thing the label
+           text activates, so clicking "rotation" would toggle the checkbox and
+           open the dialog at once. -->
+    <button type="button" class="info-btn" id="deck-hack-info" title="What this patches">
+      <span aria-hidden="true">i</span>
+      <span class="sr-only">What this patch changes</span>
+    </button>
+  </div>
   <div class="card deck-stage">
     <h2>
       <span class="pane-label">Deck rendering</span><span class="pane-sub" id="deck-title"></span>
       <span class="pane-src" id="deck-src"></span>
     </h2>
-    <div class="pane-tools">
-      <!-- Two readings of the same deck, not two views of the page: the pane's
-           heading, figures and the drawing opposite all stay as they are. -->
-      <div class="tab-bar" role="tablist" aria-label="Deck rendering">
-        <button
-          type="button"
-          id="deck-tab-exact"
-          class="active"
-          role="tab"
-          aria-selected="true"
-          aria-controls="deck-host"
-        >
-          Exact
-        </button>
-        <button
-          type="button"
-          id="deck-tab-grid"
-          role="tab"
-          aria-selected="false"
-          aria-controls="deck-grid-panel"
-        >
-          Grid
-        </button>
-      </div>
-      <label>
-        <input type="checkbox" id="deck-hack" />
-        <span>Hack anchoring and rotation</span>
-      </label>
-      <!-- Outside the label: a button inside one is a second thing the label
-           text activates, so clicking "rotation" would toggle the checkbox and
-           open the dialog at once. -->
-      <button type="button" class="info-btn" id="deck-hack-info" title="What this patches">
-        <span aria-hidden="true">i</span>
-        <span class="sr-only">What this patch changes</span>
-      </button>
-    </div>
     <div
       class="stage-host tab-panel active"
       id="deck-host"
@@ -86,7 +88,6 @@
         >dev-branch renderer</span
       >
     </h2>
-    <div class="pane-tools" id="deck-v3-tools" aria-hidden="true"></div>
     <div class="stage-host" id="deck-v3-host">
       <span class="spin" role="status">Fetching the renderer…</span>
     </div>
@@ -98,10 +99,6 @@
       <span class="pane-sub">as the legacy system draws it</span>
       <span class="pane-src" id="deck-art-src"></span>
     </h2>
-    <!-- Nothing to put here: the artwork is a file, not something the page can
-         re-anchor. It exists so `levelRows` can give this pane the height the
-         stage's toggle takes, and the drawings stay side by side. -->
-    <div class="pane-tools" id="deck-art-tools" aria-hidden="true"></div>
     <div class="art-host" id="deck-artwork"></div>
     <div class="art-meta" id="deck-art-meta"></div>
   </div>
@@ -215,11 +212,9 @@
   const infoBtn = document.getElementById('deck-hack-info');
   const dialogEl = document.getElementById('deck-hack-dialog');
   const infoBodyEl = document.getElementById('deck-hack-dialog-body');
-  const toolsEl = document.querySelector('.deck-stage .pane-tools');
   const tabExactEl = document.getElementById('deck-tab-exact');
   const tabGridEl = document.getElementById('deck-tab-grid');
   const gridPanelEl = document.getElementById('deck-grid-panel');
-  const artToolsEl = document.getElementById('deck-art-tools');
 
   /**
    * The rows the three comparison panes share, each as `[stage, v3, artwork]`.
@@ -227,7 +222,6 @@
    */
   const ROWS = [
     ['.deck-stage h2', '.deck-v3 h2', '.deck-art h2'].map(q => document.querySelector(q)),
-    [toolsEl, document.getElementById('deck-v3-tools'), artToolsEl],
     [metaEl, v3MetaEl, artMetaEl],
   ];
 
