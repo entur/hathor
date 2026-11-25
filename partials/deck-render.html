@@ -76,7 +76,7 @@
   </div>
   <!-- The v3 editor's renderer, extracted from its dev branch (GitLab init-v3):
        not on npm, vendored by tools/deck-v3/build.mjs. It draws the fragment
-       as written; the anchoring hack is a 2.0.5 patch. -->
+       as written unless the anchoring hack is on, which patches both panes. -->
   <div class="card deck-v3">
     <h2>
       <span class="pane-label">v3-alpha.extract</span>
@@ -447,27 +447,28 @@
     };
 
     /**
-     * Fragments already fetched, keyed by plan id — the bytes as served, before
-     * either patch. Both readings of a plan are made from this one copy, so
+     * Fragment requests, keyed by plan id — each resolves to the bytes as
+     * served, before either patch. Every reading of a plan is made from this one copy, so
      * toggling the hack costs a parse rather than a round trip. A failed fetch
      * stays out, so selecting the plan again retries it.
      */
     const text = new Map();
 
     /**
-     * Decks already parsed, keyed by plan *and* by which patches made them.
+     * Decks already parsed, keyed by plan, renderer *and* which patches made
+     * them.
      *
      * A refit on resize and a return to an earlier plan both redraw, and
      * neither should re-parse tens of KB. The reading is part of the key
-     * because the two are different decks built from the same file: keyed on
+     * because each is a different deck built from the same file: keyed on
      * the plan alone, flipping the toggle would hand back whichever one was
      * parsed first and the checkbox would look inert.
      */
     const cache = new Map();
 
-    /** Cache key for one plan under one reading; v3 has only the one. */
+    /** Cache key for one plan under one reading of one renderer. */
     const keyOf = (plan, hacked, v3) =>
-      `${plan.id}|${v3 ? 'v3' : hacked ? 'hacked' : 'as-written'}`;
+      `${plan.id}|${v3 ? 'v3' : '2.0.5'}|${hacked ? 'hacked' : 'as-written'}`;
 
     /**
      * The v3 bundle, imported on the first v3 draw. A failed import is
@@ -506,12 +507,21 @@
      * @returns {Promise<string>} The fragment text.
      * @throws {Error} If it cannot be fetched.
      */
-    const fragOf = async plan => {
+    const fragOf = plan => {
       if (!text.has(plan.id)) {
         const ref = plan[DECKS_REF_KEY];
-        const res = await fetch(ref);
-        if (!res.ok) throw new Error(`${res.status} on ${ref}`);
-        text.set(plan.id, await res.text());
+        // The promise, not the text: both panes ask for a plan at once, and
+        // one request should serve them. Dropped on failure so a retry fetches.
+        const req = fetch(ref)
+          .then(res => {
+            if (!res.ok) throw new Error(`${res.status} on ${ref}`);
+            return res.text();
+          })
+          .catch(e => {
+            text.delete(plan.id);
+            throw e;
+          });
+        text.set(plan.id, req);
       }
       return text.get(plan.id);
     };
@@ -521,16 +531,18 @@
      *
      * The deck must come from the bundle that draws it — both renderers match
      * deck spaces with `instanceof`, so a deck parsed by any other copy of the
-     * models draws an empty outline. v3 parses with its own `loadNeTEx` and
-     * gets the fragment as written: neither patch is about its renderer.
+     * models draws an empty outline. v3 parses with its own `loadNeTEx`.
      *
-     * Under 2.0.5 the extent patch is unconditional: without it most of the corpus draws
-     * clipped inside a car that is not theirs, which is not a reading anyone
-     * asked to compare against. The anchoring patch is the toggle's, and runs
-     * second — it mirrors about the `Width` the first one writes.
+     * Under 2.0.5 the extent patch is unconditional: without it most of the
+     * corpus draws clipped inside a car that is not theirs, which is not a
+     * reading anyone asked to compare against. v3 sizes the deck from its
+     * polygon and never gets it. The anchoring patch is the toggle's, for
+     * both renderers, and runs second — it mirrors about the deck's `Width`
+     * (under 2.0.5 the one the first patch writes) or, with none stated,
+     * about the polygon's width.
      *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
-     * @param {boolean} hacked Apply the anchoring patch (2.0.5 only).
+     * @param {boolean} hacked Apply the anchoring patch.
      * @param {boolean} v3 Parse for the v3 renderer.
      * @returns {Promise<object|undefined>} The deck, or undefined if the
      *   fragment holds none.
@@ -539,18 +551,14 @@
     const deckOf = async (plan, hacked, v3) => {
       const key = keyOf(plan, hacked, v3);
       if (cache.has(key)) return cache.get(key);
-      let deck;
-      if (v3) {
-        const [{ loadNeTEx }, frag] = await Promise.all([loadV3(), fragOf(plan)]);
-        deck = loadNeTEx(wrapFrag(frag))[0]?.decks?.[0];
-      } else {
-        // `hacked` is the reading the caller asked for, not whatever the
-        // checkbox says now: the fetch gives the reader time to flip it, and
-        // re-reading it here would file this deck under the other key.
-        let frag = invalidateXMLForDeckExtent(await fragOf(plan));
-        if (hacked) frag = hackXMLForDeckEdPlacement(frag);
-        deck = mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0];
-      }
+      let frag = await fragOf(plan);
+      const parse = v3 ? (await loadV3()).loadNeTEx : xml => mod.parseNeTEx(xml);
+      // `hacked` is the reading the caller asked for, not whatever the
+      // checkbox says now: the fetch gives the reader time to flip it, and
+      // re-reading it here would file this deck under the other key.
+      if (!v3) frag = invalidateXMLForDeckExtent(frag);
+      if (hacked) frag = hackXMLForDeckEdPlacement(frag);
+      const deck = parse(wrapFrag(frag))[0]?.decks?.[0];
       cache.set(key, deck);
       return deck;
     };
@@ -703,8 +711,9 @@
     /**
      * Draw one plan's first deck in the v3 pane.
      *
-     * Once per selection, not on resize: v3 fits itself to its host from its
-     * own ResizeObserver, so the element is never rebuilt for a new size. Not
+     * On a selection and on the hack toggle, not on resize: v3 fits itself to
+     * its host from its own ResizeObserver, so the element is never rebuilt
+     * for a new size. Not
      * scale-matched to the artwork either — that is the 2.0.5 pane's job.
      *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
@@ -716,13 +725,14 @@
         noteIn(v3HostEl, msg, true);
         levelRows();
       };
-      if (!cache.has(keyOf(plan, false, true))) {
+      const hacked = hackEl.checked;
+      if (!cache.has(keyOf(plan, hacked, true))) {
         v3MetaEl.textContent = '';
         waitingIn(v3HostEl, 'Fetching the decks fragment…');
       }
       let deck, seats;
       try {
-        deck = await deckOf(plan, false, true);
+        deck = await deckOf(plan, hacked, true);
         // v3 draws only seats with a Centroid: count what it draws.
         if (deck) seats = (await loadV3()).countSeats(deck);
       } catch (e) {
@@ -732,8 +742,7 @@
       if (v3Gen !== mine) return;
       if (!deck) return fail('This fragment carries no decks.');
 
-      // v3 sizes the deck from its polygon: the fragment as written has no
-      // Length/Width (the extent patch is what adds them for 2.0.5).
+      // v3 sizes the deck from its polygon.
       const box = deck.polygon?.getBoundingBox();
       v3MetaEl.innerHTML = metaHtml(deck, box?.length, box?.width, seats);
       levelRows();
@@ -762,12 +771,12 @@
     // Redraws the plan already on screen rather than only the next one: the
     // toggle is a comparison control, and one worth making is the same car
     // before and after, not two different cars.
-    hackEl.onchange = () => current && draw(current);
-
-    /** Enable the stage's controls for the reading on screen: both are Exact's. */
-    const syncTools = () => {
-      const exact = tabExactEl.classList.contains('active');
-      hackEl.disabled = infoBtn.disabled = !exact;
+    // Exact only while it shows: `showTab` redraws it on activation, and a
+    // hidden host measures zero.
+    hackEl.onchange = () => {
+      if (!current) return;
+      if (tabExactEl.classList.contains('active')) draw(current);
+      drawV3(current);
     };
 
     /** The stage's two readings, as `[key, tab, panel]`. */
@@ -784,12 +793,6 @@
      * reader changed plans measures zero — so the element built then sits at
      * `MIN_SCALE`, and nothing else would ever re-fit it.
      *
-     * The geometry patches are Exact's alone: the grid places spots by
-     * `SpotRowRef`/`SpotColumnRef` and reads no coordinate, so on that tab the
-     * toggle is a control that changes nothing. Disabled rather than hidden —
-     * the row is one of the three `levelRows` measures against the artwork
-     * pane, and a control that vanished would move the drawings apart.
-     *
      * @param {'exact'|'grid'} key Reading to show.
      */
     const showTab = key => {
@@ -799,7 +802,6 @@
         tab.setAttribute('aria-selected', String(on));
         panel.classList.toggle('active', on);
       }
-      syncTools();
       if (key === 'exact' && current) draw(current);
     };
 
@@ -844,7 +846,7 @@
       return (
         '<div class="info-diff">' +
         `<figure><figcaption>As written</figcaption><pre>${col(0)}</pre></figure>` +
-        `<figure><figcaption>As the renderer is given it</figcaption><pre>${col(1)}</pre></figure>` +
+        `<figure><figcaption>As the renderers are given it</figcaption><pre>${col(1)}</pre></figure>` +
         '</div>'
       );
     };
@@ -984,7 +986,7 @@
             [
               '<code>&lt;Width&gt;</code>/<code>&lt;Length&gt;</code> on the deck',
               off,
-              'this renderer reads these correctly',
+              '2.0.5 reads these correctly; v3 is not given them and sizes from the outline',
             ],
             ['<code>&lt;Label&gt;</code>, ids, refs', off, 'seat numbers must not reverse'],
           ]

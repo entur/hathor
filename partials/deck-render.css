@@ -134,19 +134,6 @@
 .deck-stage .pane-tools {
   flex-wrap: wrap;
 }
-/* A control `syncTools` disables: the hack and its explainer on Grid (that
-   reading places spots by reference and reads no coordinate). Dimmed in place rather than removed, so the row keeps the height
-   the artwork pane was levelled to. Applied to the controls rather than to the
-   row, because opacity on the row would take the tabs with it and a child
-   cannot opt back out. */
-.deck-render .pane-tools label:has(input:disabled),
-.deck-render .pane-tools .info-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-.deck-render .pane-tools input:disabled {
-  cursor: default;
-}
 /* `:not(.active)` rather than a plain `.tab-panel { display: none }`:
    `.stage-host` sets `display: flex` at the same specificity, so which one won
    would otherwise come down to the order of the two blocks in this file. */
