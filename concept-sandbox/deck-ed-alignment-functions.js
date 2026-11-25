@@ -338,8 +338,9 @@ export const hackXMLForDeckEdPlacement = xml => {
   const doc = parseFragment(xml);
 
   for (const deck of doc.getElementsByTagNameNS('*', 'Deck')) {
-    const wEl = kids(deck, 'Width')[0];
-    const w = wEl ? Number(wEl.textContent) : extentOf(deck)?.width;
+    // A blank or junk `Width` falls through to the outline, as a missing one does.
+    const stated = Number(kids(deck, 'Width')[0]?.textContent);
+    const w = stated > 0 ? stated : extentOf(deck)?.width;
     // Neither a `Width` nor an outline to read one from — see the note above.
     if (!(w > 0)) continue;
 
@@ -356,9 +357,9 @@ export const hackXMLForDeckEdPlacement = xml => {
     }
 
     // The outline, written through the same transpose — odd indices span
-    // the width. Its extent is invariant under the mirror, so this changes
-    // nothing the renderer reads; it keeps the outline around the contents
-    // it is supposed to bound.
+    // the width. Its extent is invariant under the mirror, so 2.0.5 (which
+    // ignores it) sees no change — but v3 draws this outline, so it must move
+    // with the contents it is supposed to bound. Not a no-op.
     for (const list of deck.getElementsByTagNameNS('*', 'posList')) {
       const co = list.textContent.trim().split(/\s+/).map(Number);
       if (co.length % 2 !== 0 || co.some(Number.isNaN)) continue;
@@ -375,9 +376,10 @@ export const hackXMLForDeckEdPlacement = xml => {
     //
     // Every spot, not just the beds: a seat is transposed by the same
     // fault, it is simply harder to see at 0.58 × 0.79 than a berth is at
-    // 1.84 × 0.76. Deck `Width`/`Length` are pointedly left alone — those
-    // are what `invalidateXMLForDeckExtent` just wrote for this renderer,
-    // and it reads them the right way round.
+    // 1.84 × 0.76. Deck `Width`/`Length` are pointedly left alone — for
+    // 2.0.5 they are what `invalidateXMLForDeckExtent` wrote, and it reads
+    // them the right way round; v3 never reads them (it sizes from the
+    // outline).
     for (const spot of deck.getElementsByTagNameNS('*', 'PassengerSpot')) {
       const [wEl, lEl] = ['Width', 'Length'].map(n => kids(spot, n)[0]);
       if (wEl && lEl) [wEl.textContent, lEl.textContent] = [lEl.textContent, wEl.textContent];

@@ -447,8 +447,8 @@
     };
 
     /**
-     * Fragments already fetched, keyed by plan id — the bytes as served, before
-     * either patch. Every reading of a plan is made from this one copy, so
+     * Fragment requests, keyed by plan id — each resolves to the bytes as
+     * served, before either patch. Every reading of a plan is made from this one copy, so
      * toggling the hack costs a parse rather than a round trip. A failed fetch
      * stays out, so selecting the plan again retries it.
      */
@@ -507,12 +507,21 @@
      * @returns {Promise<string>} The fragment text.
      * @throws {Error} If it cannot be fetched.
      */
-    const fragOf = async plan => {
+    const fragOf = plan => {
       if (!text.has(plan.id)) {
         const ref = plan[DECKS_REF_KEY];
-        const res = await fetch(ref);
-        if (!res.ok) throw new Error(`${res.status} on ${ref}`);
-        text.set(plan.id, await res.text());
+        // The promise, not the text: both panes ask for a plan at once, and
+        // one request should serve them. Dropped on failure so a retry fetches.
+        const req = fetch(ref)
+          .then(res => {
+            if (!res.ok) throw new Error(`${res.status} on ${ref}`);
+            return res.text();
+          })
+          .catch(e => {
+            text.delete(plan.id);
+            throw e;
+          });
+        text.set(plan.id, req);
       }
       return text.get(plan.id);
     };
@@ -528,8 +537,9 @@
      * corpus draws clipped inside a car that is not theirs, which is not a
      * reading anyone asked to compare against. v3 sizes the deck from its
      * polygon and never gets it. The anchoring patch is the toggle's, for
-     * both renderers, and runs second — under 2.0.5 it mirrors about the
-     * `Width` the first one writes, under v3 about the polygon's width.
+     * both renderers, and runs second — it mirrors about the deck's `Width`
+     * (under 2.0.5 the one the first patch writes) or, with none stated,
+     * about the polygon's width.
      *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
      * @param {boolean} hacked Apply the anchoring patch.
@@ -541,10 +551,8 @@
     const deckOf = async (plan, hacked, v3) => {
       const key = keyOf(plan, hacked, v3);
       if (cache.has(key)) return cache.get(key);
-      let [frag, parse] = await Promise.all([
-        fragOf(plan),
-        v3 ? loadV3().then(m => m.loadNeTEx) : xml => mod.parseNeTEx(xml),
-      ]);
+      let frag = await fragOf(plan);
+      const parse = v3 ? (await loadV3()).loadNeTEx : xml => mod.parseNeTEx(xml);
       // `hacked` is the reading the caller asked for, not whatever the
       // checkbox says now: the fetch gives the reader time to flip it, and
       // re-reading it here would file this deck under the other key.
@@ -703,8 +711,9 @@
     /**
      * Draw one plan's first deck in the v3 pane.
      *
-     * Once per selection, not on resize: v3 fits itself to its host from its
-     * own ResizeObserver, so the element is never rebuilt for a new size. Not
+     * On a selection and on the hack toggle, not on resize: v3 fits itself to
+     * its host from its own ResizeObserver, so the element is never rebuilt
+     * for a new size. Not
      * scale-matched to the artwork either — that is the 2.0.5 pane's job.
      *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
@@ -837,7 +846,7 @@
       return (
         '<div class="info-diff">' +
         `<figure><figcaption>As written</figcaption><pre>${col(0)}</pre></figure>` +
-        `<figure><figcaption>As the renderer is given it</figcaption><pre>${col(1)}</pre></figure>` +
+        `<figure><figcaption>As the renderers are given it</figcaption><pre>${col(1)}</pre></figure>` +
         '</div>'
       );
     };
@@ -977,7 +986,7 @@
             [
               '<code>&lt;Width&gt;</code>/<code>&lt;Length&gt;</code> on the deck',
               off,
-              'this renderer reads these correctly',
+              '2.0.5 reads these correctly; v3 is not given them and sizes from the outline',
             ],
             ['<code>&lt;Label&gt;</code>, ids, refs', off, 'seat numbers must not reverse'],
           ]
