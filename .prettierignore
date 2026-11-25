@@ -33,3 +33,6 @@ docs/architecture-data.js
 pnpm-lock.yaml
 *.log
 *.md
+
+# Vendored v3 deck-plan editor build (concept-sandbox/tools/deck-v3/build.mjs)
+concept-sandbox/vendor
