@@ -134,6 +134,17 @@
 .deck-stage .pane-tools {
   flex-wrap: wrap;
 }
+/* The hack and its explainer on Grid, where neither grid reads a coordinate.
+   Dimmed in place rather than removed, so the row keeps its levelled height;
+   on the controls, not the row, so the tabs stay at full strength. */
+.deck-render .pane-tools label:has(input:disabled),
+.deck-render .pane-tools .info-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.deck-render .pane-tools input:disabled {
+  cursor: default;
+}
 /* `:not(.active)` rather than a plain `.tab-panel { display: none }`:
    `.stage-host` sets `display: flex` at the same specificity, so which one won
    would otherwise come down to the order of the two blocks in this file. */
