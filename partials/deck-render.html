@@ -38,13 +38,6 @@
           Grid
         </button>
       </div>
-      <!-- The v3 editor (GitLab init-v3) is not on npm: vendored by
-           tools/deck-v3/build.mjs. Its renderer reads the deck polygon the
-           2.0.5 patches exist to work around, so the hack is off under v3. -->
-      <label title="Draw with the v3 editor build in vendor/deckplan-v3/">
-        <input type="checkbox" id="deck-v3" />
-        <span>v3 renderer</span>
-      </label>
       <label>
         <input type="checkbox" id="deck-hack" />
         <span>Hack anchoring and rotation</span>
@@ -80,6 +73,22 @@
       hx-swap="innerHTML"
     ></div>
     <div class="stage-meta" id="deck-meta"></div>
+  </div>
+  <!-- The v3 editor's renderer, extracted from its dev branch (GitLab init-v3):
+       not on npm, vendored by tools/deck-v3/build.mjs. It draws the fragment
+       as written; the anchoring hack is a 2.0.5 patch. -->
+  <div class="card deck-v3">
+    <h2>
+      <span class="pane-label">v3-alpha.extract</span>
+      <span class="pane-sub" title="vendor/deckplan-v3/, built from GitLab init-v3"
+        >dev-branch renderer</span
+      >
+    </h2>
+    <div class="pane-tools" id="deck-v3-tools" aria-hidden="true"></div>
+    <div class="stage-host" id="deck-v3-host">
+      <span class="spin" role="status">Fetching the renderer…</span>
+    </div>
+    <div class="stage-meta" id="deck-v3-meta"></div>
   </div>
   <div class="card deck-art">
     <h2>
@@ -131,10 +140,11 @@
    * are left out of the list entirely; the Database page marks which records
    * carry decks.
    *
-   * Two panes, side by side, because the interesting question about a derived
+   * Three panes, side by side, because the interesting question about a derived
    * deck is not what it looks like but whether it matches the railcar it came
-   * from. The left pane draws the NeTEx we emit; the right shows `svgRef`, the
-   * legacy system's own drawing of that same car. Reading one without the other
+   * from. The first two draw the NeTEx we emit — the published 2.0.5 renderer
+   * and the v3 dev-branch extract; the last shows `svgRef`, the legacy system's
+   * own drawing of that same car. Reading one without the other
    * cannot tell a faithful lattice from a plausible-looking wrong one.
    */
 
@@ -178,6 +188,9 @@
   const MIN_SCALE = 10,
     MAX_SCALE = 140;
 
+  /** Error name for a v3 bundle that failed to load, not a plan that did. */
+  const BUNDLE_ERROR = 'BundleError';
+
   /** Debounce (ms) before a resize refits the scale. */
   const RESIZE_MS = 150;
 
@@ -194,7 +207,8 @@
   const srcEl = document.getElementById('deck-src');
   const artSrcEl = document.getElementById('deck-art-src');
   const hackEl = document.getElementById('deck-hack');
-  const v3El = document.getElementById('deck-v3');
+  const v3HostEl = document.getElementById('deck-v3-host');
+  const v3MetaEl = document.getElementById('deck-v3-meta');
   const infoBtn = document.getElementById('deck-hack-info');
   const dialogEl = document.getElementById('deck-hack-dialog');
   const infoBodyEl = document.getElementById('deck-hack-dialog-body');
@@ -205,13 +219,13 @@
   const artToolsEl = document.getElementById('deck-art-tools');
 
   /**
-   * The rows the two comparison panes share, each as a `[stage, artwork]` pair.
+   * The rows the three comparison panes share, each as `[stage, v3, artwork]`.
    * Everything between them is the drawing itself, which takes what is left.
    */
   const ROWS = [
-    [document.querySelector('.deck-stage h2'), document.querySelector('.deck-art h2')],
-    [toolsEl, artToolsEl],
-    [metaEl, artMetaEl],
+    ['.deck-stage h2', '.deck-v3 h2', '.deck-art h2'].map(q => document.querySelector(q)),
+    [toolsEl, document.getElementById('deck-v3-tools'), artToolsEl],
+    [metaEl, v3MetaEl, artMetaEl],
   ];
 
   /**
@@ -252,7 +266,10 @@
   const note = (msg, isError) => noteIn(hostEl, msg, isError);
 
   /** Same, for a step still in flight — a fragment on its way over the wire. */
-  const waiting = msg => (hostEl.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
+  const waitingIn = (el, msg) =>
+    (el.innerHTML = `<span class="spin" role="status">${esc(msg)}</span>`);
+
+  const waiting = msg => waitingIn(hostEl, msg);
 
   /**
    * Give the panes' headers one height and their footers another.
@@ -307,6 +324,33 @@
   };
 
   /**
+   * A rendering pane's figures, as the footer's markup.
+   *
+   * @param {object} deck Deck from either bundle's parser.
+   * @param {number|undefined} len Extent along the car (m); undefined if none.
+   * @param {number|undefined} wid Extent across it (m).
+   * @param {{placed: number, total: number}} [seats] v3's count: it draws
+   *   only seats with a Centroid.
+   * @returns {string} One `<span>` per figure.
+   */
+  const metaHtml = (deck, len, wid, seats) => {
+    const s = statsOf(deck);
+    const spots =
+      seats && seats.placed !== seats.total
+        ? `${seats.placed} of ${seats.total} spots placed`
+        : `${seats?.total ?? s.spots} spots`;
+    return [
+      spots,
+      `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
+      `${s.entrances} entrances`,
+      // Number(undefined) is NaN: a deck with no extent says so instead.
+      len === undefined ? 'no extent' : `${fmtM(len)}×${fmtM(wid)} m`,
+    ]
+      .map(t => `<span>${t}</span>`)
+      .join('');
+  };
+
+  /**
    * Scale that draws `deck` largest inside the stage, portrait.
    *
    * Orientation is fixed rather than measured. The source drawings beside it
@@ -352,6 +396,7 @@
   if (!mod || !db) {
     listEl.innerHTML = '';
     note('Could not load the renderer bundle or the mock database.', true);
+    v3HostEl.replaceChildren();
   } else {
     const sheet = mkSheet();
     const plans = db.deckPlans ?? [];
@@ -424,9 +469,22 @@
     const keyOf = (plan, hacked, v3) =>
       `${plan.id}|${v3 ? 'v3' : hacked ? 'hacked' : 'as-written'}`;
 
-    /** The v3 bundle, imported on the first v3 draw. */
-    let v3Mod;
-    const loadV3 = () => (v3Mod ??= import(V3_URL));
+    /**
+     * The v3 bundle, imported on the first v3 draw. A failed import is
+     * dropped, so the next v3 draw retries it, and is named as the bundle's
+     * failure: the plan was never read. The retry asks for a fresh URL because
+     * the browser's module map keeps a failed fetch for good.
+     */
+    let v3Mod,
+      v3Fails = 0;
+    const loadV3 = () =>
+      (v3Mod ??= import(v3Fails ? `${V3_URL}?retry=${v3Fails}` : V3_URL).catch(e => {
+        v3Mod = undefined;
+        v3Fails++;
+        throw Object.assign(new Error(`Could not load the v3 renderer: ${e.message}`), {
+          name: BUNDLE_ERROR,
+        });
+      }));
 
     /**
      * Renders started, so a slow one can tell it has been overtaken.
@@ -437,23 +495,6 @@
      */
     let gen = 0;
 
-    /**
-     * First deck of a plan, fetched and parsed on first use.
-     *
-     * The deck must come from *this* bundle's `parseNeTEx` — the renderer
-     * matches deck spaces with `instanceof`, so a deck parsed by any other copy
-     * of the models draws an empty outline.
-     *
-     * The extent patch is unconditional: without it most of the corpus draws
-     * clipped inside a car that is not theirs, which is not a reading anyone
-     * asked to compare against. The anchoring patch is the toggle's, and runs
-     * second — it mirrors about the `Width` the first one writes.
-     *
-     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
-     * @returns {Promise<object|undefined>} The deck, or undefined if the
-     *   fragment holds none.
-     * @throws {Error} If the fragment cannot be fetched or parsed.
-     */
     /**
      * A plan's fragment as served, fetched once.
      *
@@ -475,23 +516,43 @@
       return text.get(plan.id);
     };
 
+    /**
+     * First deck of a plan, fetched and parsed on first use.
+     *
+     * The deck must come from the bundle that draws it — both renderers match
+     * deck spaces with `instanceof`, so a deck parsed by any other copy of the
+     * models draws an empty outline. v3 parses with its own `loadNeTEx` and
+     * gets the fragment as written: neither patch is about its renderer.
+     *
+     * Under 2.0.5 the extent patch is unconditional: without it most of the corpus draws
+     * clipped inside a car that is not theirs, which is not a reading anyone
+     * asked to compare against. The anchoring patch is the toggle's, and runs
+     * second — it mirrors about the `Width` the first one writes.
+     *
+     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
+     * @param {boolean} hacked Apply the anchoring patch (2.0.5 only).
+     * @param {boolean} v3 Parse for the v3 renderer.
+     * @returns {Promise<object|undefined>} The deck, or undefined if the
+     *   fragment holds none.
+     * @throws {Error} If the fragment cannot be fetched or parsed.
+     */
     const deckOf = async (plan, hacked, v3) => {
       const key = keyOf(plan, hacked, v3);
-      // v3 parses with its own models (same `instanceof` rule) and gets the
-      // fragment as written: neither patch is about its renderer.
-      if (v3 && !cache.has(key)) {
+      if (cache.has(key)) return cache.get(key);
+      let deck;
+      if (v3) {
         const [{ loadNeTEx }, frag] = await Promise.all([loadV3(), fragOf(plan)]);
-        cache.set(key, loadNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
-      }
-      if (!cache.has(key)) {
+        deck = loadNeTEx(wrapFrag(frag))[0]?.decks?.[0];
+      } else {
         // `hacked` is the reading the caller asked for, not whatever the
-        // checkbox says now: the fetch above gives the reader time to flip it,
-        // and re-reading it here would file this deck under the other key.
+        // checkbox says now: the fetch gives the reader time to flip it, and
+        // re-reading it here would file this deck under the other key.
         let frag = invalidateXMLForDeckExtent(await fragOf(plan));
         if (hacked) frag = hackXMLForDeckEdPlacement(frag);
-        cache.set(key, mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0]);
+        deck = mod.parseNeTEx(wrapFrag(frag))[0]?.decks?.[0];
       }
-      return cache.get(key);
+      cache.set(key, deck);
+      return deck;
     };
 
     /**
@@ -562,7 +623,6 @@
     const draw = async plan => {
       const mine = ++gen;
       const hacked = hackEl.checked;
-      const v3 = v3El.checked;
       current = plan;
       titleEl.textContent = plan.name;
       // Announced for the Grid panel, and left on the page as well: that panel
@@ -593,13 +653,13 @@
       drawArt(plan);
       // Only on a first draw: a cached plan resolves within the same task and
       // would show the spinner for a single frame.
-      if (!cache.has(keyOf(plan, hacked, v3))) {
+      if (!cache.has(keyOf(plan, hacked, false))) {
         metaEl.textContent = '';
         waiting('Fetching the decks fragment…');
       }
       let deck;
       try {
-        deck = await deckOf(plan, hacked, v3);
+        deck = await deckOf(plan, hacked, false);
       } catch (e) {
         if (gen !== mine) return;
         metaEl.textContent = '';
@@ -613,19 +673,7 @@
         return levelRows();
       }
 
-      const s = statsOf(deck);
-      // v3 sizes the deck from its polygon; the fragment as written has no
-      // Length/Width (the extent patch is what adds them for 2.0.5).
-      const box = v3 ? deck.polygon?.getBoundingBox() : undefined;
-      const [len, wid] = v3 ? [box?.length, box?.width] : [deck.Length, deck.Width];
-      metaEl.innerHTML = [
-        `${s.spots} spots`,
-        `${s.spaces} space${s.spaces === 1 ? '' : 's'}`,
-        `${s.entrances} entrances`,
-        `${fmtM(len)}×${fmtM(wid)} m`,
-      ]
-        .map(t => `<span>${t}</span>`)
-        .join('');
+      metaEl.innerHTML = metaHtml(deck, deck.Length, deck.Width);
       // Ahead of the drawing, not after it: levelling settles how much height
       // is left for the stage, and `fit` reads that height. Drawn first, the
       // deck would be sized against a pane a levelled footer then shrinks
@@ -634,12 +682,10 @@
       // may already have fired — so each levels the rows.
       levelRows();
 
-      // v3 fits itself to the host and brings its own styles; only `vertical`
-      // is the page's, to keep it portrait beside the artwork.
-      const el = document.createElement(v3 ? V3_TAG : TAG);
-      Object.assign(el, v3 ? { deck, vertical: true } : { deck, ...fit(deck) });
+      const el = document.createElement(TAG);
+      Object.assign(el, { deck, ...fit(deck) });
       // Adopted before insertion so the drawing never flashes unstyled.
-      if (!v3 && el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
+      if (el.shadowRoot?.adoptedStyleSheets) el.shadowRoot.adoptedStyleSheets = [sheet];
       hostEl.replaceChildren(el);
 
       // One scale across both panes — a drawing beside a rendering it is not
@@ -648,12 +694,54 @@
       // the renderer pads its frame, so nothing short of the laid-out element
       // states what the rendering actually occupies. Vue renders it in
       // `connectedCallback`, so it is there to measure the moment it is in.
-      const measure = () =>
-        fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
-      // v3 sizes its `<svg>` from a ResizeObserver, so it has a width only
-      // after the observer fires and Vue re-renders: two frames on.
-      if (v3) requestAnimationFrame(() => requestAnimationFrame(() => gen === mine && measure()));
-      else measure();
+      fitArt(el.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width ?? 0);
+    };
+
+    /** v3 draws in flight, so a slow one can tell it has been overtaken. */
+    let v3Gen = 0;
+
+    /**
+     * Draw one plan's first deck in the v3 pane.
+     *
+     * Once per selection, not on resize: v3 fits itself to its host from its
+     * own ResizeObserver, so the element is never rebuilt for a new size. Not
+     * scale-matched to the artwork either — that is the 2.0.5 pane's job.
+     *
+     * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
+     */
+    const drawV3 = async plan => {
+      const mine = ++v3Gen;
+      const fail = msg => {
+        v3MetaEl.textContent = '';
+        noteIn(v3HostEl, msg, true);
+        levelRows();
+      };
+      if (!cache.has(keyOf(plan, false, true))) {
+        v3MetaEl.textContent = '';
+        waitingIn(v3HostEl, 'Fetching the decks fragment…');
+      }
+      let deck, seats;
+      try {
+        deck = await deckOf(plan, false, true);
+        // v3 draws only seats with a Centroid: count what it draws.
+        if (deck) seats = (await loadV3()).countSeats(deck);
+      } catch (e) {
+        if (v3Gen !== mine) return;
+        return fail(e.name === BUNDLE_ERROR ? e.message : `Could not load this plan: ${e.message}`);
+      }
+      if (v3Gen !== mine) return;
+      if (!deck) return fail('This fragment carries no decks.');
+
+      // v3 sizes the deck from its polygon: the fragment as written has no
+      // Length/Width (the extent patch is what adds them for 2.0.5).
+      const box = deck.polygon?.getBoundingBox();
+      v3MetaEl.innerHTML = metaHtml(deck, box?.length, box?.width, seats);
+      levelRows();
+      const el = document.createElement(V3_TAG);
+      // v3 brings its own styles; only `vertical` is the page's, to keep it
+      // portrait beside the artwork.
+      Object.assign(el, { deck, vertical: true });
+      v3HostEl.replaceChildren(el);
     };
 
     const row = plan => {
@@ -665,6 +753,7 @@
         listEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         draw(plan);
+        drawV3(plan);
       };
       li.append(btn);
       return li;
@@ -675,20 +764,10 @@
     // before and after, not two different cars.
     hackEl.onchange = () => current && draw(current);
 
-    /**
-     * Enable the stage's controls for the reading on screen: both are Exact's,
-     * and the anchoring hack is a 2.0.5 workaround with nothing to patch in v3.
-     */
+    /** Enable the stage's controls for the reading on screen: both are Exact's. */
     const syncTools = () => {
       const exact = tabExactEl.classList.contains('active');
-      v3El.disabled = !exact;
-      hackEl.disabled = infoBtn.disabled = !exact || v3El.checked;
-      toolsEl.classList.toggle('geometry-off', !exact);
-    };
-
-    v3El.onchange = () => {
-      syncTools();
-      if (current) draw(current);
+      hackEl.disabled = infoBtn.disabled = !exact;
     };
 
     /** The stage's two readings, as `[key, tab, panel]`. */
@@ -947,6 +1026,7 @@
     const onResize = () => {
       if (!document.body.contains(grid)) return window.removeEventListener('resize', onResize);
       clearTimeout(timer);
+      // 2.0.5 only: it scales at draw time, v3 refits itself.
       timer = setTimeout(() => current && draw(current), RESIZE_MS);
     };
     window.addEventListener('resize', onResize);

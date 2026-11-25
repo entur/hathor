@@ -13,7 +13,7 @@ import { PassengerSpace, PassengerSpot } from 'netex-deckplan-library';
 import DeckExactRenderer from '@v3/components/src/components/DeckPlanEditor/components/DeckExactRenderer/DeckExactRenderer.vue';
 import tailwind from '@v3/components/src/assets/main.css?inline';
 
-export { loadNeTEx, getDecksBoundingBox } from 'netex-deckplan-library';
+export { loadNeTEx } from 'netex-deckplan-library';
 
 /** Tag the module registers. */
 export const TAG = 'deck-rendering-v3';
