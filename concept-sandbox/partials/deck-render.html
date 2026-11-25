@@ -448,18 +448,19 @@
 
     /**
      * Fragments already fetched, keyed by plan id — the bytes as served, before
-     * either patch. Both readings of a plan are made from this one copy, so
+     * either patch. Every reading of a plan is made from this one copy, so
      * toggling the hack costs a parse rather than a round trip. A failed fetch
      * stays out, so selecting the plan again retries it.
      */
     const text = new Map();
 
     /**
-     * Decks already parsed, keyed by plan *and* by which patches made them.
+     * Decks already parsed, keyed by plan, renderer *and* which patches made
+     * them.
      *
      * A refit on resize and a return to an earlier plan both redraw, and
      * neither should re-parse tens of KB. The reading is part of the key
-     * because the two are different decks built from the same file: keyed on
+     * because each is a different deck built from the same file: keyed on
      * the plan alone, flipping the toggle would hand back whichever one was
      * parsed first and the checkbox would look inert.
      */
@@ -526,9 +527,9 @@
      * Under 2.0.5 the extent patch is unconditional: without it most of the
      * corpus draws clipped inside a car that is not theirs, which is not a
      * reading anyone asked to compare against. v3 sizes the deck from its
-     * polygon and needs it only under the hack. The anchoring patch is the
-     * toggle's, for both renderers, and runs second — it mirrors about the
-     * `Width` the first one writes.
+     * polygon and never gets it. The anchoring patch is the toggle's, for
+     * both renderers, and runs second — under 2.0.5 it mirrors about the
+     * `Width` the first one writes, under v3 about the polygon's width.
      *
      * @param {object} plan Mock-DB deckPlan carrying a `decksRef`.
      * @param {boolean} hacked Apply the anchoring patch.
@@ -547,7 +548,7 @@
       // `hacked` is the reading the caller asked for, not whatever the
       // checkbox says now: the fetch gives the reader time to flip it, and
       // re-reading it here would file this deck under the other key.
-      if (!v3 || hacked) frag = invalidateXMLForDeckExtent(frag);
+      if (!v3) frag = invalidateXMLForDeckExtent(frag);
       if (hacked) frag = hackXMLForDeckEdPlacement(frag);
       const deck = parse(wrapFrag(frag))[0]?.decks?.[0];
       cache.set(key, deck);
@@ -732,8 +733,7 @@
       if (v3Gen !== mine) return;
       if (!deck) return fail('This fragment carries no decks.');
 
-      // v3 sizes the deck from its polygon, not the Length/Width the extent
-      // patch writes.
+      // v3 sizes the deck from its polygon.
       const box = deck.polygon?.getBoundingBox();
       v3MetaEl.innerHTML = metaHtml(deck, box?.length, box?.width, seats);
       levelRows();
@@ -762,9 +762,11 @@
     // Redraws the plan already on screen rather than only the next one: the
     // toggle is a comparison control, and one worth making is the same car
     // before and after, not two different cars.
+    // Exact only while it shows: `showTab` redraws it on activation, and a
+    // hidden host measures zero.
     hackEl.onchange = () => {
       if (!current) return;
-      draw(current);
+      if (tabExactEl.classList.contains('active')) draw(current);
       drawV3(current);
     };
 
@@ -781,9 +783,6 @@
      * host it is going into, and a host that was `display: none` while the
      * reader changed plans measures zero — so the element built then sits at
      * `MIN_SCALE`, and nothing else would ever re-fit it.
-     *
-     * The toggle stays live on Grid: that reading places spots by reference
-     * and ignores it, but the v3 pane beside it does not.
      *
      * @param {'exact'|'grid'} key Reading to show.
      */
