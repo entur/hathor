@@ -59,7 +59,7 @@
     "react-i18next": "^15.5.2",
     "react-oidc-context": "^3.3.0",
     "react-router-dom": "^7.18.6",
-    "three": "^0.180.0"
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.2.1",
