@@ -1,7 +1,7 @@
 {
   "name": "hathor",
   "private": true,
-  "version": "0.144.0",
+  "version": "0.145.0",
   "type": "module",
   "scripts": {
     "predev": "run-p copy:theme copy:config && node scripts/local-nationale-setup.mjs --link",
