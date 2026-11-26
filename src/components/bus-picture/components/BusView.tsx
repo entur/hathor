@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import LocationCityOutlinedIcon from '@mui/icons-material/LocationCityOutlined';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import { useTranslation } from 'react-i18next';
 import type { Stage } from '@entur/iteru-3dbus';
+import type { Group } from 'three';
 import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
-import { useBusShot, usePictureBg } from '../hooks/useBusShot.ts';
+import { useBusShot, useStageColours } from '../hooks/useBusShot.ts';
 import { mkMotion } from '../utils/busMotion.ts';
-import { themeStage } from '../utils/stageTheme.ts';
+import { themeStage, type StageColours } from '../utils/stageTheme.ts';
 import { CLOSER, VIEW, centredBus, type Lib, type ShotSize } from '../utils/busShots.ts';
 import type { BusSpec } from '../utils/busSpec.ts';
 import { DRAWN_MODES, toBusInput, type BusInput } from '../utils/standardBus.ts';
@@ -26,6 +28,7 @@ const MODE_ICONS: Record<BusViewMode, ReactNode> = {
   '3d': <ViewInArIcon fontSize="small" />,
 };
 const MODES = Object.keys(MODE_ICONS) as BusViewMode[];
+const SCENERY = 'scenery'; // the street toggle's one value
 
 export interface BusViewProps extends BusPictureProps {
   /** Shape facts beyond the outer dims; what is missing is the standard bus's. */
@@ -35,12 +38,22 @@ export interface BusViewProps extends BusPictureProps {
   /** The bitmap's capture size in css px; a card's 400×250 by default. Drawn to cover the
    *  picture area, so match its shape and size to avoid a crop or a blur. */
   shotSize?: ShotSize;
+  /** Whether the 3D bus starts on a street (a road, houses and flats); the reader can
+   *  switch it. Default on. */
+  scenery?: boolean;
 }
 
 /** One live stage for the canvas's life; the bus swapped per input, framed only the first time. */
-function Live({ inp }: { inp: BusInput }) {
+function Live({
+  inp,
+  colours,
+  scenery,
+}: {
+  inp: BusInput;
+  colours: StageColours;
+  scenery: boolean;
+}) {
   const { t } = useTranslation();
-  const bg = usePictureBg();
   const box = useRef<HTMLDivElement>(null);
   const [lib, setLib] = useState<Lib>();
   const [failed, setFailed] = useState(false);
@@ -112,8 +125,26 @@ function Live({ inp }: { inp: BusInput }) {
   // The scene is a bus's parent once added: recoloured then, and on a theme switch.
   useEffect(() => {
     const scene3d = scene.current?.cur?.group.parent;
-    if (scene3d) themeStage(scene3d, bg);
-  }, [lib, inp, bg]);
+    if (scene3d) themeStage(scene3d, colours);
+  }, [lib, inp, colours]);
+
+  // The street, built on the colours of the moment; loaded only when first shown.
+  useEffect(() => {
+    const s = scene.current;
+    if (!lib || !s || !scenery) return;
+    let street: Group | undefined;
+    let live = true;
+    import('../utils/scenery.ts').then(({ mkScenery }) => {
+      if (!live) return;
+      street = mkScenery(colours);
+      s.stage.add(street);
+    });
+    return () => {
+      live = false;
+      // A stage already disposed (unmount) freed the street with it.
+      if (street && scene.current === s) s.stage.drop(street);
+    };
+  }, [lib, scenery, colours]);
 
   if (failed) return <CompactLine>{t('busView.unavailable')}</CompactLine>;
   return (
@@ -144,8 +175,17 @@ export function BusView(props: BusViewProps) {
 }
 
 /** The switch and the bus: mounted only for a view that is drawn, so no other takes a shot. */
-function Drawn({ dims, paint, spec, mode, shotSize }: BusViewProps) {
+function Drawn({
+  dims,
+  paint,
+  spec,
+  mode,
+  shotSize,
+  scenery: sceneryAtStart = true,
+}: BusViewProps) {
   const { t } = useTranslation();
+  const colours = useStageColours();
+  const [scenery, setScenery] = useState(sceneryAtStart);
   const [view, setView] = useState<BusViewMode>('bitmap');
   const { length, width, height } = dims;
   // Story controls and form pages hand a fresh `spec` object each render: key on its content.
@@ -155,7 +195,7 @@ function Drawn({ dims, paint, spec, mode, shotSize }: BusViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `spec` is read through specKey
     [length, width, height, paint, specKey]
   );
-  const shot = useBusShot(inp, shotSize);
+  const shot = useBusShot(inp, shotSize, colours.ground);
 
   // As text: the frame's own picture would shoot again, and without the record's facts.
   if (shot === 'failed')
@@ -187,13 +227,28 @@ function Drawn({ dims, paint, spec, mode, shotSize }: BusViewProps) {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}>
         <StandardNote fallback={fallback} broken={broken} sx={{ minWidth: 0 }} />
+        {view === '3d' && (
+          <ToggleButtonGroup
+            size="small"
+            value={scenery ? [SCENERY] : []}
+            onChange={(_e, v: string[]) => setScenery(v.includes(SCENERY))}
+            aria-label={t('busView.scenery')}
+            sx={{ ml: 'auto' }}
+          >
+            <Tooltip title={t('busView.scenery')}>
+              <ToggleButton value={SCENERY} aria-label={t('busView.scenery')}>
+                <LocationCityOutlinedIcon fontSize="small" />
+              </ToggleButton>
+            </Tooltip>
+          </ToggleButtonGroup>
+        )}
         <ToggleButtonGroup
           exclusive
           size="small"
           value={view}
           onChange={(_e, v: BusViewMode | null) => v && setView(v)}
           aria-label={t('busView.label')}
-          sx={{ ml: 'auto' }}
+          sx={view === '3d' ? undefined : { ml: 'auto' }}
         >
           {MODES.map(m => (
             <Tooltip key={m} title={t(`busView.${m}`)}>
@@ -206,7 +261,7 @@ function Drawn({ dims, paint, spec, mode, shotSize }: BusViewProps) {
       </Box>
       <Box sx={{ position: 'relative', flex: 1, minHeight: 0 }}>
         {view === '3d' ? (
-          <Live inp={inp} />
+          <Live inp={inp} colours={colours} scenery={scenery} />
         ) : (
           shot && (
             <Box

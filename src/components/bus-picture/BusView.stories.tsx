@@ -68,6 +68,7 @@ const meta: Meta<Args> = {
     decks: { control: 'inline-radio', options: [undefined, 'single', 'double'] },
     articulated: { control: 'boolean' },
     lowFloor: { control: 'boolean' },
+    scenery: { control: 'boolean' },
     shotW: { control: { type: 'number', step: 10 } },
     shotH: { control: { type: 'number', step: 10 } },
   },

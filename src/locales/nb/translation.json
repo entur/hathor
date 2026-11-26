@@ -397,6 +397,7 @@
   "busView.label": "Vis som",
   "busView.bitmap": "Bilde",
   "busView.3d": "3D",
+  "busView.scenery": "Omgivelser",
   "busView.unavailable": "3D utilgjengelig",
   "busView.rule.axlesRigid": "en buss uten ledd har {{min}}–{{max}} aksler",
   "busView.rule.axlesArticulated": "en leddbuss har {{min}}–{{max}} aksler",

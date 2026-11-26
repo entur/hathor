@@ -1,5 +1,6 @@
 import type { BusGroup, ShotStage } from '@entur/iteru-3dbus';
 import type { BusInput } from './standardBus.ts';
+import { groundOf, themeStage } from './stageTheme.ts';
 
 // Textures at a third, as the package's own gallery (`src/gallery.js`).
 const DETAIL = 0.35;
@@ -73,7 +74,12 @@ const dropStage = () => {
   void done?.then(s => s.stage.dispose()).catch(() => undefined);
 };
 
-const shoot = async (inp: BusInput, bg: string, size: ShotSize): Promise<string> => {
+const shoot = async (
+  inp: BusInput,
+  bg: string,
+  size: ShotSize,
+  ground: string
+): Promise<string> => {
   if (noWebGL) throw new Error('no WebGL');
   // A theme switch: the stage's light follows the colour behind the picture. Another size:
   // shortcut: a stage per size, so mixed sizes on one page reopen it per switch; resize it
@@ -91,6 +97,8 @@ const shoot = async (inp: BusInput, bg: string, size: ShotSize): Promise<string>
   cur.len = len;
   cur.group = group;
   s.add(group);
+  // The stage is shared: every shot sets its own ground, the package's or the host's.
+  if (group.parent) themeStage(group.parent, { sky: bg, ground });
   try {
     go(VIEW, true);
     s.cam.position.lerp(s.ctl.target, CLOSER);
@@ -110,12 +118,18 @@ const shoot = async (inp: BusInput, bg: string, size: ShotSize): Promise<string>
  * @param {BusInput} inp a valid bus input
  * @param {string} bg the colour behind the picture (hex or rgb), sets the light
  * @param {ShotSize} [size] the picture's size in css px; a card's by default
+ * @param {string} [ground] the ground's colour; the package's shade of `bg` by default
  * @returns {{ url: Promise<string>, release: () => void }} the PNG's URL (rejects when the
  *   bus can't be shot, e.g. no WebGL), and release: the last holder skips a shot still
  *   queued and frees its URL
  */
-export const holdBusShot = (inp: BusInput, bg: string, size: ShotSize = CARD_SHOT) => {
-  const key = `${bg}|${size.w}x${size.h}|${JSON.stringify(inp)}`;
+export const holdBusShot = (
+  inp: BusInput,
+  bg: string,
+  size: ShotSize = CARD_SHOT,
+  ground: string = groundOf(bg)
+) => {
+  const key = `${bg}|${ground}|${size.w}x${size.h}|${JSON.stringify(inp)}`;
   let shot = shots.get(key);
   if (!shot) {
     const entry: Shot = { url: Promise.resolve(''), holders: 0 };
@@ -123,7 +137,7 @@ export const holdBusShot = (inp: BusInput, bg: string, size: ShotSize = CARD_SHO
     entry.url = queue.then(async () => {
       try {
         if (shots.get(key) !== entry) throw new Error('released before its turn');
-        return await shoot(inp, bg, size);
+        return await shoot(inp, bg, size, ground);
       } finally {
         pending -= 1;
         if (pending === 0) dropStage();

@@ -398,6 +398,7 @@
   "busView.label": "Show as",
   "busView.bitmap": "Bitmap",
   "busView.3d": "3D",
+  "busView.scenery": "Scenery",
   "busView.unavailable": "3D unavailable",
   "busView.rule.axlesRigid": "a rigid bus has {{min}}–{{max}} axles",
   "busView.rule.axlesArticulated": "an articulated bus has {{min}}–{{max}} axles",

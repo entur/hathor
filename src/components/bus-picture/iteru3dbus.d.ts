@@ -17,7 +17,38 @@ declare module '@entur/iteru-3dbus/core' {
   };
 }
 
+/** The few three.js classes `scenery.ts` builds with (three ships no types; hathor has no
+ *  `@types/three`). */
+declare module 'three' {
+  export class Object3D {
+    position: { set: (x: number, y: number, z: number) => void };
+    add: (...objects: Object3D[]) => this;
+  }
+  export class Group extends Object3D {}
+  export class BufferGeometry {
+    rotateX: (angle: number) => this;
+  }
+  export class BoxGeometry extends BufferGeometry {
+    constructor(width: number, height: number, depth: number);
+  }
+  export class PlaneGeometry extends BufferGeometry {
+    constructor(width: number, height: number);
+  }
+  export class CylinderGeometry extends BufferGeometry {
+    constructor(radiusTop: number, radiusBottom: number, height: number, radialSegments: number);
+  }
+  export class MeshStandardMaterial {
+    constructor(opts?: { roughness?: number });
+    color: { set: (css: string) => { multiplyScalar: (s: number) => unknown } };
+  }
+  export class Mesh extends Object3D {
+    constructor(geometry: BufferGeometry, material: MeshStandardMaterial);
+  }
+}
+
 declare module '@entur/iteru-3dbus' {
+  import type { Object3D } from 'three';
+
   export { total, MM } from '@entur/iteru-3dbus/core';
 
   /** A `THREE.Color`, as far as hathor sets it. */
@@ -32,7 +63,7 @@ declare module '@entur/iteru-3dbus' {
     children: {
       isMesh?: boolean;
       isHemisphereLight?: boolean;
-      material?: { color: Colour };
+      material?: { type: string; color: Colour };
       groundColor?: Colour;
     }[];
   }
@@ -57,8 +88,10 @@ declare module '@entur/iteru-3dbus' {
     };
     /** Run every frame, before the render. */
     ticks: (() => void)[];
-    add: (group: BusGroup) => void;
-    drop: (group: BusGroup) => void;
+    /** Adds a bus or any other object (scenery); its meshes cast and take shadows. */
+    add: (group: BusGroup | Object3D) => void;
+    /** Removes it, and frees its geometries and materials. */
+    drop: (group: BusGroup | Object3D) => void;
     /** Stops the loop, frees three.js's resources and removes the canvas; the WebGL
      *  context is left to the garbage collector. */
     dispose: () => void;
