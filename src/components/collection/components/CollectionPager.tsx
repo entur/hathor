@@ -14,7 +14,11 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SR_ONLY } from '../../../utils/srOnly.ts';
-import { PRESSED_FILL } from '../../../theme/createThemeFromConfig.ts';
+import {
+  HOVER_FILL,
+  PRESSED_FILL,
+  STROKE_TRANSPARENT,
+} from '../../../theme/createThemeFromConfig.ts';
 import { pageSizesFor, type CollectionLabels, type CollectionQuery } from '../types.ts';
 
 // Linje's pager sizes (tokens named on the right).
@@ -32,7 +36,8 @@ const PAGE_SX = {
   minWidth: PAGE_PX,
   mx: '2px',
   px: '4px',
-  border: '1px solid transparent',
+  // menu/Pagination/Standard/Border-Unselected (Linje `Pagination.scss`, `&__page`).
+  border: `1px solid ${STROKE_TRANSPARENT}`,
   borderRadius: 1,
   bgcolor: 'transparent',
   color: 'primary.main',
@@ -41,7 +46,8 @@ const PAGE_SX = {
   cursor: 'pointer',
   userSelect: 'none',
   transition: `background ${FAST_S}s ease-out, border-color ${FAST_S}s ease-out`,
-  '&:hover': { bgcolor: 'action.hover' },
+  // menu/Pagination/Standard/Hover. Linje's own value, not the installation's `action.hover`.
+  '&:hover': { bgcolor: HOVER_FILL },
   '&:focus-visible': {
     outline: `${FOCUS_PX}px solid`,
     outlineColor: 'primary.main',
@@ -53,7 +59,8 @@ const PAGE_SX = {
     borderColor: 'primary.main',
     pointerEvents: 'none',
   },
-  '&[aria-disabled="true"]': { opacity: 0.5, cursor: 'default' },
+  // As Linje (`&--disabled`): no hover on a disabled arrow.
+  '&[aria-disabled="true"]': { opacity: 0.5, cursor: 'default', pointerEvents: 'none' },
 } as const;
 
 const ELLIPSIS_SX = {

@@ -88,9 +88,12 @@ const HOVER_FILL_CONTRAST = '#626493',
   PRESSED_FILL_CONTRAST = '#8794d4';
 // Linje `shadows.boxShadow` (`legacy-tokens.ts`): a selected segment, a popover.
 const BOX_SHADOW = '0 1px 3px rgba(0, 0, 0, 0.25)';
+// Linje `Stroke/Transparent` (navy at 40 %): a quiet 1 px border, e.g. the Popover's and an
+// unselected pager page's (`menu/Pagination/Standard/Border-Unselected`).
+export const STROKE_TRANSPARENT = '#54568c66';
 // Linje Popover (`tooltip/Popover.scss`, `tooltip/Popover/Standard/*`): fill, 1 px border.
 const POPOVER_FILL = '#f6f6f9',
-  POPOVER_BORDER = '#54568c66';
+  POPOVER_BORDER = STROKE_TRANSPARENT;
 // Linje's dropdown list (`dropdown/components/DropdownList.scss:3-13`) and OverflowMenu
 // (`menu/OverflowMenu.scss:3-9`): `Base menu/Fill-Default` and `Border` (= the field border),
 // radius legacy 4, `boxShadow`. The list's border is 2 px, the menu's 1 px.

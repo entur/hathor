@@ -20,6 +20,7 @@ checked this one).
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
+- Pagination (collection pager)
 - Popover (filter panel) and popup surfaces
 - SegmentedControl (ToggleButtonGroup)
 - SideNavigation (nav rail)
@@ -284,6 +285,18 @@ Cross-cutting traps:
   - Spread `params.slotProps` in `renderInput` (MUI 9).
   - The filled Autocomplete has its own input padding (`2.5px 4px`); the theme moves only the
     root's left padding.
+
+## Pagination (collection pager)
+
+- **Linje**: `packages/menu/src/Pagination.scss` (`&__controls__page`), tokens
+  `menu/Pagination/Standard/*`: every page button, arrows too, has a 1 px `Border-Unselected`
+  #54568c66 (`Stroke/Transparent`) on a colourless fill; hover #d9ddf2; the current page
+  `Active` #aeb7e2 with a navy `Border-Selected`, no hover; disabled 50 % opacity, no hover.
+- **MUI**: `src/components/collection/components/CollectionPager.tsx` `PAGE_SX`: border
+  `STROKE_TRANSPARENT`, hover `HOVER_FILL` (not the installation's `action.hover`), current
+  `PRESSED_FILL` + `primary.main` border. The rows-per-page button reuses `PAGE_SX` with a
+  `divider` border.
+- **Status: done (#429, pager).**
 
 ## Popover (filter panel) and popup surfaces
 
