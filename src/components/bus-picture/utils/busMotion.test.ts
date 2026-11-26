@@ -14,6 +14,7 @@ const vec = (x: number, y: number, z: number) => {
 /** A stage with the frame loop driven by hand, and the clock with it. */
 const rig = (reduced = false) => {
   let t = 0;
+  const reduce = () => (reduced = true);
   const starts: (() => void)[] = [];
   const stage = {
     cam: { position: vec(-13, 3, -15) },
@@ -41,7 +42,7 @@ const rig = (reduced = false) => {
     return worst;
   };
   const grab = () => starts.forEach(f => f());
-  return { stage, m, pos, run, grab, onTakeOver, onLoop, starts };
+  return { stage, m, pos, run, grab, reduce, onTakeOver, onLoop, starts };
 };
 
 const dist = (a: { x: number; y: number; z: number }, b: typeof a) =>
@@ -120,14 +121,24 @@ describe('mkMotion', () => {
     expect(onTakeOver).not.toHaveBeenCalled();
   });
 
-  it('cuts instead of easing under reduced motion', () => {
+  it('stays at rest under reduced motion', () => {
     const { m, run, pos } = rig(true);
     const rest = pos();
     m.set('animate');
     run(3_000);
-    m.set('orbit');
-    run(16);
     expect(dist(pos(), rest)).toBeLessThan(1e-9);
+  });
+
+  it('stops where it is when reduced motion comes on mid-flight', () => {
+    const { m, run, pos, reduce, onLoop } = rig();
+    m.set('animate');
+    run(3_000);
+    reduce();
+    run(16);
+    const stopped = pos();
+    run(PERIOD_MS);
+    expect(dist(pos(), stopped)).toBe(0);
+    expect(onLoop).not.toHaveBeenCalled();
   });
 
   it('reports each whole loop, the first one slowed only by the ease in', () => {

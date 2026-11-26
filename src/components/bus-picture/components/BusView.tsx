@@ -6,7 +6,6 @@ import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import { useTranslation } from 'react-i18next';
 import type { Stage } from '@entur/iteru-3dbus';
 import type { Group } from 'three';
-import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useBusShot, useStageColours } from '../hooks/useBusShot.ts';
 import { mkMotion } from '../utils/busMotion.ts';
 import { themeStage, type StageColours } from '../utils/stageTheme.ts';
@@ -119,7 +118,8 @@ function Live({
     s.go(VIEW, true);
     // As close as the bitmap, so the switch doesn't jump the bus's size.
     s.stage.cam.position.lerp(s.stage.ctl.target, CLOSER);
-    if (!matchMedia(REDUCED_MOTION_QUERY).matches) s.motion.set('animate');
+    // Under reduced motion the controller holds still, and stops a flight mid-way.
+    s.motion.set('animate');
   }, [lib, inp]);
 
   // The scene is a bus's parent once added: recoloured then, and on a theme switch.

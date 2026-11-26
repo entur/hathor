@@ -7,7 +7,7 @@
  * pass them in once iteru-3dbus takes them, and drop the scene walk here.
  */
 import type { Scene } from '@entur/iteru-3dbus';
-import { alpha, getLuminance, type Palette } from '@mui/material/styles';
+import { alpha, decomposeColor, type Palette } from '@mui/material/styles';
 import { over } from '../../../utils/colorOver.ts';
 
 // The package's shot stage (dist-lib/index.js): the ground 6% toward black on a light
@@ -18,8 +18,10 @@ const GROUND_SHADE = 0.06,
 /** A lit ground's light on an open floor (hemisphere 2.4, sun 2.7 · cos 46°, fill 0.8 · cos 66°,
  *  over π): a lit surface's albedo is its colour divided by it. */
 export const FLOOR_LIGHT = 1.45;
-// Above this luminance a background is light: the shot stage's own split.
-const LIGHT_LUMINANCE = 0.5;
+// Above this brightness a background is light: the shot stage's own split, Rec. 709 weights
+// on the sRGB values as they are (not MUI's linearised luminance, which calls a mid-grey dark).
+const LIGHT_BRIGHTNESS = 0.5,
+  REC709 = [0.2126, 0.7152, 0.0722];
 // Shares of `primary.main` over paper: the ground, the road a step darker, the buildings
 // lighter than the ground (they stand back, toward the sky).
 const GROUND_MIX = 0.4,
@@ -35,6 +37,11 @@ export interface StageColours {
   line: string;
   buildings: string[];
 }
+
+/** Light as the package judges a background (dist-lib/index.js `oe`). */
+const isLight = (css: string) =>
+  decomposeColor(css).values.reduce((sum, v, i) => sum + (REC709[i] ?? 0) * (v / 255), 0) >
+  LIGHT_BRIGHTNESS;
 
 /**
  * A stage's colours from the theme: the sky is a card picture's background (`action.hover` on
@@ -62,10 +69,9 @@ export const stageColours = (palette: Palette): StageColours => {
  * @returns {string} the ground, as `rgb()`
  */
 export const groundOf = (bg: string): string => {
-  const light = getLuminance(bg) > LIGHT_LUMINANCE;
   return over(
     bg,
-    light ? `rgba(0, 0, 0, ${GROUND_SHADE})` : `rgba(255, 255, 255, ${GROUND_SHADE})`
+    isLight(bg) ? `rgba(0, 0, 0, ${GROUND_SHADE})` : `rgba(255, 255, 255, ${GROUND_SHADE})`
   );
 };
 
@@ -79,7 +85,7 @@ export const groundOf = (bg: string): string => {
 export const themeStage = (scene: Scene, { sky, ground }: Pick<StageColours, 'sky' | 'ground'>) => {
   scene.background?.set(sky);
   scene.fog?.color.set(sky);
-  const light = getLuminance(sky) > LIGHT_LUMINANCE;
+  const light = isLight(sky);
   scene.children.forEach(c => {
     // The live ground is lit, the shot's is not; a shot's shadow catcher keeps its colour.
     const m = c.isMesh ? c.material : undefined;

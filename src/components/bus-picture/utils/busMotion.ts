@@ -60,7 +60,7 @@ export interface MotionOpts {
   /** The flight finished a whole ∞. */
   onLoop?: () => void;
   now?: () => number;
-  /** `prefers-reduced-motion`: easing collapses to a cut. */
+  /** `prefers-reduced-motion`, read per frame: a flight stops where it is, even mid-way. */
   reduced?: () => boolean;
 }
 
@@ -82,12 +82,20 @@ export function mkMotion(stage: Pick<Stage, 'cam' | 'ctl' | 'ticks'>, opts: Moti
   let base: Sph | null = null; // the rest pose, while the ∞ is (partly) on
   let tween: { from: number; to: number; t0: number } | null = null;
 
+  // The camera stays where it is, the orbit controls' again.
+  const halt = () => {
+    base = null;
+    tween = null;
+    w = 0;
+  };
+
   const tick = () => {
     const t = now(),
       dt = Math.min(t - last, MAX_STEP_MS);
     last = t;
+    if (base && reduced()) halt();
     if (tween) {
-      const k = reduced() ? 1 : Math.min(1, (t - tween.t0) / BLEND_MS);
+      const k = Math.min(1, (t - tween.t0) / BLEND_MS);
       w = tween.from + (tween.to - tween.from) * ease(k);
       if (k >= 1) tween = null;
     }
@@ -118,9 +126,7 @@ export function mkMotion(stage: Pick<Stage, 'cam' | 'ctl' | 'ticks'>, opts: Moti
   // A grab on the canvas ends the flight on the spot: no ease, the camera stays.
   const grab = () => {
     if (!base) return;
-    base = null;
-    tween = null;
-    w = 0;
+    halt();
     opts.onTakeOver?.();
   };
 

@@ -12,6 +12,8 @@ describe('stageTheme', () => {
   it('shades the ground off the background, darker on light and lighter on dark', () => {
     expect(groundOf('rgb(255, 255, 255)')).toBe('rgb(240, 240, 240)');
     expect(groundOf('rgb(0, 0, 0)')).toBe('rgb(15, 15, 15)');
+    // A mid-grey is light to the package (plain sRGB brightness 0.6), as a card's shot has it.
+    expect(groundOf('rgb(153, 153, 153)')).toBe('rgb(144, 144, 144)');
   });
 
   it('draws the ground and road from primary, clearly off the sky', () => {
