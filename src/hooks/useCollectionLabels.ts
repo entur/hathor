@@ -38,6 +38,7 @@ export function useCollectionLabels(fieldKeyPrefix?: string): CollectionLabels {
         grid: t('collection.view.grid'),
         cards: t('collection.view.cards'),
       },
+      sortColumn: (column, next) => t(`collection.sortColumn.${next ?? 'none'}`, { column }),
       empty: t('collection.empty'),
       edit: t('edit'),
       pagination: t('collection.pagination'),

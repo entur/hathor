@@ -167,6 +167,17 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     expect(await gridRows()).toBe(ROW_COUNT);
   });
 
+  it("names each header's sort button by its column (#435 E6)", async () => {
+    await mount({ view: 'grid' });
+    await gridRows();
+    const header = screen.getAllByRole('columnheader').find(h => h.textContent === textCol.label);
+    if (!header) throw new Error(`no ${textCol.label} column header`);
+    // Hidden until hover (MUI), so not by role.
+    expect(header.querySelector('button')?.getAttribute('aria-label')).toBe(
+      `Sort ${textCol.label} ascending`
+    );
+  });
+
   it('applies one controlled query identically to both views', async () => {
     const query = { ...defaultCollectionQuery, search: needle };
     await mount({ view: 'cards', query });
