@@ -61,7 +61,7 @@ No state library — uses React Context API exclusively:
 - **EditingContext** — the mounted editor's dirty flag, read by the header's org picker (asks before an org switch drops edits)
 - **CustomizationContext** — the active theme out of `config.themeConfigs`, picked in Settings (≥ 2 listed), persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
-- **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
+- **NavRailContext** — the mobile side-navigation drawer's open state, the rail width and Linje's desktop breakpoint (#418)
 
 Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehicleTypes`).
 

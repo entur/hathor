@@ -82,9 +82,10 @@ test.describe('/vehicles', () => {
     // The grid's own focus outline is 1 px; the theme's ring is 2.
     await expect(focusedInGrid).toHaveCSS('outline-width', '2px');
 
-    const toggle = page.getByTestId('nav-rail-toggle');
-    await toggle.click();
-    await expect(toggle).toHaveCSS('outline-style', 'none');
+    const cards = page.getByRole('button', { name: 'Cards' });
+    await cards.click();
+    await expect(cards).toBeFocused();
+    await expect(cards).toHaveCSS('outline-style', 'none');
   });
 
   test('search narrows the rows by registration number', async ({ page }) => {

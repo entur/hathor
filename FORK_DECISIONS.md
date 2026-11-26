@@ -524,6 +524,8 @@ Omit any sub-area that's empty. The read/write semantics that motivated `project
 
 ## Replace right-anchored Menu Drawer with persistent left Nav Rail _(2026-05-29)_
 
+_Desktop superseded by "Side navigation is Linje's SideNavigation, always open on desktop" (2026-11-24)._
+
 ### Context
 
 Inanna's stock `Menu.tsx` was a right-anchored persistent Drawer that rendered its own primary-colored Toolbar (logo + chevron close) covering the AppBar's rightmost ~280px. Two visible flaws on desktop: the brand appeared twice (`HeaderBranding` at top-left, Drawer Toolbar at top-right), and the Drawer's own Toolbar visually clashed with the AppBar instead of sitting beneath it. On mobile the Drawer went full-width, masking the AppBar entirely.
@@ -976,3 +978,32 @@ Hathor began as a fork of Inanna, Entur's React data-registry starter. Since the
 - How to add an entity lives in `CLAUDE.md` *Collection + form pages*, not in the `inanna-fork` skill.
 - No "smaller diff against Inanna" argument in future ADRs.
 
+---
+
+## Side navigation is Linje's SideNavigation, always open on desktop _(2026-11-24)_
+
+Supersedes the desktop half of _"Replace right-anchored Menu Drawer with persistent left Nav Rail"_ (2026-05-29). The mobile drawer and the `--nav-rail-width` reflow stay.
+
+### Context
+
+The usertest (#260) found the collapsed rail icon-only. Measured against Linje (#418), the M3 rail differed in colours, sizes, the active marker and the collapse itself. Linje is the hard rule for hathor's UI.
+
+### Decision
+
+- From Linje's desktop breakpoint (`breakpoints.large`, 800 px) the side navigation is always open: no collapse, no rail hamburger, no tooltips. Below it, the same items sit in a temporary Drawer, opened by the header's menu button.
+- Linje's `SideNavigation` values: tint background, subdued hover, a divider under each item, a 4 px bar and a bold label on the active item, 16 px icons. Text, icons and bar use Linje's fixed Accent, not the theme's primary.
+- Width `RAIL_W` 21 rem, measured: the longest label (nb "Kontraktuelle kjøretøytyper", bold) needs 321 px in Nationale and Arial. In rem it grows with the font size; a longer label wraps.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| Linje's `CollapsibleSideNavigation` (80 px, edge button) | Collapse isn't needed on desktop; icon-only items were the usertest finding. |
+| Keep the M3 rail as a deviation | Linje is the hard rule. |
+| Colours from the theme palette | A theme with another primary would recolour Linje's navigation. |
+
+### Consequences
+
+- `NavRailContext` holds only the drawer's open state; the `hathor:navRailExpanded` localStorage key is no longer read or written.
+- From 800 px the content starts 21 rem in. Between 600 and 800 px, where the old rail stayed, the drawer is used.
+- Menu labels get re-measured when one grows (`linje-on-mui` `components.md`, SideNavigation).
