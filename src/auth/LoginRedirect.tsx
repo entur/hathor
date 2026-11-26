@@ -1,25 +1,26 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './index';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useConfig } from '../contexts/configContext.ts';
+import { useLocation } from 'react-router-dom';
+import LoadingPage from '../components/common/LoadingPage.tsx';
 
 const LoginRedirect = () => {
-  const { oidcConfig } = useConfig();
+  const { t } = useTranslation();
   const { isAuthenticated, isLoading, login } = useAuth();
-  const navigate = useNavigate();
-  const returnUrl = useLocation().pathname;
+  const { pathname, search, hash } = useLocation();
+  // Full location, not just the path — a deep link's query must survive login.
+  const returnUrl = pathname + search + hash;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      login(oidcConfig?.redirect_uri || window.location.origin + returnUrl);
-    } else if (isAuthenticated) {
-      navigate(returnUrl);
+      login(returnUrl);
     }
-  }, [isLoading, isAuthenticated, login, navigate, returnUrl, oidcConfig?.redirect_uri]);
+  }, [isLoading, isAuthenticated, login, returnUrl]);
 
-  if (isLoading) return <div>Checking authentication status...</div>;
+  // Same wording as ProtectedRoute's pre-auth gate — one key, both places.
+  if (isLoading) return <LoadingPage text={t('protectedRoute.loadingAuthStatus')} />;
 
-  return <div>Redirecting to login provider...</div>;
+  return <LoadingPage text={t('auth.redirecting')} />;
 };
 
 export default LoginRedirect;

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService.ts';
+import { fetchDeckPlanDetails, saveDeckPlanAsNetexToBackend } from './deckPlanDetailsService.ts';
 
 const IMPORT_URL = 'http://sobek/services/vehicles/netex';
 const OWNER = 'NMR:Organisation:1';
@@ -43,13 +43,15 @@ const GEOMETRY_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
  */
 describe('saveDeckPlanAsNetexToBackend', () => {
   let posted = '';
+  let postedTo: URL | undefined;
 
   beforeEach(() => {
     posted = '';
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (_url: string, init: { body: string }) => {
+      vi.fn(async (url: URL, init: { body: string }) => {
         posted = init.body;
+        postedTo = url;
         return { ok: true, statusText: 'OK', text: async () => 'imported' };
       })
     );
@@ -66,9 +68,45 @@ describe('saveDeckPlanAsNetexToBackend', () => {
     expect(posted).toContain('<Width>1.10</Width>');
   });
 
+  it('sends the vehicleTypeKind Sobek requires on every import (entur/sobek#234)', async () => {
+    await saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null);
+    expect(postedTo?.origin + postedTo!.pathname).toBe(IMPORT_URL);
+    expect(postedTo?.searchParams.get('vehicleTypeKind')).toBe('PHYSICAL');
+  });
+
   it('still grafts the owning organisation onto the frame', async () => {
     await saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null);
     expect(posted).toContain(OWNER);
     expect(posted).toContain('NMR:ResponsibilitySet:1');
+  });
+
+  it("throws Sobek's error body, not the often empty statusText", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: false,
+        statusText: '',
+        text: async () => 'vehicleTypeKind is required',
+      }))
+    );
+    await expect(
+      saveDeckPlanAsNetexToBackend(IMPORT_URL, OWNER, GEOMETRY_XML, null)
+    ).rejects.toThrow('vehicleTypeKind is required');
+  });
+});
+
+/** Sobek rejects a single-object export without `dataOwner` (entur/sobek#227). */
+describe('fetchDeckPlanDetails', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('sends the owning organisation as dataOwner', async () => {
+    const fetchMock = vi.fn(async (_url: URL) => ({ ok: true, text: async () => '<xml/>' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchDeckPlanDetails(IMPORT_URL, OWNER, 'NMR:DeckPlan:1', null);
+
+    const url = fetchMock.mock.calls[0][0];
+    expect(url.pathname).toBe('/services/vehicles/netex/deckplans/NMR%3ADeckPlan%3A1');
+    expect(url.searchParams.get('dataOwner')).toBe(OWNER);
   });
 });

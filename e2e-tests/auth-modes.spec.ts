@@ -1,5 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
-import { setConfig } from './live-auth-helpers';
+import { interceptVehicleTypesQuery } from './autosys-helpers';
+import { mockIdp, mockAppLookups, setConfig } from './live-auth-helpers';
+
+/** Deep link a signed-out user opens; fixture id from vehicle-types-mock.json. */
+const DEEP_LINK = `/vehicle-types/${encodeURIComponent('NMR:VehicleType:1')}`;
 
 /**
  * Navigate to /vehicle-types and return locators for the protected content area.
@@ -9,19 +13,24 @@ async function openProtectedRoute(page: Page) {
   await page.waitForLoadState('domcontentloaded');
   return {
     appContent: page.locator('.app-content'),
-    loadingAuth: page.getByText('Loading authentication status...'),
+    loadingAuth: page.getByText('Checking authentication status...'),
     redirectAuth: page.getByText('Redirecting to login provider...'),
   };
 }
 
 /**
- * Navigate to / and return locators for the header auth UI elements.
+ * Navigate to / and return locators for the header and dashboard auth UI elements.
+ *
+ * Both the header and the signed-out dashboard carry a Log in button, so each
+ * is selected by testid — `getByRole('button', { name: /log in/i })` matches
+ * both and trips strict mode.
  */
 async function openHomePage(page: Page) {
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
   return {
-    loginButton: page.getByRole('button', { name: /log in/i }),
+    loginButton: page.getByTestId('header-login-button'),
+    homeLoginButton: page.getByTestId('home-login-button'),
     authDisabledLabel: page.getByTestId('auth-disabled-label'),
   };
 }
@@ -30,14 +39,17 @@ async function openHomePage(page: Page) {
  * Auth-config UI — the app reflects whether oidcConfig is present, without ever logging in or selecting an org.
  *
  * Workflow (each test serves its own config.json via route interception — no shared disk state, parallel-safe):
- *   1. Auth-off profile: setConfig 'auth-off' (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip and no Log in button; nav rail toggle flips aria-expanded false↔true↔false.
- *   2. Auth-on profile: setConfig 'auth-on' (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows Log in button and hides the "Auth off" chip.
+ *   1. Auth-off profile: setConfig 'auth-off' (oidcConfig undefined) → goto /vehicle-types renders .app-content; goto / shows "Auth off" chip and no Log in button in header or dashboard; the side navigation marks Home as the current page, and below 800 px it moves into a drawer the header's menu button opens and a link closes.
+ *   2. Auth-on profile: setConfig 'auth-on' (oidcConfig defined) → goto /vehicle-types triggers client-side OIDC redirect (URL → partner.dev.entur.org) or shows loading/redirect auth UI; goto / shows the header and dashboard Log in buttons and hides the "Auth off" chip.
+ *   3. Post-login return (#31): mockIdp (discovery + authorize + token mocked) → signed-out goto /vehicle-types/<vtId> → app redirects to the IdP → bounced back to redirect_uri (/) with code+state → token exchange → app lands on /vehicle-types/<vtId> with its form page open and no Log in button.
  * Covers:
- *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip.
- *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button.
- *   - Nav rail collapsed/expanded toggle (localStorage hathor:navRailExpanded cleared first).
+ *   - oidcConfig undefined → protected content renders unguarded + header "Auth off" chip + no login affordance anywhere.
+ *   - oidcConfig defined → protected route demands auth (redirect/loading UI) + header Log in button + dashboard Log in button.
+ *   - Login round trip returns to the originating deep link, not to / (#31).
+ *   - Side navigation (#418): always open from 800 px (Linje's desktop breakpoint), a drawer below it.
  * Modes:
- *   - mode-agnostic: NO E2E_BACKEND branching, NO seedAuth, NO org selection — it deliberately does not authenticate or pick an org, asserting only the pre-login auth-config UI. Runs identically regardless of E2E_BACKEND.
+ *   - mode-agnostic: NO E2E_BACKEND branching, NO seedAuth — profiles 1-2 deliberately do not authenticate or pick an org, asserting only the pre-login auth-config UI. Runs identically regardless of E2E_BACKEND.
+ *   - workflow 3 is always mocked (mockIdp + mockAppLookups + interceptVehicleTypesQuery): it signs in through the app's own redirect/callback code against a fake IdP, so no live backend or captured JWT is involved.
  */
 
 // ── Auth-off scenario ────────────────────────────────────────────────────────
@@ -51,29 +63,30 @@ test.describe('Auth-off profile (oidcConfig undefined)', () => {
   });
 
   test('header shows auth-disabled (no login button)', async ({ page }) => {
-    const { loginButton, authDisabledLabel } = await openHomePage(page);
+    const { loginButton, homeLoginButton, authDisabledLabel } = await openHomePage(page);
     await expect(loginButton).not.toBeVisible();
+    await expect(homeLoginButton).not.toBeVisible();
     await expect(authDisabledLabel).toBeVisible();
     await expect(authDisabledLabel).toContainText('Auth off');
   });
 
-  test('nav rail toggles between collapsed and expanded', async ({ page }) => {
+  test('side navigation: open on desktop, a drawer from the header below 800 px (#418)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/');
-    await page.evaluate(() => window.localStorage.removeItem('hathor:navRailExpanded'));
-    await page.reload();
-    await page.waitForLoadState('domcontentloaded');
-
     const rail = page.getByTestId('nav-rail');
-    const toggle = page.getByTestId('nav-rail-toggle');
+    await expect(rail.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
 
-    await expect(rail).toBeVisible();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await page.setViewportSize({ width: 799, height: 720 });
+    await expect(rail).toBeHidden();
+    await page.getByRole('button', { name: 'Expand menu' }).click();
+    const drawerHome = page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', {
+      name: 'Home',
+    });
+    await expect(drawerHome).toHaveAttribute('aria-current', 'page');
+    await drawerHome.click();
+    await expect(drawerHome).toBeHidden();
   });
 });
 
@@ -94,9 +107,26 @@ test.describe('Auth-on profile (oidcConfig defined)', () => {
     }).toPass({ timeout: 10_000 });
   });
 
-  test('header now shows login button', async ({ page }) => {
-    const { loginButton, authDisabledLabel } = await openHomePage(page);
+  test('header and dashboard now show login buttons', async ({ page }) => {
+    const { loginButton, homeLoginButton, authDisabledLabel } = await openHomePage(page);
     await expect(authDisabledLabel).not.toBeVisible();
     await expect(loginButton).toBeVisible();
+    await expect(homeLoginButton).toBeVisible();
+  });
+
+  test('login returns to the originating deep link, not home (#31)', async ({ page }) => {
+    const tokenUrl = await mockIdp(page);
+    await mockAppLookups(page);
+    await interceptVehicleTypesQuery(page);
+
+    // The URL equals DEEP_LINK before the redirect too — the token exchange
+    // proves the IdP round trip (via redirect_uri `/`) actually happened.
+    const exchanged = page.waitForRequest(tokenUrl);
+    await page.goto(DEEP_LINK);
+    await exchanged;
+
+    await expect(page).toHaveURL(DEEP_LINK);
+    await expect(page.getByTestId('vehicle-type-details-title')).toBeVisible();
+    await expect(page.getByTestId('header-login-button')).not.toBeVisible();
   });
 });

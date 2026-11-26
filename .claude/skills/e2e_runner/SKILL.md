@@ -45,11 +45,17 @@ at the default worker count. The sequence, per entity:
 1. **Auth status** — confirm logged-in vs logged-out is what this run expects.
 2. **(live only) Login handoff** — open a headed browser, let the human log in, capture the
    JWT *from the browser session*, persist it for the serial run. See "Login handoff" below.
-3. **Org presence** — is an organisation selected? Lists do nothing until one is.
-4. **Select an org** — pick the first available organisation. This is a hard precondition:
-   every list hook early-returns on `!currentOrganisation?.id` (the cause of the
-   "Loading data…" stall). See `references/surfaces-and-testids.md`.
-5. **Navigate + row count** — go to the entity list, read `total-entries[data-count]`.
+3. **(live only) Align org selection upfront** — *before* the run, decide which organisation it
+   runs against and pin it with `E2E_ORG_ID`. Don't leave it to "first available": the app
+   auto-selects `organisations[0]`, and if that org owns no rows the whole suite fails on empty
+   lists. See "Align org selection upfront" below.
+4. **Org presence / select** — an organisation must be selected before any list assertion: every
+   list hook early-returns on `!currentOrganisation?.id` (the cause of the "Loading data…" stall).
+   Mocked: `seedAuth` serves one synthetic org that auto-selects. Live: the pinned org is restored
+   by the app; `selectFirstOrg` just waits for it (it only clicks the first option when no pin is
+   set). See `references/surfaces-and-testids.md`.
+5. **Navigate + row count** — go to the entity's collection page, read the count in
+   `collection-subtitle` (or count the `Edit` links on a page).
    Mocked: assert the exact fixture count. Live: assert a *relative* check (`>= n`, or
    "increased by 1 after create") — never a hardcoded number.
 6. **Create → edit-verify** — create a row, then open it for edit and confirm the values you
@@ -74,7 +80,8 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST \
 
 Interpret:
 - **Sobek down** → live mode is impossible; bring it up (`sobek`: `docker compose up` then
-  `mvn -pl sobek-app spring-boot:run`). For the **Autosys import** flow you also need **Shepet** on
+  `SOBEK_SECURITY_ROLE_ASSIGNMENT_EXTRACTOR=baba mvn -pl sobek-app spring-boot:run` — the env var is
+  a TEMP bugfix, snag 5). For the **Autosys import** flow you also need **Shepet** on
   :37998. Both are Java-21 apps with non-obvious snags (JDK-26 default breaks the build, Sobek↔Shepet
   `sobek-common` API drift, Shepet's half-configured OAuth2 `internal` client) — full recipe + fixes
   in `references/bringing-up-backends.md`.
@@ -152,14 +159,54 @@ session token. This is the **proven recipe** (verified end-to-end):
 
 Never paste the JWT into chat or commit it. Keep it in a gitignored file for the run only; short-lived.
 
+## Align org selection upfront (live mode, right after the handoff)
+
+The token decides *which* orgs exist; the data decides which one is worth running against. Settle
+that **once, before the run** — not per spec, and not by trusting the app's default.
+
+Why: with no pin the app selects `organisations[0]` of the authorized list. An account's org list
+changes over time (2026-10-02: Agder, AtB, Ålesund Turvogn Service — Agder first and **empty**,
+all rows under AtB), so "first available" silently lands on an org with `Total entries: 0` and
+~50 tests fail on empty lists while auth, org-select and rendering all look healthy.
+
+1. **List the authorized orgs with their row counts** (every list query requires
+   `filter.dataOwnerRef`; without it Sobek answers `INTERNAL_ERROR`):
+
+   ```bash
+   T=$(jq -r .v.access_token playwright/.auth/oidc-user.json)      # never echo $T
+   gql() { curl -s -X POST http://localhost:37999/services/vehicles/graphql \
+     -H 'Content-Type: application/json' -H "Authorization: Bearer $T" \
+     -d "$(jq -n --arg q "$1" '{query:$q}')"; }
+   gql '{ organisations(filter:{onlyUserAuthorized:true}) { content { netexId name { value } } } }' \
+     | jq -r '.data.organisations.content[] | [.netexId, .name.value] | @tsv' \
+     | while IFS=$'\t' read -r id name; do
+         for e in vehicleTypes vehicles deckPlans; do
+           printf '%s\t%s\t%s\t%s\n' "$id" "$name" "$e" \
+             "$(gql "{ $e(filter:{dataOwnerRef:\"$id\"}) { totalElements } }" | jq ".data.$e.totalElements")"
+         done
+       done
+   ```
+
+2. **Pick the org that owns data in all three lists** (ask the user if more than one qualifies or
+   none does — an empty DB needs seeding/import first, not a run).
+3. **Pin it for the run:** `E2E_ORG_ID=<netexId> npm run e2e:local-backend`. `seedAuth` seeds the
+   id into the app's persisted-org key (`hathor:currentOrganisationId`, only when unset, so a spec
+   that switches org keeps its choice); the app restores it instead of `organisations[0]`.
+4. **A bad pin fails fast.** An id that is stale, misspelled or not authorized for the token is not
+   restored — the app falls back to `organisations[0]` and re-persists *that* id. `selectFirstOrg`
+   asserts the persisted id still equals `E2E_ORG_ID` and fails with "is not one of the token's
+   authorized organisations". Re-run step 1 and re-pin; don't read further into the run.
+
+Unset `E2E_ORG_ID` = old behaviour (first authorized org) — fine only for a single-org account.
+
 ## Running
 
 ```bash
 # mocked (fast, deterministic) — the baseline the live run must match
 npm run e2e
 
-# live backend — sequential, mutates the DB; do the login handoff first
-npm run e2e:local-backend
+# live backend — sequential, mutates the DB; do the login handoff + org alignment first
+E2E_ORG_ID=<netexId> npm run e2e:local-backend
 ```
 
 Scope to one spec while iterating: append the spec name, e.g.
@@ -168,6 +215,8 @@ Scope to one spec while iterating: append the spec name, e.g.
 When a live run fails, first decide *which* layer broke before reading assertions:
 - **login page / 401** → handoff or token problem (above).
 - **"Loading data…" forever** → no org selected (step 4) — the list hook is still early-returning.
+- **lists render but `Total entries: 0` across the board** → wrong org selected, not a broken app:
+  the run landed on an org with no rows. Go back to "Align org selection upfront".
 - **wrong app entirely** → stale `:5000` dev server from another checkout (preflight).
 Only once the app is actually rendering the entity list do per-assertion failures mean anything.
 
@@ -186,8 +235,9 @@ A spec is **conformant** when:
   mock-only capture of the mutation input — captures can't work against a real backend.
 - Any `test.skip(process.env.E2E_BACKEND …)` gate is justified (genuinely mode-specific), not a
   workaround for an assertion that *could* be written mode-agnostically.
-- It relies only on stable testids (`editor-rail-edit/save/cancel/collapse`, `create-vehicle-fab`,
-  `vtype-*`, `organisation-select`, `total-entries`) — see `references/surfaces-and-testids.md`.
+- It relies only on stable testids and roles (`<entity>-details-title`, `editor-page-back`,
+  `create-*-fab`, `collection-subtitle`, the `Edit` links, footer `Save` / `Cancel`) — see
+  `references/surfaces-and-testids.md`.
 - Its **file-level JSDoc keynote** (the `Title → Workflow → Covers → Modes` block above the first
   `test(`) still matches what the spec actually does. This keynote is the spec's curated,
   machine-readable summary — the sibling **`spec-flowchart-viz`** skill reads exactly these blocks
@@ -196,14 +246,16 @@ A spec is **conformant** when:
   the next human reader and the diagram generator. Keep the `Modes:` section honest about
   mock / live / skip-live — that's the same mode-agnosticism this skill is verifying, just written down.
 
-**Create surface (now uniform):** all three entities create via the same sidebar flow — a
-`NewEntityFab` that navigates to `/<entity>?selected=new` (testids `create-vehicle-fab`,
-`create-vehicle-type-fab`, `create-deck-plan-fab`). The standalone `/vehicles/new` route was
-retired in PR #121. So "create → edit-verify → edit" maps cleanly to every entity through the
-`?selected=new` sidebar. Vehicle-types additionally support **bulk** create via the Autosys import
-dialog (`import-vehicle-multi-button`) — a second path, not the only one. Note backend *persistence*
-of a create can still differ per entity (e.g. a live deck-plan create may not round-trip); verify
-the read-back, don't assume parity from the shared surface.
+**Create surface (now uniform):** all three entities create on their form page — a `NewEntityFab`
+on the collection page navigates to `/<entity>/new` (testids `create-vehicle-fab`,
+`create-vehicle-type-fab`, `create-deck-plan-fab`); a Save replaces the URL with
+`/<entity>/<newId>`. Edit is the row's Edit link → `/<entity>/<id>`, open ready to edit (#252
+cut-over, 2026-11-11; the old `?selected=` sidebar is gone and its links redirect). Vehicle-types
+additionally support **bulk** create via the Autosys import dialog, launched from Home (`/`,
+`home-bulk-import-svv` — rendered only once an organisation is selected), which lands on
+`/vehicle-types?filter=<ids>`. Note backend *persistence* of a create can still differ per entity
+(e.g. a live deck-plan create may not round-trip); verify the read-back, don't assume parity from
+the shared surface.
 
 ## Reference files
 

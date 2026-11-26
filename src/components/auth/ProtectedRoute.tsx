@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth';
 import { useConfig } from '../../contexts/configContext.ts';
 import LoginRedirect from '../../auth/LoginRedirect';
+import LoadingPage from '../common/LoadingPage.tsx';
 import { useOrganisationsContext } from '../../contexts/useOrganisationsContext.ts';
 import { Navigate } from 'react-router-dom';
 
@@ -27,7 +28,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (isLoading) {
-    return <div>{t('protectedRoute.loadingAuthStatus', 'Loading authentication status...')}</div>;
+    return <LoadingPage text={t('protectedRoute.loadingAuthStatus')} />;
   }
 
   if (!isAuthenticated) {
@@ -35,7 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
   }
 
   if (organisationsLoading) {
-    return <div>{t('protectedRoute.loadingOrganisations', 'Loading organisations...')}</div>;
+    return <LoadingPage text={t('protectedRoute.loadingOrganisations')} />;
   }
 
   if (organisationsError) {
@@ -46,11 +47,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element }) => {
           data-testid="organisations-load-error"
           action={
             <Button color="inherit" size="small" onClick={() => void refetch()}>
-              {t('common.retry', 'Retry')}
+              {t('common.retry')}
             </Button>
           }
         >
-          {t('organisations.loadError', 'Could not load organisations.')} {organisationsError}
+          {t('organisations.loadError')} {organisationsError}
         </Alert>
       </Box>
     );

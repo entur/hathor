@@ -20,18 +20,27 @@ interface UseDeckPlanXmlResult {
  * Returns `{xml, loading, error, refetch}`. The component is responsible
  * for rendering a loading state until `loading === false && xml !== ''`.
  *
+ * `error` is authoritative, `xml` is only ever the last body that arrived: a
+ * failure leaves the previous one in place rather than blanking it, so an empty
+ * `xml` keeps its one meaning — nothing fetched yet — for every consumer,
+ * `useDeckRenderer` included. The cost is that after a failed refetch `xml`
+ * holds a *stale* document, and patching and POSTing that would resurrect the
+ * values the last save replaced. So a write path must gate on `error` being
+ * null, not merely on `xml` being non-empty — `DeckPlanDetails` does, at its
+ * save guard and again in `handleSave`.
+ *
  * @param id Full NeTEx id of the deck plan to fetch; `null`/empty pauses the fetch.
  */
 export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlResult {
   const { getAccessToken } = useAuth();
   const { applicationImportBaseUrl } = useConfig();
-  const { currentOrganisation } = useOrganisationsContext();
+  const dataOwnerRef = useOrganisationsContext().currentOrganisation?.id;
   const [xml, setXml] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState<number>(0);
 
-  const enabled = !!id && !!applicationImportBaseUrl && currentOrganisation?.id !== undefined;
+  const enabled = !!id && !!applicationImportBaseUrl && dataOwnerRef !== undefined;
 
   useEffect(() => {
     // Precondition unmet — clear loading so a spinner from a prior, now-
@@ -48,16 +57,15 @@ export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlRes
     (async () => {
       try {
         const token = await getAccessToken();
-        const data = await fetchDeckPlanDetails(applicationImportBaseUrl, id!, token);
+        const data = await fetchDeckPlanDetails(
+          applicationImportBaseUrl,
+          dataOwnerRef!,
+          id!,
+          token
+        );
         if (!cancelled) setXml(data);
       } catch (e) {
-        if (!cancelled) {
-          // Drop the previous body too. A post-save refetch that fails would
-          // otherwise leave the pre-save document cached, and the next save
-          // would patch and POST *that* — resurrecting the old values.
-          setXml('');
-          setError(e instanceof Error ? e.message : String(e));
-        }
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -65,7 +73,7 @@ export function useDeckPlanXml(id: string | null | undefined): UseDeckPlanXmlRes
     return () => {
       cancelled = true;
     };
-  }, [enabled, id, applicationImportBaseUrl, getAccessToken, currentOrganisation?.id, tick]);
+  }, [enabled, id, applicationImportBaseUrl, getAccessToken, dataOwnerRef, tick]);
 
   return { xml, loading, error, refetch: () => setTick(t => t + 1) };
 }

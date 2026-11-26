@@ -1,8 +1,8 @@
 import { request, gql } from 'graphql-request';
 import { authHeader, type AccessToken } from '../../../auth/index.ts';
-import type { DeactivateInput } from '../../../data/vehicle-types/api/fetchVehicleTypes.ts';
+import type { DeactivateInput } from './deactivateInput.ts';
 
-const deactivateDeckPlanMutation = gql`
+const deactivateDeckPlanDocument = gql`
   mutation DeactivateDeckPlan($input: DeactivateInput!) {
     deactivateDeckPlan(input: $input) {
       netexId
@@ -12,7 +12,7 @@ const deactivateDeckPlanMutation = gql`
 `;
 
 /** Mutation response: the persisted DeckPlan's NeTEx id + version (nullable per SDL). */
-export interface DeactivateDeckPlanResponse {
+export interface DeactivateDeckPlanMutation {
   deactivateDeckPlan: {
     netexId: string;
     version: number;
@@ -23,10 +23,10 @@ export const deactivateDeckPlanRequest = (
   applicationBaseUrl: string,
   token: AccessToken,
   deckPlanData: DeactivateInput
-): Promise<DeactivateDeckPlanResponse> =>
-  request<DeactivateDeckPlanResponse>(
+): Promise<DeactivateDeckPlanMutation> =>
+  request<DeactivateDeckPlanMutation>(
     applicationBaseUrl,
-    deactivateDeckPlanMutation,
+    deactivateDeckPlanDocument,
     { input: deckPlanData },
     authHeader(token)
   );

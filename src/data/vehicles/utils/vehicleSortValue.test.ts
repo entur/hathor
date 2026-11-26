@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { compareVehicles, getVehicleSortValue } from './vehicleSortValue.ts';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped.ts';
+import type { Vehicle } from '../types/vehicle.ts';
 
-const mk = (over: Partial<VehicleGQLShaped>): VehicleGQLShaped => ({
+const mk = (over: Partial<Vehicle>): Vehicle => ({
   id: 'NMR:Vehicle:x',
   registrationNumber: 'AA-00000',
   version: 1,
@@ -10,9 +10,9 @@ const mk = (over: Partial<VehicleGQLShaped>): VehicleGQLShaped => ({
 });
 
 const withTType = (
-  base: Partial<VehicleGQLShaped>,
-  tt: Partial<NonNullable<VehicleGQLShaped['transportType']>>
-): VehicleGQLShaped =>
+  base: Partial<Vehicle>,
+  tt: Partial<NonNullable<Vehicle['transportType']>>
+): Vehicle =>
   mk({
     ...base,
     transportType: {

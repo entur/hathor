@@ -1,22 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ClientError } from 'graphql-request';
-import { fetchVehiclesAndApply, translateVehiclesFetchError } from './fetchVehiclesAndApply';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
+import { fetchVehiclesAndApply } from './fetchVehiclesAndApply';
+import type { Vehicle } from '../types/vehicle';
 
 const noop = () => {};
 
-const mkClientErr = (status: number, message?: string) =>
-  new ClientError(
-    {
-      status,
-      headers: new Headers(),
-      body: '',
-      errors: message ? [{ message }] : [],
-    } as never,
-    { query: '' }
-  );
-
-const aRow = { id: 'NMR:Vehicle:1' } as unknown as VehicleGQLShaped;
+const aRow = { id: 'NMR:Vehicle:1' } as unknown as Vehicle;
 
 describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
   it('M3: returned promise resolves only after setData has been called', async () => {
@@ -26,8 +14,8 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
     // M4's save→refetch chain couldn't observe fresh rows. This module
     // restores the natural await semantics: the returned promise is the
     // entire orchestration chain.
-    let resolveFetch!: (rows: VehicleGQLShaped[]) => void;
-    const fetchPromise = new Promise<VehicleGQLShaped[]>(r => {
+    let resolveFetch!: (rows: Vehicle[]) => void;
+    const fetchPromise = new Promise<Vehicle[]>(r => {
       resolveFetch = r;
     });
     const setData = vi.fn();
@@ -69,63 +57,37 @@ describe('fetchVehiclesAndApply — awaitable orchestration (M3)', () => {
     expect(setError).toHaveBeenNthCalledWith(1, null);
   });
 
-  it('skips setData when fetch throws', async () => {
+  it('skips setData and rejects when fetch throws', async () => {
     const setData = vi.fn();
-    await fetchVehiclesAndApply({
-      applicationBaseUrl: 'http://x/',
-      getAccessToken: async () => 'tok',
-      setData,
-      setError: noop,
-      fetchVehiclesImpl: async () => {
-        throw new Error('boom');
-      },
-    });
+    await expect(
+      fetchVehiclesAndApply({
+        applicationBaseUrl: 'http://x/',
+        getAccessToken: async () => 'tok',
+        setData,
+        setError: noop,
+        fetchVehiclesImpl: async () => {
+          throw new Error('boom');
+        },
+      })
+    ).rejects.toThrow('boom');
     expect(setData).not.toHaveBeenCalled();
   });
 
-  it('routes errors through translateVehiclesFetchError', async () => {
+  // Only the routing is asserted here; the status/type → message mapping is
+  // pinned once in `graphqlErrMsg.test.ts`.
+  it('routes errors through graphqlErrMsg', async () => {
     const setError = vi.fn();
-    await fetchVehiclesAndApply({
-      applicationBaseUrl: 'http://x/',
-      getAccessToken: async () => 'tok',
-      setData: noop,
-      setError,
-      fetchVehiclesImpl: async () => {
-        throw mkClientErr(401);
-      },
-    });
-    expect(setError).toHaveBeenLastCalledWith(
-      'Not authenticated — please log in to access this data'
-    );
-  });
-});
-
-describe('translateVehiclesFetchError — error message mapping', () => {
-  it('401 → "Not authenticated"', () => {
-    expect(translateVehiclesFetchError(mkClientErr(401))).toContain('Not authenticated');
-  });
-
-  it('403 → "Access denied"', () => {
-    expect(translateVehiclesFetchError(mkClientErr(403))).toContain('Access denied');
-  });
-
-  it('other ClientError → server error with status or first GraphQL error message', () => {
-    expect(translateVehiclesFetchError(mkClientErr(500))).toContain('500');
-    expect(translateVehiclesFetchError(mkClientErr(500, 'oops'))).toBe('oops');
-  });
-
-  it('TypeError → "Unable to reach server"', () => {
-    expect(translateVehiclesFetchError(new TypeError('fetch failed'))).toContain(
-      'Unable to reach server'
-    );
-  });
-
-  it('generic Error → error.message', () => {
-    expect(translateVehiclesFetchError(new Error('boom'))).toBe('boom');
-  });
-
-  it('non-Error → "An unexpected error occurred"', () => {
-    expect(translateVehiclesFetchError({ weird: true })).toBe('An unexpected error occurred');
-    expect(translateVehiclesFetchError('string-thrown')).toBe('An unexpected error occurred');
+    await expect(
+      fetchVehiclesAndApply({
+        applicationBaseUrl: 'http://x/',
+        getAccessToken: async () => 'tok',
+        setData: noop,
+        setError,
+        fetchVehiclesImpl: async () => {
+          throw new Error('boom');
+        },
+      })
+    ).rejects.toThrow('boom');
+    expect(setError).toHaveBeenLastCalledWith('boom');
   });
 });

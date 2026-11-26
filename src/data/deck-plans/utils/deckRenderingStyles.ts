@@ -5,18 +5,28 @@
  * `dist/netex-deckplan-editor.css`, not into the element: `DeckRendering.vue`
  * is a plain SFC (not `.ce.vue`), so the Vue plugin extracts the styles, and
  * the web-component entry passes only Tailwind's `lib.css` to
- * `defineCustomElement`. That CSS file is also unreachable — the package's
- * `exports` map exposes only `.` and `./webcomponent`. Unstyled, seats render
- * solid black with black labels.
+ * `defineCustomElement`. That CSS file is also unreachable through the
+ * package's `exports` map, which exposes only `.` and `./webcomponent`.
+ * Unstyled, seats render solid black with black labels.
  *
  * So hathor owns the rendering's appearance, which also keeps it on the MUI
  * palette instead of the package's brand colours.
+ *
+ * Delivered as a `<style>` element rather than a constructable stylesheet.
+ * Both work wherever this can run — `adoptedStyleSheets` shipped alongside
+ * custom elements in every engine (Chrome 73, Firefox 101, Safari 16.4), so a
+ * runtime that can upgrade `<deck-rendering>` can always adopt. One path with
+ * no capability branch beats two paths plus a fallback for a case that cannot
+ * arise, and eight rules per deck is not worth a shared sheet object.
  *
  * Selectors mirror what the renderer actually emits — `seat__availability-*`,
  * not the `.seat-occupied` family in the package's own stylesheet, which
  * targets class names the model stopped producing. Availability variants are
  * omitted: this is a read-only view that never sets the `availability` prop.
  */
+
+/** Marks the injected element so a repeat apply does not stack copies. */
+const STYLE_MARK = 'data-deck-style';
 
 /** Colours the rendering needs, in the order the deck is painted. */
 export interface DeckPalette {
@@ -34,24 +44,15 @@ export interface DeckPalette {
   label: string;
 }
 
-const cache = new Map<string, CSSStyleSheet>();
-
 /**
- * Build (and memoise) the constructable stylesheet for a palette.
+ * The rendering's rules for a palette, painted in deck order.
  *
- * Constructable sheets are shareable, so every `<deck-rendering>` on the page
- * adopts one object per palette rather than parsing its own copy.
+ * Pure — no CSSOM, no DOM, nothing to memoise beyond the caller's own render.
  *
  * @param p Colours to paint with, typically derived from the MUI theme.
- * @returns A sheet ready to push onto a shadow root's `adoptedStyleSheets`.
+ * @returns CSS text for {@link applyDeckStyle}.
  */
-export function mkDeckSheet(p: DeckPalette): CSSStyleSheet {
-  const key = Object.values(p).join('|');
-  const hit = cache.get(key);
-  if (hit) return hit;
-
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(`
+export const mkDeckCss = (p: DeckPalette): string => `
     .vehicle-frame { background-color: ${p.frame}; border-radius: 4px; }
     .vehicle-deck  { fill: ${p.deck}; stroke: ${p.deckLine}; stroke-width: 2px; rx: 5px; }
     .seat .seat__base      { fill: ${p.seat}; stroke: ${p.seatLine}; stroke-width: 1px; rx: 5px; }
@@ -60,24 +61,18 @@ export function mkDeckSheet(p: DeckPalette): CSSStyleSheet {
     .door                  { fill: ${p.seatLine}; stroke: ${p.seatLine}; stroke-width: 1px; }
     /* Read-only view — the element still emits \`select\`, but nothing consumes it. */
     .seat, .door { cursor: default; }
-  `);
-
-  cache.set(key, sheet);
-  return sheet;
-}
+  `;
 
 /**
- * Adopt the palette's sheet onto a shadow root, once.
- *
- * Runs inside `DeckRendering`'s mount promise, so a throw here lands in that
- * component's `.catch()` and costs the whole rendering. Where constructable
- * stylesheets are unavailable it degrades to unstyled instead.
+ * Put the rendering's CSS on a shadow root, once.
  *
  * @param root Shadow root of a `<deck-rendering>` element.
- * @param sheet Sheet from {@link mkDeckSheet}.
+ * @param css CSS from {@link mkDeckCss}.
  */
-export function adoptDeckSheet(root: ShadowRoot, sheet: CSSStyleSheet): void {
-  if (!root.adoptedStyleSheets) return;
-  if (root.adoptedStyleSheets.includes(sheet)) return;
-  root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+export function applyDeckStyle(root: ShadowRoot, css: string): void {
+  if (root.querySelector(`style[${STYLE_MARK}]`)) return;
+  const el = root.ownerDocument.createElement('style');
+  el.setAttribute(STYLE_MARK, '');
+  el.textContent = css;
+  root.append(el);
 }

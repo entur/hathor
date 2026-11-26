@@ -1,7 +1,9 @@
 import type { VehicleType } from '../types/vehicleTypeTypes.ts';
-import type { OrderBy } from '../hooks/useVehicleTypes.ts';
 import { compareWithEmptyLast } from '../../../utils/compareWithEmptyLast.ts';
 import { transportModeSortValue, UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
+
+/** A sortable vehicle-type column. */
+export type OrderBy = 'name' | 'id' | 'dimensions' | 'deckPlanName' | 'transportMode';
 
 export const getVehicleTypeSortValue = (item: VehicleType, key: OrderBy): string | number => {
   switch (key) {

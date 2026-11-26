@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
@@ -10,20 +11,18 @@ import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import { useAuth } from '../../../auth';
 import { useConfig } from '../../../contexts/configContext';
-import { type AutosysAssembledResult, assembleAutosysResults } from '../assembleAutosysResults';
-import { fetchAllWithConcurrency } from '../fetchAllWithConcurrency';
-import type { TableMeta } from '../inputTextAnalyzer';
-import { type RegNumbersStatus, deduplicateEntries } from '../regNumbersTextTransformer';
-import type { ImportEntry } from '../types';
-import { fetchVehicleFromAutosys, importAsNetexToBackend } from '../vehicleImportServices';
-import { extractVehicleTypeIds, mergeResourceFrames } from '../xmlUtils';
-import MultiImportColumnMapper, { type ColumnMapping } from './MultiImportColumnMapper';
+import { type AutosysAssembledResult, assembleAutosysResults } from '../api/assembleAutosysResults';
+import type { TableMeta } from '../utils/inputTextAnalyzer';
+import { type RegNumbersStatus, deduplicateEntries } from '../utils/regNumbersTextTransformer';
+import type { ImportEntry } from '../types/importTypes';
+import { fetchVehiclesFromAutosys, importAsNetexToBackend } from '../api/vehicleImportServices';
+import { extractVehicleTypeIds } from '../api/parseImportResponse';
+import MultiImportColumnMapper from './MultiImportColumnMapper';
+import { mapColumns, type ColumnMapping } from '../utils/mapColumns';
 import MultiImportConfirm from './MultiImportConfirm';
 import MultiImportFileInput from './MultiImportFileInput';
 import MultiImportReviewInput from './MultiImportReviewInput';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext';
-
-const CONCURRENCY_LIMIT = 5;
 
 /** Steps when a CSV table is detected (includes column mapping) */
 const TABLE_STEPS = ['Upload file', 'Map columns', 'Review', 'Confirm'] as const;
@@ -37,7 +36,7 @@ interface MultiImportProps {
 
 export default function MultiImport({ onClose, onImportComplete }: MultiImportProps) {
   const { t } = useTranslation();
-  const { applicationGetAutosysUrl, applicationImportBaseUrl } = useConfig();
+  const { motorVehicleRegistryProxy, applicationImportBaseUrl } = useConfig();
   const { getAccessToken } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -47,7 +46,6 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
   const columnMappingRef = useRef<ColumnMapping | null>(null);
 
   const [fetching, setFetching] = useState(false);
-  const [fetchProgress, setFetchProgress] = useState({ completed: 0, total: 0 });
   const [assembledResult, setAssembledResult] = useState<AutosysAssembledResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -61,16 +59,12 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const translatedSteps = isTableFlow
     ? [
-        t('import.multi.stepUpload', 'Upload file'),
-        t('import.multi.stepMapColumns', 'Map columns'),
-        t('import.multi.stepReview', 'Review'),
-        t('import.multi.stepConfirm', 'Confirm'),
+        t('import.multi.stepUpload'),
+        t('import.multi.stepMapColumns'),
+        t('import.multi.stepReview'),
+        t('import.multi.stepConfirm'),
       ]
-    : [
-        t('import.multi.stepUpload', 'Upload file'),
-        t('import.multi.stepReview', 'Review'),
-        t('import.multi.stepConfirm', 'Confirm'),
-      ];
+    : [t('import.multi.stepUpload'), t('import.multi.stepReview'), t('import.multi.stepConfirm')];
 
   // --- Upload step callbacks ---
 
@@ -94,17 +88,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const applyColumnMapping = () => {
     if (!tableMeta || !columnMappingRef.current) return;
-    const { regNumberCol, operationalRefCol } = columnMappingRef.current;
-    const mapped: ImportEntry[] = tableMeta.rows
-      .map(row => ({
-        queryRegNumber: (row[regNumberCol] ?? '').trim(),
-        operationalRef: operationalRefCol
-          ? (row[operationalRefCol] ?? '').trim() || undefined
-          : undefined,
-      }))
-      .filter(e => e.queryRegNumber);
-
-    const result = deduplicateEntries(mapped);
+    const result = deduplicateEntries(mapColumns(tableMeta.rows, columnMappingRef.current));
     setEntries(result.entries);
     setStatus(result.status);
   };
@@ -125,27 +109,27 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
 
   const startFetch = async () => {
     if (currentOrganisation?.id === undefined) {
-      setSubmitError('Current organisation is not set');
+      setSubmitError(t('import.multi.noOrganisation'));
       return;
     }
-    const regNumbers = entries.map(e => e.queryRegNumber);
     setFetching(true);
-    setFetchProgress({ completed: 0, total: regNumbers.length });
-
-    const token = await getAccessToken();
-    const results = await fetchAllWithConcurrency(
-      regNumbers,
-      rn => fetchVehicleFromAutosys(applicationGetAutosysUrl || '', rn, token),
-      CONCURRENCY_LIMIT,
-      completed => setFetchProgress({ completed, total: regNumbers.length })
-    );
-
-    const assembled = assembleAutosysResults(currentOrganisation.id, results, frames =>
-      mergeResourceFrames(frames, entries)
-    );
-    setAssembledResult(assembled);
-    setFetching(false);
-    setActiveStep(prev => prev + 1); // advance to Confirm
+    setSubmitError(null);
+    try {
+      const token = await getAccessToken();
+      const xml = await fetchVehiclesFromAutosys(
+        motorVehicleRegistryProxy || '',
+        currentOrganisation.id,
+        entries,
+        token
+      );
+      setAssembledResult(assembleAutosysResults(xml, entries));
+      setActiveStep(prev => prev + 1); // advance to Confirm
+    } catch (e) {
+      // the whole request failed — stay on Review with one error
+      setSubmitError(e instanceof Error ? e.message : t('import.multi.importFailed'));
+    } finally {
+      setFetching(false);
+    }
   };
 
   const startSubmit = async () => {
@@ -153,7 +137,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const xml = assembledResult?.postPayload;
+      const xml = assembledResult.postPayload;
       const token = await getAccessToken();
       const responseXml = await importAsNetexToBackend(applicationImportBaseUrl || '', xml, token);
       if (onImportComplete) {
@@ -164,7 +148,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
       }
       onClose();
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Import failed');
+      setSubmitError(e instanceof Error ? e.message : t('import.multi.importFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -191,6 +175,7 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     if (current === 'Confirm') {
       setAssembledResult(null);
     }
+    setSubmitError(null);
     setActiveStep(s => s - 1);
   };
 
@@ -202,27 +187,26 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
     fetching ||
     submitting ||
     (currentStepName === 'Review' && entries.length === 0) ||
-    (currentStepName === 'Confirm' &&
-      (!assembledResult || assembledResult.summary.successCount === 0));
+    (currentStepName === 'Confirm' && !assembledResult?.postPayload);
 
   const nextLabel = (() => {
     switch (currentStepName) {
       case 'Upload file':
-        return t('import.multi.skip', 'Skip');
+        return t('import.multi.skip');
       case 'Map columns':
-        return t('import.multi.next', 'Next');
+        return t('import.multi.next');
       case 'Review':
-        return t('import.multi.next', 'Next');
+        return t('import.multi.next');
       case 'Confirm':
-        return t('import.multi.submit', 'Submit');
+        return t('import.multi.submit');
       default:
-        return t('import.multi.next', 'Next');
+        return t('import.multi.next');
     }
   })();
 
   return (
     <>
-      <DialogTitle>{t('import.multi.title', 'Bulk Import Vehicles')}</DialogTitle>
+      <DialogTitle>{t('import.multi.title')}</DialogTitle>
       <DialogContent dividers>
         <Stepper
           activeStep={activeStep}
@@ -246,14 +230,20 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
             <MultiImportColumnMapper tableMeta={tableMeta} onConfirm={handleColumnMappingChange} />
           )}
           {currentStepName === 'Review' && (
-            <MultiImportReviewInput
-              entries={entries}
-              status={status}
-              fetching={fetching}
-              fetchProgress={fetchProgress}
-              onDeleteEntry={handleDeleteEntry}
-              onAddEntry={handleAddEntry}
-            />
+            <>
+              <MultiImportReviewInput
+                entries={entries}
+                status={status}
+                fetching={fetching}
+                onDeleteEntry={handleDeleteEntry}
+                onAddEntry={handleAddEntry}
+              />
+              {submitError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {submitError}
+                </Alert>
+              )}
+            </>
           )}
           {currentStepName === 'Confirm' && assembledResult && (
             <MultiImportConfirm assembledResult={assembledResult} submitError={submitError} />
@@ -264,8 +254,12 @@ export default function MultiImport({ onClose, onImportComplete }: MultiImportPr
         <Button onClick={onClose} variant="outlined">
           {t('close')}
         </Button>
-        <Button disabled={activeStep === 0 || fetching || submitting} onClick={handleBack}>
-          {t('import.multi.back', 'Back')}
+        <Button
+          variant="outlined"
+          disabled={activeStep === 0 || fetching || submitting}
+          onClick={handleBack}
+        >
+          {t('import.multi.back')}
         </Button>
         <Button variant="contained" onClick={handleNext} disabled={isNextDisabled}>
           {nextLabel}

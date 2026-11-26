@@ -1,63 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:ns2="http://www.opengis.net/gml/3.2" xmlns:ns3="http://www.siri.org.uk/siri" version="1.12:NO-NeTEx-vehicle:1.4">
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" xmlns:ns2="http://www.opengis.net/gml/3.2" xmlns:ns3="http://www.siri.org.uk/siri" version="2.0:NO-NeTEx:2.0">
     <PublicationTimestamp>?</PublicationTimestamp>
     <ParticipantRef>NMR</ParticipantRef>
     <dataObjects>
-        <CompositeFrame modification="new" version="1" status="active" id="?">
-            <Description/>
+        <ResourceFrame version="1" id="NMR:ResourceFrame:?">
             <FrameDefaults>
+                <DefaultResponsibilitySetRef ref="NMR:ResponsibilitySet:?"/>
                 <DefaultLocale>
                     <TimeZone>Europe/Oslo</TimeZone>
                     <DefaultLanguage>eng</DefaultLanguage>
                 </DefaultLocale>
             </FrameDefaults>
-            <frames>
-                <ResourceFrame modification="new" version="1" status="active" id="?">
-                    <vehicleTypes>
-                        <VehicleType version="1" id="AUTOSYS:VehicleType:0">
-                            <keyList>
-<KeyValue>
-    <Key>MaximumEngineEffectKW</Key>
-    <Value>103.0</Value>
-</KeyValue>
-                            </keyList>
-                            <EuroClass>U</EuroClass>
-                            <PropulsionTypes>combustion</PropulsionTypes>
-                            <FuelTypes>petrol</FuelTypes>
-                            <MaximumVelocity>150</MaximumVelocity>
-                            <PassengerCapacity>
-<SeatingCapacity>6</SeatingCapacity>
-                            </PassengerCapacity>
-                            <DeckPlanRef ref="AUTOSYS:DeckPlan:0"/>
-                            <LowFloor>false</LowFloor>
-                            <Length>5537</Length>
-                            <Width>1970</Width>
-                            <Height>1790</Height>
-                            <Weight>1980</Weight>
-                        </VehicleType>
-                    </vehicleTypes>
-                    <vehicleModels>
-                        <VehicleModel version="1" id="AUTOSYS:VehicleModel:0">
-                            <Description>BUICK[4 dørs åpen]</Description>
-                        </VehicleModel>
-                    </vehicleModels>
-                    <vehicles>
-                        <Vehicle version="1" id="AUTOSYS:Vehicle:A-1">
-                            <ChassisNumber>13588900</ChassisNumber>
-                            <RegistrationNumber>A-1</RegistrationNumber>
-                            <RegistrationDate>2020-10-21</RegistrationDate>
-                            <TransportTypeRef ref="AUTOSYS:VehicleType:0"/>
-                            <VehicleModelRef ref="AUTOSYS:VehicleModel:0"/>
-                        </Vehicle>
-                    </vehicles>
-                    <deckPlans>
-                        <DeckPlan version="1" id="AUTOSYS:DeckPlan:0">
-                            <Name>Kabriolet (AE)</Name>
-                            <Description>BUICK 4 dørs åpen - Kabriolet (AE)</Description>
-                        </DeckPlan>
-                    </deckPlans>
-                </ResourceFrame>
-            </frames>
-        </CompositeFrame>
+            <responsibilitySets>
+                <ResponsibilitySet version="1" id="NMR:ResponsibilitySet:?">
+                    <roles>
+                        <ResponsibilityRoleAssignment version="1" id="NMR:ResponsibilityRoleAssignment:?">
+                            <DataRoleType>owns</DataRoleType>
+                            <ResponsibleOrganisationRef ref="MOCK:Authority:1"/>
+                        </ResponsibilityRoleAssignment>
+                    </roles>
+                </ResponsibilitySet>
+            </responsibilitySets>
+            <vehicleTypes>
+                <VehicleType version="1" id="AUTOSYS:VehicleType:0">
+                    <keyList>
+                        <KeyValue>
+                            <Key>MaximumEngineEffectKW</Key>
+                            <Value>103.0</Value>
+                        </KeyValue>
+                    </keyList>
+                    <PropulsionTypes>combustion</PropulsionTypes>
+                    <FuelTypes>petrol</FuelTypes>
+                    <MaximumVelocity>150</MaximumVelocity>
+                    <TransportMode>taxi</TransportMode>
+                    <PassengerCapacity version="1" id="AUTOSYS:PassengerCapacity:0">
+                        <SeatingCapacity>6</SeatingCapacity>
+                    </PassengerCapacity>
+                    <LowFloor>false</LowFloor>
+                    <Length>5537</Length>
+                    <Width>1970</Width>
+                    <Height>1790</Height>
+                    <Weight>1980</Weight>
+                </VehicleType>
+            </vehicleTypes>
+            <vehicleModels>
+                <VehicleModel version="1" id="AUTOSYS:VehicleModel:0">
+                    <Description>
+                        <Text>BUICK[4 dørs åpen]</Text>
+                    </Description>
+                </VehicleModel>
+            </vehicleModels>
+            <vehicles>
+                <Vehicle version="1" id="AUTOSYS:Vehicle:A-1">
+                    <ChassisNumber>13588900</ChassisNumber>
+                    <RegistrationNumber>A-1</RegistrationNumber>
+                    <RegistrationDate>2020-10-21</RegistrationDate>
+                    <TransportTypeRef ref="AUTOSYS:VehicleType:0"/>
+                    <VehicleModelRef ref="AUTOSYS:VehicleModel:0"/>
+                </Vehicle>
+            </vehicles>
+        </ResourceFrame>
     </dataObjects>
 </PublicationDelivery>

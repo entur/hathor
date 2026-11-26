@@ -20,9 +20,6 @@ public/deckplan-editor
 # diffs it against entur.github.io/sobek/schema.graphqls), so never reformat it.
 src/graphql/sobek.schema.graphqls
 
-# Ignore generated architecture metafile
-docs/architecture-data.js
-
 # Ignore other files
 .claude
 .wolf

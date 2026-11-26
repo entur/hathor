@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { expect, type BrowserContext, type Page } from '@playwright/test';
+import { expect, type BrowserContext, type Page, type Route } from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +15,9 @@ const CONFIG_FIXTURE = {
   'auth-off': 'config-no-auth.json',
 } as const;
 export type ConfigProfile = keyof typeof CONFIG_FIXTURE;
+
+/** Top-level `config.json` keys a spec overrides on top of a profile's fixture. */
+export type ConfigOverrides = Record<string, unknown>;
 
 /** Fixture bodies read once at module init — workers reuse them. */
 const CONFIG_BODY: Record<ConfigProfile, string> = {
@@ -32,17 +35,30 @@ const CONFIG_BODY: Record<ConfigProfile, string> = {
  *
  * @param router Playwright `Page` or `BrowserContext`.
  * @param profile 'auth-on' (OIDC) or 'auth-off' (no oidcConfig).
+ * @param overrides Top-level keys merged over the profile's fixture, e.g.
+ *   `{ sandboxFeatures: { DeckPlans: false } }` to turn a feature flag off.
  */
-export const setConfig = (router: Page | BrowserContext, profile: ConfigProfile) =>
-  router.route('**/config.json', route =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: CONFIG_BODY[profile] })
+export const setConfig = (
+  router: Page | BrowserContext,
+  profile: ConfigProfile,
+  overrides?: ConfigOverrides
+) => {
+  const body = JSON.stringify({ ...JSON.parse(CONFIG_BODY[profile]), ...overrides });
+  return router.route('**/config.json', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body })
   );
+};
 
 /** Timeout (ms) for the org picker to render + auto-select after login. */
 const ORG_READY_TIMEOUT = 20000;
 
 /** True when the suite runs against a live Sobek (`E2E_BACKEND=true`). */
 export const IS_LIVE = process.env.E2E_BACKEND === 'true';
+
+/** localStorage key the app persists the selected org under (`OrganisationsContext.tsx`). */
+const ORG_STORAGE_KEY = 'hathor:currentOrganisationId';
+/** Live only: NeTEx id of the org to run against (`E2E_ORG_ID`); unset → the app's first authorized org. */
+const LIVE_ORG_ID = process.env.E2E_ORG_ID;
 
 /** A captured oidc-client-ts user entry: storage `k`ey + stored `v`alue. */
 interface OidcUser {
@@ -93,6 +109,14 @@ const MOCK_ORGANISATIONS = {
   },
 };
 
+/** Sobek's seeded code lists by `valueType` (V13__AddCodeValues.sql): value `Euro1`, label `Euro 1`. */
+const MOCK_CODE_LISTS: Record<string, { label: string; value: string }[]> = {
+  EMISSION_STANDARD: [1, 2, 3, 4, 5, 6, 7].map(n => ({ label: `Euro ${n}`, value: `Euro${n}` })),
+};
+
+const fulfillJson = (route: Route, body: unknown) =>
+  route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+
 /**
  * Load the JWT captured by the login handoff (`playwright/.auth/capture.mjs`).
  * Throws with a runnable hint if absent OR expired — fail fast with the right
@@ -123,33 +147,125 @@ export const loadOidcUser = (): OidcUser => {
  * `organisations` query with one synthetic org so the app auto-selects it,
  * letting the SAME spec body run in both modes.
  *
+ * Under live, `E2E_ORG_ID=<netexId>` pre-selects that organisation (seeded into
+ * the app's persisted-org localStorage key) instead of the first authorized one.
+ *
  * Also serves the oidc-enabled `config.json` (`setConfig 'auth-on'`) in BOTH
  * modes — the app needs it to authenticate and render the org picker — so
- * callers no longer touch `public/config.json` on disk.
+ * callers no longer touch `public/config.json` on disk. `configOverrides` are
+ * merged over that config (see {@link setConfig}).
  */
-export const seedAuth = async (context: BrowserContext) => {
-  await setConfig(context, 'auth-on');
+export const seedAuth = async (context: BrowserContext, configOverrides?: ConfigOverrides) => {
+  await setConfig(context, 'auth-on', configOverrides);
   const { k, v } = IS_LIVE ? loadOidcUser() : MOCK_OIDC;
   await context.addInitScript(([key, val]) => window.sessionStorage.setItem(key, val), [
     k,
     JSON.stringify(v),
   ] as const);
-  if (IS_LIVE) return;
-  // Mock: claim only the `organisations` query at the context level; each spec's
-  // page-level list interceptors run first and handle their own queries (they
-  // must `fallback()` non-matches so the org query reaches this route).
-  await context.route('**/graphql', async route => {
-    const query: string = route.request().postDataJSON()?.query ?? '';
+  if (IS_LIVE) {
+    // Pin the org when the account's first authorized one holds no data — the
+    // app restores this key before falling back to `organisations[0]`. Only
+    // when unset, so a spec that switches org keeps its choice across reloads.
+    if (LIVE_ORG_ID) {
+      await context.addInitScript(
+        ([key, id]) => {
+          if (!window.localStorage.getItem(key)) window.localStorage.setItem(key, id);
+        },
+        [ORG_STORAGE_KEY, LIVE_ORG_ID] as const
+      );
+    }
+    return;
+  }
+  await mockAppLookups(context);
+};
+
+/**
+ * Mock: claim only the app-wide lookups — the `organisations` query and the
+ * `codeValues` code lists; each spec's page-level list interceptors run first
+ * and handle their own queries (they must `fallback()` non-matches so these
+ * reach this route).
+ *
+ * @param router Playwright `Page` or `BrowserContext`.
+ */
+export const mockAppLookups = (router: Page | BrowserContext) =>
+  router.route('**/graphql', async route => {
+    const post = route.request().postDataJSON();
+    const query: string = post?.query ?? '';
     if (query.includes('organisations')) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(MOCK_ORGANISATIONS),
-      });
+      await fulfillJson(route, MOCK_ORGANISATIONS);
+    } else if (query.includes('codeValues(')) {
+      const content = MOCK_CODE_LISTS[post?.variables?.filter?.valueType] ?? [];
+      await fulfillJson(route, { data: { codeValues: { content } } });
     } else {
       await route.fallback();
     }
   });
+
+/** Mocked IdP endpoints, advertised via the discovery document `mockIdp` serves. */
+const IDP = {
+  discovery: `${_authCfg.authority}/.well-known/openid-configuration`,
+  authorize: `${_authCfg.authority}/authorize`,
+  token: `${_authCfg.authority}/oauth/token`,
+} as const;
+/** The app (localhost:5000) fetches discovery + token cross-origin. */
+const IDP_CORS = { 'access-control-allow-origin': '*' };
+
+/** Unsigned JWT — oidc-client-ts only decodes the payload (needs `sub`), never verifies it. */
+const jwt = (payload: object): string =>
+  [{ alg: 'none' }, payload]
+    .map(x => Buffer.from(JSON.stringify(x)).toString('base64url'))
+    .join('.') + '.';
+
+/**
+ * Mock the OIDC authority so a REAL signin round trip runs offline: discovery →
+ * authorize (bounces straight back to `redirect_uri` with a code + the request's
+ * `state`) → token exchange. Unlike `seedAuth` (boots already-authenticated),
+ * this exercises the app's own redirect + signin-callback code.
+ *
+ * @param page Playwright `Page`; call before the first `goto`.
+ * @returns the token endpoint URL — await a request to it to know the round trip ran.
+ */
+export const mockIdp = async (page: Page): Promise<string> => {
+  await page.route(IDP.discovery, route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: IDP_CORS,
+      body: JSON.stringify({
+        issuer: _authCfg.authority,
+        authorization_endpoint: IDP.authorize,
+        token_endpoint: IDP.token,
+      }),
+    })
+  );
+  await page.route(`${IDP.authorize}?**`, route => {
+    const q = new URL(route.request().url()).searchParams;
+    const back = new URL(q.get('redirect_uri')!);
+    back.searchParams.set('code', 'mock-code');
+    back.searchParams.set('state', q.get('state')!);
+    // A scripted bounce, not a 302 — fulfilling a navigation with a redirect
+    // status is not portable across browsers.
+    return route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<script>location.replace(${JSON.stringify(back.href)})</script>`,
+    });
+  });
+  await page.route(IDP.token, route =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: IDP_CORS,
+      body: JSON.stringify({
+        access_token: MOCK_OIDC.v.access_token,
+        token_type: 'Bearer',
+        expires_in: 3600,
+        scope: 'openid',
+        id_token: jwt(MOCK_OIDC.v.profile as object),
+      }),
+    })
+  );
+  return IDP.token;
 };
 
 /**
@@ -160,6 +276,8 @@ export const seedAuth = async (context: BrowserContext) => {
  * for that, and explicitly picks the first option if auto-select hasn't filled
  * the input. No-op in mock — the single synthetic org (seedAuth) auto-selects, so
  * no explicit pick is needed; this readiness wait is only for the live picker.
+ * With `E2E_ORG_ID` set it only waits for the pinned org to be restored, and
+ * fails if the app selected a different one (pin not among the authorized orgs).
  */
 export const selectFirstOrg = async (page: Page) => {
   if (!IS_LIVE) return;
@@ -168,6 +286,20 @@ export const selectFirstOrg = async (page: Page) => {
   // works. The org picker is the single Autocomplete combobox in the banner.
   const select = page.getByRole('banner').getByRole('combobox').first();
   await expect(select).toBeVisible({ timeout: ORG_READY_TIMEOUT });
+  if (LIVE_ORG_ID) {
+    // Pinned org (seedAuth): the app restores it once the org query resolves —
+    // wait for that; clicking the first option here would override the pin.
+    await expect(select).not.toHaveValue('', { timeout: ORG_READY_TIMEOUT });
+    // A stale / misspelled / unauthorized pin is not restored: the app falls back
+    // to `organisations[0]` and re-persists THAT id — fail here, not 50 tests later.
+    await expect
+      .poll(() => page.evaluate(key => window.localStorage.getItem(key), ORG_STORAGE_KEY), {
+        message: `E2E_ORG_ID=${LIVE_ORG_ID} is not one of the token's authorized organisations`,
+        timeout: ORG_READY_TIMEOUT,
+      })
+      .toBe(LIVE_ORG_ID);
+    return;
+  }
   await expect(async () => {
     if ((await select.inputValue()).trim()) return; // auto-selected already
     await select.click();
@@ -176,70 +308,6 @@ export const selectFirstOrg = async (page: Page) => {
   }).toPass({ timeout: ORG_READY_TIMEOUT });
 };
 
-/**
- * Read the current `total-entries[data-count]` as a number. Use for relative
- * row-count assertions under live data (`>= n`, or delta-after-create) instead
- * of the mock-mode exact counts.
- */
-export const rowCount = async (page: Page): Promise<number> => {
-  const raw = await page.getByTestId('total-entries').getAttribute('data-count');
-  return Number(raw ?? '0');
-};
-
-/**
- * Derive the first `n` real NeTEx ids from the `netex-id` chips rendered in the
- * table — the live substitute for fixture ids, so filter/deep-link specs exercise
- * the real backend instead of hardcoded fixture ids that don't exist in the DB.
- */
-export const readNetexIds = async (page: Page, n: number): Promise<string[]> => {
-  const rows = page.locator('table tbody tr');
-  const total = Math.min(n, await rows.count());
-  const out: string[] = [];
-  for (let i = 0; i < total; i++) {
-    // Id-first lists (e.g. vehicle-types) render the NeTEx id chip in the first
-    // cell as plain text — no `netex-id` testid — so read the cell directly.
-    const m = (await rows.nth(i).locator('td').first().innerText())
-      .replace(/\s+/g, '')
-      .match(/[A-Za-z]+:[A-Za-z]+:[\w.-]+/);
-    if (m) out.push(m[0]);
-  }
-  return out;
-};
-
-/**
- * Derive a real, org-owned VehicleType numeric id from the live `/vehicle-types`
- * list — the valid `transportType` ref a live vehicle-create needs (the form
- * takes a bare int and prefixes `NMR:VehicleType:`). Fails loudly if the org has
- * no numeric-id vehicle types to build a ref from.
- */
-export const liveVehicleTypeInt = async (page: Page): Promise<string> => {
-  await page.goto('/vehicle-types');
-  await selectFirstOrg(page);
-  await page.waitForLoadState('networkidle');
-  const [id] = await readNetexIds(page, 1);
-  const m = id?.match(/:(\d+)$/);
-  expect(m, 'expected a numeric live VehicleType id to build a transportType ref').toBeTruthy();
-  return m![1];
-};
-
-/**
- * Click the first data row, assert its `?selected=` sidebar opened (title testid
- * visible), and return the decoded netexId. Assumes the page is already on the
- * list with an org selected. Shared by the vehicles + vehicle-types specs.
- */
-export const openFirstRow = async (page: Page, titleTestId: string): Promise<string> => {
-  await page.locator('table tbody tr').first().click();
-  await expect(page).toHaveURL(/selected=/);
-  await expect(page.getByTestId(titleTestId)).toBeVisible();
-  return decodeURIComponent(new URL(page.url()).searchParams.get('selected') ?? '');
-};
-
-/**
- * Live create-form overrides: a per-run-unique registration number and a real
- * org-owned VehicleType int. Centralises the reg scheme so a future change (e.g.
- * a collision-avoiding prefix) lands in one place across the create specs.
- */
-export const liveCreateOverrides = async (page: Page): Promise<{ reg: string; vtInt: string }> => ({
-  reg: `E2E-${Date.now()}`,
-  vtInt: await liveVehicleTypeInt(page),
-});
+/** The list's first Edit link (#252 collection pages), live or mocked; an unnamed record's
+ *  reads just "Edit". */
+export const firstEdit = (page: Page) => page.getByRole('link', { name: /^Edit\b/ }).first();

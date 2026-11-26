@@ -14,7 +14,7 @@ export const fixturesDir = path.join(__dirname, 'fixtures');
  * @param name Fixture file name (e.g. 'vehicle-types-mock.json').
  * @returns Parsed JSON value.
  */
-const loadFixture = (name: string): unknown =>
+export const loadFixture = (name: string): unknown =>
   JSON.parse(fs.readFileSync(path.join(fixturesDir, name), 'utf-8'));
 
 /**
@@ -25,7 +25,7 @@ const loadFixture = (name: string): unknown =>
  * @param queryName Substring to match against `postData.query` (e.g. 'vehicleTypes').
  * @param body JSON payload to return; will be `JSON.stringify`ed.
  */
-const interceptGraphQLQuery = async (
+export const interceptGraphQLQuery = async (
   page: import('@playwright/test').Page,
   queryName: string,
   body: unknown
@@ -63,6 +63,51 @@ export const interceptVehicleTypesQuery = (page: import('@playwright/test').Page
 export const interceptDeckPlansQuery = (page: import('@playwright/test').Page) =>
   interceptGraphQLQuery(page, 'DeckPlans', MOCK_DECK_PLANS);
 
+/**
+ * Read an XML fixture from `e2e-tests/fixtures/`.
+ *
+ * @param name Fixture file name (e.g. 'deck-plan-xml-mock.xml').
+ * @returns Raw file contents.
+ */
+export const loadXmlFixture = (name: string): string =>
+  fs.readFileSync(path.join(fixturesDir, name), 'utf-8');
+
+/**
+ * Intercept the NeTEx import POST that every deck-plan save routes through,
+ * capturing the posted document.
+ *
+ * Sibling of {@link interceptVehicleTypesWithSave}: deck plans save by POSTing
+ * a patched document rather than by GraphQL mutation, so the capture is the
+ * raw body, not a mutation input. `saved()` is exposed because the two
+ * post-save failure paths — a 500 on the list refetch, a 500 on the body
+ * refetch — are both keyed on "has the write landed yet", and each is
+ * registered on a route this helper does not own.
+ *
+ * @param page Playwright Page instance.
+ * @param body XML to answer the POST with (normally the same fixture the body
+ *   route serves).
+ * @returns `posted()` — the most recent POST body, `''` before the first save;
+ *   `postedTo()` — that POST's URL; `saved()` — whether a POST has been answered.
+ */
+export async function interceptDeckPlanSave(
+  page: import('@playwright/test').Page,
+  body: string
+): Promise<{ posted: () => string; postedTo: () => URL | undefined; saved: () => boolean }> {
+  let posted = '';
+  let postedTo: URL | undefined;
+  let saved = false;
+
+  // With or without a query: the import takes `?vehicleTypeKind=` (entur/sobek#234).
+  await page.route(/\/services\/vehicles\/netex(\?|$)/, async route => {
+    posted = route.request().postData() ?? '';
+    postedTo = new URL(route.request().url());
+    saved = true;
+    await route.fulfill({ status: 200, contentType: 'application/xml', body });
+  });
+
+  return { posted: () => posted, postedTo: () => postedTo, saved: () => saved };
+}
+
 interface VehicleTypeInputCapture {
   netexId?: string;
   name?: { value?: string } | null;
@@ -72,8 +117,8 @@ interface VehicleTypeInputCapture {
 interface SaveInterceptOpts {
   /** When set, the mutation responds with this GraphQL error instead of succeeding. */
   saveError?: string;
-  /** When true, the vehicleTypes query AFTER a save fails (500) — exercises the
-   * post-save list-refresh failure path. */
+  /** When true, the vehicleTypes LIST query (no `filter.netexIds`) AFTER a save
+   * or deactivate fails (500) — exercises the post-save list-refresh failure path. */
   failRefetch?: boolean;
 }
 
@@ -84,6 +129,7 @@ interface SaveInterceptOpts {
  *  - `createOrUpdateVehicleType` → capture `variables.input`, merge it into the
  *    matching row (bumping `version`), and return the row's netexId — or, when
  *    `saveError` is set, return a GraphQL error (drives `SaveErrorSnackbar`).
+ *  - `deactivateVehicleType` → succeed (counts as a write for `failRefetch`).
  *  - `vehicleTypes` → return the (possibly mutated) state, so the post-save
  *    list refetch re-resolves the row with the persisted edit + bumped version.
  *
@@ -131,8 +177,20 @@ export async function interceptVehicleTypesWithSave(
       return;
     }
 
+    if (query.includes('deactivateVehicleType')) {
+      const id: string = post.variables?.input?.netexId ?? 'NMR:VehicleType:1';
+      saved = true;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: { deactivateVehicleType: { netexId: id, version: 2 } } }),
+      });
+      return;
+    }
+
     if (query.includes('vehicleTypes')) {
-      if (opts.failRefetch && saved) {
+      // Only the list refresh fails; the editor's by-id re-read still answers.
+      if (opts.failRefetch && saved && !post.variables?.filter?.netexIds) {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -162,15 +220,32 @@ export const REG_NR = process.env.E2E_AUTOSYS_REG_NR || 'A-1';
 /** Fixture file for the Autosys response, keyed by registration number. */
 const autosysFixturePath = path.join(fixturesDir, `autosys-response-${REG_NR}.xml`);
 
+/** Shepet's `fetchError-message-<i>` code for a plate Autosys has no data for (entur/shepet#39). */
+const NOT_FOUND = 'NOT_FOUND';
+
 /**
- * Intercept the Autosys GET request and always serve from the static fixture.
+ * Intercept shepet's bulk `POST …/autosys/vehicles` and serve the static {@link REG_NR}
+ * fixture. Like shepet, every other requested plate comes back as an indexed
+ * `fetchError-*` KeyValue pair on the ResourceFrame, still with a 200.
  * The fixture uses "?" for transient values (frame ids, timestamps) that
  * change on every backend response — tests must not assert on those fields.
  */
 export async function interceptAutosysQuery(page: import('@playwright/test').Page) {
-  await page.route('**/autosys?registrationNumber=**', async route => {
+  await page.route('**/autosys/vehicles?**', async route => {
     if (fs.existsSync(autosysFixturePath)) {
-      const body = fs.readFileSync(autosysFixturePath, 'utf-8');
+      const requested: { registrationNumber: string }[] = route.request().postDataJSON() ?? [];
+      const keyValues = requested
+        .map(r => r.registrationNumber)
+        .filter(reg => reg !== REG_NR)
+        .map(
+          (reg, i) =>
+            `<KeyValue><Key>fetchError-registrationNumber-${i}</Key><Value>${reg}</Value></KeyValue>` +
+            `<KeyValue><Key>fetchError-message-${i}</Key><Value>${NOT_FOUND}</Value></KeyValue>`
+        )
+        .join('');
+      const body = fs
+        .readFileSync(autosysFixturePath, 'utf-8')
+        .replace(/(<ResourceFrame[^>]*>)/, keyValues ? `$1<keyList>${keyValues}</keyList>` : '$1');
       await route.fulfill({
         status: 200,
         contentType: 'application/xml',

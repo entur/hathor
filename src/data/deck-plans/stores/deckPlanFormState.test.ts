@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { hydrate, edit, isDirty, initialFormState } from './deckPlanFormState.ts';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 
 /** Sobek re-pads `<Text>` on serialize, so GQL rows arrive whitespace-wrapped. */
 const PADDED: DeckPlan = {

@@ -1,43 +1,48 @@
 name: Tests
 on:
+  workflow_dispatch:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 jobs:
-  # Schema-drift guard — cheap (curl + diff against the vendored snapshot, no
-  # npm ci). Gates the e2e matrix: a drift means the mock fixtures may be stale,
-  # so don't spend the browser matrix on a suspect contract. Adds only seconds.
+  # Schema guard: checks that every query and mutation in src/graphql still
+  # validates against Sobek's live schema (scripts/validate-graphql-documents.mjs).
+  # Fails only on real breakage (a selected field removed or renamed), not on
+  # unrelated Sobek changes. Full-schema drift is reported weekly by
+  # schema-drift.yml instead, so a Sobek release never reddens every open PR.
+  # Sibling of e2e (no `needs`): a failure here must not skip the browser tests.
   schema:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Check Sobek schema in sync
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version: lts/*
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Validate GraphQL documents against the live Sobek schema
       run: |
         set -uo pipefail
         url=https://entur.github.io/sobek/schema.graphqls
-        live=/tmp/sobek.live.graphqls
+        live=${RUNNER_TEMP}/sobek.live.graphqls
         # Retry transient network/5xx errors, cap total time. A genuine fetch
-        # failure (or empty body) is an outage — warn and skip, don't fail as drift.
+        # failure (or empty body) is an outage: warn and skip, don't fail.
         if ! curl -fsS --retry 3 --retry-delay 2 --retry-all-errors --max-time 30 "$url" -o "$live" \
            || [ ! -s "$live" ]; then
-          echo "::warning::Could not fetch upstream Sobek schema (outage?) — skipping drift check."
+          echo "::warning::Could not fetch upstream Sobek schema (outage?), skipping schema check."
           exit 0
         fi
-        # Fetch succeeded, so any diff is real drift.
-        if ! diff -u src/graphql/sobek.schema.graphqls "$live"; then
-          echo "::error::Sobek schema drift detected — re-sync: curl -s $url -o src/graphql/sobek.schema.graphqls then update e2e fixtures (npm test src/data/netex/e2eFixturesContract.test.ts)"
-          exit 1
-        fi
-        echo "Sobek schema in sync."
+        node scripts/validate-graphql-documents.mjs "$live"
 
   # Unit tests + coverage. Sibling of e2e (no `needs`) — a unit failure and an
   # e2e failure never block each other; both report independently.
   unit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: lts/*
     - name: Install dependencies
@@ -50,7 +55,6 @@ jobs:
   # tests serve their own config.json via route interception, so they are
   # parallel-safe. ~29 min serial → ~one browser's wall-time.
   e2e:
-    needs: schema
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
@@ -59,11 +63,13 @@ jobs:
       matrix:
         project: [chromium, firefox]
     # Browsers + OS deps come preinstalled in the official Playwright image,
-    # pinned to the @playwright/test version the e2e runner resolves to
-    # (1.58.2). This sidesteps the `npx playwright install` browser-download
-    # that hung and cancelled every run at the 60-min timeout.
+    # pinned to the exact `@playwright/test` / `playwright` version pinned in
+    # package.json (1.60.0 — both are exact, not carets, so the runner and the
+    # image can never drift apart again). This sidesteps the `npx playwright
+    # install` browser-download that hung and cancelled every run at the
+    # 60-min timeout. Bumping playwright means bumping this tag in lockstep.
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
       # Firefox/WebKit sandbox via user namespaces (clone()), which the default
       # container seccomp profile blocks → "CanCreateUserNamespace EPERM".
       # Relax seccomp so Firefox can launch; Chromium is unaffected.
@@ -74,8 +80,8 @@ jobs:
       run:
         shell: bash
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
       with:
         node-version: lts/*
     - name: Install dependencies
@@ -88,7 +94,7 @@ jobs:
       env:
         E2E_BACKEND: 'false'
         HOME: /root
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       if: ${{ !cancelled() }}
       with:
         # Unique per leg — upload-artifact@v4 rejects duplicate names.

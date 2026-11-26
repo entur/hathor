@@ -1,54 +1,24 @@
-import { fetchVehicleTypesRequest } from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
+import {
+  fetchVehicleTypesRequest,
+  type VehicleTypesQuery,
+} from '../../../graphql/vehicles/queries/fetchVehicleTypes.ts';
+import { fetchVehicleTypeRequest } from '../../../graphql/vehicles/queries/fetchVehicleType.ts';
 import type {
   VehicleTypeContext,
   VehicleType,
-  Name,
   PassengerCapacity,
   PropulsionType,
   FuelType,
   HybridCategory,
+  TrainParts,
+  VehicleTypeKind,
+  VehicleTypeSubtype,
 } from '../types/vehicleTypeTypes.ts';
+import { VEHICLE_TYPE_KIND } from '../types/vehicleTypeTypes.ts';
 import type { AccessToken } from '../../../auth';
-import type { Page } from '../../../graphql/paginationTypes.ts';
 import { FETCH_ALL_SIZE } from '../../../graphql/paginationTypes.ts';
-import { UNKNOWN_TRANSPORT_MODE, type TransportMode } from '../../netex/transportMode.ts';
-
-export interface VehicleTypeWire {
-  netexId: string;
-  version: number;
-  name?: Name | null;
-  shortName?: Name | null;
-  description?: Name | null;
-  transportMode?: TransportMode | null;
-  length?: number | null;
-  width?: number | null;
-  height?: number | null;
-  weight?: number | null;
-  lowFloor?: boolean | null;
-  propulsionTypes?: (PropulsionType | null)[] | null;
-  fuelTypes?: (FuelType | null)[] | null;
-  selfPropelled?: boolean | null;
-  euroClass?: string | null;
-  maximumVelocity?: number | null;
-  maximumRange?: number | null;
-  formDragCoefficient?: number | null;
-  rollResistanceCoefficient?: number | null;
-  maximumEngineEffectKW?: number | null;
-  hybridCategory?: HybridCategory | null;
-  passengerCapacity?: PassengerCapacity | null;
-  created?: string | null;
-  changed?: string | null;
-  changedBy?: string | null;
-  deckPlan?: { netexId: string; name?: Name | null; version: number } | null;
-  vehicles?:
-    | {
-        netexId: string;
-        registrationNumber: string;
-        operationalNumber?: string | null;
-        version: number;
-      }[]
-    | null;
-}
+import type { MultilingualString } from '../../netex/multilingualString.ts';
+import { UNKNOWN_TRANSPORT_MODE } from '../../netex/transportMode.ts';
 
 /** Drop server-side `null`s from a nullable list, coercing to `undefined` when empty. */
 const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
@@ -56,9 +26,35 @@ const compact = <T>(list?: (T | null)[] | null): T[] | undefined => {
   return out && out.length ? out : undefined;
 };
 
-export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
+type VehicleTypeRow = VehicleTypesQuery['vehicleTypes']['content'][number];
+
+/**
+ * A train subtype's own fields in input shape, or `undefined` for a plain vehicle type.
+ * shortcut: a component whose element (train) Sobek doesn't return is dropped — the input
+ * requires the reference; keep it if Sobek ever returns such dangling components.
+ */
+const projectTrain = (vt: VehicleTypeRow): TrainParts | undefined => {
+  if (!vt.subtype || vt.subtype === 'VEHICLE_TYPE') return undefined;
+  return {
+    numberOfCars: vt.numberOfCars ?? null,
+    trainSizeType: vt.trainSizeType ?? null,
+    trainElementType: vt.trainElementType ?? null,
+    trainComponents:
+      vt.trainComponents?.flatMap(c =>
+        c.trainElement ? [{ ...c, trainElement: { netexId: c.trainElement.netexId } }] : []
+      ) ?? null,
+    compoundTrainComponents:
+      vt.compoundTrainComponents?.flatMap(c =>
+        c.train ? [{ ...c, train: { netexId: c.train.netexId } }] : []
+      ) ?? null,
+  };
+};
+
+export const projectVehicleType = (vt: VehicleTypeRow): VehicleType => ({
   id: vt.netexId,
   version: vt.version,
+  subtype: vt.subtype ?? undefined,
+  train: projectTrain(vt),
   name: vt.name ?? undefined,
   shortName: vt.shortName ?? undefined,
   description: vt.description ?? undefined,
@@ -96,26 +92,24 @@ export const projectVehicleType = (vt: VehicleTypeWire): VehicleType => ({
     : undefined,
 });
 
-export interface DeactivateInput {
-  netexId: string;
-  version: number;
-  deactivateAt: string;
-}
-
 /**
  * Sobek `VehicleTypeInput` — the mutation-accepted shape. Strict subset of the
- * fetched {@link VehicleTypeWire}: no `version`/`created`/`changed`/`changedBy`
+ * fetched `VehicleTypesQuery` row: no `version`/`created`/`changed`/`changedBy`
  * /`vehicles` (all server-managed; Sobek resolves the live version by `netexId`)
  * and it adds `description`. Mirrors `input VehicleTypeInput` in the SDL
  * (`src/graphql/sobek.schema.graphqls`).
  */
-export interface VehicleTypeInput {
+export interface VehicleTypeInput extends TrainParts {
   netexId?: string | null;
+  /** Omitted means VEHICLE_TYPE: an update of a train must repeat its subtype. */
+  subtype?: VehicleTypeSubtype | null;
   /** Owning organisation ref (NeTEx codespace). Required by Sobek `VehicleTypeInput`. */
   dataOwnerRef: string;
-  name?: Name | null;
-  shortName?: Name | null;
-  description?: Name | null;
+  /** Required on create; on update it must repeat the stored kind (immutable). */
+  vehicleTypeKind: VehicleTypeKind;
+  name?: MultilingualString | null;
+  shortName?: MultilingualString | null;
+  description?: MultilingualString | null;
   euroClass?: string | null;
   propulsionTypes?: (PropulsionType | null)[] | null;
   fuelTypes?: (FuelType | null)[] | null;
@@ -152,17 +146,33 @@ export interface VehicleTypeInput {
  * `keyValues` field (sobek#149 — echoing one trips `INTERNAL_ERROR`), so any
  * unlifted keyValues entry is cleared by full-replace on save.
  *
+ * `subtype` and a train's own fields ({@link TrainParts}: cars, size, element type, components)
+ * go back as read — hathor doesn't edit them, and omitting them would turn a train into a
+ * plain vehicle type and drop its components.
+ *
  * `deckPlan` is emitted as a Sobek `DeckPlanReferenceInput` (`netexId` only —
  * `name` is not part of the reference input). `dataOwnerRef` is a required
  * field on the input and is threaded in by the caller (current organisation).
  *
  * @param vt Domain VehicleType (as held by the editor form).
  * @param dataOwnerRef Owning organisation ref (required by Sobek's input).
+ * @param kind PHYSICAL (default) or CONTRACTUAL; immutable once created.
  * @returns The mutation input payload.
  */
-export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): VehicleTypeInput => ({
+export const serializeVehicleType = (
+  vt: VehicleType,
+  dataOwnerRef: string,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
+): VehicleTypeInput => ({
   netexId: vt.id === '' ? undefined : vt.id,
   dataOwnerRef,
+  vehicleTypeKind: kind,
+  subtype: vt.subtype ?? null,
+  numberOfCars: vt.train?.numberOfCars ?? null,
+  trainSizeType: vt.train?.trainSizeType ?? null,
+  trainElementType: vt.train?.trainElementType ?? null,
+  trainComponents: vt.train?.trainComponents ?? null,
+  compoundTrainComponents: vt.train?.compoundTrainComponents ?? null,
   name: vt.name ?? null,
   shortName: vt.shortName ?? null,
   description: vt.description ?? null,
@@ -187,23 +197,49 @@ export const serializeVehicleType = (vt: VehicleType, dataOwnerRef: string): Veh
 });
 
 /**
- * Fetch the full VehicleType list (plus nested deckPlan + vehicles). Sobek's
+ * Fetch the organisation's vehicle types of one kind (plus nested deckPlan +
+ * vehicles) — PHYSICAL by default, which also feeds the vehicle form's type picker,
+ * where only PHYSICAL is valid. Sobek's
  * post-#135 schema returns `netexId` in full NeTEx form at every level, so the
  * projection just renames `netexId` → `id` and coerces server-side `null` to
  * `undefined` to match the internal optional-shape contract.
  *
  * @param applicationBaseUrl Sobek base URL.
  * @param token OIDC access token (bearer).
+ * @param kind PHYSICAL (default) or CONTRACTUAL.
  */
 export const fetchVehicleTypes = async (
   applicationBaseUrl: string,
   dataOwnerRef: string,
-  token: AccessToken
+  token: AccessToken,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
 ): Promise<VehicleTypeContext> => {
-  const raw: { vehicleTypes: Page<VehicleTypeWire> } = await fetchVehicleTypesRequest(
-    applicationBaseUrl,
-    token,
-    { size: FETCH_ALL_SIZE, filter: { dataOwnerRef } }
-  );
+  const raw = await fetchVehicleTypesRequest(applicationBaseUrl, token, {
+    size: FETCH_ALL_SIZE,
+    filter: { dataOwnerRef, vehicleTypeKind: kind },
+  });
   return { vehicleTypes: raw.vehicleTypes.content.map(projectVehicleType) };
+};
+
+/**
+ * Fetch one VehicleType by NeTEx id — the `vehicleTypes(...)` query filtered
+ * to `netexIds: [id]`. Of one kind, like the list (PHYSICAL by default): an id of
+ * the other kind reads as not found.
+ *
+ * @param netexId Full NeTEx id.
+ * @param applicationBaseUrl Sobek base URL.
+ * @param dataOwnerRef Current organisation ref.
+ * @param token OIDC access token (bearer).
+ * @param kind PHYSICAL (default) or CONTRACTUAL.
+ * @returns The vehicle type, or `null` when Sobek returns none for the id.
+ */
+export const fetchVehicleType = async (
+  netexId: string,
+  applicationBaseUrl: string,
+  dataOwnerRef: string,
+  token: AccessToken,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
+): Promise<VehicleType | null> => {
+  const raw = await fetchVehicleTypeRequest(applicationBaseUrl, netexId, dataOwnerRef, kind, token);
+  return raw.vehicleTypes.content.map(projectVehicleType).find(vt => vt.id === netexId) ?? null;
 };

@@ -22,30 +22,27 @@ interface DiscardDialogProps {
 
 /**
  * Reusable confirm-discard dialog for any flow that wants to interrupt a
- * dirty-form action (back nav, sidebar collapse, edit-mode cancel). Mirrors
- * the prior inline dialog in EditorRail so the two consumers stay in lockstep.
- * Translations reuse the existing `vehicles.discardTitle` / `vehicles.discardBody`
- * keys — generic enough to live outside the vehicles namespace if a non-vehicle
- * consumer appears.
+ * dirty-form action (leaving the page, Cancel, an organisation switch). Copy comes from `common.discardTitle` / `common.discardBody`, shared by all
+ * three editors.
  */
 export default function DiscardDialog({ open, onCancel, onDiscard, onSave }: DiscardDialogProps) {
   const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onCancel}>
-      <DialogTitle>{t('vehicles.discardTitle', 'Discard unsaved changes?')}</DialogTitle>
+      <DialogTitle>{t('common.discardTitle')}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {t('vehicles.discardBody', 'You have unsaved edits on this vehicle.')}
-        </DialogContentText>
+        <DialogContentText>{t('common.discardBody')}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>{t('cancel', 'Cancel')}</Button>
-        <Button color="error" onClick={onDiscard}>
-          {t('discard', 'Discard')}
+        <Button variant="outlined" onClick={onCancel}>
+          {t('cancel')}
+        </Button>
+        <Button variant="outlined" color="error" onClick={onDiscard}>
+          {t('discard')}
         </Button>
         {onSave && (
           <Button variant="contained" onClick={onSave}>
-            {t('save', 'Save')}
+            {t('save')}
           </Button>
         )}
       </DialogActions>

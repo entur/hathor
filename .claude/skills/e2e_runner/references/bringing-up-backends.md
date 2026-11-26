@@ -1,8 +1,9 @@
 # Bringing up the live backends (Sobek :37999 + Shepet :37998)
 
 Live mode needs **Sobek** for GraphQL/CRUD. The **Autosys import** flow additionally needs
-**Shepet** on :37998 (hathor's import dialog fetches `…/services/autosys?registrationNumber=…`
-from Shepet). PostGIS (:37433, Sobek's DB) comes up via `docker compose up` in `sobek/`.
+**Shepet** on :37998 (hathor's import dialog POSTs every plate at once to
+`…/services/autosys/vehicles?dataOwner=…` — config key `motorVehicleRegistryProxy`, #214).
+That bulk endpoint needs Shepet with entur/shepet#39 (`feature/bulk-get` until merged). PostGIS (:37433, Sobek's DB) comes up via `docker compose up` in `sobek/`.
 
 Both are **Java 21** Spring Boot apps. Build under JDK 21, run in the background, then confirm a
 `401` on the secured endpoints (= up + serving; the live e2e supplies a real partner JWT via the
@@ -21,8 +22,9 @@ MVN=~/.sdkman/candidates/maven/current/bin/mvn       # `mvn` is a shell-fn alias
 ( cd ~/entur/sobek   && JAVA_HOME=$J $MVN clean install -DskipTests )
 ( cd ~/entur/shepet  && JAVA_HOME=$J $MVN clean install -DskipTests )   # AFTER sobek — see snag 2
 
-# 2. Run Sobek (3 local profiles), background
-( cd ~/entur/sobek && JAVA_HOME=$J $MVN -pl sobek-app spring-boot:run \
+# 2. Run Sobek (3 local profiles) w/ the baba role extractor, background — TEMP, see snag 5
+( cd ~/entur/sobek && JAVA_HOME=$J SOBEK_SECURITY_ROLE_ASSIGNMENT_EXTRACTOR=baba \
+    $MVN -pl sobek-app spring-boot:run \
     -Dspring-boot.run.profiles=local,local-blobstore,local-changelog )
 
 # 3. Run Shepet (local profile), background — env mapping + completed internal client, see snag 3
@@ -81,6 +83,14 @@ curl -so/dev/null -w '%{http_code}\n' localhost:37998/health/ready             #
 4. **These are session-scoped background processes.** Started via the agent's background Bash, they
    die when the session/processes are killed. Re-run steps 2–3 (build artifacts persist in `.m2`) to
    bring them back; no rebuild needed unless source changed.
+
+5. **TEMP bugfix: Sobek must run with `SOBEK_SECURITY_ROLE_ASSIGNMENT_EXTRACTOR=baba`** (2026-10-01).
+   `sobek-app/src/main/resources/application-local.properties:67` pins
+   `sobek.security.role.assignment.extractor=jwt`; the env var overrides it. Baba's internal OAuth2
+   client is already wired in that file (creds from the `…INTERNAL_CLIENT_ID/SECRET` env vars,
+   token-uri inline), so nothing else is needed. Verify in the startup log:
+   `OAuth2Config#babaRoleAssignmentExtractor matched`. Workaround only — drop the env var once
+   Sobek's local profile is fixed upstream.
 
 ## Secrets
 

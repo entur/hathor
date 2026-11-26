@@ -1,0 +1,46 @@
+{
+  "skill_name": "enki",
+  "evals": [
+    {
+      "id": 0,
+      "name": "header-select-deltas",
+      "prompt": "For hathor#185: list exactly what has to change in our org select so it matches the data-provider select in NPlan's header. Don't edit anything yet, just the deltas with file refs on both sides.",
+      "expected_output": "A delta list pairing enki's Header/SelectProvider source with hathor's SelectOrganisation, in hathor idiom, with the e2e id preserved.",
+      "files": [],
+      "assertions": [
+        { "text": "Cites enki's src/scenes/App/Header/index.tsx and/or src/scenes/App/SelectProvider/SelectProvider.tsx as the reference", "kind": "content" },
+        { "text": "Cites hathor's src/data/organisations/components/SelectOrganisation.tsx", "kind": "content" },
+        { "text": "Names the three deltas: transparent/outlined instead of white-filled, visible floating label, light border/text/caret on the navy bar", "kind": "content" },
+        { "text": "States that #organisation-select must be kept", "kind": "content" },
+        { "text": "Does not propose adding Redux, react-intl or Apollo to hathor", "kind": "content" },
+        { "text": "Made no file edits", "kind": "no-diff" }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "where-does-it-live",
+      "prompt": "in nplan the active provider is kept somewhere global and every list refetches when it changes. where is that in their code, and what's our equivalent?",
+      "expected_output": "Points at enki's userContextSlice / activeProviderCode and maps it to hathor's OrganisationsContext.currentOrganisation.",
+      "files": [],
+      "assertions": [
+        { "text": "Identifies enki's src/auth/userContextSlice.ts and userContext.activeProviderCode", "kind": "content" },
+        { "text": "Maps it to hathor's OrganisationsContext / useOrganisationsContext currentOrganisation", "kind": "content" },
+        { "text": "Uses the Provider ≈ Organisation vocabulary mapping", "kind": "content" },
+        { "text": "Read enki source (local ../enki or raw.githubusercontent.com) rather than answering from memory", "kind": "transcript" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "theme-token-port",
+      "prompt": "Our info colour and h1 size look off next to NPlan. Bring those two theme values in line with theirs.",
+      "expected_output": "Edits hathor's theme JSON (not a new TS theme) so info.main and h1 match enki's Entur CustomTheme.",
+      "files": [],
+      "assertions": [
+        { "text": "Reads enki's src/ext/Entur/CustomTheme/theme.ts for the values", "kind": "transcript" },
+        { "text": "Sets info.main to #0082b9 and h1 to 34px (600 / 42px line-height) or equivalent", "kind": "content" },
+        { "text": "Changes land in .github/environments/theme-*.json, not in a new TS theme file", "kind": "diff" },
+        { "text": "Updates every theme-<env>.json consistently, not just one", "kind": "diff" }
+      ]
+    }
+  ]
+}

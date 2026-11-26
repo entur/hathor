@@ -1,37 +1,62 @@
 import { describe, it, expect } from 'vitest';
-import { adoptDeckSheet } from './deckRenderingStyles.ts';
+import { applyDeckStyle, mkDeckCss, type DeckPalette } from './deckRenderingStyles.ts';
 
-/** Identity is all `adoptDeckSheet` uses, so a bare object stands in fine. */
-const SHEET = {} as CSSStyleSheet;
+const PALETTE: DeckPalette = {
+  frame: '#000',
+  deck: '#111',
+  deckLine: '#222',
+  seat: '#333',
+  seatLine: '#444',
+  label: '#555',
+};
 
 /**
- * `adoptDeckSheet` runs inside `DeckRendering`'s mount promise. A throw there
- * lands in the component's `.catch()` and blanks the deck slot, so an
- * environment without constructable stylesheets must cost styling, not the
- * rendering itself.
+ * A shadow root that records what was appended. The unit project runs in the
+ * `node` environment (vite.config.ts), so there is no DOM to attach a real one
+ * to; `applyDeckStyle` touches only these three members.
  */
-describe('adoptDeckSheet', () => {
-  it('degrades to unstyled where constructable stylesheets are unavailable', () => {
-    const root = {} as unknown as ShadowRoot; // no `adoptedStyleSheets` at all
+const mkRoot = () => {
+  const kids: { tag: string; text: string }[] = [];
+  return {
+    kids,
+    root: {
+      ownerDocument: {
+        createElement: (tag: string) => ({
+          tagName: tag.toUpperCase(),
+          textContent: '',
+          setAttribute: () => {},
+        }),
+      },
+      append: (el: { tagName: string; textContent: string }) =>
+        kids.push({ tag: el.tagName, text: el.textContent }),
+      querySelector: () => (kids.length ? {} : null),
+    } as unknown as ShadowRoot,
+  };
+};
 
-    expect(() => adoptDeckSheet(root, SHEET)).not.toThrow();
+describe('mkDeckCss', () => {
+  it('paints every role from the palette', () => {
+    const css = mkDeckCss(PALETTE);
+
+    for (const colour of Object.values(PALETTE)) expect(css).toContain(colour);
+  });
+});
+
+describe('applyDeckStyle', () => {
+  it('appends the CSS as a <style> element', () => {
+    const { root, kids } = mkRoot();
+
+    applyDeckStyle(root, '.seat { fill: red }');
+
+    expect(kids).toEqual([{ tag: 'STYLE', text: '.seat { fill: red }' }]);
   });
 
-  it('adopts the sheet, once, when the root supports it', () => {
-    const root = { adoptedStyleSheets: [] as CSSStyleSheet[] } as unknown as ShadowRoot;
+  it('does not stack duplicates', () => {
+    const { root, kids } = mkRoot();
 
-    adoptDeckSheet(root, SHEET);
-    adoptDeckSheet(root, SHEET);
+    applyDeckStyle(root, '.seat { fill: red }');
+    applyDeckStyle(root, '.seat { fill: red }');
 
-    expect(root.adoptedStyleSheets).toEqual([SHEET]);
-  });
-
-  it('appends rather than replacing sheets the root already carries', () => {
-    const existing = {} as CSSStyleSheet;
-    const root = { adoptedStyleSheets: [existing] } as unknown as ShadowRoot;
-
-    adoptDeckSheet(root, SHEET);
-
-    expect(root.adoptedStyleSheets).toEqual([existing, SHEET]);
+    expect(kids).toHaveLength(1);
   });
 });

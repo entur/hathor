@@ -1,27 +1,40 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOrganisationsContext } from '../../../contexts/useOrganisationsContext.ts';
 import { Autocomplete, TextField } from '@mui/material';
 import { useAuth } from '../../../auth/index.ts';
+import { useEditorDirty } from '../../../contexts/EditingContext.tsx';
+import DiscardDialog from '../../../components/dialogs/DiscardDialog.tsx';
 import type { Organisation } from '../types/organisationTypes.ts';
 
+/**
+ * The header's organisation picker. An open editor re-mounts on a switch without a
+ * navigation its `LeaveGuard` could catch, so with unsaved edits the switch asks first.
+ *
+ * @returns {JSX.Element} The picker, once signed in and the organisations have loaded.
+ */
 export default function SelectOrganisation() {
   const { t } = useTranslation();
   const { data, currentOrganisation, setCurrentOrganisation } = useOrganisationsContext();
   const { isAuthenticated } = useAuth();
+  const { isEditorDirty } = useEditorDirty();
+  // The switch waiting on the dialog; `undefined` = none (`null` clears the org).
+  const [pending, setPending] = useState<Organisation | null>();
 
   return (
     <>
       {isAuthenticated && data !== undefined && (
         <Autocomplete<Organisation, false>
           options={data}
-          title={t('organisations.select.label', 'Select organisation')}
+          title={t('organisations.select.label')}
           getOptionLabel={option => (option.name?.value ?? '-') + ' (' + option.type + ')'}
-          noOptionsText={t('organisations.select.noOptions', 'No organisations available')}
+          noOptionsText={t('organisations.select.noOptions')}
           value={currentOrganisation}
-          onChange={(_e, v) => setCurrentOrganisation(v)}
+          onChange={(_e, v) => (isEditorDirty ? setPending(v) : setCurrentOrganisation(v))}
           size="small"
           sx={{
-            width: { xs: 'clamp(8rem, 36vw, 11rem)', sm: '14rem', md: '16rem' },
+            // Down to 6rem on a 320 px phone, so the header's last action stays on screen (1.4.10).
+            width: { xs: 'clamp(6rem, 30vw, 11rem)', sm: '14rem', md: '16rem' },
             mr: 1,
           }}
           renderInput={params => (
@@ -29,13 +42,27 @@ export default function SelectOrganisation() {
               {...params}
               id="organisation-select"
               size="small"
-              aria-label={t('organisations.select.label', 'Select organisation')}
+              label={t('organisations.select.label')}
               variant="outlined"
-              sx={{ bgcolor: 'common.white', borderRadius: 1 }}
+              // Shrink set here, not left to the theme default: TextField opens the outline's
+              // notch only for an explicit `shrink`, and the header label sits in it. MUI 9
+              // passes the input's ref / handlers in `params.slotProps`: keep them all.
+              slotProps={{
+                ...params.slotProps,
+                inputLabel: { ...params.slotProps?.inputLabel, shrink: true },
+              }}
             />
           )}
         />
       )}
+      <DiscardDialog
+        open={pending !== undefined}
+        onCancel={() => setPending(undefined)}
+        onDiscard={() => {
+          setCurrentOrganisation(pending ?? null);
+          setPending(undefined);
+        }}
+      />
     </>
   );
 }

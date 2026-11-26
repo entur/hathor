@@ -107,10 +107,60 @@ enum HybridCategory {
     NONCHARGEABLE
 }
 
+enum VehicleTypeKind {
+    PHYSICAL
+    CONTRACTUAL
+}
+
+enum VehicleTypeSubtype {
+    "A vehicle type that is none of the ones below"
+    VEHICLE_TYPE
+    "A train: a vehicle type made of components, each a reference to a train element"
+    TRAIN
+    "A compound train: a vehicle type made of trains"
+    COMPOUND_TRAIN
+    "A train element: a single car or engine that trains are made of"
+    TRAIN_ELEMENT
+}
+
+enum TrainElementType {
+    BUFFET_CAR
+    CARRIAGE
+    ENGINE
+    CAR_TRANSPORTER
+    LARGE_VEHICLE_TRANSPORTER
+    SLEEPER_CARRIAGE
+    LUGGAGE_VAN
+    RESTAURANT_CARRIAGE
+    OTHER
+}
+
+enum TrainSize {
+    NORMAL
+    SHORT
+    LONG
+}
+
+enum VehicleOrientation {
+    FORWARDS
+    BACKWARDS
+    UNKNOWN
+}
+
+enum ThroughAccess {
+    NO_THROUGH_ACCESS
+    OPEN_ENTRANCE
+    DOOR
+    UNKNOWN
+}
+
 # Filter inputs
 input VehicleTypeFilter {
     netexIds: [String!]
     transportModes: [TransportMode!]
+    vehicleTypeKind: VehicleTypeKind!
+    "Only vehicle types of this subtype. Omit to get all subtypes."
+    subtype: VehicleTypeSubtype
     name: String
     dataOwnerRef: String!
 }
@@ -124,9 +174,12 @@ input VehicleFilter {
 
 input OrganisationsFilter {
     netexIds: [String!]
-    organisationType: OrganisationType
     name: String
     onlyUserAuthorized: Boolean
+}
+
+input CodeValuesFilter {
+    valueType: String!
 }
 
 input DeckPlanFilter {
@@ -226,6 +279,20 @@ type OrganisationPage {
     size: Int!
 }
 
+# Code value
+type CodeValue {
+    valueType: String!
+    label: String!
+    value: String!
+}
+
+type CodeValuePage {
+    content: [CodeValue!]!
+    totalElements: Int!
+    page: Int!
+    size: Int!
+}
+
 # Vehicle
 type Vehicle {
     dataOwnerRef: String!
@@ -264,8 +331,60 @@ type VehiclePage {
     size: Int!
 }
 
+# A component of a train: a train element in a position. The position is the place in the list.
+type TrainComponent {
+    netexId: String
+    label: MultilingualString
+    description: MultilingualString
+    "The train element that is in this position"
+    trainElement: VehicleType
+    operationalOrientation: VehicleOrientation
+    forwardCouplingThroughAccess: ThroughAccess
+}
+
+input TrainComponentInput {
+    "Leave out to get an id assigned. An id in your own codespace is kept."
+    netexId: String
+    label: MultilingualStringInput
+    description: MultilingualStringInput
+    "The train element, which must have the same data owner as the train"
+    trainElement: VehicleTypeReferenceInput!
+    operationalOrientation: VehicleOrientation
+    forwardCouplingThroughAccess: ThroughAccess
+}
+
+# A component of a compound train: a train in a position. The position is the place in the list.
+type TrainInCompoundTrain {
+    netexId: String
+    label: MultilingualString
+    description: MultilingualString
+    train: VehicleType
+    operationalOrientation: VehicleOrientation
+}
+
+input TrainInCompoundTrainInput {
+    "Leave out to get an id assigned. An id in your own codespace is kept."
+    netexId: String
+    label: MultilingualStringInput
+    description: MultilingualStringInput
+    "The train, which must have the same data owner as the compound train"
+    train: VehicleTypeReferenceInput!
+    operationalOrientation: VehicleOrientation
+}
+
 type VehicleType {
     dataOwnerRef: String!
+    subtype: VehicleTypeSubtype!
+    "Only for trains"
+    numberOfCars: Int
+    "Only for trains"
+    trainSizeType: TrainSize
+    "Only for trains, in order"
+    trainComponents: [TrainComponent!]
+    "Only for compound trains, in order"
+    compoundTrainComponents: [TrainInCompoundTrain!]
+    "Only for train elements"
+    trainElementType: TrainElementType
     netexId: String!
     name: MultilingualString
     shortName: MultilingualString
@@ -291,6 +410,7 @@ type VehicleType {
     lowFloor: Boolean
     selfPropelled: Boolean
     hybridCategory: HybridCategory
+    vehicleTypeKind: VehicleTypeKind!
     version: String
     created: DateTime
     changed: DateTime
@@ -299,6 +419,18 @@ type VehicleType {
 
 input VehicleTypeInput {
     netexId: String
+    "Fixed when the vehicle type is created. Omitted means VEHICLE_TYPE, so it must be repeated when updating a train or a compound train."
+    subtype: VehicleTypeSubtype
+    "Only for trains"
+    numberOfCars: Int
+    "Only for trains"
+    trainSizeType: TrainSize
+    "Only for trains. The list replaces the components of the previous version."
+    trainComponents: [TrainComponentInput!]
+    "Only for compound trains. The list replaces the components of the previous version."
+    compoundTrainComponents: [TrainInCompoundTrainInput!]
+    "Only for train elements"
+    trainElementType: TrainElementType
     name: MultilingualStringInput
     shortName: MultilingualStringInput
     description: MultilingualStringInput
@@ -322,6 +454,8 @@ input VehicleTypeInput {
     lowFloor: Boolean
     selfPropelled: Boolean
     hybridCategory: HybridCategory
+    "Required when creating a vehicle type (no netexId, or a netexId that does not exist yet). Fixed after creation: omit it when updating, or repeat the existing value."
+    vehicleTypeKind: VehicleTypeKind
     dataOwnerRef: String!
 }
 
@@ -338,6 +472,7 @@ type Query {
     vehicleTypes(filter: VehicleTypeFilter, page: Int = 0, size: Int = 20): VehicleTypePage!
     deckPlans(filter: DeckPlanFilter, page: Int = 0, size: Int = 20): DeckPlanPage!
     organisations(filter: OrganisationsFilter, page: Int = 0, size: Int = 20): OrganisationPage!
+    codeValues(filter: CodeValuesFilter!, page: Int = 0, size: Int = 20): CodeValuePage!
 }
 
 type Mutation {

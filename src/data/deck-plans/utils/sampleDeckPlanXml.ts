@@ -15,9 +15,11 @@ export interface SampleDeck {
 /**
  * Build a NeTEx `PublicationDelivery` carrying one deck plan.
  *
- * Story and test fixture only — not app code. It exists so stories can drive
- * the real parser and renderer without a backend; production documents come
- * from `useDeckPlanXml`. Nesting matches what the library's parser walks
+ * Drives stories and tests without a backend, and generates the SAMPLE ghost
+ * `parseDecks` falls back to — real documents come from `useDeckPlanXml`.
+ * Generating the ghost keeps a ~20 KB minified fixture copy out of the bundle
+ * and removes a hand-run re-minification step from the sync path.
+ * Nesting matches what the library's parser walks
  * (`dataObjects.CompositeFrame.frames.ResourceFrame.deckPlans.DeckPlan`) and
  * what live Sobek returns.
  *

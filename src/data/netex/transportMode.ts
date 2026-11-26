@@ -3,13 +3,11 @@
  *
  * Hathor keeps **no curated subset**: the only mode list is the full schema
  * enum (`TRANSPORT_MODES`, 21 members, in lockstep with the SDL). Presentation
- * derives from it — filter chips are data-driven (see {@link transportModeFilters}),
+ * derives from it — the collection's filter options come from the rows' values,
  * icons resolve by identity (`#tm-${mode}`) with a single `tm-fallback` glyph for
  * members without bespoke art. A value that proves useless is dropped from the
  * Sobek schema and surfaces there, not via hathor curation.
  */
-import type { FilterDefinition } from '../../components/search/searchTypes.ts';
-
 /**
  * Every `TransportMode` member — verbatim mirror of `enum TransportMode` in
  * `src/graphql/sobek.schema.graphqls`. Keep in lockstep with the SDL.
@@ -57,15 +55,3 @@ export const transportModeLabelKey = (mode: TransportMode): string => `transport
 
 /** Sort key — the enum id verbatim; `UNKNOWN` sorts at its alphabetical slot. */
 export const transportModeSortValue = (mode: TransportMode): string => mode;
-
-/**
- * Data-driven chip set: one filter per distinct mode present in the data,
- * deduped and sorted. No curated subset — chips reflect what the rows carry.
- *
- * @param modes The transport modes present in the loaded rows.
- * @returns One {@link FilterDefinition} per distinct mode.
- */
-export const transportModeFilters = (modes: Iterable<TransportMode>): FilterDefinition[] =>
-  [...new Set(modes)]
-    .sort()
-    .map(mode => ({ id: mode, labelKey: transportModeLabelKey(mode), defaultLabel: mode }));

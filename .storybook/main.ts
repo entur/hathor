@@ -21,5 +21,10 @@ const config: StorybookConfig = {
     getAbsolutePath('@storybook/addon-mcp'),
   ],
   framework: getAbsolutePath('@storybook/react-vite'),
+  // The app fetches runtime assets from `public/` (the SAMPLE deck plan the
+  // ghost path loads, the theme/config JSON). Storybook does not pick the
+  // project's `publicDir` up on its own, so stories that exercise those paths
+  // would 404 here while working in the app.
+  staticDirs: ['../public'],
 };
 export default config;

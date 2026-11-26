@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex">
+  <dataObjects>
+    <CompositeFrame version="1" id="SAMPLE:CompositeFrame:1">
+      <frames>
+        <ResourceFrame version="1" id="SAMPLE:ResourceFrame:1">
+          <deckPlans>
+            <DeckPlan version="1" id="GHOST:DeckPlan:1">
+              <decks>
+                <Deck version="1" id="SAMPLE:Deck:1">
+                  
+                  <deckSpaces>
+                    <PassengerSpace version="1" id="SAMPLE:PassengerSpace:1">
+                      <passengerSpots>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-1">
+                          <Label>1A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>1.20 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-2">
+                          <Label>1B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>1.20 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-3">
+                          <Label>2A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>2.10 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-4">
+                          <Label>2B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>2.10 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-5">
+                          <Label>3A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>3.00 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-6">
+                          <Label>3B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>3.00 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-7">
+                          <Label>4A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>3.90 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-8">
+                          <Label>4B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>3.90 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-9">
+                          <Label>5A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>4.80 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-10">
+                          <Label>5B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>4.80 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-11">
+                          <Label>6A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>5.70 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-12">
+                          <Label>6B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>5.70 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-13">
+                          <Label>7A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>6.60 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-14">
+                          <Label>7B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>6.60 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-15">
+                          <Label>8A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>7.50 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-16">
+                          <Label>8B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>7.50 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-17">
+                          <Label>9A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>8.40 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-18">
+                          <Label>9B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>8.40 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-19">
+                          <Label>10A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>9.30 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-20">
+                          <Label>10B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>9.30 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-21">
+                          <Label>11A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>10.20 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-22">
+                          <Label>11B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>10.20 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-23">
+                          <Label>12A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>11.10 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-24">
+                          <Label>12B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>11.10 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-25">
+                          <Label>13A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>12.00 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-26">
+                          <Label>13B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>12.00 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-27">
+                          <Label>14A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>12.90 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-28">
+                          <Label>14B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>12.90 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-29">
+                          <Label>15A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>13.80 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-30">
+                          <Label>15B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>13.80 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-31">
+                          <Label>16A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>14.70 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-32">
+                          <Label>16B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>14.70 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-33">
+                          <Label>17A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>15.60 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-34">
+                          <Label>17B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>15.60 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-35">
+                          <Label>18A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>16.50 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-36">
+                          <Label>18B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>16.50 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-37">
+                          <Label>19A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>17.40 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-38">
+                          <Label>19B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>17.40 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-39">
+                          <Label>20A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>18.30 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-40">
+                          <Label>20B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>18.30 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-41">
+                          <Label>21A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>19.20 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-42">
+                          <Label>21B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>19.20 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-43">
+                          <Label>22A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>20.10 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-44">
+                          <Label>22B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>20.10 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-45">
+                          <Label>23A</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>21.00 0.66</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                        <PassengerSpot version="1" id="SAMPLE:PassengerSpot:1-46">
+                          <Label>23B</Label>
+                          <Orientation>backwards</Orientation>
+                          <Centroid><Location><pos>21.00 2.16</pos></Location></Centroid>
+                          <Width>0.7</Width>
+                          <Length>0.7</Length>
+                        </PassengerSpot>
+                      </passengerSpots>
+                    </PassengerSpace>
+                  </deckSpaces>
+                  <Width>2.825</Width>
+                  <Length>22.200000000000003</Length>
+                </Deck></decks>
+            </DeckPlan>
+          </deckPlans>
+        </ResourceFrame>
+      </frames>
+    </CompositeFrame>
+  </dataObjects>
+</PublicationDelivery>

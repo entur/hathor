@@ -3,10 +3,11 @@ import { MemoryRouter } from 'react-router-dom';
 import HomePage from './Home';
 import { withOrganisations } from '../contexts/mockOrganisations.tsx';
 import { withAuth } from '../auth/mockAuth.tsx';
+import { APP_STORY_META, AppAt } from './appStory.tsx';
 
 /**
  * Stories for the Home dashboard. A MemoryRouter decorator supplies the routing
- * context the page's <Link>s need; `withOrganisations` and `withAuth` stand in
+ * context the page's <Link>s need (`Complete` brings its own router); `withOrganisations` and `withAuth` stand in
  * for the real OrganisationsProvider and OIDC provider (config/fetch-driven, so
  * unavailable here) that gate the org sections and the logged-out band —
  * together they put the page in its signed-in, org-selected state.
@@ -26,22 +27,20 @@ const meta: Meta<typeof HomePage> = {
       },
     },
   },
-  decorators: [
-    withAuth(),
-    withOrganisations(),
-    Story => (
-      <MemoryRouter>
-        <Story />
-      </MemoryRouter>
-    ),
-  ],
+  decorators: [withAuth(), withOrganisations()],
 };
 export default meta;
 
 type Story = StoryObj<typeof HomePage>;
 
+const inMemoryRouter: Story['decorators'] = Story => (
+  <MemoryRouter>
+    <Story />
+  </MemoryRouter>
+);
+
 /** Default dashboard at full width. */
-export const Default: Story = {};
+export const Default: Story = { decorators: inMemoryRouter };
 
 /**
  * Mobile layout: the `mobile1` viewport narrows the canvas below the `sm`
@@ -49,5 +48,15 @@ export const Default: Story = {};
  * column.
  */
 export const Mobile: Story = {
+  decorators: inMemoryRouter,
   globals: { viewport: { value: 'mobile1', isRotated: false } },
+};
+
+/**
+ * The whole app on `/`: Header and Menu around Home. Its links work — a card opens
+ * the collection, Edit its form page — on the e2e fixtures.
+ */
+export const Complete: Story = {
+  ...APP_STORY_META,
+  render: () => <AppAt path="/" />,
 };

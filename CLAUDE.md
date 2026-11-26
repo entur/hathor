@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
 
-Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Extending this codebase — new entity views, domain modelling, the Generic Data View pattern — follows the Inanna *extend-fork* workflow, documented in the global **`inanna-fork`** skill rather than in-repo. `FORK_DECISIONS.md` records the design choices specific to this fork.
+Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Domain modelling (NeTEx types) follows the Inanna *extend-fork* workflow in the global **`inanna-fork`** skill; its Generic Data View steps no longer apply — hathor replaced that pattern with collection + form pages (below, #252). `FORK_DECISIONS.md` records the design choices specific to this fork.
 
 ## Key Documentation
 
 - **`README.md`** — brief project overview, tech stack, quick start, scripts, and `src/` folder semantics (where new files go).
-- **`DEV_GUIDE.md`** — a stub pointer. Hathor is an Inanna fork; the developer guide for adding entity views and extending the app lives in the global **`inanna-fork`** skill (extend mode), not in-repo.
+- **`DEV_GUIDE.md`** — a stub pointer: entities follow *Collection + form pages* below; NeTEx domain modelling follows the global **`inanna-fork`** skill (extend mode).
 - **`FORK_DECISIONS.md`** — the project's Architecture Decision Record (ADR) log. **Single source of truth for *why* design choices were made on this fork.** Each section captures one decision with its context, alternatives, and consequences. Add a new ADR section here for any non-obvious design call; do **not** restate the rationale in this file (CLAUDE.md describes *what* the patterns are; FORK_DECISIONS describes *why*).
 - **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
@@ -32,6 +32,7 @@ npm run format           # Prettier auto-format
 # E2E tests (Playwright)
 npm run e2e              # Run the suite (mocked GraphQL), both browsers, multi-worker
 npm run e2e:local-backend  # Same specs against a live local Sobek (E2E_BACKEND=true, --workers=1)
+                           # E2E_ORG_ID=<netexId> pins the org when the first authorized one is empty
 ```
 
 Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` on the whole project) followed by `npx lint-staged` (Prettier `--write` + ESLint `--fix` on staged files). The developer uses `prettierd` in nvim for format-on-save, which picks up the repo-root `.prettierrc` automatically.
@@ -40,28 +41,26 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 ## Architecture
 
-### Generic Data View Pattern
+### Collection + form pages
 
-The core architectural pattern is a reusable data table system:
+Each entity has two routes under the `PageShell` layout route (`src/pages/shell/`, epic #252):
 
-1. **ViewConfig** (`src/pages/viewConfigTypes.ts`) — defines columns, filters, sort, search, data hooks, and editor components for an entity
-2. **GenericDataViewPage** (`src/pages/GenericDataViewPage.tsx`) — orchestrates layout with search bar, data table, and resizable sidebar editor
-3. **Page component** (e.g. `src/data/vehicle-types/components/VehicleTypeView.tsx`) — assembles a ViewConfig and passes it to GenericDataViewPage
+1. **Collection page** `/<entity>` — `CollectionPage` / `CollectionShell` around the entity's collection, built once by `createEntityCollection(<entity>Fields, { filterFields })` (`src/components/collection/`, wired in `data/<feature>/components/<entity>CollectionConfig.tsx`): toolbar search / filter / sort, grid or cards, pager, an Edit link per row.
+2. **Form page** `/<entity>/:id` (`new` = create) — `EntityDetailsShell` hosts the feature's `*Details`: `useEntityEditor` (read, save, deactivate) + `EditorFrame` (title row, sticky Save / Cancel footer, `LeaveGuard`) around the feature's `*Sections` (`FormSections`, table of contents).
 
-To add a new data table page: define types → create data hook → create editor component → create cell components → create search hook → assemble ViewConfig → create page → add route. For the detailed step-by-step tutorial, use the global **`inanna-fork`** skill in extend mode.
+To add an entity: types + field mapping → data hook → `*CollectionConfig` + `*CollectionPage` → `*Sections` + `*Details` + `*DetailsPage` → routes in `App.tsx`. The old list's `?selected=<id>` deep link redirects to the form page.
 
-**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` (incl. `cells/`) · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Note: cross-feature backend-model types (`Name`, `DeckPlan`, enums) currently sit in `data/vehicle-types/types/` + `data/netex/` and are reached into by sibling features — a known coupling being reworked onto a shared, codegen-shaped model layer (**#107**).
+**Feature folder layout.** Each entity lives under `src/data/<feature>/` segmented bulletproof-react style — `api/` · `components/` · `hooks/` · `types/` · `utils/` (FORK_DECISIONS 2026-05-28). Each entity type is declared once, in its own feature (`Vehicle`, `VehicleType`, `DeckPlan`, `Organisation`); shared value objects sit in `data/netex/` (`MultilingualString`, `TransportMode`); GraphQL operation types (`<Op>Query`, `<Op>QueryVariables`, `<Op>Mutation`) sit next to their documents in `src/graphql/vehicles/`. Names follow graphql-codegen; the shapes are still hand-written and their drift from the schema is tracked in **#107**.
 
 ### State Management
 
 No state library — uses React Context API exclusively:
 
 - **ConfigContext** — runtime config (API URLs, OIDC settings) loaded from `public/config.json`
-- **SearchContext** — global search with debouncing, filters, suggestions
-- **EditingContext** — sidebar editor state (which entity is being edited)
-- **CustomizationContext** — theme/icon toggle, persisted to localStorage
+- **EditingContext** — the mounted editor's dirty flag, read by the header's org picker (asks before an org switch drops edits)
+- **CustomizationContext** — the active theme out of `config.themeConfigs`, picked in Settings (≥ 2 listed), persisted to localStorage
 - **SessionContext** — OIDC token expiry monitoring
-- **NavRailContext** — persistent left nav-rail expanded/collapsed state + CSS reflow (#65)
+- **NavRailContext** — the mobile side-navigation drawer's open state, the rail width and Linje's desktop breakpoint (#418)
 
 Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehicleTypes`).
 
@@ -69,7 +68,8 @@ Data fetching uses custom hooks per entity with local `useState` (e.g. `useVehic
 
 - **GraphQL (read)**: `graphql-request`, queries in `src/graphql/vehicles/queries/`
 - **GraphQL (write)**: `createOrUpdateVehicle` / `createOrUpdateVehicleType` mutations in `src/graphql/vehicles/mutations/`. Sobek's `createOrUpdate*` is a **full-document replace** — an absent/blank input field is nulled, so serializers must send the complete document (not omit-blank).
-- **REST**: NeTEx XML import via `src/data/vehicle-imports/vehicleImportServices.ts` (Autosys bulk import). The route-based VehicleType *create-via-XML* editor was removed — VehicleType save is now the GraphQL mutation above.
+- **Deactivate**: `deactivate*(DeactivateInput)` sends `deactivateAt`, but Sobek's read types expose no validity/status field — a "Deactivated" state is session-only (lost on reload). Accepted for the form pages; no Sobek issue filed yet.
+- **REST**: NeTEx XML import via `src/data/vehicle-imports/api/vehicleImportServices.ts` (Autosys bulk import). The route-based VehicleType *create-via-XML* editor was removed — VehicleType save is now the GraphQL mutation above.
 - **Auth**: OIDC via `react-oidc-context` + `oidc-client-ts`, all API calls use Bearer tokens
 - **Config**: API URLs and OIDC settings loaded at startup from `public/config.json`
 
@@ -85,7 +85,7 @@ When in doubt about whether a single hathor query has drifted, grep the canonica
 
 ### Routing
 
-React Router v6 in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a deep-linkable `?selected=<netexId>` **sidebar** editor (vehicle-types, vehicles); `/deck-plans/:id` stay route-based.
+React Router v7 data router — `createBrowserRouter` in `src/main.tsx` with one splat route around the providers (so the signin callback can navigate, and a form page can `useBlocker`, #282), routes as descendant `<Routes>` in `src/App.tsx`, wrapped in the persistent left **Nav Rail** shell (`NavRailProvider` / `AppShell`, #65). Protected routes use `<ProtectedRoute>` (OIDC check). Entity editing is a form page at `/<entity>/:id`.
 
 ### Internationalization
 
@@ -93,7 +93,7 @@ i18next with English (`src/locales/en/`) and Norwegian Bokmål (`src/locales/nb/
 
 ### Theming
 
-JSON-based theme config loaded at runtime and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
+JSON-based theme config loaded at runtime (`themeConfigs` in `config.json`, `src/hooks/useAppTheme.ts`) and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; a theme's `fonts.faces` become `@font-face` rules (`src/theme/themeFonts.ts`) — the Entur font Nationale ships only from the deployment config, never this repo (FORK_DECISIONS 2026-11-16); custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
 
 ## E2E Testing (Playwright)
 
@@ -106,7 +106,7 @@ End-to-end tests use Playwright (`@playwright/test`) — one flat suite under `e
 ```
 e2e-tests/
 ├── *.spec.ts                     # all specs, flat (auth-modes.spec.ts, vehicle*.spec.ts, …)
-├── live-auth-helpers.ts          # setConfig (config route), seedAuth, org selection
+├── live-auth-helpers.ts          # setConfig (config route), seedAuth, mockIdp (offline signin round trip), org selection
 ├── autosys-helpers.ts            # GraphQL/Autosys intercept helpers
 ├── vehicle-list-helpers.ts       # vehicles() mock builders
 └── fixtures/
@@ -139,15 +139,17 @@ Tests rely on these `data-testid` attributes in the application:
 |-----------|-----------|---------|
 | `auth-not-configured-warning` | `ProtectedRoute` | Warning banner when `oidcConfig` is undefined |
 | `auth-disabled-label` | `HeaderActions` | "Auth off" chip in header |
+| `header-login-button` | `HeaderActions` | Log in button in header (OIDC configured, signed out) |
+| `home-login-button` | `Home` | Log in button on the signed-out dashboard (OIDC configured) |
 
 Tests also check for the `.app-content` CSS class and the "Log in" button text.
 
 ### CI Workflow
 
 `.github/workflows/playwright.yml` runs on push/PR to `main`/`master` as three jobs:
-1. **`schema`** — Sobek schema-drift guard (curl + diff, no `npm ci`); gates `e2e`.
+1. **`schema`** — validates every `gql` document under `src/graphql` against the live Sobek schema (`scripts/validate-graphql-documents.mjs`); fails only on real breakage, not unrelated Sobek changes. Sibling of `e2e` (no `needs`). Full-schema drift is reported weekly by `schema-drift.yml`, which opens an issue.
 2. **`unit`** — `npm ci` + `npm run test:coverage`; sibling of `e2e` (no `needs`, so neither blocks the other).
-3. **`e2e`** — `needs: schema`; browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
+3. **`e2e`** — browser matrix `project=[chromium, firefox]` (`fail-fast: false`), each `npm run e2e -- --project=$p` in the preinstalled Playwright container. HTML report uploaded per leg (`playwright-report-<project>`, 30-day retention).
 
 ## Concept Sandbox
 
@@ -174,7 +176,6 @@ A standalone HTML/D3 prototype at `concept-sandbox/` deployed via GitHub Pages. 
 
 Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a PR. *Design-level* ambiguities (couplings, naming leaks, filter shape) live in [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md) instead.
 
-- **Commented-out code** — `useDataViewSearch.ts:14-27` (Tiamat filter logic with `ParentStopPlace`/`stopPlaceType`), `DesktopSearchBar.tsx` and `MobileSearchBar.tsx` (disabled `SearchAutocomplete` rendering), `Header.tsx` (unused `useTranslation` and mobile search callback).
 - **Unused translation keys** — ~49 dead keys across `en/translation.json` and `nb/translation.json`, including `data.table.*`, `map.*`, `types.*` (stop-place types), `session.expired.message`, `product.*`.
 
 ## Key Files
@@ -182,15 +183,15 @@ Pure dead-code chores from the Tiamat/stop-place fork that can be deleted in a P
 | File | Purpose |
 |------|---------|
 | `src/App.tsx` | Routes and app shell |
-| `src/main.tsx` | Entry point, wraps app in context providers |
-| `src/pages/viewConfigTypes.ts` | Core ViewConfig type definitions |
-| `src/pages/GenericDataViewPage.tsx` | Reusable data table page |
-| `src/components/search/SearchContext.tsx` | Search state management |
+| `src/main.tsx` | Entry point, data router (`createBrowserRouter`) around the context providers + App |
+| `src/components/collection/` | `createEntityCollection` — the collection pages' list |
+| `src/pages/shell/` | `PageShell`, `CollectionPage`, `EntityDetailsShell` — the page frames |
+| `src/hooks/useEntityEditor.ts` | The editor state machine every form page shares |
 | `src/contexts/configContext.ts` | Runtime config types and context |
 | `public/config.json` | Runtime API/OIDC configuration |
 | `.github/environments/` | Environment-specific config files |
 | `playwright.config.ts` | Playwright config (testDir, browsers, workers) |
 | `e2e-tests/auth-modes.spec.ts` | Both auth profiles (OIDC on/off) via `setConfig` |
-| `e2e-tests/live-auth-helpers.ts` | `setConfig` (config route), `seedAuth`, org selection |
+| `e2e-tests/live-auth-helpers.ts` | `setConfig` (config route), `seedAuth`, `mockIdp`, org selection |
 | `e2e-tests/fixtures/` | Config fixture files (`config-with-auth` / `config-no-auth`) |
 | `.github/workflows/playwright.yml` | CI workflow: schema · unit · e2e browser matrix |

@@ -1,18 +1,15 @@
 /**
- * Pure reducer-style state for the Vehicle edit form. Re-exports the
- * generic `createFormState` factory from `src/hooks/useFormState.ts`
- * bound to `VehicleEditFormValue` + `Partial<Vehicle>` so the public
- * API (`initialFormState`, `hydrate`, `edit`, `isDirty`, `FormState`)
- * stays stable for `VehicleDetails` and tests.
+ * Form state for the Vehicle editor: the generic `createFormState` factory
+ * bound to `VehicleEditFormValue` + `Partial<Vehicle>` (`vehicleForm`, used by
+ * `VehicleDetails`). The named re-exports serve the tests.
  */
 import { createFormState, type FormState as GenericFormState } from '../../../hooks/useFormState';
-import type { VehicleEditFormValue } from '../components/VehicleEditForm';
+import type { Vehicle, VehicleEditFormValue } from '../types/vehicle.ts';
 import { BLANK_FORM } from '../utils/vehicleFormDefaults';
-import type { VehicleGQLShaped } from '../types/vehicleGqlShaped';
 
-const vehicleForm = createFormState<VehicleEditFormValue, Partial<VehicleGQLShaped>>({
+export const vehicleForm = createFormState<VehicleEditFormValue, Partial<Vehicle>>({
   blank: BLANK_FORM,
-  formFromSource: src => (src ? { vehicle: src as VehicleGQLShaped } : BLANK_FORM),
+  formFromSource: src => (src ? { vehicle: src as Vehicle } : BLANK_FORM),
 });
 
 export type FormState = GenericFormState<VehicleEditFormValue>;

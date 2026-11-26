@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { CloudUpload } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { type AnalyzerResult, type TableMeta, inputTextAnalyzer } from '../inputTextAnalyzer';
-import type { RegNumbersStatus } from '../regNumbersTextTransformer';
+import { type AnalyzerResult, type TableMeta, inputTextAnalyzer } from '../utils/inputTextAnalyzer';
+import type { RegNumbersStatus } from '../utils/regNumbersTextTransformer';
 
 interface MultiImportFileInputProps {
   onParsed: (regNumbers: string[], status: RegNumbersStatus) => void;
@@ -93,17 +93,9 @@ export default function MultiImportFileInput({
         data-testid="multi-import-dropzone"
       >
         <CloudUpload sx={{ fontSize: 48, color: 'action.active', mb: 1 }} />
-        <Typography>
-          {t(
-            'import.multi.dropzoneLabel',
-            'Drag and drop a CSV or TXT file here, or click to upload'
-          )}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {t(
-            'import.multi.dropzoneHint',
-            'One registration number per line, or separated by commas'
-          )}
+        <Typography>{t('import.multi.dropzoneLabel')}</Typography>
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          {t('import.multi.dropzoneHint')}
         </Typography>
       </Box>
     </>

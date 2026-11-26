@@ -1,18 +1,30 @@
+import i18next from 'i18next';
 import { XMLBuilder } from 'fast-xml-parser';
 import { authHeader, type AccessToken } from '../../../auth';
-import { addDataOwnerRefToFrame, findResourceFrame, verbatimXmlParser } from '../../netex/xmlUtils';
+import { addDataOwnerRefToFrame, findResourceFrame, xmlParser } from '../../netex/xmlUtils';
+import { VEHICLE_TYPE_KIND } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 /**
  * Fetch NeTEx XML for a single deck plan from Sobek
  * Throws with the response body (or statusText) on non-OK responses so that
  * downstream error translation can match known backend error patterns.
+ *
+ * @param {string} applicationNeTExBaseUrl - Sobek NeTEx base URL from config.
+ * @param {string} dataOwnerRef - NeTEx id of the owning organisation; Sobek requires it and
+ *   treats a deck plan owned by anyone else as not found.
+ * @param {string} id - NeTEx id of the deck plan.
+ * @param {AccessToken} token - Bearer token.
+ * @returns {Promise<string>} The `PublicationDelivery` XML.
  */
 export const fetchDeckPlanDetails = async (
   applicationNeTExBaseUrl: string,
+  dataOwnerRef: string,
   id: string,
   token: AccessToken
 ): Promise<string> => {
-  const response = await fetch(`${applicationNeTExBaseUrl}/deckplans/${encodeURIComponent(id)}`, {
+  const url = new URL(`${applicationNeTExBaseUrl}/deckplans/${encodeURIComponent(id)}`);
+  url.searchParams.set('dataOwner', dataOwnerRef);
+  const response = await fetch(url, {
     method: 'GET',
     headers: authHeader(token),
   });
@@ -37,13 +49,13 @@ export const saveDeckPlanAsNetexToBackend = async (
   // Verbatim: this re-serializes the whole document to graft the owning
   // organisation on, so coercing text here would undo patchDeckPlanXml's
   // care with the geometry.
-  const xml = verbatimXmlParser.parse(deckPlanData);
+  const xml = xmlParser.parse(deckPlanData);
   if (!xml) {
-    throw new Error('Invalid XML data');
+    throw new Error(i18next.t('deckPlans.invalidXml'));
   }
   const resourceFrame = findResourceFrame(xml);
   if (!resourceFrame) {
-    throw new Error('No ResourceFrame found in XML data');
+    throw new Error(i18next.t('deckPlans.noResourceFrame'));
   }
   const builder = new XMLBuilder({
     ignoreAttributes: false,
@@ -55,7 +67,10 @@ export const saveDeckPlanAsNetexToBackend = async (
     resourceFrame,
     dataOwnerRef
   );
-  const response = await fetch(`${applicationImportBaseUrl}`, {
+  const url = new URL(applicationImportBaseUrl);
+  // Sobek requires it on every import, vehicle types in the file or not (400 without).
+  url.searchParams.set('vehicleTypeKind', VEHICLE_TYPE_KIND);
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/xml',
@@ -64,7 +79,8 @@ export const saveDeckPlanAsNetexToBackend = async (
     body: builder.build(xml),
   });
   if (!response.ok) {
-    throw new Error(`Error importing deck plan data: ${response.statusText}`);
+    const body = await response.text();
+    throw new Error(body || `Error importing deck plan data: ${response.statusText}`);
   }
   const data = await response.text();
   return data;

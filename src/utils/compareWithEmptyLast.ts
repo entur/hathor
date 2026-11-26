@@ -1,4 +1,5 @@
-import type { Order } from '../components/data/dataTableTypes.ts';
+/** Sort direction. */
+export type Order = 'asc' | 'desc';
 
 /**
  * Returns true for null/undefined or — for strings — visually blank values

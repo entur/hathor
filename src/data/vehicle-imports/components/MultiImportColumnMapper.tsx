@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,15 +8,11 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import type { TableMeta } from '../inputTextAnalyzer';
+import type { TableMeta } from '../utils/inputTextAnalyzer';
+import type { ColumnMapping } from '../utils/mapColumns';
+import { FormSelectField } from '../../../components/FormFields.tsx';
 
-const NONE = '__none__';
 const PREVIEW_ROWS = 5;
-
-export interface ColumnMapping {
-  regNumberCol: string;
-  operationalRefCol: string | null;
-}
 
 interface MultiImportColumnMapperProps {
   tableMeta: TableMeta;
@@ -35,7 +27,7 @@ export default function MultiImportColumnMapper({
   const { headers, rows } = tableMeta;
 
   const [regNumberCol, setRegNumberCol] = useState(headers[0] ?? '');
-  const [operationalRefCol, setOperationalRefCol] = useState<string>(NONE);
+  const [operationalRefCol, setOperationalRefCol] = useState<string | null>(null);
 
   // Push initial mapping to parent on mount
   useEffect(() => {
@@ -51,72 +43,65 @@ export default function MultiImportColumnMapper({
     setRegNumberCol(value);
     onConfirm({
       regNumberCol: value,
-      operationalRefCol: operationalRefCol === NONE ? null : operationalRefCol,
+      operationalRefCol,
     });
   };
 
-  const handleOperationalRefColChange = (value: string) => {
+  const handleOperationalRefColChange = (value: string | null) => {
     setOperationalRefCol(value);
-    onConfirm({ regNumberCol, operationalRefCol: value === NONE ? null : value });
+    onConfirm({ regNumberCol, operationalRefCol: value });
   };
 
+  // Options keyed by column index: a header may be blank (''), which a Select reads as "none".
+  const columns = headers.map((h, i) => ({
+    value: String(i),
+    label: h || t('import.multi.columnN', { n: i + 1 }),
+  }));
+  const optionOf = (header: string) => {
+    const i = headers.indexOf(header);
+    return i < 0 ? undefined : String(i);
+  };
   const previewRows = rows.slice(0, PREVIEW_ROWS);
   const highlightCols = new Set([
     regNumberCol,
-    ...(operationalRefCol !== NONE ? [operationalRefCol] : []),
+    ...(operationalRefCol === null ? [] : [operationalRefCol]),
   ]);
 
   return (
     <>
       <Typography variant="body2" sx={{ mb: 2 }}>
-        {t(
-          'import.multi.columnMapperDescription',
-          'We detected {{count}} columns in your file. Map the columns to the correct fields.',
-          { count: headers.length }
-        )}
+        {t('import.multi.columnMapperDescription', { count: headers.length })}
       </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>{t('import.multi.regNumberColumn', 'Registration number')}</InputLabel>
-          <Select
-            value={regNumberCol}
-            label={t('import.multi.regNumberColumn', 'Registration number')}
-            onChange={e => handleRegNumberColChange(e.target.value)}
-            data-testid="column-mapper-reg-number"
-          >
-            {headers.map(h => (
-              <MenuItem key={h} value={h}>
-                {h}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>
-            {t('import.multi.operationalRefColumn', 'Operational ID (optional)')}
-          </InputLabel>
-          <Select
-            value={operationalRefCol}
-            label={t('import.multi.operationalRefColumn', 'Operational ID (optional)')}
-            onChange={e => handleOperationalRefColChange(e.target.value)}
-            data-testid="column-mapper-operational-ref"
-          >
-            <MenuItem value={NONE}>
-              <em>{t('import.multi.none', 'None')}</em>
-            </MenuItem>
-            {headers.map(h => (
-              <MenuItem key={h} value={h}>
-                {h}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      {/* The form's Linje fields, at most two per row (FormSections, #283). */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { sm: '1fr 1fr' },
+          columnGap: 2,
+          rowGap: 3,
+          mb: 3,
+        }}
+      >
+        <FormSelectField
+          id="column-mapper-reg-number"
+          label={t('import.multi.regNumberColumn')}
+          value={optionOf(regNumberCol)}
+          options={columns}
+          onChange={v => v !== undefined && handleRegNumberColChange(headers[Number(v)])}
+        />
+        <FormSelectField
+          id="column-mapper-operational-ref"
+          label={t('import.multi.operationalRefColumn')}
+          value={operationalRefCol === null ? undefined : optionOf(operationalRefCol)}
+          options={columns}
+          noneLabel={t('import.multi.none')}
+          onChange={v => handleOperationalRefColChange(v === undefined ? null : headers[Number(v)])}
+        />
       </Box>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        {t('import.multi.preview', 'Preview (first {{count}} rows)', { count: previewRows.length })}
+        {t('import.multi.preview', { count: previewRows.length })}
       </Typography>
 
       <TableContainer
@@ -129,7 +114,7 @@ export default function MultiImportColumnMapper({
                 <TableCell
                   key={h}
                   sx={{
-                    fontWeight: 'bold',
+                    fontWeight: 'fontWeightBold',
                     bgcolor: highlightCols.has(h) ? 'action.selected' : 'background.paper',
                   }}
                 >
@@ -158,8 +143,8 @@ export default function MultiImportColumnMapper({
       </TableContainer>
 
       {rows.length > PREVIEW_ROWS && (
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-          {t('import.multi.moreRows', '...and {{count}} more rows', {
+        <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
+          {t('import.multi.moreRows', {
             count: rows.length - PREVIEW_ROWS,
           })}
         </Typography>

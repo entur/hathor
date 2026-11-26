@@ -10,7 +10,40 @@ Companion to [OPEN_QUESTIONS.md](./OPEN_QUESTIONS.md): that file holds *unresolv
 
 ---
 
+## Version bumps go through pull requests (2026-11-11)
+
+### Context
+
+The Build workflow's direct push of its version-bump commit is rejected by the
+ruleset protecting `main`. The original feature PR does not authorize a subsequent
+automated push.
+
+### Decision
+
+Create or update a minor-version-bump PR instead. Explicitly dispatch the existing
+Tests workflow on its branch so the required checks run despite `GITHUB_TOKEN`
+event suppression. After the version change is merged, build and tag the merged
+commit, then trigger deployment. Detect the version change across the push's
+before/after commits so merging the bump does not open another bump PR.
+
+### Alternatives considered
+
+A dedicated GitHub App with a ruleset bypass would permit direct pushes, but
+requires another credential and exempts those pushes from the normal checks.
+Deploying before the version PR merges would decouple deployed versions from
+approved commits.
+
+### Consequences
+
+Releases require merging the version-bump PR. Administrators must allow Actions
+to create PRs, but no bypass or additional token is needed. The Tests workflow
+also accepts manual dispatches.
+
+---
+
 ## Vehicle deep-link via `?selected=` query param _(retroactive, captured 2026-05-12)_
+
+> **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
 
 ### Context
 
@@ -135,6 +168,8 @@ Introduce `src/data/netex/NetexId.tsx` — a small chip component that:
 ---
 
 ## Composite `EditorRail` for sidebar-edge controls _(2026-05-16)_
+
+> **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
 
 ### Context
 
@@ -292,6 +327,8 @@ The per-row `EditActionCell` → standalone `itemId`-editor convention is retire
 ---
 
 ## Relocate Autosys import UI into `data/vehicle-imports/components/` _(2026-05-22)_
+
+> **Superseded in part (2026-10-07)** by _"Home is the sole Autosys import launcher; `importAction` slot removed"_ at the end of this file. The placement stands — `data/vehicle-imports/` still owns its UI. What changed: `VehicleTypeView` no longer imports the launcher (the last Consequences bullet below), and the feature's root-level data-layer files + `__tests__/` are now segmented into `api/` · `types/` · `utils/`.
 
 ### Context
 
@@ -488,6 +525,8 @@ Omit any sub-area that's empty. The read/write semantics that motivated `project
 
 ## Replace right-anchored Menu Drawer with persistent left Nav Rail _(2026-05-29)_
 
+_Desktop superseded by "Side navigation is Linje's SideNavigation, always open on desktop" (2026-11-24)._
+
 ### Context
 
 Inanna's stock `Menu.tsx` was a right-anchored persistent Drawer that rendered its own primary-colored Toolbar (logo + chevron close) covering the AppBar's rightmost ~280px. Two visible flaws on desktop: the brand appeared twice (`HeaderBranding` at top-left, Drawer Toolbar at top-right), and the Drawer's own Toolbar visually clashed with the AppBar instead of sitting beneath it. On mobile the Drawer went full-width, masking the AppBar entirely.
@@ -551,3 +590,350 @@ Confirmed against the Sobek source: the backend (`AllPublicTransportModesEnumera
 - **~140 fewer LOC net** (vs ~100 in the earlier subset draft): beyond the casing engine it also deletes `toSobekTransportMode`, `symbolIdFor`, `SPRITE_MODES`, the `KNOWN_/ALL_/NORMALIZED_` sets, and collapses the 15-line `transportModeFilters` array to a one-liner. `transportMode.ts` 141→~56, `transportModeIconHelpers.ts` 46→~8. Partly offset by ~+45 lines of additive sprite-alias markup + 7 new i18n keys per locale (chips now span all 21). Exact figure from the impl `git diff --stat`.
 - Playwright fixtures flip camelCase → UPPER_CASE to mirror the real Sobek wire shape (the normalizer had hidden the mismatch).
 - `WATER` (general water transport) stays drawn; `FERRY` (distinct NeTEx ferry-specific mode) rides `tm-fallback` until it earns a glyph — flagged follow-up, not a `WATER` alias.
+
+## Post-login return path rides in OIDC `state`; router hoisted above `AuthProvider` _(2026-10-02)_
+
+### Context
+
+After login the user always landed on `/` (#31). `LoginRedirect` passed `oidcConfig.redirect_uri` — the app root in every environment config — as the per-request `redirect_uri`, and nothing recorded where the login started. Its fallback (and `SessionContext.relogin`) instead passed the current deep URL *as* `redirect_uri`, which only works if the IdP allow-lists arbitrary callback paths.
+
+### Decision
+
+- **`redirect_uri` is always the configured one.** `login(to?)` (`src/auth/authUtils.ts`) no longer takes a redirect URI; it sends the in-app return path as OIDC `state` (`{ returnTo }`), defaulting to the current `pathname + search + hash`. `oidc-client-ts` stores `state` client-side and hands it back as `user.state` in the signin callback — it never travels in the URL.
+- **`returnTo(state)` validates on the way back** — only a same-origin relative path (`/…`, never `//…` or `/\…`) is honoured, else `/`.
+- **`<BrowserRouter>` moved from `App.tsx` to `main.tsx`, above `AuthProvider`,** so `onSigninCallback` can `navigate(returnTo(user?.state), { replace: true })`. Rejected alternative: keep the nesting and `history.replaceState` + a synthetic `popstate` — smaller diff, but leans on a router implementation detail.
+- **Query and hash are part of the return path.** The sidebar editors are `?selected=<netexId>` deep links, so restoring only `pathname` would reopen the list with the editor closed.
+
+### Consequences
+
+- The callback still lands on `/` first (Home renders for a moment) before the navigate.
+- Unsaved form content is still lost on a session-expiry re-login — the login is a full-page redirect; only the location is restored.
+- e2e can now run a real signin round trip offline: `mockIdp` (`e2e-tests/live-auth-helpers.ts`) fakes discovery / authorize / token, unlike `seedAuth`, which boots already-authenticated and never touches the redirect or callback code.
+
+## Home is the sole Autosys import launcher; `importAction` slot removed _(2026-10-07)_
+
+### Context
+
+The Autosys bulk import had two entry points: the list-head button on `/vehicle-types` (`VehicleTypeView` filling the generic `importAction` slot) and, since #182, the SVV bulk-import button on Home. #90 proposed moving the whole feature to `src/components/import-autosys/` on the premise that it was cross-cutting — consumed by both `vehicles/` and `vehicle-types/`. By the time it was picked up that premise was gone: the `importAsNetexToBackend` consumers it listed no longer existed, and the only code outside the feature touching it was the launcher button, imported by `VehicleTypeView` and `Home`.
+
+### Decision
+
+- **Home is the only launcher.** `VehicleTypeView` no longer renders the import button; `src/pages/Home.tsx` is the feature's single consumer.
+- **`vehicle-imports/` stays a `data/<feature>/` folder.** #90 is closed as not planned — one consumer is not cross-cutting, so the 2026-05-22 placement holds.
+- **The folder follows the 2026-05-28 segmentation:** `api/` (Shepet/Sobek HTTP, concurrency pool, result assembly, NeTEx frame merge) · `components/` · `types/importTypes.ts` · `utils/` (input parsing, error translation). Tests are colocated with their source, as in the sibling features; the root `__tests__/` is gone.
+- **The `importAction` slot is removed** from `ViewConfig`, `GenericDataViewPage` and `DataPageContent` rather than left without a caller. `addAction` is the only list-head action slot.
+- **`AutosysImportFloatingMenu` takes `label` and `testId` as required props.** Its defaults (`vehicleType.actions.importMulti`, `import-vehicle-multi-button`) described the removed `/vehicle-types` placement; the locale key is deleted.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Execute #90 — move to `src/components/import-autosys/`** | `components/` is for shared cross-feature code. With Home as the only consumer the move would file a single-consumer feature in the shared tree. |
+| **Keep both launchers** | Two entry points to one flow, and the `/vehicle-types` one was the only reason for a cross-feature import and a generic slot. |
+| **Keep the `importAction` slot, unused** | Zero runtime cost and a smaller diff against Inanna, but a typed, documented, story-covered slot with no caller reads as a supported extension point. It is three small deletions to restore if an entity ever needs a list-head import. |
+
+### Consequences
+
+- No cross-feature import into `vehicle-imports/` remains; the 2026-05-22 ADR's "deliberate cross-feature import" bullet no longer applies.
+- `GenericDataViewPage` / `DataPageContent` / `viewConfigTypes.ts` diverge from Inanna by one removed prop — expect a small conflict there when pulling upstream changes to the list-head.
+- A completed import still redirects to `/vehicle-types?filter=<ids>`; because it now always starts on Home, the redirect pushes a history entry and Back returns to Home.
+- e2e opens the dialog from `/` via `home-bulk-import-svv` (`autosys-multi-import.spec.ts`, `import-state-refresh.spec.ts`). The button renders only when authenticated with an organisation selected, so those specs wait for org selection first.
+- `vehicle-imports/` is no longer on the 2026-05-28 ADR's "reshaped the next time they're touched" list.
+
+### Out of scope
+
+- Renaming `AutosysImportFloatingMenu` (no longer floating, no longer a menu) or collapsing its remaining look-override props now that there is one caller.
+
+---
+
+## Sidebar forms: label on the field, single-column stack _(2026-10-09)_
+
+> **Superseded 2026-11-11** by [Collection and form pages replace the list views and sidebar editor](#collection-and-form-pages-replace-the-list-views-and-sidebar-editor-2026-11-11).
+
+Supersedes "Horizontal form rows via CSS Grid + `<FieldRow>`" (2026-05-15) for **editable** fields. Read-only rows keep that layout.
+
+### Context
+
+The 2026-05-15 grid sizes its label column to content (`fit-content(12rem)`). In the tabbed VehicleType editor each tab is its own grid, so input width changed with the longest label on the tab — reported in the internal user test (18.09.26) as field widths alternating 30% → 60% → 100%. #198.
+
+### Decision
+
+- **Editable fields carry their own label** (MUI `TextField label`), stacked in `FormStack` (`src/components/FormLayout.tsx`). `FieldRow` is removed.
+- **Labels are pinned in the notch** (`shrink`), never resting inside the field: an editor mounts empty and then hydrates, which would animate every label on each row open.
+- **Fields are built from `src/components/FormFields.tsx`** — text, number, select-with-none, switch, autocomplete. The primitives own `size`, width and the label rule; forms pass plain values (#188 item 5).
+- **Number fields are two thirds wide**, full width below a 16rem container. The field queries the nearest inline-size container, which `FormStack` provides.
+- **`FormLayout` + `MetaRow` stay** for read-only label/value rows.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the two-column grid, fix the label column width** | A fixed column either truncates long nb/en labels or wastes the rail on short ones; the rail is ~18rem at its default width. |
+| **Static `<InputLabel>` stacked above the input** | Smallest diff, but taller rows and not what MUI ships; the notch label costs no extra row height. |
+| **Pin labels via theme `defaultProps`** | Would also change the header org picker and the import review input, which are not sidebar forms. |
+
+### Consequences
+
+- Row height goes back up (~40px field + 16px gap) — the vertical space the 2026-05-15 ADR reclaimed is traded for stable widths.
+- An `Autocomplete`'s DOM id goes on the `Autocomplete`, not the inner `TextField`, so the label and the combobox input share it.
+- `FormLayoutSkeleton` sections are either label+value rows or `stacked`.
+
+## Feature flags live in `sandboxFeatures`; one flag per feature _(2026-10-21)_
+
+### Context
+
+Deck plans are not ready for every environment, but their route, nav item, Home cards and the references to them elsewhere (vehicle-type column, multi-import count) were always on (#202). Each environment's `config.json` lives in `hathor-deployment-config`; only dev and localhost are in this repo (`.github/environments/`). enki and abzu already gate per-installation features from `config.json` under `sandboxFeatures`.
+
+### Decision
+
+- **One place for flags.** `sandboxFeatures.<Feature>` (PascalCase, `SandboxFeatures` in `src/contexts/configContext.ts`), as in enki. `useIsFeatureOn()` (`src/config/featureFlags.ts`) is the only reader.
+- **One flag per feature.** `sandboxFeatures.DeckPlans` covers the `/deck-plans` route, nav item and Home cards, and the deck-plan references on other screens: the vehicle-type deck-plan column and the multi-import deck-plan count.
+- **A missing key is off.** Each environment opts in; dev and localhost set `DeckPlans: true`.
+- **Lists declare their gate.** Menu items, Home `SiteType`s and table columns take an optional `flag`; the component that renders the list drops entries whose flag is off.
+- **A config URL is not a flag.** `sandboxFeatures.AutosysImport` gates the SVV bulk import on Home; `applicationGetAutosysUrl` only says where Autosys lives.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Separate flag for references (`enableDeckPlanRefs`)** | Referencing something you can neither register nor see is not useful, and two independent flags add states nobody needs (PR #203 review). |
+| **Top-level `enable*` booleans beside `sandboxFeatures`** | Two ways to read a flag in one project; `sandboxFeatures` can carry every flag. |
+| **Missing means on** | A new environment would show unfinished features until someone remembers to turn them off. |
+| **A set URL turns its feature on (`applicationGetAutosysUrl` present → SVV import shown)** | One key doing two jobs: an endpoint can't be validated as required while its absence also means "off", and turning a feature off means deleting the URL (#202). |
+| **Build-time flags (`import.meta.env` / `define`)** | One image is deployed to every environment with its own `config.json`; a build-time flag needs a build per environment. |
+
+### Consequences
+
+- Deck plans and their references disappear in every `hathor-deployment-config` environment until that repo sets the flag; a PR there follows this one.
+- A misspelt key reads as missing, i.e. off, with no error.
+- Deck-plan code still ships in the main chunk when the flag is off. Size at ed3c6b1 (0.109.0), from source maps:
+
+| Part | Size |
+|---|---|
+| `src/data/deck-plans/**` in the main chunk | 16.0 kB min (components 8.5, hooks 3.7, utils 2.4, api 1.0) |
+| Main chunk total | 1,098.68 kB min / 336.78 kB gz |
+| `netex-deckplan-editor` web component | 154.57 kB min / 48.36 kB gz, own chunk, loaded on first deck render (`loadDeckRenderer.ts`) |
+| `sample-deck-plan.xml` | ~20 kB, fetched at runtime (`loadGhostDeckPlan.ts`) |
+
+### Out of scope
+
+- Loading the deck-plan code lazily behind `sandboxFeatures.DeckPlans`, as enki does for its `sandboxFeatures` from `src/ext/<Feature>/`.
+
+## SVV import: one bulk request to shepet, its XML posted to Sobek untouched _(2026-10-27)_
+
+### Context
+
+The SVV (Autosys) multi-import sent one `GET` per plate to shepet and built the Sobek document in the browser: it merged the ResourceFrames, deduplicated entities, injected `OperationalNumber` and added the owning ResponsibilitySet (#214). entur/shepet#39 moves that work into shepet behind `POST …/autosys/vehicles?dataOwner=`. Against that shepet, the client-side assembly put `DefaultResponsibilitySetRef` after shepet's `DefaultLocale`, so Sobek refused the import with an XSD order error (500).
+
+### Decision
+
+- **One `POST` per import**, at config key `motorVehicleRegistryProxy` (the full bulk endpoint URL). `applicationGetAutosysUrl` is gone.
+- **Shepet's XML goes to Sobek as returned.** Hathor parses it only to count entities for the confirm step (`assembleAutosysResults.ts`). Verified live: Sobek accepts it, including the `fetchError-*` KeyList.
+- **Per-plate failures come from shepet's KeyList** (`fetchError-registrationNumber-<i>` / `fetchError-message-<i>`) and still go through `translateAutosysError`. If the whole request fails, the wizard stays on Review and shows that one error.
+- **The fetch progress bar is indeterminate**, because there is one request and so no per-plate progress.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the per-plate path behind a feature flag** | It no longer works against shepet#39 (see Context), and a flag would keep two document builders alive. |
+| **Chunk large imports client-side** | Shepet has no cap yet. Revisit if a real import hits a gateway timeout. |
+
+### Consequences
+
+- An environment needs a shepet with #39 deployed before its import works.
+- Shepet sends no DeckPlans, so the confirm step's deck-plan count is 0.
+
+## Editors read their record by id; "saved" means re-read _(2026-11-03)_
+
+### Context
+
+`?selected=<id>` resolved the editor's record by copying the row out of the list (`useUrlEditorSelection`). The editor could not mount without the list, a same-id save never pushed the fresh row back in, and success hung on the list reload. Vehicle's list reload swallowed its own failure, so "saved" showed over a stale table; deactivate (all three) went green before the reload, so a failed one showed green and amber together (#237).
+
+### Decision
+
+- **One by-id read per editor**: `useEntityRecord(id, fetchX)` (`src/hooks/useEntityRecord.ts`) with a by-id fetcher in each feature's `api/` (`fetchVehicle`, `fetchVehicleType`, `fetchDeckPlan`). The URL carries only the id; `useUrlEditorSelection` passes `id` (`''` = create) and re-mounts only when the id changes.
+- **Derived, not synced**: the record is keyed on org + id, and only the latest request may write it. A late response for an older key is dropped, and a key change never shows the previous record.
+- **"Saved" = the record was re-read.** The re-read re-baselines the form. The list reload runs alongside; if it fails, the editor shows the stale-list warning instead of success. Deactivate shows green only after the list reload.
+- All three list `refetch`es reject on failure (`fetchVehiclesAndApply` now re-throws).
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the list row, re-commit the editor on refetch** | Re-mounting drops mode and snackbars; the editor still can't live outside the list. |
+| **Success on the list reload (as before)** | Ties a record's write to a different query's health (list errors: #229). |
+
+### Consequences
+
+- An editor needs only an id. That is the first half of a standalone `/<entity>/:id` page; the sidebar-coupled I/O (`useCloseSliderParam`, `useSidebarCreateAdvance`, `EditorRail`) is #238.
+- Mocks must answer the by-id `filter.netexIds` read like Sobek, including the saved values after a write (`e2e-tests/deck-plan-edit-sidebar.spec.ts`).
+- A create still re-mounts the editor when `?selected=new` advances to the new id, so its success snackbar does not survive; unchanged by this decision.
+
+## One entity editor: flow, hook, frame _(2026-11-03)_
+
+### Context
+
+The vehicle, vehicle-type and deck-plan editors each carried a copy of the same state machine (mode, save, cancel, deactivate, snackbars), the same chrome and a byte-identical deactivate hook. The copies had drifted. Form state came in three shapes, and so did Cancel (a parsed JSON key, a re-hydrate, a `restore`). Vehicle blanked its form on a null record, DeckPlan's badge dropped the version, and the blank-name label was an untranslated constant ×3. None of them checked that a save was still for the selection on screen, so a create whose list reload landed after the user picked another row could still rewrite `?selected=` (#238).
+
+### Decision
+
+- **One flow**: `runSave` / `runDeactivate` (`src/hooks/entityEditorFlow.ts`) are plain async functions over injected callbacks, with `live()` checked after every await. They are vitest-tested without a React harness.
+- **One hook**: `useEntityEditor` (`src/hooks/useEntityEditor.ts`) wires `useEntityRecord`, the feature's `createFormState` binding (`baseline`, `rebase`, `restore`, `normalise`) and the flow, and returns ready-made `EditorRail` props. `live()` goes false on unmount; `useUrlEditorSelection` re-mounts the editor when the selection or the org changes.
+- **Host-agnostic**: router I/O arrives as `onClose` / `onCreated` (`EntityEditorHostProps`), built by `useUrlEditorSelection` from its `paramKey`. The hook and `*Details` never touch `useSearchParams`.
+- **One frame**: `EditorFrame` (`src/components/sidebar/EditorFrame.tsx`) draws the skeleton, the not-found view, title + `NetexId`, the read-error `BodyState` with Retry, the four snackbars and the rail.
+- Each feature declares only `fetchById`, `formState`, `write`, `withNewId`, `deactivateRequest`, its copy keys, its body and `canSubmit`.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Shared frame only, state machine stays per feature** | The drift was in the state machine, not the chrome. |
+| **Keep three copies, align them by review** | They had already drifted once (#237 aligned them); nothing stops it again. |
+
+### Consequences
+
+- A standalone `/<entity>/:id` page needs only a host that supplies `onClose` / `onCreated`. `EditorFrame` still renders the sidebar `EditorRail`.
+- Visible changes: blank names read `common.unnamed`, a failed record read offers Retry, DeckPlan's badge shows the version, and a DeckPlan patch or stale-body refusal shows as a save error (red), no longer a warning.
+- The per-feature save hooks are now stateless request wrappers; `useEntityEditor` owns `saving` and the save error.
+
+---
+
+## Collection and form pages replace the list views and sidebar editor _(2026-11-11)_
+
+### Context
+
+Epic #252 rebuilt each entity's screens as a collection page (`createEntityCollection`, `src/components/collection/`) and a full-page form editor (`EntityDetailsShell`, `EditorFrame`) under `/next/*`, beside the old `GenericDataViewPage` list with its resizable sidebar editor. User test II (2026-11-03) and the internal test favoured the new pages; keeping both doubled every editor (a sidebar form and a form page per entity) and every e2e flow.
+
+### Decision
+
+- `/vehicle-types`, `/vehicles`, `/deck-plans` (+ `/:id`, `/new`) serve the collection and form pages; `/next` and the `Collections` flag are gone.
+- The old `?selected=<id>` deep link redirects to `/<entity>/<id>` (`CollectionPage`), so bookmarks and shared links keep working.
+- The form page is the only editor host: `useEntityEditor` returns neutral `EditorActions` (no `EditorRail` props), and it opens in edit; View is only a read-only state (deactivated, or a save / read settling).
+- `EditingContext` keeps only the dirty flag: the header's organisation picker asks through `DiscardDialog` before an org switch drops unsaved edits. An org switch re-mounts the editor, the create page too.
+- Deleted: `GenericDataViewPage`, `viewConfigTypes`, `components/data`, `components/search` (+ header search), the sidebar (`Sidebar`, `EditorRail`, `editorHost`, the sidebar forms) and their hooks.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **Keep the old views behind a flag for a while** | Two editors per entity to keep in step, and nobody needed the old one after the user tests. |
+| **Redirect `/next/*` too** | Only testers with the flag on ever saw it. |
+
+### Consequences
+
+- An Autosys import lands on `/vehicle-types?filter=<ids>`, read once as the collection's `initialFilters` and dropped from the URL when its chip goes.
+- Search, filter and sort are the collection's own state, per page visit; nothing is global any more (the #141 leak can't recur).
+- `src/components/sidebar/` now holds only the form-page frame (`EditorFrame`) and its stories; the folder name is historical.
+
+
+---
+
+## Themes come from `themeConfigs`; Nationale ships only from the deployment _(2026-11-16)_
+
+### Context
+
+Theming was one boolean, `useCustomFeatures` (Settings "Enable custom theme & icons"), switching between the deployment's `themeFilePath` and the Inanna demo theme `public/default-theme-config.json` (#202). The theme asked for Entur's font Nationale but nothing loaded it (#255). Nationale is licensed by Playtype for official Entur products only; this repo is public (EUPL) and forked. abzu (`entur/abzu` `23b32c4`) lists themes in `bootstrap.json` `themeConfigs`, loads fonts from a theme's `fonts.faces`, and keeps Nationale out of git (`.gitignore:32-36`, `THEME_CONFIG_GUIDE.md:511-524`).
+
+### Decision
+
+- **`themeConfigs: string[]`** in `config.json` replaces `themeFilePath`; the first entry is the default, two or more give a picker in Settings, the pick is kept in localStorage (`CustomizationContext`). None listed → MUI's plain theme.
+- **A theme loads its own fonts.** `fonts.faces` in the theme JSON becomes `@font-face` rules (`src/theme/themeFonts.ts`), abzu's shape.
+- **Nationale lives in `entur/hathor-deployment-config` only** — the woff2 files, the `fonts.faces` that point at them, and the `"Nationale"` family name (hathor-deployment-config#9). Whatever abzu ships, no theme in this repo asks for a licensed font (`theme-{dev,localhost}.json`: `Arial, sans-serif`); without the deployment theme, hathor renders in Arial.
+- **The demo theme and the custom/default icon switch are gone.** Icons always resolve custom first, default as fallback (`iconLoaderUtils.ts`).
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **`@entur/typography` as a dependency** | Puts Nationale into every build of a public, forkable repo, forks included. |
+| **A config key with a font stylesheet URL (#255's first plan)** | A second mechanism beside the theme; abzu's `fonts.faces` already carries the font with the theme that uses it. |
+| **Keep the demo theme as a second entry** | Nobody uses it; a picker needs a second real theme. |
+
+### Consequences
+
+- Rollout follows hathor-deployment-config#8: the deployment lists `themeConfigs` beside `themeFilePath` before this release, and drops `themeFilePath` after it.
+- A first visit paints in Arial, then swaps to Nationale once `config.json` → theme JSON → font load (`font-display: swap`).
+- The type scale and weights live in code (`TYPE_SCALE`, `createThemeFromConfig.ts`, #258); a theme JSON carries data only — palette, logo, `fonts.faces`, `fontFamily` — so the deployment themes set no `fontWeight*` (hathor-deployment-config#10).
+
+## Form fields are Linje's TextField: the label inside the box _(2026-11-17)_
+
+### Context
+
+User test II (S5, #260) found MUI's floating labels animating while a form hydrates, and colliding with a native date input's mask; the first fix pinned every label above its field. Linje's TextField and Dropdown keep the label inside one 48 px box instead: resting mid-field, moving to the box's top at 12 px once focused or filled (`@entur/form` `BaseFormControl.scss`, `InputGroupLabel.scss`). Hathor follows Linje.
+
+### Decision
+
+- **Form-size fields (48 px) are Linje's box** (`MuiInputLabel` / `MuiOutlinedInput` / `MuiAutocomplete` in `createThemeFromConfig.ts`): 16 px inline padding, radius 8, label inside in `Text/Subdued`, the value 4 px off the bottom, the outline's notch closed. Selects and autocompletes are the same box, as Linje's Dropdown.
+- **A native date input pins its label at the top** (`FormFields.tsx` `fieldBase`): its dd/mm/yyyy mask is always drawn, so a resting label would overlap it.
+- **Small fields keep MUI's 40 px outlined field**: the collection toolbar (no label, so Linje's ring at offset 0) and the header's organisation picker (label in the outline's notch). A Linje small field (32 px) has no room for a label inside. The filter panel was one too; since 2026-11-19 (#392) it uses the form-size field: a popover has the room, and a notched label blocks Linje's focus ring.
+- **The header's organisation picker** matches enki's provider picker: label pinned in the notch ("Select organisation"), transparent on the navy — white text, Linje `Text/SubduedAlt` label, `--stroke-contrast` outline, focus as the outline turning white (a ring is a plain box and would strike through the label) (`MuiAppBar` override).
+
+### Alternatives considered
+
+- **Labels pinned above every field** (S5's first fix) — no animation, but not Linje's anatomy; in the 64 px header, label and field took 56 px.
+- **Pinned labels inside** (Linje's `disableLabelAnimation`) — no hydrate animation, but an empty form would show every label at the top; Linje's default moves the label.
+- **No visible label on the header picker** (aria-label only, as before) — fails WCAG 3.3.2.
+
+### Consequences
+
+- A form page's labels move up as the editor hydrates its values, as Linje's do.
+- The header picker's 40 px is MUI's small height, as in enki, off Linje's 32 / 48 scale.
+
+## Linje is a reference, not a dependency; Base UI fills MUI's gaps _(2026-11-19)_
+
+### Context
+
+Hathor follows Linje's look on MUI (`linje-on-mui` skill), and the 2026-11-16 ADR already keeps `@entur/typography` out because of Nationale. A scan of the published packages (`@entur/button` 5.2.2, `form` 10.3.2, `alert` 0.22.2, `chip` 0.14.0) found more than the font:
+- `@entur/typography` 3.2.1 bundles the Nationale files, and 10 of the packages depend on it.
+- Focus rings are a hardcoded `outline: 2px solid #181c56` (11 rules in form and button), so no token reaches them.
+- `Switch` sets its colour from JavaScript as an inline style.
+- The default labels are Norwegian (`Lukk`, `Fjern …`, `Velg alle`).
+
+PR #396 (#395) then hand-wrote a number parser, because MUI 9.5 has no number field (`@mui/material` docs: "does not include a number field component out of the box"). Base UI's `NumberField` has one.
+
+### Decision
+
+- **No `@entur/*` package in hathor.** Linje's docs, checkout and token JSON are the spec, and the values are copied into the theme.
+- **Behaviour comes from a library.** Use an MUI component if there is one. If not, use Base UI's headless part (`@base-ui/react`), styled from the MUI theme and trimmed to Linje's anatomy. Write your own only when neither library has it, with a `shortcut:` comment.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| **`@entur/*` components** | Nationale reaches every fork's build. Focus rings and the switch colour ignore the theme. Labels are Norwegian by default. |
+| **Hand-rolled behaviour where MUI stops** | Re-invents parsing, keyboard and ARIA, and each copy is tested only by its own unit tests. |
+
+### Consequences
+
+- `@base-ui/react` is a dependency, first used by `FormNumberField` (#395, `FormFields.tsx`): it refuses letters as you type, so #396's first version, a hand-written error state and editor wiring, is gone. Its behaviour is listed under Numbers in the `linje-on-mui` skill's `components.md`.
+
+---
+
+## Side navigation is Linje's SideNavigation, always open on desktop _(2026-11-24)_
+
+Supersedes the desktop half of _"Replace right-anchored Menu Drawer with persistent left Nav Rail"_ (2026-05-29). The mobile drawer and the `--nav-rail-width` reflow stay.
+
+### Context
+
+The usertest (#260) found the collapsed rail icon-only. Measured against Linje (#418), the M3 rail differed in colours, sizes, the active marker and the collapse itself. Linje is the hard rule for hathor's UI.
+
+### Decision
+
+- From Linje's desktop breakpoint (`breakpoints.large`, 800 px) the side navigation is always open: no collapse, no rail hamburger, no tooltips. Below it, the same items sit in a temporary Drawer, opened by the header's menu button.
+- Linje's `SideNavigation` values: tint background, subdued hover, a divider under each item, a 4 px bar and a bold label on the active item, 16 px icons. Text, icons and bar use Linje's fixed Accent, not the theme's primary.
+- Width `RAIL_W` 21 rem, measured: the longest label (nb "Kontraktuelle kjøretøytyper", bold) needs 321 px in Nationale and Arial. In rem it grows with the font size; a longer label wraps.
+
+### Alternatives considered
+
+| Option | Why rejected |
+|---|---|
+| Linje's `CollapsibleSideNavigation` (80 px, edge button) | Collapse isn't needed on desktop; icon-only items were the usertest finding. |
+| Keep the M3 rail as a deviation | Linje is the hard rule. |
+| Colours from the theme palette | A theme with another primary would recolour Linje's navigation. |
+
+### Consequences
+
+- `NavRailContext` holds only the drawer's open state; the `hathor:navRailExpanded` localStorage key is no longer read or written.
+- From 800 px the content starts 21 rem in. Between 600 and 800 px, where the old rail stayed, the drawer is used.
+- Menu labels get re-measured when one grows (`linje-on-mui` `components.md`, SideNavigation).

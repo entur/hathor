@@ -1,6 +1,6 @@
 {
   "applicationBaseUrl": "https://api.dev.entur.io/vehicles/v1/graphql",
-  "applicationGetAutosysUrl": "https://api.dev.entur.io/shepet/v1/autosys?registrationNumber=",
+  "motorVehicleRegistryProxy": "https://api.dev.entur.io/shepet/v1/autosys/vehicles",
   "applicationImportBaseUrl": "https://api.dev.entur.io/vehicles/v1/netex",
   "applicationEnv": "development",
   "claimsNamespace": "https://ror.entur.io/role_assignments",
@@ -11,7 +11,13 @@
     "extraQueryParams": {
       "audience": "https://api.dev.entur.io"
     },
-    "redirect_uri": "https://materiellregister.dev.entur.no/"
+    "redirect_uri": "http://localhost:5000"
   },
-  "themeFilePath": "/theme.json"
+  "themeConfigs": ["/theme-dev.json"],
+  "faviconPath": "/assets/M-favicon.svg",
+  "sandboxFeatures": {
+    "DeckPlans": true,
+    "AutosysImport": true,
+    "BusPictures": true
+  }
 }

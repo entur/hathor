@@ -7,15 +7,15 @@ import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { parseEntryInput } from '../parseEntryInput';
-import type { RegNumbersStatus } from '../regNumbersTextTransformer';
-import type { ImportEntry } from '../types';
+import { parseEntryInput } from '../utils/parseEntryInput';
+import type { RegNumbersStatus } from '../utils/regNumbersTextTransformer';
+import { FIELD_BASE } from '../../../components/FormFields.tsx';
+import type { ImportEntry } from '../types/importTypes';
 
 interface MultiImportReviewInputProps {
   entries: ImportEntry[];
   status: RegNumbersStatus | null;
   fetching: boolean;
-  fetchProgress: { completed: number; total: number };
   onDeleteEntry: (regNumber: string) => void;
   onAddEntry: (entry: ImportEntry) => void;
 }
@@ -33,8 +33,8 @@ function EntryChipLabel({ entry }: { entry: ImportEntry }) {
         sx={{
           bgcolor: 'secondary.main',
           color: 'secondary.contrastText',
-          fontSize: '0.7rem',
-          fontWeight: 600,
+          typography: 'caption',
+          fontWeight: 'fontWeightBold',
           px: 0.75,
           py: 0.125,
           borderRadius: 1,
@@ -51,15 +51,11 @@ export default function MultiImportReviewInput({
   entries,
   status,
   fetching,
-  fetchProgress,
   onDeleteEntry,
   onAddEntry,
 }: MultiImportReviewInputProps) {
   const { t } = useTranslation();
   const [newEntry, setNewEntry] = useState('');
-
-  const progressPercent =
-    fetchProgress.total > 0 ? Math.round((fetchProgress.completed / fetchProgress.total) * 100) : 0;
 
   const handleAddEntry = () => {
     const parsed = parseEntryInput(newEntry);
@@ -80,16 +76,9 @@ export default function MultiImportReviewInput({
     return (
       <Box sx={{ textAlign: 'center', py: 3 }}>
         <Typography sx={{ mb: 2 }}>
-          {t('import.multi.fetching', 'Fetching {{completed}} of {{total}}...', {
-            completed: fetchProgress.completed,
-            total: fetchProgress.total,
-          })}
+          {t('import.multi.fetching', { count: entries.length })}
         </Typography>
-        <LinearProgress
-          variant="determinate"
-          value={progressPercent}
-          sx={{ height: 8, borderRadius: 1 }}
-        />
+        <LinearProgress sx={{ height: 8, borderRadius: 1 }} />
       </Box>
     );
   }
@@ -127,13 +116,14 @@ export default function MultiImportReviewInput({
         ))}
       </Box>
       <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+        {/* Linje's 48 px field, level with the 48 px Add button beside it. */}
         <TextField
-          size="small"
+          {...FIELD_BASE}
+          label={t('import.multi.regNumberColumn')}
           value={newEntry}
           onChange={e => setNewEntry(e.target.value)}
           onKeyDown={handleEntryKeyDown}
-          placeholder={t('import.multi.addPlaceholder', 'AB1234 or AB1234:OP-001')}
-          fullWidth
+          placeholder={t('import.multi.addPlaceholder')}
           data-testid="multi-import-add-input"
         />
         <Button
@@ -142,7 +132,7 @@ export default function MultiImportReviewInput({
           disabled={!newEntry.trim()}
           data-testid="multi-import-add-button"
         >
-          {t('import.multi.add', 'Add')}
+          {t('import.multi.add')}
         </Button>
       </Box>
     </>

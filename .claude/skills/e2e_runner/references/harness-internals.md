@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
 Three skip flavours exist in the suite:
 - `if (E2E_BACKEND !== 'true') intercept…` — mock when not live (most specs).
 - `test.skip(E2E_BACKEND === 'true', 'mock-bound assertions')` — mock-only specs
-  (e.g. `vehicle-type-sidebar.spec.ts` save block, `vehicle-slider-form.spec.ts`).
+  (e.g. the writes in `vehicle-types.spec.ts`: Deactivate, dialog Save, create).
 - `test.skip(() => E2E_BACKEND !== 'true', 'needs local Sobek')` — live-only specs
   (`vehicle-type-save-live.spec.ts`).
 
@@ -125,6 +125,13 @@ partner.dev token returned the user's 2 authorized orgs (AtB + Agder) here. If
 the permission lookup failed) — a backend issue, not a missing-claim or hathor-query bug. (An
 earlier 2026-06-05 note claimed the no-roles token `INTERNAL_ERROR`s — superseded; verify the
 effect, not the claim.)
+
+### 2b. Align the org (before any run)
+
+The same token call lists *which* orgs; the run needs the one that owns data. Count rows per
+authorized org and pin it with `E2E_ORG_ID=<netexId>` — recipe in SKILL.md, "Align org selection
+upfront". `seedAuth` seeds `hathor:currentOrganisationId` (only when unset) and `selectFirstOrg`
+then only waits for the restored org; without the pin it falls back to the first authorized org.
 
 ### 3. Use it in the run
 

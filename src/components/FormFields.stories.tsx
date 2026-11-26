@@ -1,0 +1,101 @@
+import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Box, Stack } from '@mui/material';
+import { FormNumberField, FormSelectField, FormCheckboxField, FormTextField } from './FormFields';
+
+// Inner width lands under FormNumberField's 16rem breakpoint.
+const NARROW_WIDTH = '16rem';
+const MODES = [
+  { value: 'bus', label: 'Bus' },
+  { value: 'rail', label: 'Rail' },
+  { value: 'water', label: 'Water' },
+] as const;
+
+type Mode = (typeof MODES)[number]['value'];
+
+const meta: Meta = {
+  title: 'components/form-layout/FormFields',
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'Field primitives for editor forms — the controls a form page draws into `FormSections` and the sidebar tabs use — text, number, select-with-none and switch. Each takes plain values and reports plain values; no feature types.',
+      },
+    },
+  },
+};
+export default meta;
+
+type Story = StoryObj;
+
+function AllFields({ disabled, readOnly }: { disabled?: boolean; readOnly?: boolean }) {
+  const [name, setName] = useState('Turvogn 1');
+  const [built, setBuilt] = useState('2026-05-29');
+  const [length, setLength] = useState<number | undefined>(12.5);
+  const [mode, setMode] = useState<Mode | undefined>('bus');
+  const [lowFloor, setLowFloor] = useState(true);
+  return (
+    <Stack spacing={2} useFlexGap>
+      <FormTextField
+        id="s-name"
+        label="Name"
+        value={name}
+        onChange={setName}
+        disabled={disabled}
+        readOnly={readOnly}
+      />
+      <FormTextField
+        id="s-built"
+        label="Build date"
+        type="date"
+        value={built}
+        onChange={setBuilt}
+        disabled={disabled}
+        readOnly={readOnly}
+      />
+      <FormNumberField
+        id="s-length"
+        label="Length (m)"
+        value={length}
+        onChange={setLength}
+        disabled={disabled}
+        readOnly={readOnly}
+      />
+      <FormSelectField
+        id="s-mode"
+        label="Transport mode"
+        value={mode}
+        options={MODES}
+        noneLabel="None"
+        onChange={setMode}
+        disabled={disabled}
+        readOnly={readOnly}
+      />
+      <FormCheckboxField
+        id="s-low-floor"
+        label="Low floor"
+        checked={lowFloor}
+        onChange={setLowFloor}
+        disabled={disabled}
+        readOnly={readOnly}
+      />
+    </Stack>
+  );
+}
+
+export const Editable: Story = { render: () => <AllFields /> };
+
+/** A form page's view mode (#267): no border or hover, the value full contrast. */
+export const ReadOnly: Story = { render: () => <AllFields readOnly /> };
+
+export const Disabled: Story = { render: () => <AllFields disabled /> };
+
+/** A narrow container: every field fills it (widths are the form layout's, #283). */
+export const NarrowContainer: Story = {
+  render: () => (
+    <Box sx={{ width: NARROW_WIDTH, border: '1px dashed', borderColor: 'divider', p: 2 }}>
+      <AllFields />
+    </Box>
+  ),
+};

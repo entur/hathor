@@ -1,7 +1,7 @@
 import { XMLBuilder } from 'fast-xml-parser';
-import { findResourceFrame, toArray, verbatimXmlParser } from '../../netex/xmlUtils.ts';
+import { findResourceFrame, toArray, xmlParser } from '../../netex/xmlUtils.ts';
+import { netexName, type MultilingualString } from '../../netex/multilingualString.ts';
 import type { ParsedXml } from '../../netex/xmlUtils.ts';
-import type { Name } from '../../vehicle-types/types/vehicleTypeTypes.ts';
 
 /** Builder options mirroring the import POST's own serialization. */
 const BUILD_OPTS = { ignoreAttributes: false, format: true, suppressEmptyNode: true };
@@ -37,10 +37,10 @@ function reorderInPlace(dp: ParsedXml): void {
 }
 
 /** Domain Name → NeTEx text node, or `undefined` when blank after trimming. */
-const textNode = (n?: Name): TextNode | undefined => {
-  const v = n?.value?.trim();
-  if (!v) return undefined;
-  return n?.lang ? { Text: v, '@_lang': n.lang } : { Text: v };
+const textNode = (n?: MultilingualString): TextNode | undefined => {
+  const t = netexName(n);
+  if (!t) return undefined;
+  return t.lang ? { Text: t.value, '@_lang': t.lang } : { Text: t.value };
 };
 
 /**
@@ -50,7 +50,7 @@ const textNode = (n?: Name): TextNode | undefined => {
  * `ValidBetween`, frame envelope).
  *
  * Every other element, attribute and value survives verbatim — the parser is
- * {@link verbatimXmlParser} precisely so zero-padded seat labels and
+ * {@link xmlParser} precisely so zero-padded seat labels and
  * trailing-zero dimensions are not coerced to numbers. The original bytes do
  * not survive: the parse/build round-trip normalizes whitespace and
  * indentation, and re-keys the patched `DeckPlan` into NeTEx sequence order.
@@ -68,8 +68,13 @@ const textNode = (n?: Name): TextNode | undefined => {
  * @throws If the document carries no `DeckPlan` with the given id — a silent
  *   no-op POST would report success while persisting nothing.
  */
-export function patchDeckPlanXml(xml: string, id: string, name?: Name, description?: Name): string {
-  const parsed = verbatimXmlParser.parse(xml);
+export function patchDeckPlanXml(
+  xml: string,
+  id: string,
+  name?: MultilingualString,
+  description?: MultilingualString
+): string {
+  const parsed = xmlParser.parse(xml);
   const frame = findResourceFrame(parsed);
   const dp = toArray(frame?.deckPlans?.DeckPlan).find(n => n['@_id'] === id);
   if (!dp) throw new Error(`DeckPlan ${id} not found in document`);

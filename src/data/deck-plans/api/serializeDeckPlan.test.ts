@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { serializeDeckPlan } from './fetchDeckPlans.ts';
-import type { DeckPlan } from '../../vehicle-types/types/vehicleTypeTypes.ts';
+import type { DeckPlan } from '../types/deckPlanTypes.ts';
 
 /** Owning-organisation ref threaded into every serialize call (required input field). */
 const OWNER = 'NMR:Organisation:1';

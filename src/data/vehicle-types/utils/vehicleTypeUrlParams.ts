@@ -1,6 +1,10 @@
-/** Query-param key on `/vehicle-types` driving the deep-link slider — mirrors `/vehicles` (see FORK_DECISIONS.md). */
-export const VEHICLE_TYPE_SELECTED_PARAM = 'selected';
+import { VEHICLE_TYPE_KIND } from '../types/vehicleTypeTypes.ts';
+import type { VehicleTypeKind } from '../types/vehicleTypeTypes.ts';
+import { VEHICLE_TYPE_KIND_CONFIG } from './vehicleTypeKindConfig.ts';
 
-/** Build the `/vehicle-types?selected=<id>` href for a VehicleType row id. */
-export const vehicleTypeSelectedHref = (id: string): string =>
-  `/vehicle-types?${VEHICLE_TYPE_SELECTED_PARAM}=${encodeURIComponent(id)}`;
+/** Build the vehicle type's form-page href, `/vehicle-types/<id>` (#285); a CONTRACTUAL one's is under
+ *  `/contractual-vehicle-types`. */
+export const vehicleTypeFormHref = (
+  id: string,
+  kind: VehicleTypeKind = VEHICLE_TYPE_KIND
+): string => `${VEHICLE_TYPE_KIND_CONFIG[kind].path}/${encodeURIComponent(id)}`;

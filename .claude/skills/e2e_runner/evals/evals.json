@@ -16,7 +16,7 @@
     {
       "id": 3,
       "prompt": "go through our playwright no-auth specs and tell me which ones would break against a real database instead of the mocks",
-      "expected_output": "Audits specs against the conformance checklist: flags hardcoded row counts (vehicle.spec 15/12, vehicle-type-filter 3/1/2, deck-plan-name-sort 10), mock-only mutation-capture assertions that need read-back, and unjustified E2E_BACKEND skips. Returns a per-spec table. Calls out the non-uniform create surfaces.",
+      "expected_output": "Audits specs against the conformance checklist: flags hardcoded fixture counts not behind a skip-live gate (e.g. FIXTURE_ROWS in vehicle-types.spec), mock-only mutation-capture assertions that need read-back, and unjustified E2E_BACKEND skips. Returns a per-spec table. Notes the create surface is uniform (/<entity>/new form pages).",
       "files": []
     }
   ]

@@ -27,6 +27,8 @@ tsconfig.tsbuildinfo
 
 public/config-*.json
 public/theme-*.json
+# Nationale is licensed (Entur sites only): npm run local-nationale-setup writes it here
+public/fonts/
 
 # Playwright
 /test-results/

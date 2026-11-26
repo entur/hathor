@@ -133,6 +133,10 @@ describe('e2e Playwright fixtures contract (post-#135 wire shape)', () => {
     };
     for (const vt of fx.data.vehicleTypes.content) {
       expect(hasNetexId(vt), `vehicleType row ${JSON.stringify(vt)} must use netexId`).toBe(true);
+      // Non-null on Sobek's read type; a save must repeat it (a train stays a train).
+      expect(vt, `vehicleType row ${String(vt.netexId)} must carry subtype`).toHaveProperty(
+        'subtype'
+      );
       const dp = vt.deckPlan as Record<string, unknown> | null | undefined;
       if (dp) {
         expect(hasNetexId(dp), `nested deckPlan ${JSON.stringify(dp)} must use netexId`).toBe(true);

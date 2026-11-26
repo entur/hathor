@@ -5,7 +5,6 @@ import { Box, Stack, Typography } from '@mui/material';
 import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import DeckRendering, { DECK_SCALE } from './DeckRendering.tsx';
 import { loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
-import { GHOST_DECK_PLAN_XML } from '../utils/ghostDeckPlanXml.ts';
 import { mkSampleDeckPlanXml } from '../utils/sampleDeckPlanXml.ts';
 
 /** Sample deck: eight seats in four rows either side of an aisle. */
@@ -44,8 +43,8 @@ function Framed({
 }) {
   const deck = useDeck(xml);
   return (
-    <Stack spacing={0.5} alignItems="flex-start">
-      <Typography variant="caption" color="text.secondary">
+    <Stack spacing={0.5} sx={{ alignItems: 'flex-start' }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
         {label}
       </Typography>
       {deck ? (
@@ -79,26 +78,26 @@ export default meta;
 
 type Story = StoryObj<typeof DeckRendering>;
 
+/** Seats in the SAMPLE ghost — kept in step with `GHOST_SEATS` in `parseDecks`. */
+const GHOST_XML = mkSampleDeckPlanXml([{ seats: 46 }]);
+
 /**
  * The `SAMPLE` fallback — what renders when a real plan carries an empty
- * `<decks/>`. Backed by Wagon_2's deck, so it looks like a real layout.
+ * `<decks/>`. A full carriage's worth of seats, so it reads as a real layout.
  */
 export const Ghost: Story = {
-  render: () => <Framed label="ghost" xml={GHOST_DECK_PLAN_XML} vertical />,
+  render: () => <Framed label="ghost" xml={GHOST_XML} vertical />,
   play: async ({ canvasElement }) => {
     const svg = await waitForSvg(canvasElement);
     // Non-degenerate box proves `scale` reached the element — unset, the
     // element's own `?? 0` collapses it to the 10px padding alone.
     expect(svg.getBoundingClientRect().height).toBeGreaterThan(100);
 
-    // hathor's sheet must be adopted: the package ships its renderer styles to
-    // a CSS file its `exports` map doesn't expose, so nothing styles the
-    // shadow root otherwise.
-    const root = canvasElement.querySelector('deck-rendering')!.shadowRoot!;
-    expect(root.adoptedStyleSheets.length).toBeGreaterThan(0);
-
-    // Unstyled, the outline falls back to `getShape()`'s `stroke: 'gray'`
-    // presentation attribute. Anything else means the sheet won the cascade.
+    // hathor's CSS must reach the shadow root: the package ships its renderer
+    // styles to a CSS file its `exports` map doesn't expose, so nothing styles
+    // it otherwise. Asserted through the cascade rather than through the
+    // delivery mechanism — unstyled, the outline falls back to `getShape()`'s
+    // `stroke: 'gray'` presentation attribute.
     const outline = svg.querySelector('rect.vehicle-deck')!;
     expect(getComputedStyle(outline).stroke).not.toBe('rgb(128, 128, 128)');
   },
@@ -110,7 +109,7 @@ export const Ghost: Story = {
  */
 export const Orientations: Story = {
   render: () => (
-    <Stack direction="row" spacing={4} alignItems="flex-start">
+    <Stack direction="row" spacing={4} sx={{ alignItems: 'flex-start' }}>
       <Framed label="vertical" xml={SAMPLE_XML} vertical />
       <Framed label="horizontal" xml={SAMPLE_XML} />
     </Stack>
@@ -133,7 +132,7 @@ export const Orientations: Story = {
 /** Scale sweep — confirms px-per-metre is honoured and nothing clips. */
 export const Scales: Story = {
   render: () => (
-    <Stack direction="row" spacing={4} alignItems="flex-start">
+    <Stack direction="row" spacing={4} sx={{ alignItems: 'flex-start' }}>
       {[DECK_SCALE / 2, DECK_SCALE, DECK_SCALE * 2].map(s => (
         <Framed key={s} label={`scale ${s}`} xml={SAMPLE_XML} vertical scale={s} />
       ))}

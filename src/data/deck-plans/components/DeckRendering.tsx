@@ -3,13 +3,13 @@ import { Alert, Box, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { Deck } from '@opentrainticketing/netex-deckplan-editor';
 import { DECK_RENDERING_TAG, loadDeckRenderer } from '../utils/loadDeckRenderer.ts';
-import { adoptDeckSheet, mkDeckSheet } from '../utils/deckRenderingStyles.ts';
+import { applyDeckStyle, mkDeckCss } from '../utils/deckRenderingStyles.ts';
 
 /**
  * Render scale in px per metre. A deck is a couple of metres across at
  * real-world size, so this sets how wide a `vertical` deck column lands in the
  * sidebar: at 36 a 2m-wide wagon deck is ~82px, which reads legibly against
- * the Edit tab's width while leaving room for several decks side by side.
+ * the General tab's width while leaving room for several decks side by side.
  */
 export const DECK_SCALE = 36;
 
@@ -36,8 +36,14 @@ interface DeckRenderingProps {
  * removes the need to augment `JSX.IntrinsicElements`.
  *
  * Renders nothing until the bundle has loaded; callers own the loading UI.
- * A mount that throws reports itself in place — silently rendering nothing
- * would read as "this deck is empty" while the strip around it looks healthy.
+ * A mount that throws reports itself in place rather than rendering nothing,
+ * which would read as "this deck is empty" while the strip around it looks
+ * healthy. In practice `DeckStrip` catches a failed bundle load first, so that
+ * branch is a guard for standalone use (the stories mount this directly), not
+ * a path the app reaches.
+ *
+ * Styling is applied after insertion and cannot fail the rendering — see
+ * `deckRenderingStyles`.
  */
 export default function DeckRendering({
   deck,
@@ -52,9 +58,9 @@ export default function DeckRendering({
 
   // The package's own renderer styles never reach the shadow root, so hathor
   // supplies them — see `deckRenderingStyles`.
-  const sheet = useMemo(
+  const css = useMemo(
     () =>
-      mkDeckSheet({
+      mkDeckCss({
         frame: palette.background.default,
         deck: palette.background.paper,
         deckLine: palette.divider,
@@ -75,11 +81,18 @@ export default function DeckRendering({
       .then(() => {
         if (!live || !node) return;
         const el = document.createElement(DECK_RENDERING_TAG);
-        // Both before insertion: Vue renders in `connectedCallback`, so props
-        // must be set by then, and adopting early avoids an unstyled flash.
+        // Props before insertion: Vue renders in `connectedCallback` and
+        // dereferences `deck.getBoundingBox()` there.
         Object.assign(el, { deck, scale, vertical });
-        if (el.shadowRoot) adoptDeckSheet(el.shadowRoot, sheet);
         node.replaceChildren(el);
+        // Styling is decoration, so it must not decide whether the deck draws.
+        // Applying after insertion costs an unstyled first frame; failing here
+        // used to cost the whole rendering.
+        try {
+          if (el.shadowRoot) applyDeckStyle(el.shadowRoot, css);
+        } catch {
+          // Drawn but unpainted beats a blank slot.
+        }
       })
       .catch(() => {
         if (live) setFailed(true);
@@ -88,7 +101,7 @@ export default function DeckRendering({
       live = false;
       node?.replaceChildren();
     };
-  }, [deck, scale, vertical, sheet]);
+  }, [deck, scale, vertical, css]);
 
   // The host stays mounted either way — unmounting it would null `host.current`
   // and leave every later effect run short-circuiting on a missing node.
@@ -100,7 +113,7 @@ export default function DeckRendering({
           variant="outlined"
           data-testid={testId ? `${testId}-error` : undefined}
         >
-          {t('deckPlans.render.deckError', 'Could not draw this deck')}
+          {t('deckPlans.render.deckError')}
         </Alert>
       )}
       <Box ref={host} data-testid={testId} sx={{ lineHeight: 0 }} />
