@@ -1,8 +1,27 @@
+import { applySpec, type BrokenRule, type BusSpec } from './busSpec.ts';
+import type { TransportMode } from '../../../data/netex/transportMode.ts';
+
 /** The outer dims a record may carry, as Sobek sends them: metres. */
 export type BusDim = 'length' | 'width' | 'height';
 export type BusDims = Partial<Record<BusDim, number | null>>;
 /** Which record the picture stands for: picks the body colour. */
 export type BusPaint = 'vehicleType' | 'vehicle';
+
+/** What {@link toBusInput} names in place of a dim: `shape` = the facts were drawn as the standard's. */
+export type BusFallback = BusDim | 'shape';
+
+export interface DoorHint {
+  zone: 'front_overhang' | 'between_axles' | 'rear_overhang';
+  leaves: 1 | 2;
+  bias?: 'front' | 'middle' | 'rear';
+}
+export interface BusSection {
+  length_mm: number;
+  axles_mm: number[];
+  doors_hint?: DoorHint[];
+  /** Trailer section of an articulated bus: the bellows ahead of it. */
+  bellows_ahead_mm?: number;
+}
 
 /** `@entur/iteru-3dbus` input (contract v3.0), narrowed to what {@link toBusInput} builds. */
 export interface BusInput {
@@ -11,13 +30,10 @@ export interface BusInput {
   height_mm: number;
   tyre: { size: string };
   base_color: { hex: string };
-  sections: [
-    {
-      length_mm: number;
-      axles_mm: number[];
-      doors_hint: { zone: 'front_overhang' | 'between_axles'; leaves: 1 | 2 }[];
-    },
-  ];
+  win_band_height_mm?: number;
+  /** Present: two decks. */
+  upper_win_band_height_mm?: number;
+  sections: [BusSection] | [BusSection, BusSection];
 }
 
 const MM_PER_M = 1000;
@@ -42,6 +58,14 @@ export const STANDARD_BUS = {
   color: { vehicleType: '#FFFFFF', vehicle: '#D32F2F' },
 } as const;
 
+/** Modes the package can draw. No mode (or `UNKNOWN`) is drawn as the standard bus too. */
+export const DRAWN_MODES: ReadonlySet<TransportMode> = new Set([
+  'BUS',
+  'COACH',
+  'TROLLEY_BUS',
+  'UNKNOWN',
+]);
+
 const DIMS: readonly BusDim[] = ['length', 'width', 'height'];
 
 /** The record's dim in mm, or `undefined` when it is missing or outside the schema's bounds. */
@@ -54,14 +78,20 @@ const usableMm = (dims: BusDims, dim: BusDim): number | undefined => {
 };
 
 /**
- * Builds the bus a record is drawn as: its own outer dims where usable, the
- * {@link STANDARD_BUS} for everything else.
+ * Builds the bus a record is drawn as: its own outer dims where usable, its facts
+ * (axles, doors, decks, …) where drawable, the {@link STANDARD_BUS} for everything else.
  *
  * @param {BusDims} dims length, width and height in metres; any may be missing
  * @param {BusPaint} paint body colour: white for a vehicle type, red for a vehicle
- * @returns {{ inp: BusInput, fallback: BusDim[] }} the input, and the dims drawn as the default
+ * @param {BusSpec} [spec] the shape facts; none = the standard bus's shape
+ * @returns {{ inp: BusInput, fallback: BusFallback[], broken: BrokenRule[] }} the input, what
+ *   was drawn as the default, and the rules the spec broke (then the shape is the default)
  */
-export const toBusInput = (dims: BusDims, paint: BusPaint) => {
+export const toBusInput = (
+  dims: BusDims,
+  paint: BusPaint,
+  spec?: BusSpec
+): { inp: BusInput; fallback: BusFallback[]; broken: BrokenRule[] } => {
   const mm = (d: BusDim) => usableMm(dims, d) ?? STANDARD_BUS.dimsMm[d];
   const length = mm('length');
   const inp: BusInput = {
@@ -78,5 +108,10 @@ export const toBusInput = (dims: BusDims, paint: BusPaint) => {
       },
     ],
   };
-  return { inp, fallback: DIMS.filter(d => usableMm(dims, d) === undefined) };
+  const fallback: BusFallback[] = DIMS.filter(d => usableMm(dims, d) === undefined);
+  if (!spec) return { inp, fallback, broken: [] };
+  const shaped = applySpec(inp, spec);
+  return shaped.ok
+    ? { inp: shaped.inp, fallback, broken: [] }
+    : { inp, fallback: [...fallback, 'shape'], broken: shaped.errs };
 };
