@@ -95,6 +95,10 @@ const POPOVER_FILL = '#f6f6f9',
 // (`menu/OverflowMenu.scss:3-9`): `Base menu/Fill-Default` and `Border` (= the field border),
 // radius legacy 4, `boxShadow`. The list's border is 2 px, the menu's 1 px.
 const MENU_FILL = '#f2f5f7';
+// `form/Base menu/Fill/{Hover,Selected}`: a menu or list option (same values as the secondary
+// fills above).
+const OPTION_HOVER = HOVER_FILL,
+  OPTION_SELECTED = PRESSED_FILL;
 // The radius is a px string: in `sx` a bare number is a multiple of `shape.borderRadius`.
 const surface = (fill: string, borderPx: number, borderColor: string) => ({
   backgroundColor: fill,
@@ -364,6 +368,21 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
   // Every popup one surface, not MUI's elevation 8 (menus) and 1 (autocompletes): Linje's
   // OverflowMenu here; a Select's menu widens the border to its dropdown list's (MuiSelect).
   MuiMenu: { styleOverrides: { paper: menuSurface(1) } },
+  // A menu or Select option: Linje `form/Base menu/Fill/Hover` on hover and keyboard focus
+  // (plus the inset ring, `MuiButtonBase`), `Fill/Selected` on the chosen one. Linje's own
+  // list draws selected with the hover fill too; two fills let a keyboard user tell "where I
+  // am" from "what is chosen" (#429).
+  MuiMenuItem: {
+    styleOverrides: {
+      root: {
+        [CAN_HOVER]: { '&:hover': { backgroundColor: OPTION_HOVER } },
+        '&.Mui-focusVisible': { backgroundColor: OPTION_HOVER },
+        '&.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
+          backgroundColor: OPTION_SELECTED,
+        },
+      },
+    },
+  },
   MuiTooltip: {
     styleOverrides: {
       tooltip: {
@@ -497,6 +516,20 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
         '& .MuiFilledInput-root.MuiInputBase-sizeSmall': { paddingBottom: AC_PAD_BOTTOM_PX },
       },
       paper: menuSurface(FIELD_BORDER_PX),
+      // Options as `MuiMenuItem`. Focus stays in the input (aria-activedescendant), so the
+      // highlighted option has no focus of its own: by keyboard (`Mui-focusVisible`) it gets
+      // the inset ring a menu item gets, by mouse (`Mui-focused` alone) the fill only.
+      listbox: {
+        '& .MuiAutocomplete-option': {
+          '&.Mui-focused': { backgroundColor: OPTION_HOVER },
+          '&.Mui-focusVisible': {
+            backgroundColor: OPTION_HOVER,
+            ...ring(theme.palette.primary.main, -FOCUS_PX),
+          },
+          '&[aria-selected="true"], &[aria-selected="true"].Mui-focused, &[aria-selected="true"].Mui-focusVisible':
+            { backgroundColor: OPTION_SELECTED },
+        },
+      },
       popper: {
         '&[data-popper-placement^="bottom"] .MuiAutocomplete-paper': { marginTop: POPUP_OFFSET_PX },
         '&[data-popper-placement^="top"] .MuiAutocomplete-paper': {

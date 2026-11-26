@@ -171,6 +171,13 @@ Cross-cutting traps:
     `defaultProps.MenuProps`: anchored bottom-left, `mt` `POPUP_OFFSET_PX` 4,
     `maxHeight` `LIST_MAX_HEIGHT`. Without the cap a long menu doesn't fit below and MUI
     shifts it up over the field and its focus ring. Measured: 4 px below the field.
+  - Options (#429), Select / Menu (`MuiMenuItem`) and Autocomplete (`MuiAutocomplete.listbox`)
+    alike: hover and keyboard highlight `form/Base menu/Fill/Hover` #d9ddf2, the chosen
+    option `Fill/Selected` #aeb7e2 (`OPTION_HOVER`, `OPTION_SELECTED`). By keyboard the
+    highlighted option also gets the inset ring (`Mui-focusVisible`); on an Autocomplete,
+    whose focus stays in the input, the theme adds that ring itself. **Deviates from Linje**:
+    `DropdownList.scss` draws `--selected` with the hover fill, so on Linje the highlight
+    can't be told from the choice. Text on #aeb7e2 is 9:1.
 - **Traps**:
   - MUI's Select sets `'&&&': { paddingRight: 32 }` (specificity 0,3,0). The theme's
     `MuiFilledInput.input` sets `paddingInline` at 0,1,0, so the Select's right padding still
