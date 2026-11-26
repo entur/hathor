@@ -10,6 +10,7 @@ import { TYPES, type CountCtx, type SiteType } from './siteTypes.ts';
 import { useIsFeatureOn } from '../../config/featureFlags.ts';
 import { SR_ONLY } from '../../utils/srOnly.ts';
 import { over } from '../../utils/colorOver.ts';
+import { FRAME_TINT } from '../../theme/createThemeFromConfig.ts';
 
 /**
  * SiteNavCards — the Home dashboard's per-type navigation cards. Two layouts:
@@ -84,7 +85,7 @@ export function StatStrip({ ctx, types = TYPES }: LayoutProps) {
       sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}
     >
       {types.map(s => (
-        <Box key={s.id} sx={{ p: 2.5, borderRadius: TILE_RADIUS, bgcolor: 'action.hover' }}>
+        <Box key={s.id} sx={{ p: 2.5, borderRadius: TILE_RADIUS, bgcolor: FRAME_TINT }}>
           <Box
             sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: 'text.secondary' }}
           >
@@ -459,7 +460,7 @@ function NavTile({
         borderRadius: TILE_RADIUS,
         textDecoration: 'none',
         color: 'text.primary',
-        bgcolor: 'action.hover',
+        bgcolor: FRAME_TINT,
         transition: theme =>
           theme.transitions.create(['background-color', 'transform'], { duration: HOVER_MS }),
         '&:hover': { bgcolor: 'action.selected', transform: 'translateY(-2px)' },

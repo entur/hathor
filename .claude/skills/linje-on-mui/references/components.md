@@ -17,6 +17,7 @@ checked this one).
 - FeedbackText (helper text)
 - Fieldset and form layout (FormSections)
 - Focus outline
+- Frame / surfaces (tint)
 - IconButton
 - Loader
 - MultiSelect / SearchableDropdown (Autocomplete)
@@ -224,6 +225,22 @@ Cross-cutting traps:
     `EditorFrame`, the collection scroller (`CollectionShell`).
   - Header: `FOCUS_CONTRAST`.
 - **Status: done (#256).** Read-only fields keep the ring (WCAG 2.4.7, deviates from Linje).
+
+## Frame / surfaces (tint)
+
+- **Linje**: the page and gutters are white (`Frame/Default`, `Frame/Elevated` #ffffff). A box
+  inside the page is `Frame/Tint` (`Fill/Background/Tint/Light`) **#f6f6f9**. Its grey sibling
+  `Fill/Background/Tint/Neutral` #f2f5f7 fills menus, the side navigation and the footer.
+  `Fill/Secondary/Hover/Light` #d9ddf2 is a *hover* fill only (`packages/tokens/src/base.json`,
+  `component.json`).
+- **MUI**: `FRAME_TINT` in the theme constants; `POPOVER_FILL` is the same value. Used by the
+  card picture area (`CardsView`), the Home tiles (`SiteNavCards`), the bus picture ground
+  (`BusPicture`, `BusPictureFrame`) and the empty deck-plan box (`DeckPlanSections`). Page
+  grounds stay `background.default` (white).
+- **Trap**: don't use `action.hover` as a ground. It is #d9ddf2 in every deployed theme, so a
+  box in it looks hovered, and a hover on it doesn't show.
+- **Contrast**: `text.secondary` on #f6f6f9 is 5.6:1 (WCAG 1.4.3 needs 4.5:1).
+- **Status: done (#397).**
 
 ## IconButton
 

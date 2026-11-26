@@ -10,6 +10,7 @@ import { useDeckPlanControls } from '../hooks/useDeckPlanControls.tsx';
 import { deckPlanFields, deckPlanLayout } from '../types/deckPlanFields.ts';
 import type { DeckPlan } from '../types/deckPlanTypes.ts';
 import DeckStrip from './DeckStrip.tsx';
+import { FRAME_TINT } from '../../../theme/createThemeFromConfig.ts';
 
 const SECTIONS = resolveSections(deckPlanFields, deckPlanLayout);
 
@@ -56,7 +57,7 @@ export default function DeckPlanSections({
         isCreate ? (
           <Box
             data-testid="deck-plan-decks-placeholder"
-            sx={{ py: 4, borderRadius: 1, bgcolor: 'action.hover', textAlign: 'center' }}
+            sx={{ py: 4, borderRadius: 1, bgcolor: FRAME_TINT, textAlign: 'center' }}
           >
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {t('deckPlans.noDecks')}

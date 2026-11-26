@@ -1,10 +1,11 @@
 import { Box, Typography } from '@mui/material';
 import { CARD_MEDIA_ASPECT } from '../../collection/index.ts';
 import { BusPicture, type BusPictureProps } from './BusPicture.tsx';
+import { FRAME_TINT } from '../../../theme/createThemeFromConfig.ts';
 
 /**
  * A {@link BusPicture} in a picture area of its own, for a place with no card
- * around it (a form page's column 3): 16:10 on the card's `action.hover` ground,
+ * around it (a form page's column 3): 16:10 on the card's Linje-tint ground,
  * painted on paper whatever lies behind (the shot's own ground), a size container for the note; a line of text in place of the picture
  * (`data-card-media-compact`) shrinks it to that line; a note on standard dims stacks
  * above the picture, not over it as on a card. A `placeholder` stands in the
@@ -24,9 +25,9 @@ export function BusPictureFrame({
         position: 'relative',
         aspectRatio: CARD_MEDIA_ASPECT,
         containerType: 'size',
-        // Opaque: `BusPicture` shoots onto paper under the hover tint, whatever is behind.
+        // Opaque: `BusPicture` shoots onto paper under the Linje tint, whatever is behind.
         background: t =>
-          `linear-gradient(${t.palette.action.hover}, ${t.palette.action.hover}) ${t.palette.background.paper}`,
+          `linear-gradient(${FRAME_TINT}, ${FRAME_TINT}) ${t.palette.background.paper}`,
         borderRadius: 1,
         overflow: 'hidden',
         '& > img': { display: 'block', width: '100%', height: '100%', objectFit: 'contain' },

@@ -34,6 +34,7 @@ import {
 } from '../utils/values.ts';
 import NetexId from '../../NetexId.tsx';
 import { EditLink } from './EditLink.tsx';
+import { FRAME_TINT } from '../../../theme/createThemeFromConfig.ts';
 
 // A card never gets narrower than this (or the whole row, on a screen narrower
 // than that); the row wraps instead. A card with a picture needs more room.
@@ -155,7 +156,7 @@ const CardMediaArea = ({
       // So media can place things in the part that shows (`cqh`), not in the
       // whole picture, whose top a reserved height cuts.
       containerType: 'size',
-      bgcolor: 'action.hover',
+      bgcolor: FRAME_TINT,
       borderBottom: 1,
       borderColor: 'divider',
       overflow: 'hidden',

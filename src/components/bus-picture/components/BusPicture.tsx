@@ -6,6 +6,7 @@ import { transportModeLabelKey, type TransportMode } from '../../../data/netex/t
 import { over } from '../../../utils/colorOver.ts';
 import { holdBusShot } from '../utils/busShots.ts';
 import { toBusInput, type BusDims, type BusInput, type BusPaint } from '../utils/standardBus.ts';
+import { FRAME_TINT } from '../../../theme/createThemeFromConfig.ts';
 
 const NOTE_INSET_PX = 8; // the note's gap to the picture's edges
 
@@ -26,8 +27,8 @@ type ShotState = { inp: BusInput; bg: string } & ({ url: string } | { failed: tr
  *  `undefined` while it is queued. */
 function useShot(inp: BusInput): string | 'failed' | undefined {
   const { palette } = useTheme();
-  // What shows behind the picture: a card's picture area is `action.hover` on paper.
-  const bg = over(palette.background.paper, palette.action.hover);
+  // What shows behind the picture: a card's picture area is the Linje tint on paper.
+  const bg = over(palette.background.paper, FRAME_TINT);
   const [shot, setShot] = useState<ShotState>();
 
   useEffect(() => {
