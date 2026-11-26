@@ -86,6 +86,17 @@ describe('holdBusShot', () => {
     expect(lib.mkStageShot.mock.calls.map(([o]) => o.bg)).toEqual([BG, DARK]);
   });
 
+  it('shoots again at another size, on a stage of that size', async () => {
+    const hold = await load();
+    const card = hold(BUS, BG),
+      big = hold(BUS, BG, { w: 720, h: 432 });
+    expect(await card.url).not.toBe(await big.url);
+    expect(lib.mkStageShot.mock.calls.map(([{ w, h }]) => [w, h])).toEqual([
+      [400, 250],
+      [720, 432],
+    ]);
+  });
+
   it('does not keep a failed shot: the next hold tries again', async () => {
     const hold = await load();
     lib.mkBus.mockImplementationOnce(() => {
