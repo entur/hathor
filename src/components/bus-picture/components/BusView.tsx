@@ -127,7 +127,15 @@ function Live({ inp }: { inp: BusInput }) {
  *   as `BusPictureFrame`; shotSize, the bitmap's
  * @returns {JSX.Element} the switch and the bus, or the text
  */
-export function BusView({ dims, paint, spec, mode, placeholder, shotSize }: BusViewProps) {
+export function BusView(props: BusViewProps) {
+  const { dims, paint, mode, placeholder } = props;
+  if (placeholder || (mode && !DRAWN_MODES.has(mode)))
+    return <BusPictureFrame dims={dims} paint={paint} mode={mode} placeholder={placeholder} />;
+  return <Drawn {...props} />;
+}
+
+/** The switch and the bus: mounted only for a view that is drawn, so no other takes a shot. */
+function Drawn({ dims, paint, spec, mode, shotSize }: BusViewProps) {
   const { t } = useTranslation();
   const [view, setView] = useState<BusViewMode>('bitmap');
   const { length, width, height } = dims;
@@ -140,8 +148,7 @@ export function BusView({ dims, paint, spec, mode, placeholder, shotSize }: BusV
   );
   const shot = useBusShot(inp, shotSize);
 
-  if (placeholder || (mode && !DRAWN_MODES.has(mode)) || shot === 'failed')
-    return <BusPictureFrame dims={dims} paint={paint} mode={mode} placeholder={placeholder} />;
+  if (shot === 'failed') return <BusPictureFrame dims={dims} paint={paint} mode={mode} />;
 
   return (
     <Box
