@@ -28,6 +28,8 @@ const DROPDOWN_PAD = 1,
 const TOC_Z = 2; // above outlined field labels, which carry z-index 1
 /** On a form with no column 3; `EditorFrame` keys its page width off it. */
 export const NARROW_ATTR = 'data-form-narrow';
+/** On the form column; `EditorFrame` centres its save toasts on it. */
+export const FORM_COLUMN_ATTR = 'data-form-column';
 const STACKED_MIN_SECTIONS = 2; // fewer → one flat group with no heading
 
 export interface FormSectionsProps<K extends string = string> {
@@ -219,6 +221,7 @@ export function FormSections<K extends string>({
         </Stack>
       )}
       <Box
+        {...{ [FORM_COLUMN_ATTR]: '' }}
         sx={{
           minWidth: 0,
           pr: SCROLL_PAD, // the fields keep clear of the column's own scrollbar

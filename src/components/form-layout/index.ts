@@ -1,6 +1,6 @@
 export { EditFooter } from './components/EditFooter.tsx';
 export type { EditFooterProps } from './components/EditFooter.tsx';
-export { FormSections, NARROW_ATTR } from './components/FormSections.tsx';
+export { FORM_COLUMN_ATTR, FormSections, NARROW_ATTR } from './components/FormSections.tsx';
 export type { FormSectionsProps } from './components/FormSections.tsx';
 export { FormSkeleton, PictureSkeleton } from './components/FormSkeleton.tsx';
 export { FormFooterContext } from './formFooterContext.ts';
