@@ -174,18 +174,24 @@ export default function EditorFrame<T, F>({
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const frozen = editor.isDeactivated;
   // The save toasts sit on the form column's centre line, clear of the footer's Cancel / Save.
-  // shortcut: measured on open and window resize only; a column that moves otherwise (aside
-  // or TOC appearing) keeps the old line until then. Render the toast in the column if it matters.
   const frameRef = useRef<HTMLDivElement>(null);
   const [toastX, setToastX] = useState<number>();
   const toastOpen = !!(editor.saveError || editor.warning || editor.saved);
+  // Re-run once the record lands: the loading skeleton has no frame to measure (a create's
+  // "saved" toast opens before it).
   useLayoutEffect(() => {
-    if (!toastOpen) return;
-    const measure = () => setToastX(formColumnCenter(frameRef.current));
+    const frame = frameRef.current;
+    if (!toastOpen || !frame) return;
+    const measure = () => setToastX(formColumnCenter(frame));
     measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [toastOpen]);
+    if (typeof ResizeObserver === 'undefined') return;
+    // The frame follows the window and the nav rail; the column, an aside or TOC coming or going.
+    const ro = new ResizeObserver(measure);
+    ro.observe(frame);
+    const col = frame.querySelector(`[${FORM_COLUMN_ATTR}]`);
+    if (col) ro.observe(col);
+    return () => ro.disconnect();
+  }, [toastOpen, editor.loading]);
   // Leaves outright: with unsaved edits the LeaveGuard asks first. Linje's IconButton with
   // its label beside the arrow (`< Back`), so the name is the visible text (WCAG 2.5.3).
   const backButton = (

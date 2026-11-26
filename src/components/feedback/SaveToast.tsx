@@ -1,6 +1,10 @@
 import { Alert, Slide, Snackbar } from '@mui/material';
 
 const TOAST_MS = 6000; // Linje ToastProvider's `delay` default
+// Taller than MUI's alert; and narrow enough, from its centre line, to stay off the footer's
+// Save / Cancel on a form page (a long message wraps).
+const ALERT_PY = 1.5,
+  ALERT_MAX_W = '26rem';
 const SLIDE = { transition: Slide } as const,
   SLIDE_UP = { transition: { direction: 'up' } } as const; // a const: MUI's slot type lacks `direction`
 
@@ -35,7 +39,7 @@ export default function SaveToast({ open, message, severity, onClose, centerX }:
       slotProps={SLIDE_UP}
       sx={centerX === undefined ? undefined : { left: { sm: `${centerX}px` } }}
     >
-      <Alert severity={severity} onClose={onClose} sx={{ py: 1.5 }}>
+      <Alert severity={severity} onClose={onClose} sx={{ py: ALERT_PY, maxWidth: ALERT_MAX_W }}>
         {message}
       </Alert>
     </Snackbar>

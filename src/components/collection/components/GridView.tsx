@@ -195,6 +195,7 @@ export function GridView({
         noRowsLabel: labels.empty,
         // Each header's sort button names its column, in the UI's language (WCAG 2.4.6, #435 E6).
         columnHeaderSortIconAriaLabel: labels.sortColumn,
+        columnHeaderSortIconLabel: labels.sortBy, // the button's tooltip
         ...dataGrid?.localeText,
       }}
     />

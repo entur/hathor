@@ -152,6 +152,7 @@ export function useEntityEditor<T extends { id: string; version?: number | strin
     if (!canSubmit) return;
     setSaveError(null);
     setWarning(null);
+    setSaved(false); // the last save's toast would cover this one's error
     setSettling(true);
     try {
       await runSave<F>({

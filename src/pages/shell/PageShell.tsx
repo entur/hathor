@@ -2,6 +2,8 @@ import { Box, Container } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { APP_HEADER_HEIGHT_PX, PAGE_GUTTER_VAR } from '../../components/Menu.tsx';
 
+const GUTTER = { xs: 2, sm: 3 } as const; // theme spacing per breakpoint: MUI Container's own
+
 /**
  * Outer frame for the collection and entity-details pages — their layout route
  * (#252). A full-height
@@ -27,7 +29,7 @@ export default function PageShell() {
         sx={t => ({
           flex: 1,
           minHeight: 0,
-          [PAGE_GUTTER_VAR]: { xs: t.spacing(2), sm: t.spacing(3) },
+          [PAGE_GUTTER_VAR]: { xs: t.spacing(GUTTER.xs), sm: t.spacing(GUTTER.sm) },
           px: `var(${PAGE_GUTTER_VAR})`,
           py: 3,
           display: 'flex',
