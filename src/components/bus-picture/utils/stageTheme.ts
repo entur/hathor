@@ -18,6 +18,8 @@ const GROUND_SHADE = 0.06,
 // The live ground is lit, the shot's is not: the light on an open floor (hemisphere 2.4,
 // sun 2.7 · cos 46°, fill 0.8 · cos 66°, over π) — its albedo is the colour divided by it.
 const FLOOR_LIGHT = 1.45;
+// Above this luminance a background is light: the shot stage's own split.
+const LIGHT_LUMINANCE = 0.5;
 
 /**
  * The ground's colour on a background, as the bitmap's.
@@ -26,7 +28,7 @@ const FLOOR_LIGHT = 1.45;
  * @returns {string} the ground, as `rgb()`
  */
 export const groundOf = (bg: string): string => {
-  const light = getLuminance(bg) > 0.5;
+  const light = getLuminance(bg) > LIGHT_LUMINANCE;
   return over(
     bg,
     light ? `rgba(0, 0, 0, ${GROUND_SHADE})` : `rgba(255, 255, 255, ${GROUND_SHADE})`
@@ -42,9 +44,10 @@ export const groundOf = (bg: string): string => {
 export const themeStage = (scene: Scene, bg: string): void => {
   scene.background?.set(bg);
   scene.fog?.color.set(bg);
-  const light = getLuminance(bg) > 0.5;
+  const light = getLuminance(bg) > LIGHT_LUMINANCE,
+    ground = groundOf(bg);
   scene.children.forEach(c => {
-    if (c.isMesh) c.material?.color.set(groundOf(bg)).multiplyScalar(1 / FLOOR_LIGHT);
+    if (c.isMesh) c.material?.color.set(ground).multiplyScalar(1 / FLOOR_LIGHT);
     if (c.isHemisphereLight) c.groundColor?.set(light ? LIGHT_BOUNCE : DARK_BOUNCE);
   });
 };

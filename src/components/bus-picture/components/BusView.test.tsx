@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /** What BusView draws as text takes no shot: no queue, no package load, no WebGL context. */
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BusView, type BusViewProps } from './BusView.tsx';
 
@@ -15,6 +15,8 @@ vi.mock('../utils/busShots.ts', async real => ({
 const DIMS = { length: 12, width: 2.55, height: 3.2 };
 
 describe('BusView', () => {
+  beforeEach(() => vi.clearAllMocks());
+
   it.each<[string, Partial<BusViewProps>]>([
     ['a placeholder', { placeholder: 'Select type' }],
     ['a mode not drawn', { mode: 'RAIL' }],
@@ -22,6 +24,16 @@ describe('BusView', () => {
     render(<BusView dims={DIMS} paint="vehicleType" {...props} />);
     expect(screen.queryByTestId('bus-view')).toBeNull();
     expect(shots.holdBusShot).not.toHaveBeenCalled();
+  });
+
+  it('says so when the shot fails, and takes no second one', async () => {
+    shots.holdBusShot.mockReturnValueOnce({
+      url: Promise.reject(new Error('no WebGL')),
+      release: vi.fn(),
+    });
+    render(<BusView dims={DIMS} paint="vehicleType" />);
+    expect(await screen.findByText('Picture unavailable')).toBeTruthy();
+    expect(shots.holdBusShot).toHaveBeenCalledTimes(1);
   });
 
   it('takes the shot for a bus', () => {

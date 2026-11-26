@@ -42,7 +42,8 @@ const AXLES = { rigid: [2, 3], articulated: [3, 4] } as const,
 const MIN_ARTICULATED_MM = 15_000,
   MIN_TRIAXLE_MM = 9_000,
   MIN_TRIAXLE_3_DOORS_MM = 10_000,
-  MIN_ARTICULATED_5_DOORS_MM = 18_500;
+  MIN_ARTICULATED_5_DOORS_MM = 18_500,
+  MIN_DOUBLE_DECK_MM = 1_600; // below, the upper band leaves no room for the lower windows
 const MM_PER_M = 1000;
 
 /** A rule the facts break: its text is `busView.rule.<key>`, given the rest (lengths in m). */
@@ -57,10 +58,12 @@ export interface BrokenRule {
     | 'articulatedLength'
     | 'triaxleLength'
     | 'triaxle3DoorsLength'
-    | 'articulated5DoorsLength';
+    | 'articulated5DoorsLength'
+    | 'doubleHeight';
   min?: number;
   max?: number;
   length?: number;
+  height?: number;
   axles?: number;
   doors?: number;
 }
@@ -83,7 +86,7 @@ const hints = (ls: number[], first: boolean): DoorHint[] =>
         ? ['front_overhang']
         : last && n > 2
           ? ['rear_overhang']
-          : ['between_axles', n === 2 ? 'rear' : 'middle']
+          : ['between_axles'] // the package's middle, as the standard bus's doors
       : i === 0
         ? ['front_overhang', n > 1 ? 'front' : undefined]
         : last
@@ -103,12 +106,15 @@ const section = (length_mm: number, axles_mm: number[], doors: DoorHint[]): BusS
  *
  * @param {BusInput} base the standard bus at the record's dims, from `toBusInput`
  * @param {BusSpec} spec the facts; any may be missing
+ * @param {boolean} [lengthKnown] false when `base` has the standard length, not the record's:
+ *   then the bus is drawn as long as its shape needs, not held to the standard's
  * @returns {{ ok: true, inp: BusInput } | { ok: false, errs: BrokenRule[] }} the input, or
  *   every rule the facts break
  */
 export const applySpec = (
   base: BusInput,
-  spec: BusSpec
+  spec: BusSpec,
+  lengthKnown = true
 ): { ok: true; inp: BusInput } | { ok: false; errs: BrokenRule[] } => {
   const { articulated = false, decks = 'single', lowFloor = false } = spec;
   const n = spec.axles ?? (articulated ? 3 : 2);
@@ -118,7 +124,7 @@ export const applySpec = (
       : articulated
         ? [...ARTICULATED_DOORS]
         : undefined;
-  const L = base.sections[0].length_mm;
+  const given = base.sections[0].length_mm;
   const body = articulated ? 'articulated' : 'rigid';
   const [lo, hi] = AXLES[body];
   const doorCount = ls?.length ?? base.sections[0].doors_hint?.length ?? 0;
@@ -126,7 +132,7 @@ export const applySpec = (
   const needs: [boolean, BrokenRule, number][] = [
     [articulated, { key: 'articulatedLength' }, MIN_ARTICULATED_MM],
     [
-      articulated && doorCount === 5,
+      articulated && doorCount === MAX_DOORS.articulated,
       { key: 'articulated5DoorsLength', doors: 5 },
       MIN_ARTICULATED_5_DOORS_MM,
     ],
@@ -138,6 +144,7 @@ export const applySpec = (
     ],
   ];
   const need = needs.filter(([applies]) => applies).at(-1);
+  const L = !lengthKnown && need ? Math.max(given, need[2]) : given;
   const rules: [broken: boolean, BrokenRule][] = [
     [
       !(Number.isInteger(n) && n >= lo && n <= hi),
@@ -149,6 +156,14 @@ export const applySpec = (
       { key: articulated ? 'doorsArticulated' : 'doorsRigid', max: MAX_DOORS[body] },
     ],
     [articulated && decks === 'double', { key: 'articulatedDouble' }],
+    [
+      decks === 'double' && base.height_mm < MIN_DOUBLE_DECK_MM,
+      {
+        key: 'doubleHeight',
+        min: MIN_DOUBLE_DECK_MM / MM_PER_M,
+        height: base.height_mm / MM_PER_M,
+      },
+    ],
   ];
   const errs: BrokenRule[] = [
     ...rules.filter(([broken]) => broken).map(([, rule]) => rule),

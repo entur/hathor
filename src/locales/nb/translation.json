@@ -408,6 +408,7 @@
   "busView.rule.articulated5DoorsLength": "en leddbuss med {{doors}} dører er minst {{min, number}} m lang, denne {{length, number}} m",
   "busView.rule.triaxleLength": "en buss uten ledd med {{axles}} aksler er minst {{min, number}} m lang, denne {{length, number}} m",
   "busView.rule.triaxle3DoorsLength": "en buss uten ledd med {{axles}} aksler og {{doors}} dører er minst {{min, number}} m lang, denne {{length, number}} m",
+  "busView.rule.doubleHeight": "en dobbeltdekker er minst {{min, number}} m høy, denne {{height, number}} m",
   "editFooter.dirty": "Ulagrede endringer",
   "editFooter.missing": "Obligatoriske felt mangler",
   "editFooter.nothing": "Ingen endringer å lagre",

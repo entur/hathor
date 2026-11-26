@@ -92,6 +92,7 @@ export const OutOfRange: Story = { args: { length: 74, width: 2.9, height: 4.2 }
 export const Vehicle: Story = {
   args: {
     ...STD,
+    length: 18,
     paint: 'vehicle',
     articulated: true,
     decks: 'single',

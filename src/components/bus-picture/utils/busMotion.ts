@@ -11,6 +11,7 @@
  * so going in or out is continuous — no jump.
  */
 import type { Stage, Vec3 } from '@entur/iteru-3dbus';
+import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 
 /** `orbit` = the reader drives the camera; `animate` = it flies the ∞. */
 export type BusMotion = 'orbit' | 'animate';
@@ -27,7 +28,6 @@ const PHI_MIN = 0.12,
   PHI_MAX = Math.PI / 2 - 0.08;
 const MAX_STEP_MS = 100;
 const TAU = 2 * Math.PI;
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 /** Eye position relative to the orbit target, in three.js `Spherical` terms. */
 type Sph = { r: number; theta: number; phi: number };
@@ -56,7 +56,7 @@ export const eight = (a: number): { dTheta: number; dPhi: number } => ({
 
 export interface MotionOpts {
   /** The reader grabbed the view mid-flight: the camera stays put, now theirs. */
-  onTakeOver: () => void;
+  onTakeOver?: () => void;
   /** The flight finished a whole ∞. */
   onLoop?: () => void;
   now?: () => number;
@@ -121,7 +121,7 @@ export function mkMotion(stage: Pick<Stage, 'cam' | 'ctl' | 'ticks'>, opts: Moti
     base = null;
     tween = null;
     w = 0;
-    opts.onTakeOver();
+    opts.onTakeOver?.();
   };
 
   stage.ticks.push(tick);

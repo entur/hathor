@@ -53,7 +53,7 @@ describe('toBusInput with a spec', () => {
   it('draws every fact the rules allow, at every length and height', () => {
     const rejected = SPECS.flatMap(spec =>
       LENGTHS_M.flatMap(length =>
-        [3.2, 4.2].flatMap(height => {
+        [1.5, 1.6, 3.2, 4.2].flatMap(height => {
           const { inp, broken } = toBusInput({ ...FULL, length, height }, 'vehicle', spec);
           const errs = broken.length === 0 ? validate(inp) : [];
           return errs.length > 0 ? [`${JSON.stringify(spec)} at ${length} m: ${errs[0]}`] : [];
@@ -73,6 +73,33 @@ describe('toBusInput with a spec', () => {
     expect(toBusInput({ ...FULL, length: min - 0.1 }, 'vehicle', spec).broken).toEqual([
       expect.objectContaining({ key, min, length: min - 0.1 }),
     ]);
+  });
+
+  it('a double-decker is drawn from 1.6 m tall, and below that breaks doubleHeight', () => {
+    const at = (height: number) =>
+      toBusInput({ ...FULL, height }, 'vehicle', { decks: 'double' }).broken;
+    expect(at(1.6)).toEqual([]);
+    expect(at(1.55)).toEqual([{ key: 'doubleHeight', min: 1.6, height: 1.55 }]);
+  });
+
+  // A record without a length isn't held to the standard 12 m: the shape gets the length it needs.
+  it.each<[BusSpec, number]>([
+    [{ articulated: true }, 15_000],
+    [{ articulated: true, doors: '2+2+2+2+2' }, 18_500],
+    [{ axles: 3, doors: '2+2+2' }, 12_000],
+  ])('without a length, draws %o at %d mm', (spec, mm) => {
+    const { inp, fallback, broken } = toBusInput({}, 'vehicle', spec);
+    expect(broken).toEqual([]);
+    expect(fallback).toContain('length');
+    expect(inp.sections.reduce((sum, s) => sum + s.length_mm + (s.bellows_ahead_mm ?? 0), 0)).toBe(
+      mm
+    );
+  });
+
+  it('draws the standard two doors where the standard bus has them', () => {
+    expect(toBusInput(FULL, 'vehicle', { doors: '2+2' }).inp).toEqual(
+      toBusInput(FULL, 'vehicle').inp
+    );
   });
 
   it('tells only the longest length a bus needs', () => {

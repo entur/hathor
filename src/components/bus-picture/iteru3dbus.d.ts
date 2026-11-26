@@ -59,7 +59,8 @@ declare module '@entur/iteru-3dbus' {
     ticks: (() => void)[];
     add: (group: BusGroup) => void;
     drop: (group: BusGroup) => void;
-    /** Stops the loop, frees the WebGL context and removes the canvas. */
+    /** Stops the loop, frees three.js's resources and removes the canvas; the WebGL
+     *  context is left to the garbage collector. */
     dispose: () => void;
   }
   export interface ShotStage {

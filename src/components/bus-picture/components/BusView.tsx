@@ -3,24 +3,23 @@ import { Box, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import { useTranslation } from 'react-i18next';
+import type { Stage } from '@entur/iteru-3dbus';
+import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useBusShot, usePictureBg } from '../hooks/useBusShot.ts';
 import { mkMotion } from '../utils/busMotion.ts';
 import { themeStage } from '../utils/stageTheme.ts';
-import { CLOSER, centredBus, type Lib, type ShotSize } from '../utils/busShots.ts';
+import { CLOSER, VIEW, centredBus, type Lib, type ShotSize } from '../utils/busShots.ts';
 import type { BusSpec } from '../utils/busSpec.ts';
 import { DRAWN_MODES, toBusInput, type BusInput } from '../utils/standardBus.ts';
-import type { BusPictureProps } from './BusPicture.tsx';
-import { CompactLine } from './BusPicture.tsx';
+import { CompactLine, type BusPictureProps } from './BusPicture.tsx';
 import { BusPictureFrame } from './BusPictureFrame.tsx';
 import { StandardNote } from './StandardNote.tsx';
 
 /** `bitmap` = the shot on the page's shared stage; `3d` = a live, orbitable canvas. */
 type BusViewMode = 'bitmap' | '3d';
 
-const VIEW = 'quarter'; // the pose the live canvas opens on, as the shot's
 // The paper's shape, toolbar included: its height is the column's, its width follows.
 const PAPER_ASPECT = '3 / 2';
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 // The switch, in its order: picture, then 3D.
 const MODE_ICONS: Record<BusViewMode, ReactNode> = {
   bitmap: <ImageOutlinedIcon fontSize="small" />,
@@ -46,7 +45,7 @@ function Live({ inp }: { inp: BusInput }) {
   const [lib, setLib] = useState<Lib>();
   const [failed, setFailed] = useState(false);
   const scene = useRef<{
-    stage: ReturnType<Lib['mkStage']>;
+    stage: Stage;
     go: ReturnType<Lib['mkViews']>;
     motion: ReturnType<typeof mkMotion>;
     cur: ReturnType<typeof centredBus> | null;
@@ -64,10 +63,11 @@ function Live({ inp }: { inp: BusInput }) {
   }, []);
 
   useEffect(() => {
-    if (!lib || !box.current) return;
-    let stage: ReturnType<Lib['mkStage']>;
+    const el = box.current;
+    if (!lib || !el) return;
+    let stage: Stage;
     try {
-      stage = lib.mkStage(box.current);
+      stage = lib.mkStage(el);
     } catch {
       setFailed(true);
       return;
@@ -76,7 +76,7 @@ function Live({ inp }: { inp: BusInput }) {
       stage,
       go: lib.mkViews(stage, () => s.cur ?? { group: null, len: 0 }),
       // One short ∞, then the camera rests: the reader's to orbit.
-      motion: mkMotion(stage, { onTakeOver: () => undefined, onLoop: () => s.motion.set('orbit') }),
+      motion: mkMotion(stage, { onLoop: () => s.motion.set('orbit') }),
       cur: null,
     };
     scene.current = s;
@@ -84,7 +84,12 @@ function Live({ inp }: { inp: BusInput }) {
       s.motion.dispose();
       // `dispose` frees all but a bus still on stage: drop it first.
       if (s.cur) stage.drop(s.cur.group);
+      // shortcut: `mkStage`'s dispose leaves its WebGL context for the GC (`mkStageShot`'s
+      // forces the loss), and a browser keeps only ~16; lose it here until upstream does.
+      const canvas = el.querySelector('canvas');
+      const gl = canvas?.getContext('webgl2') ?? canvas?.getContext('webgl');
       stage.dispose();
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
       scene.current = null;
     };
   }, [lib]);
@@ -96,14 +101,18 @@ function Live({ inp }: { inp: BusInput }) {
     if (s.cur) s.stage.drop(s.cur.group);
     s.cur = centredBus(lib, inp);
     s.stage.add(s.cur.group);
-    // The scene is the bus's parent once added; a theme switch re-runs this.
-    if (s.cur.group.parent) themeStage(s.cur.group.parent, bg);
     // An edit keeps whatever view the reader orbited to.
     if (!first) return;
     s.go(VIEW, true);
     // As close as the bitmap, so the switch doesn't jump the bus's size.
     s.stage.cam.position.lerp(s.stage.ctl.target, CLOSER);
     if (!matchMedia(REDUCED_MOTION_QUERY).matches) s.motion.set('animate');
+  }, [lib, inp]);
+
+  // The scene is a bus's parent once added: recoloured then, and on a theme switch.
+  useEffect(() => {
+    const scene3d = scene.current?.cur?.group.parent;
+    if (scene3d) themeStage(scene3d, bg);
   }, [lib, inp, bg]);
 
   if (failed) return <CompactLine>{t('busView.unavailable')}</CompactLine>;
@@ -148,7 +157,16 @@ function Drawn({ dims, paint, spec, mode, shotSize }: BusViewProps) {
   );
   const shot = useBusShot(inp, shotSize);
 
-  if (shot === 'failed') return <BusPictureFrame dims={dims} paint={paint} mode={mode} />;
+  // As text: the frame's own picture would shoot again, and without the record's facts.
+  if (shot === 'failed')
+    return (
+      <BusPictureFrame
+        dims={dims}
+        paint={paint}
+        mode={mode}
+        placeholder={t('busPicture.unavailable')}
+      />
+    );
 
   return (
     <Box

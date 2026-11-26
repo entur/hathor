@@ -110,7 +110,7 @@ export const toBusInput = (
   };
   const fallback: BusFallback[] = DIMS.filter(d => usableMm(dims, d) === undefined);
   if (!spec) return { inp, fallback, broken: [] };
-  const shaped = applySpec(inp, spec);
+  const shaped = applySpec(inp, spec, !fallback.includes('length'));
   return shaped.ok
     ? { inp: shaped.inp, fallback, broken: [] }
     : { inp, fallback: [...fallback, 'shape'], broken: shaped.errs };

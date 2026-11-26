@@ -409,6 +409,7 @@
   "busView.rule.articulated5DoorsLength": "an articulated bus with {{doors}} doors is at least {{min, number}} m long, this one {{length, number}} m",
   "busView.rule.triaxleLength": "a rigid bus with {{axles}} axles is at least {{min, number}} m long, this one {{length, number}} m",
   "busView.rule.triaxle3DoorsLength": "a rigid bus with {{axles}} axles and {{doors}} doors is at least {{min, number}} m long, this one {{length, number}} m",
+  "busView.rule.doubleHeight": "a double-decker is at least {{min, number}} m tall, this one {{height, number}} m",
   "editFooter.dirty": "Unsaved changes",
   "editFooter.missing": "Required fields missing",
   "editFooter.nothing": "No changes to save",

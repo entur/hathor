@@ -1,9 +1,11 @@
 import type { BusGroup, ShotStage } from '@entur/iteru-3dbus';
 import type { BusInput } from './standardBus.ts';
 
-// The package's own gallery (`src/gallery.js`): its card view, eye pulled in, textures at a third.
-const VIEW = 'quarter',
-  DETAIL = 0.35;
+// Textures at a third, as the package's own gallery (`src/gallery.js`).
+const DETAIL = 0.35;
+
+/** The pose a picture is shot from, and the live canvas opens on. */
+export const VIEW = 'quarter';
 
 export type Lib = typeof import('@entur/iteru-3dbus');
 
