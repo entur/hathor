@@ -41,19 +41,9 @@ Requires a running [Sobek](https://github.com/entur/sobek) backend (default: `ht
 
 ## Releases
 
-The Build workflow opens or updates `automation/version-bump` after changes reach
-`main`. The PR increments the minor version in `package.json` and
-`package-lock.json`; it does not push directly to `main`.
-
-Merge the version-bump PR after its required checks pass. Only a push to `main`
-that changes the package version creates the corresponding `v<version>` tag and
-triggers deployment. Merging the bump does not create another bump PR.
-
-Repository administrators must enable **Settings > Actions > General > Workflow
-permissions > Allow GitHub Actions to create and approve pull requests**.
-The workflow requests `contents: write`, `pull-requests: write`, and
-`actions: write`. It explicitly dispatches the Tests workflow on the bump branch
-because PRs created with `GITHUB_TOKEN` do not automatically trigger PR workflows.
+Every push to `main` runs the Build workflow (`.github/workflows/build.yml`): check,
+unit tests, `npm version minor`, build, then a direct push of the bump commit and its
+`v<version>` tag to `main`, which triggers deployment.
 No ruleset bypass or additional token is required.
 
 ## Folder semantics
@@ -90,6 +80,6 @@ Some contexts (`configContext`, `CustomizationContext`, `SessionContext`) and a 
 
 ## Customization
 
-Hathor is a fork of [Inanna](https://github.com/entur/inanna), Entur's React data-registry starter. Extending it — new entity views, theming, custom icons — follows the Inanna *extend-fork* workflow; see [DEV_GUIDE.md](DEV_GUIDE.md) for the pointer.
+Adding an entity, theming, feature flags and custom icons are described in [CLAUDE.md](CLAUDE.md); the reasons behind them are in [FORK_DECISIONS.md](FORK_DECISIONS.md).
 
 Known design ambiguities are tracked in [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).

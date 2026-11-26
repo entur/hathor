@@ -4,14 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What Is Hathor
 
-Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using Material UI v7 and GraphQL to communicate with the Sobek backend.
+Hathor is the frontend for **Sobek** (Entur's national vehicle registry / Nasjonalt Materiellregister). It is a React 19 + TypeScript app built with Vite, using MUI v9 and GraphQL to communicate with the Sobek backend.
 
-Hathor is a **fork of [Inanna](https://github.com/entur/inanna)**, Entur's React data-registry starter. Domain modelling (NeTEx types) follows the Inanna *extend-fork* workflow in the global **`inanna-fork`** skill; its Generic Data View steps no longer apply — hathor replaced that pattern with collection + form pages (below, #252). `FORK_DECISIONS.md` records the design choices specific to this fork.
+Hathor started as a fork of Entur's Inanna starter and no longer follows it (FORK_DECISIONS 2026-11-19). `FORK_DECISIONS.md` records hathor's design choices.
 
 ## Key Documentation
 
 - **`README.md`** — brief project overview, tech stack, quick start, scripts, and `src/` folder semantics (where new files go).
-- **`DEV_GUIDE.md`** — a stub pointer: entities follow *Collection + form pages* below; NeTEx domain modelling follows the global **`inanna-fork`** skill (extend mode).
 - **`FORK_DECISIONS.md`** — the project's Architecture Decision Record (ADR) log. **Single source of truth for *why* design choices were made on this fork.** Each section captures one decision with its context, alternatives, and consequences. Add a new ADR section here for any non-obvious design call; do **not** restate the rationale in this file (CLAUDE.md describes *what* the patterns are; FORK_DECISIONS describes *why*).
 - **`OPEN_QUESTIONS.md`** — unresolved design ambiguities. Companion to `FORK_DECISIONS.md`; entries graduate from here to there once decided.
 
@@ -39,6 +38,13 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 **Note:** `.prettierignore` must be kept in sync with `.gitignore` for generated/copied files (e.g. `public/config.json`, `public/theme-*.json`). Prettier does not respect `.gitignore` by default, so any gitignored file that Prettier would check needs an explicit entry in `.prettierignore` as well.
 
+## Storybook → `ui-sandboxing` sync (TODO side quest)
+
+**IMPORTANT — every developer, every session.** The published Storybook (https://entur.github.io/hathor/storybook/) builds **only from the `ui-sandboxing` branch** (`.github/workflows/storybook-pages.yml`), never from main. So whenever a session's change touches Storybook (a `*.stories.tsx`, `.storybook/**`, or a component a story renders):
+
+- Add a TODO item right away: **"Side quest: open a PR merging `main` into `ui-sandboxing`"**, and raise it to the user before the session ends.
+- Once the change is on `main`: branch off `origin/ui-sandboxing`, `git merge origin/main` (subject `Merge main into ui-sandboxing`), open a PR with base `ui-sandboxing`. Never push straight to `ui-sandboxing`.
+
 ## Architecture
 
 ### Collection + form pages
@@ -47,6 +53,8 @@ Each entity has two routes under the `PageShell` layout route (`src/pages/shell/
 
 1. **Collection page** `/<entity>` — `CollectionPage` / `CollectionShell` around the entity's collection, built once by `createEntityCollection(<entity>Fields, { filterFields })` (`src/components/collection/`, wired in `data/<feature>/components/<entity>CollectionConfig.tsx`): toolbar search / filter / sort, grid or cards, pager, an Edit link per row.
 2. **Form page** `/<entity>/:id` (`new` = create) — `EntityDetailsShell` hosts the feature's `*Details`: `useEntityEditor` (read, save, deactivate) + `EditorFrame` (title row, sticky Save / Cancel footer, `LeaveGuard`) around the feature's `*Sections` (`FormSections`, table of contents).
+
+Vehicle types have two kinds, each with its own routes: `/vehicle-types` (PHYSICAL) and `/contractual-vehicle-types` (CONTRACTUAL). One page set takes a `kind` prop; what differs (route, i18n keys, test ids, the Vehicles section) is in `vehicleTypeKindConfig.ts`.
 
 To add an entity: types + field mapping → data hook → `*CollectionConfig` + `*CollectionPage` → `*Sections` + `*Details` + `*DetailsPage` → routes in `App.tsx`. The old list's `?selected=<id>` deep link redirects to the form page.
 
@@ -94,6 +102,10 @@ i18next with English (`src/locales/en/`) and Norwegian Bokmål (`src/locales/nb/
 ### Theming
 
 JSON-based theme config loaded at runtime (`themeConfigs` in `config.json`, `src/hooks/useAppTheme.ts`) and converted to an MUI theme by `src/theme/createThemeFromConfig.ts`; a theme's `fonts.faces` become `@font-face` rules (`src/theme/themeFonts.ts`) — the Entur font Nationale ships only from the deployment config, never this repo (FORK_DECISIONS 2026-11-16); custom theme fields are declared via module augmentation in `src/theme/theme-config.d.ts`. Custom icons system with `defaultIcons/` vs `customIcons/` directories under `src/static/`, resolved by `src/utils/iconLoaderUtils.ts`.
+
+### Feature flags
+
+`sandboxFeatures` in `config.json`, read through `useIsFeatureOn()` (`src/config/featureFlags.ts`); a missing key is off (FORK_DECISIONS 2026-10-21). `BusPictures` shows the bus pictures on collection cards and as the form page's aside.
 
 ## E2E Testing (Playwright)
 

@@ -52,13 +52,13 @@ an issue on `entur/enki`, not an edit in `../enki`.
 
 ## How the two repos relate
 
-The two are cousins, not strangers. Hathor is a fork of Inanna; enki predates Inanna (2018, as a
+The two share an ancestor. Hathor started as a fork of Inanna; enki predates Inanna (2018, as a
 stripped-down OP-UI) but was migrated from Entur's `@entur/*` design system to MUI in February 2026
 with Inanna as the stated target — commit `c37fc0ec`, "Align layout and design with Inanna/MUI
 conventions", which introduced the top `AppBar`, the `Header` component and the theme overrides.
-So the shell enki has today is Inanna's shell as refined by the NPlan team, and aligning hathor to
-it is mostly closing drift between two descendants of the same design — expect small deltas
-(colours, a label, icon style), not a rewrite.
+So the shell enki has today is Inanna's shell as refined by the NPlan team. Hathor no longer
+follows Inanna (`FORK_DECISIONS.md`, 2026-11-19) and takes its look from Linje (2026-11-19, *Linje
+is a reference*), so where enki and Linje differ, Linje wins and the delta to enki is deliberate.
 
 What enki did *not* take from Inanna is its code architecture: no `ViewConfig` /
 `GenericDataViewPage`, no Context-based state, no JSON theme. It kept its own Redux + Apollo +
