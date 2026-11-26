@@ -19,6 +19,11 @@ const asText = () => {
     showingRows: l.showingRows(1, 25, 120),
     rowsPerPageMenu: l.rowsPerPageMenu(25),
     goToPage: l.goToPage(3),
+    sortColumn: [
+      l.sortColumn('Navn', 'asc'),
+      l.sortColumn('Navn', 'desc'),
+      l.sortColumn('Navn', null),
+    ],
   });
 };
 
@@ -37,5 +42,6 @@ describe('useCollectionLabels', () => {
     expect(text).toContain('Viser rad 1–25 av 120');
     expect(text).toContain('2 filtre til');
     expect(text).toContain('Total kapasitet');
+    expect(text).toContain('Sorter Navn stigende');
   });
 });

@@ -53,8 +53,12 @@ const vtForm = createFormState<VehicleType, VehicleType>({
   formFromSource: vt => vt ?? { id: '', version: 0 },
 });
 
-/** `VehicleTypeDetails` on its form page, with the in-memory store in place of Sobek. */
-function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
+/** `VehicleTypeDetails` on its form page, with the in-memory store in place of Sobek; with
+ *  `failWith`, every save fails with that message. */
+function StoryVehicleTypeDetails({
+  failWith,
+  ...host
+}: EntityEditorHostProps & { failWith?: string }) {
   const editor = useEntityEditor({
     ...host,
     fetchById: async id => store.get(id) ?? null,
@@ -62,6 +66,7 @@ function StoryVehicleTypeDetails(host: EntityEditorHostProps) {
     write: form =>
       new Promise(done =>
         setTimeout(() => {
+          if (failWith) return done({ error: failWith, newId: null });
           const id = form.id || CREATED_ID;
           store.set(id, { ...form, id });
           done({ error: null, newId: id });
@@ -102,6 +107,37 @@ const vtEditor = (host: EntityEditorHostProps) => <StoryVehicleTypeDetails {...h
  *  Save with nothing to save until a field changes; Save settles after a beat and keeps editing. */
 export const Edit: Story = {
   render: () => <FormPage entity="vehicle-types" id={VT.id} renderEditor={vtEditor} />,
+};
+
+/** A failed save: every save fails, so the save-error feedback shows (#435 E1). */
+export const SaveError: Story = {
+  render: () => (
+    <FormPage
+      entity="vehicle-types"
+      id={VT.id}
+      renderEditor={host => (
+        <StoryVehicleTypeDetails {...host} failWith="Sobek refused the save: 403 Forbidden" />
+      )}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(await canvas.findByLabelText(/^Name/), ' (edited)');
+    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await expect(await canvas.findByRole('alert')).toHaveTextContent('403 Forbidden');
+  },
+};
+
+/** A save that lands: the footer says "All changes saved" and the success toast shows for
+ *  6 s, paused while hovered or focused (#435 E1). */
+export const SaveSuccess: Story = {
+  render: () => <FormPage entity="vehicle-types" id={VT.id} renderEditor={vtEditor} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(await canvas.findByLabelText(/^Name/), ' (edited)');
+    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await expect(await canvas.findByRole('alert')).toBeVisible();
+  },
 };
 
 /** After a confirmed Deactivate: red "Deactivated" in the title row, fields frozen, no footer. */

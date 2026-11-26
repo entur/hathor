@@ -106,6 +106,8 @@ export interface CollectionLabels {
   sortBy: string;
   sortNone: string;
   sortDirection: string;
+  /** A grid header's sort button, by the sort a click applies next (`null` → unsorted). */
+  sortColumn: (column: string, next: 'asc' | 'desc' | null | undefined) => string;
   columns: string;
   density: string;
   /** Names of the grid densities in the density menu. */
@@ -304,6 +306,10 @@ export const DEFAULT_LABELS: CollectionLabels = {
   sortBy: 'Sort by',
   sortNone: 'None',
   sortDirection: 'Sort direction',
+  sortColumn: (column, next) =>
+    next
+      ? `Sort ${column} ${next === 'asc' ? 'ascending' : 'descending'}`
+      : `Remove sorting from ${column}`,
   columns: 'Columns',
   density: 'Density',
   densities: { compact: 'Compact', standard: 'Standard', comfortable: 'Comfortable' },

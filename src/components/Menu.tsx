@@ -18,6 +18,8 @@ import { useOrganisationsContext } from '../contexts/useOrganisationsContext.ts'
 import { useIsFeatureOn, type FeatureFlag } from '../config/featureFlags.ts';
 
 export const APP_HEADER_HEIGHT_PX = 64;
+/** CSS var PageShell sets to its side gutter; a form page reaches out over it (`EditorFrame`). */
+export const PAGE_GUTTER_VAR = '--page-gutter';
 // Linje SideNavigation (`menu/src/SideNavigation.scss`, `--components-menu-sidenavigation-standard-*`,
 // #418): tint background, subdued hover, neutral divider under each item, 4 px bar on the active
 // one. Text, icons and bar use Linje's fixed Accent, not the theme's primary. Item padding

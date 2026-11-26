@@ -5,6 +5,7 @@ import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useSectionSpy } from '../hooks/useSectionSpy.ts';
 import { FormFooterContext } from '../formFooterContext.ts';
 import {
+  FORM_SIDE_VAR,
   RING_GUTTER,
   SCROLL_PAD,
   SECTION_GAP,
@@ -27,6 +28,8 @@ const DROPDOWN_PAD = 1,
 const TOC_Z = 2; // above outlined field labels, which carry z-index 1
 /** On a form with no column 3; `EditorFrame` keys its page width off it. */
 export const NARROW_ATTR = 'data-form-narrow';
+/** On the form column; `EditorFrame` centres its save toasts on it. */
+export const FORM_COLUMN_ATTR = 'data-form-column';
 const STACKED_MIN_SECTIONS = 2; // fewer → one flat group with no heading
 
 export interface FormSectionsProps<K extends string = string> {
@@ -89,6 +92,8 @@ export function FormSections<K extends string>({
   });
   const column = toc.length > 0 || !!aside;
   const pinned = toc.length > 0 && !wide; // the dropdown sits over the top of the form
+  // From the page's edge to the form (`EditorFrame`); outside a form page, a ring's room.
+  const side = `var(${FORM_SIDE_VAR}, ${theme.spacing(RING_GUTTER)})`;
 
   // The TOC speaks labels; everything else, ids (a language switch keeps the mark).
   const tocLabels = toc.map(sectionLabel);
@@ -218,17 +223,19 @@ export function FormSections<K extends string>({
         </Stack>
       )}
       <Box
+        {...{ [FORM_COLUMN_ATTR]: '' }}
         sx={{
           minWidth: 0,
           pr: SCROLL_PAD, // the fields keep clear of the column's own scrollbar
-          // From `lg` the column scrolls, so it clips: a ring's room inside it, on the left
-          // pulled back out, keeping the fields in line with the title row.
+          // From `lg` the column scrolls, so it clips: a ring's room inside it. On the left it
+          // reaches out over the form page's side to the page's edge, so a wheel there scrolls
+          // the form (#435), padded back in line with the title row; elsewhere, a ring's room.
           ...(wide && {
             minHeight: 0,
             overflowY: 'auto',
             py: RING_GUTTER,
-            pl: RING_GUTTER,
-            ml: -RING_GUTTER,
+            pl: side,
+            ml: `calc(-1 * ${side})`,
           }),
           ...(wide && column && { gridColumn: 1, gridRow: 1 }),
         }}

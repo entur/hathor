@@ -191,7 +191,13 @@ export function GridView({
       rowCount={total}
       paginationModel={paginationModel}
       onPaginationModelChange={m => onQuery({ page: m.page, pageSize: m.pageSize })}
-      localeText={{ noRowsLabel: labels.empty, ...dataGrid?.localeText }}
+      localeText={{
+        noRowsLabel: labels.empty,
+        // Each header's sort button names its column, in the UI's language (WCAG 2.4.6, #435 E6).
+        columnHeaderSortIconAriaLabel: labels.sortColumn,
+        columnHeaderSortIconLabel: labels.sortBy, // the button's tooltip
+        ...dataGrid?.localeText,
+      }}
     />
   );
 }

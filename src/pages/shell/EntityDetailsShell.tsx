@@ -35,7 +35,8 @@ export default function EntityDetailsShell({ listPath, renderEditor }: EntityDet
   const orgId = useOrganisationsContext().currentOrganisation?.id;
   const isNew = id === NEW_SELECTION;
   return (
-    <Box sx={{ height: '100%' }}>
+    // `EditorFrame` measures its side strips in this box's `cqw`.
+    <Box sx={{ height: '100%', containerType: 'inline-size' }}>
       {/* An org switch re-mounts the editor, the create pane too: its picks (a type, a deck
           plan) are the old org's. With unsaved edits the org picker asks first. */}
       <Fragment key={`${orgId}:${id}`}>

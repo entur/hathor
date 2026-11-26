@@ -1,4 +1,4 @@
-import { useState, type ReactElement, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { useBlocker } from 'react-router-dom';
 import {
   Box,
@@ -10,12 +10,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
 import BodyState from '../feedback/BodyState.tsx';
-import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
-import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
+import SaveToast from '../feedback/SaveToast.tsx';
+import { PAGE_GUTTER_VAR } from '../Menu.tsx';
 import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
@@ -23,7 +24,9 @@ import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   EditFooter,
   FormFooterContext,
+  FORM_COLUMN_ATTR,
   FORM_PAGE_MAX_WIDTH,
+  FORM_SIDE_VAR,
   RING_GUTTER,
   formColumnWidth,
   NARROW_ATTR,
@@ -51,20 +54,40 @@ const TITLE_ROW_PX = 40,
   ID_SKELETON_PX = 160,
   ID_SKELETON_H_PX = 24;
 
+/** The middle of the form column's content (viewport px), under `root`; undefined without one. */
+const formColumnCenter = (root: HTMLElement | null): number | undefined => {
+  const col = root?.querySelector(`[${FORM_COLUMN_ATTR}]`);
+  if (!col) return undefined;
+  const r = col.getBoundingClientRect(),
+    cs = getComputedStyle(col);
+  // Its padding, not its box: from `lg` the box reaches out over the page's side (#435).
+  const left = r.left + parseFloat(cs.paddingLeft),
+    right = r.right - parseFloat(cs.paddingRight);
+  return (left + right) / 2;
+};
+
+/** The form page's width cap: {@link FORM_PAGE_MAX_WIDTH}, or a narrow form's. */
+const CAP_VAR = '--form-cap';
+/** PageShell's gutter; 0 outside it. */
+const GUTTER = `var(${PAGE_GUTTER_VAR}, 0px)`;
+
 /** The page: from `lg` it stays put and the form column scrolls itself (`FormSections`, #293). */
-const FRAME_SX = {
+const FRAME_SX = (t: Theme) => ({
   height: '100%',
   // Capped, and centred in the page; the title row's actions end above column 3.
-  maxWidth: FORM_PAGE_MAX_WIDTH,
-  width: '100%',
-  mx: 'auto',
+  [CAP_VAR]: FORM_PAGE_MAX_WIDTH,
   // A body with no column 3 (`FormSections`) is one narrow column: the page shrinks to it.
-  [`&:has([${NARROW_ATTR}])`]: { maxWidth: formColumnWidth },
+  [`&:has([${NARROW_ATTR}])`]: { [CAP_VAR]: formColumnWidth(t) },
+  // Out over PageShell's gutters to the page's edges and padded back in, so the side strips
+  // are inside the scroller (#435). The ring's room: it clips, and fields and buttons line its edges.
+  [FORM_SIDE_VAR]: `calc(${GUTTER} + ${t.spacing(RING_GUTTER)} + max(0px, (100cqw - var(${CAP_VAR})) / 2))`,
+  mx: `calc(-1 * ${GUTTER})`,
+  px: `var(${FORM_SIDE_VAR})`,
+  py: RING_GUTTER,
   display: 'flex',
   flexDirection: 'column',
   overflowY: { xs: 'auto', lg: 'hidden' },
-  p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
-} as const;
+});
 /** The body fills the rest from `lg`, so the form column can scroll inside it. */
 const BODY_SX = {
   flex: { lg: '1 1 0' },
@@ -150,6 +173,25 @@ export default function EditorFrame<T, F>({
   const discard = useDiscardConfirm(actions.isDirty, { cancel: actions.onCancel }, dialogSave);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const frozen = editor.isDeactivated;
+  // The save toasts sit on the form column's centre line, clear of the footer's Cancel / Save.
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [toastX, setToastX] = useState<number>();
+  const toastOpen = !!(editor.saveError || editor.warning || editor.saved);
+  // Re-run once the record lands: the loading skeleton has no frame to measure (a create's
+  // "saved" toast opens before it).
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!toastOpen || !frame) return;
+    const measure = () => setToastX(formColumnCenter(frame));
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    // The frame follows the window and the nav rail; the column, an aside or TOC coming or going.
+    const ro = new ResizeObserver(measure);
+    ro.observe(frame);
+    const col = frame.querySelector(`[${FORM_COLUMN_ATTR}]`);
+    if (col) ro.observe(col);
+    return () => ro.disconnect();
+  }, [toastOpen, editor.loading]);
   // Leaves outright: with unsaved edits the LeaveGuard asks first. Linje's IconButton with
   // its label beside the arrow (`< Back`), so the name is the visible text (WCAG 2.5.3).
   const backButton = (
@@ -226,7 +268,7 @@ export default function EditorFrame<T, F>({
   );
 
   return (
-    <Box sx={FRAME_SX}>
+    <Box ref={frameRef} sx={FRAME_SX}>
       {/* On a narrow page the actions wrap onto their own line. */}
       <Box
         sx={{
@@ -347,12 +389,26 @@ export default function EditorFrame<T, F>({
         </Box>
       </FormFooterContext.Provider>
 
-      <SaveErrorSnackbar error={editor.saveError} onClose={editor.clearSaveError} />
-      <SaveErrorSnackbar error={editor.warning} severity="warning" onClose={editor.clearWarning} />
-      <SaveSuccessSnackbar
+      <SaveToast
+        open={!!editor.saveError}
+        message={editor.saveError ?? ''}
+        severity="error"
+        onClose={editor.clearSaveError}
+        centerX={toastX}
+      />
+      <SaveToast
+        open={!!editor.warning}
+        message={editor.warning ?? ''}
+        severity="warning"
+        onClose={editor.clearWarning}
+        centerX={toastX}
+      />
+      <SaveToast
         open={editor.saved}
         message={t(copy.saved)}
+        severity="success"
         onClose={editor.clearSaved}
+        centerX={toastX}
       />
       {discard.dialog}
       <LeaveGuard dirty={actions.isDirty} onSave={dialogSave} />

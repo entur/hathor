@@ -26,7 +26,8 @@ import { resolveCard, resolveColumns } from '../utils/columns.ts';
 import { asList } from '../utils/filters.ts';
 import { displayValue, keyRows, rowId, valueList } from '../utils/values.ts';
 import { CardsView } from './CardsView.tsx';
-import { CollectionPager } from './CollectionPager.tsx';
+import { CollectionPager, rowsText } from './CollectionPager.tsx';
+import { SR_ONLY } from '../../../utils/srOnly.ts';
 import { CollectionToolbar } from './CollectionToolbar.tsx';
 import { GridView } from './GridView.tsx';
 
@@ -303,6 +304,11 @@ export function createEntityCollection<F extends Record<string, FieldSpec>>(
               edit={edit}
             />
           )}
+        </Box>
+        {/* The hit count, announced as a search, filter, sort or page changes it; mounted with
+            the list, so the first count isn't read out (WCAG 4.1.3, #435 E2). */}
+        <Box role="status" sx={SR_ONLY}>
+          {rowsText(L, result.total, result.page, query.pageSize)}
         </Box>
         {/* One pager under either view (Linje's Pagination; the grid's own footer is off). */}
         <CollectionPager
