@@ -26,6 +26,7 @@ checked this one).
 - Skeleton
 - SquareButton
 - Switch
+- Table (DataGrid rows)
 - TagChip / Chip
 - TextArea
 - TextField
@@ -389,6 +390,20 @@ Cross-cutting traps:
 - **MUI**: none in the forms: yes/no fields are `FormCheckboxField` (see Checkbox). No
   `MuiSwitch` theme entry is needed unless a real immediate toggle appears.
 - **Status: done (#389)**: `FormSwitchField` was removed.
+
+## Table (DataGrid rows)
+
+- **Linje**: `packages/table/src/index.scss` `&__row`: `--hover` on `:hover` and `--active`
+  (a clickable row) both fill `table/Standard/Cell-Fill-Hover` #f2f5f7; `--error`
+  `Fill-Negative` #ffcece. There is **no selected-row token**.
+- **MUI**: the collection's list is a MUI X DataGrid (`GridView.tsx`), not `<TableRow>`.
+  `MuiDataGrid` root: `.MuiDataGrid-row:hover` → `ROW_HOVER_FILL` under `CAN_HOVER`. The
+  grid's own hover is a mix of `action.hover` at `hoverOpacity`, near white (#fdfdfe).
+  `MuiTableRow` hover uses the same fill; it only reaches the import column mapper.
+- **Selected rows**: no table selects rows yet (`disableRowSelectionOnClick`). The theme's
+  `MuiTableRow` selected style (primary alpha + 3 px stripe) is a placeholder. Design it
+  with v7's row selection (add to fleet): the checkbox carries "selected", Linje has no fill.
+- **Status: hover done (#429).**
 
 ## TagChip / Chip
 

@@ -126,9 +126,11 @@ const ALERT_COLOURS = {
   Error: { fill: '#ffcece', border: '#d31b1b', icon: '#d31b1b' },
   Warning: { fill: '#fff4cd', border: '#e9b10c', icon: ACCENT },
 };
-// Table row tint: hover, selected, selected + hover (primary alpha); selected row's left stripe.
-const ROW_HOVER_ALPHA = 0.08,
-  ROW_SELECTED_ALPHA = 0.18,
+// Linje Table (`table/src/index.scss` `&--hover`, `table/Standard/Cell-Fill-Hover`): row hover.
+const ROW_HOVER_FILL = '#f2f5f7';
+// Selected row: Linje has no token, and no table selects rows yet (v7's fleet selection will).
+// Selected, selected + hover (primary alpha); the selected row's left stripe.
+const ROW_SELECTED_ALPHA = 0.18,
   ROW_SELECTED_HOVER_ALPHA = 0.24,
   ROW_STRIPE_PX = 3;
 
@@ -586,18 +588,18 @@ const baseComponents = (theme: Theme): Components<Theme> => ({
           theme.palette.primary.main,
           -FOCUS_PX
         ),
+        // Linje's row hover, not the grid's own near-white mix of `action.hover`. Light
+        // enough that the Edit button's hover (`HOVER_FILL`) still stands out in the row.
+        [CAN_HOVER]: { '& .MuiDataGrid-row:hover': { backgroundColor: ROW_HOVER_FILL } },
       },
     },
   },
-  // A subtle primary tint for row hover: the opaque action.hover drowns out Chip/Button
-  // hover states in rows. Selected sits two stops above hover with a left accent stripe;
-  // hover-while-selected nudges one stop further, never back to an unselected look.
+  // Row hover as the grid's. Selected (no table selects rows yet) sits above it with a left
+  // accent stripe; hover-while-selected nudges one stop further, never back to unselected.
   MuiTableRow: {
     styleOverrides: {
       root: {
-        '&.MuiTableRow-hover:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, ROW_HOVER_ALPHA),
-        },
+        [CAN_HOVER]: { '&.MuiTableRow-hover:hover': { backgroundColor: ROW_HOVER_FILL } },
         '&.Mui-selected': {
           backgroundColor: alpha(theme.palette.primary.main, ROW_SELECTED_ALPHA),
           borderLeft: `${ROW_STRIPE_PX}px solid ${theme.palette.primary.main}`,
