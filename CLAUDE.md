@@ -38,6 +38,13 @@ Pre-commit hooks (`.husky/pre-commit`) run `npm run check` (Prettier `--check` o
 
 **Note:** `.prettierignore` must be kept in sync with `.gitignore` for generated/copied files (e.g. `public/config.json`, `public/theme-*.json`). Prettier does not respect `.gitignore` by default, so any gitignored file that Prettier would check needs an explicit entry in `.prettierignore` as well.
 
+## Storybook → `ui-sandboxing` sync (TODO side quest)
+
+**IMPORTANT — every developer, every session.** The published Storybook (https://entur.github.io/hathor/storybook/) builds **only from the `ui-sandboxing` branch** (`.github/workflows/storybook-pages.yml`), never from main. So whenever a session's change touches Storybook (a `*.stories.tsx`, `.storybook/**`, or a component a story renders):
+
+- Add a TODO item right away: **"Side quest: open a PR merging `main` into `ui-sandboxing`"**, and raise it to the user before the session ends.
+- Once the change is on `main`: branch off `origin/ui-sandboxing`, `git merge origin/main` (subject `Merge main into ui-sandboxing`), open a PR with base `ui-sandboxing`. Never push straight to `ui-sandboxing`.
+
 ## Architecture
 
 ### Collection + form pages
