@@ -23,10 +23,9 @@ describe('stageTheme', () => {
     expect(c.ground).toBe('rgb(163, 164, 187)');
     expect(c.road).toBe('rgb(140, 142, 171)');
     // The sky is light, the ground a good step darker, the road darker still.
-    const lum = (css: string) => getLuminance(css);
-    expect(lum(c.sky) - lum(c.ground)).toBeGreaterThan(0.25);
-    expect(lum(c.ground)).toBeGreaterThan(lum(c.road));
-    c.buildings.forEach(b => expect(lum(b)).toBeGreaterThan(lum(c.ground)));
+    expect(getLuminance(c.sky) - getLuminance(c.ground)).toBeGreaterThan(0.25);
+    expect(getLuminance(c.ground)).toBeGreaterThan(getLuminance(c.road));
+    c.buildings.forEach(b => expect(getLuminance(b)).toBeGreaterThan(getLuminance(c.ground)));
   });
 
   it('paints sky, fog, lit and unlit ground, and bounce; leaves the rest be', () => {

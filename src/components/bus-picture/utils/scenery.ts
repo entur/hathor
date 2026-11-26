@@ -32,7 +32,7 @@ const HOUSE = { w: [7, 11], d: 9, h: [4.5, 7] },
   FLATS = { w: [12, 22], d: 13, h: [10, 22] },
   FLATS_SHARE = 0.4;
 const SEED = 0x5eed;
-const HALF_TURN = Math.PI / 2;
+const QUARTER_TURN = Math.PI / 2;
 
 /** A seeded uniform random in [0, 1) (mulberry32): the same street on every load. */
 const rng = (seed: number) => () => {
@@ -57,7 +57,7 @@ const flat = (
   y: number,
   z: number
 ) => {
-  const m = new Mesh(new PlaneGeometry(w, d).rotateX(-HALF_TURN), material);
+  const m = new Mesh(new PlaneGeometry(w, d).rotateX(-QUARTER_TURN), material);
   m.position.set(x, y, z);
   return m;
 };
@@ -84,7 +84,7 @@ const row = (z: number, side: 1 | -1, next: () => number, materials: MeshStandar
     if (!flats) {
       // A triangular prism, ridge across the row: its apex up, its base the house's width.
       const r = w / Math.sqrt(3);
-      const roof = new Mesh(new CylinderGeometry(r, r, d, 3).rotateX(-HALF_TURN), material);
+      const roof = new Mesh(new CylinderGeometry(r, r, d, 3).rotateX(-QUARTER_TURN), material);
       roof.position.set(x + w / 2, h + r / 2, cz);
       meshes.push(roof);
     }

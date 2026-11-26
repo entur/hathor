@@ -74,18 +74,17 @@ export const groundOf = (bg: string): string => {
  * picture's background), the ground disc, and the bounce light.
  *
  * @param {Scene} scene the stage's scene (a bus group's parent once added)
- * @param {{ sky: string, ground: string }} colours the sky, and the ground as it should look
+ * @param {Pick<StageColours, 'sky' | 'ground'>} colours the sky, and the ground as it should look
  */
-export const themeStage = (scene: Scene, { sky, ground }: { sky: string; ground: string }) => {
+export const themeStage = (scene: Scene, { sky, ground }: Pick<StageColours, 'sky' | 'ground'>) => {
   scene.background?.set(sky);
   scene.fog?.color.set(sky);
   const light = getLuminance(sky) > LIGHT_LUMINANCE;
   scene.children.forEach(c => {
     // The live ground is lit, the shot's is not; a shot's shadow catcher keeps its colour.
-    const type = c.isMesh ? c.material?.type : undefined;
-    if (type === 'MeshStandardMaterial')
-      c.material?.color.set(ground).multiplyScalar(1 / FLOOR_LIGHT);
-    if (type === 'MeshBasicMaterial') c.material?.color.set(ground);
+    const m = c.isMesh ? c.material : undefined;
+    if (m?.type === 'MeshStandardMaterial') m.color.set(ground).multiplyScalar(1 / FLOOR_LIGHT);
+    if (m?.type === 'MeshBasicMaterial') m.color.set(ground);
     if (c.isHemisphereLight) c.groundColor?.set(light ? LIGHT_BOUNCE : DARK_BOUNCE);
   });
 };
