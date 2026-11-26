@@ -39,7 +39,7 @@
     "@base-ui/react": "^1.9.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@entur/iteru-3dbus": "^0.3.0",
+    "@entur/iteru-3dbus": "^0.3.1",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@mui/utils": "^9.5.0",
