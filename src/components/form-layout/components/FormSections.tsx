@@ -5,6 +5,7 @@ import { REDUCED_MOTION_QUERY } from '../../../utils/motion.ts';
 import { useSectionSpy } from '../hooks/useSectionSpy.ts';
 import { FormFooterContext } from '../formFooterContext.ts';
 import {
+  FORM_SIDE_VAR,
   RING_GUTTER,
   SCROLL_PAD,
   SECTION_GAP,
@@ -221,14 +222,15 @@ export function FormSections<K extends string>({
         sx={{
           minWidth: 0,
           pr: SCROLL_PAD, // the fields keep clear of the column's own scrollbar
-          // From `lg` the column scrolls, so it clips: a ring's room inside it, on the left
-          // pulled back out, keeping the fields in line with the title row.
+          // From `lg` the column scrolls, so it clips: a ring's room inside it. On the left it
+          // reaches out over the form page's side to the page's edge, so a wheel there scrolls
+          // the form (#435), padded back in line with the title row; elsewhere, a ring's room.
           ...(wide && {
             minHeight: 0,
             overflowY: 'auto',
             py: RING_GUTTER,
-            pl: RING_GUTTER,
-            ml: -RING_GUTTER,
+            pl: `var(${FORM_SIDE_VAR}, ${theme.spacing(RING_GUTTER)})`,
+            ml: `calc(-1 * var(${FORM_SIDE_VAR}, ${theme.spacing(RING_GUTTER)}))`,
           }),
           ...(wide && column && { gridColumn: 1, gridRow: 1 }),
         }}

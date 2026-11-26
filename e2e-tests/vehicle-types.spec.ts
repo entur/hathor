@@ -15,6 +15,7 @@ const MOBILE_VIEWPORT = { width: 390, height: 844 };
 const LANDSCAPE_VIEWPORT = { width: 844, height: 390 };
 // Above MUI's `lg` (1200): the form page's fixed picture + contents column (#293).
 const WIDE_VIEWPORT = { width: 1440, height: 900 };
+const GUTTER_MIN_PX = 8; // the point wheeled over sits at least this far left of the fields
 const ROWS_MIN_PX = 240; // collection.tsx: the rows' floor
 // Rows in vehicle-types-mock.json.
 const FIXTURE_ROWS = 3;
@@ -120,7 +121,8 @@ const interceptRailRows = (page: Page, n: number) =>
  *     phone held sideways the rows keep a floor and the page scrolls instead
  *   - form page (#280, #282): sections with a table of contents that jumps to one; Save /
  *     Cancel at the form's end, Cancel asks before discarding and reverts, still editing;
- *     Deactivate asks first, then freezes the page under a red "Deactivated"
+ *     Deactivate asks first, then freezes the page under a red "Deactivated"; from `lg` a
+ *     wheel over the page's left side scrolls the form too (#435)
  *   - leaving with unsaved edits (#282): a Menu link or browser Back asks first — the dialog's
  *     Cancel stays, Discard follows; with no edits a Menu link goes straight through; a create's
  *     own redirect to its new id after Save never asks; the dialog's Save saves and stays,
@@ -485,6 +487,22 @@ test.describe('/vehicle-types page shell', () => {
         .map(el => !!el.querySelector('#vtype-name') && !el.querySelector('nav'))
     );
     expect(moved).toEqual([true]);
+  });
+
+  test("wide: a wheel over the page's left side scrolls the form", async ({ page }) => {
+    await page.setViewportSize(WIDE_VIEWPORT);
+    await openFirstRecord(page);
+    await expect(footerSave(page)).not.toBeInViewport();
+    // Left of the fields, in the page's gutter, as far down as the middle of the page.
+    const main = await page.getByRole('main').boundingBox();
+    const field = await page.locator('#vtype-name').boundingBox();
+    if (!main || !field) throw new Error('no main or name field box');
+    const gutterX = main.x + (field.x - main.x) / 2;
+    expect(gutterX).toBeLessThan(field.x - GUTTER_MIN_PX);
+    await page.mouse.move(gutterX, main.y + main.height / 2);
+    await wheelUntil(page, () =>
+      expect(footerSave(page)).toBeInViewport({ timeout: WHEEL_WAIT_MS })
+    );
   });
 
   test('widened past lg: scrolling the form to its end marks the last section', async ({

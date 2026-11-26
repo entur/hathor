@@ -10,6 +10,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
@@ -23,7 +24,10 @@ import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   EditFooter,
   FormFooterContext,
+  FORM_CAP_VAR,
   FORM_PAGE_MAX_WIDTH,
+  FORM_SIDE_VAR,
+  PAGE_GUTTER,
   RING_GUTTER,
   formColumnWidth,
   NARROW_ATTR,
@@ -51,20 +55,29 @@ const TITLE_ROW_PX = 40,
   ID_SKELETON_PX = 160,
   ID_SKELETON_H_PX = 24;
 
+/** One value per PageShell gutter breakpoint. */
+const perGutter = <V,>(f: (gutter: number) => V) =>
+  Object.fromEntries(Object.entries(PAGE_GUTTER).map(([bp, g]) => [bp, f(g)]));
+
 /** The page: from `lg` it stays put and the form column scrolls itself (`FormSections`, #293). */
-const FRAME_SX = {
+const FRAME_SX = (t: Theme) => ({
   height: '100%',
   // Capped, and centred in the page; the title row's actions end above column 3.
-  maxWidth: FORM_PAGE_MAX_WIDTH,
-  width: '100%',
-  mx: 'auto',
+  [FORM_CAP_VAR]: FORM_PAGE_MAX_WIDTH,
   // A body with no column 3 (`FormSections`) is one narrow column: the page shrinks to it.
-  [`&:has([${NARROW_ATTR}])`]: { maxWidth: formColumnWidth },
+  [`&:has([${NARROW_ATTR}])`]: { [FORM_CAP_VAR]: formColumnWidth(t) },
+  // Out over PageShell's gutters to the page's edges and padded back in, so the side strips
+  // are inside the scroller (#435). The ring's room: it clips, and fields and buttons line its edges.
+  [FORM_SIDE_VAR]: perGutter(
+    g => `calc(${t.spacing(g + RING_GUTTER)} + max(0px, (100cqw - var(${FORM_CAP_VAR})) / 2))`
+  ),
+  mx: perGutter(g => -g),
+  px: `var(${FORM_SIDE_VAR})`,
+  py: RING_GUTTER,
   display: 'flex',
   flexDirection: 'column',
   overflowY: { xs: 'auto', lg: 'hidden' },
-  p: RING_GUTTER, // it clips: room for the rings of the fields and buttons along its edges
-} as const;
+});
 /** The body fills the rest from `lg`, so the form column can scroll inside it. */
 const BODY_SX = {
   flex: { lg: '1 1 0' },
