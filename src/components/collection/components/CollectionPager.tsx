@@ -14,7 +14,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { SR_ONLY } from '../../../utils/srOnly.ts';
-import { PRESSED_FILL } from '../../../theme/createThemeFromConfig.ts';
+import { HOVER_FILL, PRESSED_FILL } from '../../../theme/createThemeFromConfig.ts';
 import { pageSizesFor, type CollectionLabels, type CollectionQuery } from '../types.ts';
 
 // Linje's pager sizes (tokens named on the right).
@@ -22,6 +22,7 @@ const PAGE_PX = 32, // --space-extra-large
   ELLIPSIS_FONT_PX = 24, // --font-sizes-extra-large2
   FOCUS_PX = 2, // outlines.focus, outlineOffsets.focus
   FAST_S = 0.1; // timings.fast
+const PAGE_BORDER = '#54568c66'; // menu/Pagination/Standard/Border-Unselected
 
 const PAGE_SX = {
   appearance: 'none',
@@ -32,7 +33,7 @@ const PAGE_SX = {
   minWidth: PAGE_PX,
   mx: '2px',
   px: '4px',
-  border: '1px solid transparent',
+  border: `1px solid ${PAGE_BORDER}`,
   borderRadius: 1,
   bgcolor: 'transparent',
   color: 'primary.main',
@@ -41,7 +42,7 @@ const PAGE_SX = {
   cursor: 'pointer',
   userSelect: 'none',
   transition: `background ${FAST_S}s ease-out, border-color ${FAST_S}s ease-out`,
-  '&:hover': { bgcolor: 'action.hover' },
+  '&:hover': { bgcolor: HOVER_FILL }, // menu/Pagination/Standard/Hover
   '&:focus-visible': {
     outline: `${FOCUS_PX}px solid`,
     outlineColor: 'primary.main',
