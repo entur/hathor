@@ -226,11 +226,11 @@ function Drawn({
       }}
     >
       <Box sx={{ display: 'flex', p: 1 }}>
-        {/* One white panel, right-aligned: the note (when there is one) beside the switches. */}
+        {/* One white panel, full width: the note (when there is one) left, the switches right. */}
         <Box
           sx={{
-            ml: 'auto',
-            maxWidth: '100%',
+            flex: 1,
+            minWidth: 0,
             display: 'flex',
             alignItems: 'center',
             gap: 1,
@@ -240,35 +240,37 @@ function Drawn({
           }}
         >
           <StandardNote fallback={fallback} broken={broken} sx={{ minWidth: 0 }} />
-          {view === '3d' && (
+          <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+            {view === '3d' && (
+              <ToggleButtonGroup
+                size="small"
+                value={scenery ? [SCENERY] : []}
+                onChange={(_e, v: string[]) => setScenery(v.includes(SCENERY))}
+                aria-label={t('busView.scenery')}
+              >
+                <Tooltip title={t('busView.scenery')}>
+                  <ToggleButton value={SCENERY} aria-label={t('busView.scenery')}>
+                    <LocationCityOutlinedIcon fontSize="small" />
+                  </ToggleButton>
+                </Tooltip>
+              </ToggleButtonGroup>
+            )}
             <ToggleButtonGroup
+              exclusive
               size="small"
-              value={scenery ? [SCENERY] : []}
-              onChange={(_e, v: string[]) => setScenery(v.includes(SCENERY))}
-              aria-label={t('busView.scenery')}
+              value={view}
+              onChange={(_e, v: BusViewMode | null) => v && setView(v)}
+              aria-label={t('busView.label')}
             >
-              <Tooltip title={t('busView.scenery')}>
-                <ToggleButton value={SCENERY} aria-label={t('busView.scenery')}>
-                  <LocationCityOutlinedIcon fontSize="small" />
-                </ToggleButton>
-              </Tooltip>
+              {MODES.map(m => (
+                <Tooltip key={m} title={t(`busView.${m}`)}>
+                  <ToggleButton value={m} aria-label={t(`busView.${m}`)}>
+                    {MODE_ICONS[m]}
+                  </ToggleButton>
+                </Tooltip>
+              ))}
             </ToggleButtonGroup>
-          )}
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={view}
-            onChange={(_e, v: BusViewMode | null) => v && setView(v)}
-            aria-label={t('busView.label')}
-          >
-            {MODES.map(m => (
-              <Tooltip key={m} title={t(`busView.${m}`)}>
-                <ToggleButton value={m} aria-label={t(`busView.${m}`)}>
-                  {MODE_ICONS[m]}
-                </ToggleButton>
-              </Tooltip>
-            ))}
-          </ToggleButtonGroup>
+          </Box>
         </Box>
       </Box>
       <Box sx={{ position: 'relative', flex: 1, minHeight: 0 }}>
