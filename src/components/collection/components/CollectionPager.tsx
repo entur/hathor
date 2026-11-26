@@ -90,6 +90,25 @@ export interface CollectionPagerProps {
  * @param labels   UI strings
  * @returns the pager <nav>, or `null`
  */
+/**
+ * The rows a page shows, as the pager words it ("Showing rows 1–25 of 120"); `empty` at none.
+ *
+ * @param {CollectionLabels} labels the collection's strings
+ * @param {number} total rows after filter + search
+ * @param {number} page zero-based page
+ * @param {number} pageSize rows per page
+ * @returns {string} the range text
+ */
+export const rowsText = (
+  labels: CollectionLabels,
+  total: number,
+  page: number,
+  pageSize: number
+): string =>
+  total === 0
+    ? labels.empty
+    : labels.showingRows(page * pageSize + 1, Math.min((page + 1) * pageSize, total), total);
+
 export function CollectionPager({ total, page, pageSize, onQuery, labels }: CollectionPagerProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const currentId = useId();
@@ -156,9 +175,7 @@ export function CollectionPager({ total, page, pageSize, onQuery, labels }: Coll
             </MenuItem>
           ))}
         </Menu>
-        <Typography variant="body2">
-          {labels.showingRows(page * pageSize + 1, Math.min((page + 1) * pageSize, total), total)}
-        </Typography>
+        <Typography variant="body2">{rowsText(labels, total, page, pageSize)}</Typography>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {items.map(({ type, page: n, selected, disabled, onClick }, i) => {

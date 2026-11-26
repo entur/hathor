@@ -24,6 +24,8 @@ beforeAll(async () => {
 });
 
 const ROW_COUNT = 3;
+/** Text queries skip the live region, which repeats the pager's count (#435 E2). */
+const VISIBLE = { ignore: '[role=status], script, style' };
 const GRID_SLOT = { dataGrid: { disableVirtualization: true } };
 
 /** A VehicleType-shaped field mapping: two top-level text fields, a nested name, and
@@ -184,6 +186,16 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     expect(onQueryChange).toHaveBeenLastCalledWith({ ...defaultCollectionQuery, search: needle });
   });
 
+  it('announces the hit count as a search changes it (live region)', async () => {
+    await mount({ view: 'cards' });
+    const status = screen.getByRole('status');
+    const search = screen.getByRole('textbox', { name: 'Search' });
+    fireEvent.change(search, { target: { value: needle } });
+    expect(status.textContent).toBe('Showing rows 1–1 of 1');
+    fireEvent.change(search, { target: { value: 'no-such-row' } });
+    expect(status.textContent).toBe('No rows');
+  });
+
   it('returns to the first page when the query narrows', async () => {
     const onQueryChange = vi.fn();
     await mount({
@@ -207,13 +219,13 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
   it('keeps the toolbar and says so when nothing matches', async () => {
     await mount({ view: 'cards', query: { ...defaultCollectionQuery, search: 'no-such-row' } });
     expect(screen.queryAllByRole('listitem')).toHaveLength(0);
-    expect(screen.getByText('No rows')).toBeTruthy();
+    expect(screen.getByText('No rows', VISIBLE)).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Search' })).toBeTruthy();
   });
 
   it('renders the grid overlay, not a crash, for no rows at all', async () => {
     await mount({ view: 'grid', rows: [] });
-    expect(await screen.findByText('No rows')).toBeTruthy();
+    expect(await screen.findByText('No rows', VISIBLE)).toBeTruthy();
   });
 
   it('enables exactly the filter fields in the popover', async () => {
@@ -285,7 +297,7 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     cleanup();
     await mount({ view: 'cards', query: { ...defaultCollectionQuery, pageSize: 0 } });
     expect(screen.getAllByRole('listitem')).toHaveLength(ROW_COUNT);
-    expect(screen.getByText(`Showing rows 1–${ROW_COUNT} of ${ROW_COUNT}`)).toBeTruthy();
+    expect(screen.getByText(`Showing rows 1–${ROW_COUNT} of ${ROW_COUNT}`, VISIBLE)).toBeTruthy();
   });
 
   it('reorders the grid when a header is clicked', async () => {
@@ -332,7 +344,7 @@ describe.each(ENTITIES)('$entity collection', ({ entity, fields, filterFields })
     fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), {
       target: { value: `${otherText.key}-1` },
     });
-    expect(await screen.findByText('No rows')).toBeTruthy();
+    expect(await screen.findByText('No rows', VISIBLE)).toBeTruthy();
   });
 
   it('applies and shows a filter on a filterable field the columns leave out', async () => {
