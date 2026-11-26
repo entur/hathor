@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-BCiCTKAo.js";import{i as t,t as n}from"./multilingualString-DoqO4C_w.js";var r;function i(){return(i=e((()=>{n(),r=e=>t(e.name)||e.id})))()}export{i as n,r as t};

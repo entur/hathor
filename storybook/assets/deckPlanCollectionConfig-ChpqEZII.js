@@ -1,0 +1,5 @@
+import{n as e}from"./rolldown-runtime-BCiCTKAo.js";import{t}from"./jsx-runtime-BB9-612F.js";import{n,t as r}from"./collection-BlzMIiYu.js";import{n as i,t as a}from"./useCollectionLabels-DkMWW2Ug.js";import{n as o,t as s}from"./deckPlanTitle-DO5XHpd4.js";import{i as c,n as l,t as u}from"./deckPlanFields-CDY8Vp5E.js";function d(e){let t=i(`deckPlans.field`);return(0,f.jsx)(p,{columns:m,card:h,labels:t,editHref:g,rowTitle:s,...e})}var f,p,m,h,g;function _(){return(_=e((()=>{r(),a(),c(),o(),f=t(),p=n(u,{filterFields:l}),m=[{field:`name`,render:s},`id`,`description`],h={title:`name`,subtitle:`id`,fields:[`description`]},g=e=>encodeURIComponent(e.id),d.__docgenInfo={description:`The deck-plan collection, wired once for the page and its story: field + filter
+mapping, columns, card, localized labels and an Edit link per record (#287).
+
+@param {Partial<Props> & Pick<Props, 'rows'>} props rows, plus any override
+@returns {JSX.Element} toolbar, grid and cards`,methods:[],displayName:`DeckPlanCollection`}})))()}export{_ as n,d as t};

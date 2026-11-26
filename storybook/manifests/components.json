@@ -1,157 +1,58 @@
 {
   "v": 0,
   "components": {
-    "components-formlayout": {
-      "id": "components-formlayout",
-      "name": "FormLayout",
-      "path": "./src/components/FormLayout.stories.tsx",
-      "jsDocTags": {
-        "param": [
-          "rowGap Override the default vertical row spacing (`1.25`).",
-          "sx Forwarded to the outer Box for caller-side spacing/margin."
-        ]
-      },
-      "description": "Container-query-aware two-column form grid. Stacks (single column) when the\nnearest inline-size container is narrower than `STACK_BELOW`; otherwise\nrenders a content-sized label column (capped at 12rem via `fit-content`) and\ngives all remaining width to the value column. Short labels collapse to\ntheir natural width so the input gets the room it needs.\n\nThe wrapper sets `containerType: inline-size` on itself so the inner grid\nqueries this component's own width — drop a `<FormLayout>` anywhere and it\nwill track its host's width, not the viewport's.",
-      "reactDocgen": {
-        "description": "Container-query-aware two-column form grid. Stacks (single column) when the\nnearest inline-size container is narrower than `STACK_BELOW`; otherwise\nrenders a content-sized label column (capped at 12rem via `fit-content`) and\ngives all remaining width to the value column. Short labels collapse to\ntheir natural width so the input gets the room it needs.\n\nThe wrapper sets `containerType: inline-size` on itself so the inner grid\nqueries this component's own width — drop a `<FormLayout>` anywhere and it\nwill track its host's width, not the viewport's.\n\n@param rowGap Override the default vertical row spacing (`1.25`).\n@param sx     Forwarded to the outer Box for caller-side spacing/margin.",
-        "methods": [],
-        "displayName": "FormLayout",
-        "definedInFile": "/home/runner/work/hathor/hathor/src/components/FormLayout.tsx",
-        "actualName": "FormLayout",
-        "exportName": "FormLayout",
-        "props": {
-          "children": {
-            "required": true,
-            "tsType": {
-              "name": "ReactNode"
-            },
-            "description": ""
-          },
-          "rowGap": {
-            "required": false,
-            "tsType": {
-              "name": "number"
-            },
-            "description": "",
-            "defaultValue": {
-              "value": "1.25",
-              "computed": false
-            }
-          },
-          "sx": {
-            "required": false,
-            "tsType": {
-              "name": "SxProps",
-              "elements": [
-                {
-                  "name": "Theme"
-                }
-              ],
-              "raw": "SxProps<Theme>"
-            },
-            "description": ""
-          },
-          "data-testid": {
-            "required": false,
-            "tsType": {
-              "name": "string"
-            },
-            "description": ""
-          }
-        }
-      },
-      "stories": [
-        {
-          "id": "components-formlayout--editable",
-          "name": "Editable",
-          "snippet": "const Editable = () => (\n  <FormLayout>\n    <FieldRow id=\"f-name\" label=\"Name\">\n      <TextField id=\"f-name\" size=\"small\" fullWidth defaultValue=\"ER34-001\" />\n    </FieldRow>\n    <FieldRow id=\"f-reg\" label=\"Registration number\">\n      <TextField id=\"f-reg\" size=\"small\" fullWidth defaultValue=\"EW 12345\" />\n    </FieldRow>\n    <FieldRow id=\"f-notes\" label=\"Notes\" alignTop>\n      <TextField id=\"f-notes\" size=\"small\" fullWidth multiline rows={3} />\n    </FieldRow>\n  </FormLayout>\n);"
-        },
-        {
-          "id": "components-formlayout--read-only",
-          "name": "Read Only",
-          "snippet": "const ReadOnly = () => (\n  <FormLayout>\n    <MetaRow label=\"Codespace\">NSR</MetaRow>\n    <MetaRow label=\"Type\">VehicleType</MetaRow>\n    <MetaRow label=\"Created\">2026-05-29</MetaRow>\n  </FormLayout>\n);"
-        },
-        {
-          "id": "components-formlayout--mixed",
-          "name": "Mixed",
-          "snippet": "const Mixed = () => (\n  <FormLayout>\n    <MetaRow label=\"Id\">NSR:VehicleType:1234</MetaRow>\n    <FieldRow id=\"m-name\" label=\"Name\">\n      <TextField id=\"m-name\" size=\"small\" fullWidth defaultValue=\"Type 73\" />\n    </FieldRow>\n    <MetaRow label=\"Read-only field\">cannot edit</MetaRow>\n  </FormLayout>\n);"
-        },
-        {
-          "id": "components-formlayout--narrow-container",
-          "name": "Narrow Container",
-          "snippet": "const NarrowContainer = () => (\n  <Box sx={{ width: '20rem', border: '1px dashed', borderColor: 'divider', p: 2 }}>\n    <FormLayout>\n      <FieldRow id=\"n-name\" label=\"Name\">\n        <TextField id=\"n-name\" size=\"small\" fullWidth defaultValue=\"ER34-001\" />\n      </FieldRow>\n      <FieldRow id=\"n-reg\" label=\"Registration number\">\n        <TextField id=\"n-reg\" size=\"small\" fullWidth defaultValue=\"EW 12345\" />\n      </FieldRow>\n    </FormLayout>\n  </Box>\n);",
-          "description": "Constrains the wrapping Box to 20rem so FormLayout's container query\n(`@container (min-width: 22rem)`) misses and the grid collapses to a\nsingle column. Resize your browser — the canvas-level layout doesn't\nmatter; only the wrapping Box's width does."
-        }
-      ],
-      "import": "import { Box, TextField } from '@mui/material';\nimport { FieldRow, FormLayout, MetaRow } from 'hathor';"
-    },
-    "components-formlayoutskeleton": {
-      "id": "components-formlayoutskeleton",
-      "name": "FormLayoutSkeleton",
-      "path": "./src/components/FormLayoutSkeleton.stories.tsx",
+    "components-button": {
+      "id": "components-button",
+      "name": "Button",
+      "path": "./src/components/Button.stories.tsx",
       "jsDocTags": {},
-      "description": "Wave-animated loading skeleton for any sidebar editor built on the\n{@link FormLayout} two-column grid. Internally wraps each section in\n`<FormLayout>` so the skeleton's grid shape (and container-query\nstacking) tracks the live form automatically — no separate grid\ntemplate to keep in sync.",
-      "reactDocgen": {
-        "description": "Wave-animated loading skeleton for any sidebar editor built on the\n{@link FormLayout} two-column grid. Internally wraps each section in\n`<FormLayout>` so the skeleton's grid shape (and container-query\nstacking) tracks the live form automatically — no separate grid\ntemplate to keep in sync.",
-        "methods": [],
-        "displayName": "FormLayoutSkeleton",
-        "definedInFile": "/home/runner/work/hathor/hathor/src/components/FormLayoutSkeleton.tsx",
-        "actualName": "FormLayoutSkeleton",
-        "exportName": "default",
-        "props": {
-          "ariaLabel": {
-            "required": true,
-            "tsType": {
-              "name": "string"
-            },
-            "description": "Loading text for screen readers — caller-localised."
-          },
-          "showTitle": {
-            "required": false,
-            "tsType": {
-              "name": "boolean"
-            },
-            "description": "Render an h6 + id-pill skeleton row at the top, with a divider below."
-          },
-          "sections": {
-            "required": true,
-            "tsType": {
-              "name": "Array",
-              "elements": [
-                {
-                  "name": "FormLayoutSkeletonSection"
-                }
-              ],
-              "raw": "FormLayoutSkeletonSection[]"
-            },
-            "description": "Each section is its own <FormLayout> grid; Dividers auto-rendered between."
-          }
-        }
+      "error": {
+        "name": "Component file in node_modules",
+        "message": "File: /home/runner/work/hathor/hathor/node_modules/@mui/material/index.mjs\nError:\nComponent files in node_modules are not supported.\nThe distributed files in node_modules usually don't contain the necessary comments or types needed to analyze component information.\nConfigure TypeScript path aliases to map your package name to the source file instead.\n\nExample (tsconfig.json):\n{\n  \"compilerOptions\": {\n    \"baseUrl\": \".\",\n    \"paths\": {\n      \"@design-system/button\": [\"src/components/Button.tsx\"],\n      \"@design-system/*\": [\"src/components/*\"]\n    }\n  }\n}\n\nThen import using:\nimport { Button } from '@design-system/button'\n\nStorybook resolves tsconfig paths automatically.\nCode:\n/* File in node_modules */"
       },
       "stories": [
         {
-          "id": "components-formlayoutskeleton--default",
-          "name": "Default",
-          "snippet": "const Default = () => <FormLayoutSkeleton ariaLabel=\"Loading form\" sections={[{ rowCount: 4 }]} />;"
-        },
-        {
-          "id": "components-formlayoutskeleton--with-title",
-          "name": "With Title",
-          "snippet": "const WithTitle = () => <FormLayoutSkeleton ariaLabel=\"Loading vehicle\" showTitle sections={[{ rowCount: 4 }]} />;"
-        },
-        {
-          "id": "components-formlayoutskeleton--multi-section",
-          "name": "Multi Section",
-          "snippet": "const MultiSection = () => <FormLayoutSkeleton\n    ariaLabel=\"Loading vehicle type\"\n    showTitle\n    sections={[{ rowCount: 3 }, { rowCount: 2 }, { rowCount: 4 }]} />;"
-        },
-        {
-          "id": "components-formlayoutskeleton--tall-rows",
-          "name": "Tall Rows",
-          "snippet": "const TallRows = () => <FormLayoutSkeleton\n    ariaLabel=\"Loading editor with notes\"\n    showTitle\n    sections={[{ rowCount: 2 }, { rowCount: 1, rowHeight: 88 }]} />;",
-          "description": "`rowHeight` override on the second section bumps each value cell to 88px,\nmimicking a multiline text area. The first section keeps the default\ninput-height rows for contrast."
+          "id": "components-button--sizes",
+          "name": "Sizes",
+          "snippet": "const Sizes = () => (\n  <Stack spacing={2}>\n    {KINDS.map(({ name, props }) => (\n      <Stack key={name} direction=\"row\" spacing={2} sx={{ alignItems: 'center' }}>\n        {SIZES.map(size => (\n          <Button key={size} {...props} size={size} data-testid={`${name}-${size}`}>\n            {name}\n          </Button>\n        ))}\n        <Button {...props} disabled>\n          Disabled\n        </Button>\n      </Stack>\n    ))}\n  </Stack>\n);"
         }
       ],
-      "import": "import { Box } from '@mui/material';\nimport { FormLayoutSkeleton } from 'hathor';"
+      "import": "import { Button, Stack } from '@mui/material';"
+    },
+    "components-form-layout-formfields": {
+      "id": "components-form-layout-formfields",
+      "name": "FormFields",
+      "path": "./src/components/FormFields.stories.tsx",
+      "jsDocTags": {},
+      "error": {
+        "name": "No component found",
+        "message": "We could not detect the component from your story file. Specify meta.component.\n  14 | type Mode = (typeof MODES)[number]['value'];\n  15 |\n> 16 | const meta: Meta = {\n     | ^\n  17 |   title: 'components/form-layout/FormFields',\n  18 |   parameters: {\n  19 |     layout: 'padded',\n\n./src/components/FormFields.stories.tsx:\nimport { useState } from 'react';\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { Box, Stack } from '@mui/material';\nimport { FormNumberField, FormSelectField, FormCheckboxField, FormTextField } from './FormFields';\n\n// Inner width lands under FormNumberField's 16rem breakpoint.\nconst NARROW_WIDTH = '16rem';\nconst MODES = [\n  { value: 'bus', label: 'Bus' },\n  { value: 'rail', label: 'Rail' },\n  { value: 'water', label: 'Water' },\n] as const;\n\ntype Mode = (typeof MODES)[number]['value'];\n\nconst meta: Meta = {\n  title: 'components/form-layout/FormFields',\n  parameters: {\n    layout: 'padded',\n    docs: {\n      description: {\n        component:\n          'Field primitives for editor forms — the controls a form page draws into `FormSections` and the sidebar tabs use — text, number, select-with-none and switch. Each takes plain values and reports plain values; no feature types.',\n      },\n    },\n  },\n};\nexport default meta;\n\ntype Story = StoryObj;\n\nfunction AllFields({ disabled, readOnly }: { disabled?: boolean; readOnly?: boolean }) {\n  const [name, setName] = useState('Turvogn 1');\n  const [built, setBuilt] = useState('2026-05-29');\n  const [length, setLength] = useState<number | undefined>(12.5);\n  const [mode, setMode] = useState<Mode | undefined>('bus');\n  const [lowFloor, setLowFloor] = useState(true);\n  return (\n    <Stack spacing={2} useFlexGap>\n      <FormTextField\n        id=\"s-name\"\n        label=\"Name\"\n        value={name}\n        onChange={setName}\n        disabled={disabled}\n        readOnly={readOnly}\n      />\n      <FormTextField\n        id=\"s-built\"\n        label=\"Build date\"\n        type=\"date\"\n        value={built}\n        onChange={setBuilt}\n        disabled={disabled}\n        readOnly={readOnly}\n      />\n      <FormNumberField\n        id=\"s-length\"\n        label=\"Length (m)\"\n        value={length}\n        onChange={setLength}\n        disabled={disabled}\n        readOnly={readOnly}\n      />\n      <FormSelectField\n        id=\"s-mode\"\n        label=\"Transport mode\"\n        value={mode}\n        options={MODES}\n        noneLabel=\"None\"\n        onChange={setMode}\n        disabled={disabled}\n        readOnly={readOnly}\n      />\n      <FormCheckboxField\n        id=\"s-low-floor\"\n        label=\"Low floor\"\n        checked={lowFloor}\n        onChange={setLowFloor}\n        disabled={disabled}\n        readOnly={readOnly}\n      />\n    </Stack>\n  );\n}\n\nexport const Editable: Story = { render: () => <AllFields /> };\n\n/** A form page's view mode (#267): no border or hover, the value full contrast. */\nexport const ReadOnly: Story = { render: () => <AllFields readOnly /> };\n\nexport const Disabled: Story = { render: () => <AllFields disabled /> };\n\n/** A narrow container: every field fills it (widths are the form layout's, #283). */\nexport const NarrowContainer: Story = {\n  render: () => (\n    <Box sx={{ width: NARROW_WIDTH, border: '1px dashed', borderColor: 'divider', p: 2 }}>\n      <AllFields />\n    </Box>\n  ),\n};\n"
+      },
+      "stories": [
+        {
+          "id": "components-form-layout-formfields--editable",
+          "name": "Editable",
+          "snippet": "const Editable = () => <AllFields />;"
+        },
+        {
+          "id": "components-form-layout-formfields--read-only",
+          "name": "Read Only",
+          "snippet": "const ReadOnly = () => <AllFields readOnly />;",
+          "description": "A form page's view mode (#267): no border or hover, the value full contrast."
+        },
+        {
+          "id": "components-form-layout-formfields--disabled",
+          "name": "Disabled",
+          "snippet": "const Disabled = () => <AllFields disabled />;"
+        },
+        {
+          "id": "components-form-layout-formfields--narrow-container",
+          "name": "Narrow Container",
+          "snippet": "const NarrowContainer = () => (\n  <Box sx={{ width: NARROW_WIDTH, border: '1px dashed', borderColor: 'divider', p: 2 }}>\n    <AllFields />\n  </Box>\n);",
+          "description": "A narrow container: every field fills it (widths are the form layout's, #283)."
+        }
+      ],
+      "import": "import { Box, Stack } from '@mui/material';\nimport { FormCheckboxField, FormNumberField, FormSelectField, FormTextField } from 'hathor';"
     },
     "components-menu": {
       "id": "components-menu",
@@ -168,287 +69,217 @@
       },
       "stories": [
         {
-          "id": "components-menu--collapsed",
-          "name": "Collapsed",
-          "snippet": "const Collapsed = () => (\n  <>\n    <ForceExpanded value={false} />\n    <Menu />\n  </>\n);",
-          "description": "Collapsed desktop rail — icons only, 64px. Hover an icon for its tooltip."
-        },
-        {
-          "id": "components-menu--expanded",
-          "name": "Expanded",
-          "snippet": "const Expanded = () => (\n  <>\n    <ForceExpanded value={true} />\n    <Menu />\n  </>\n);",
-          "description": "Expanded desktop rail — icons + labels, 280px; Vehicle types highlighted."
+          "id": "components-menu--desktop",
+          "name": "Desktop",
+          "snippet": "const Desktop = () => <Menu />;",
+          "description": "Desktop side navigation, always open; Vehicle types is the active route."
         },
         {
           "id": "components-menu--mobile-drawer",
           "name": "Mobile Drawer",
           "snippet": "const MobileDrawer = () => (\n  <>\n    <ForceMobileOpen />\n    <Menu />\n  </>\n);",
-          "description": "Mobile temporary Drawer (280px, left-anchored). Forced open on mount; the\n`mobile1` viewport flips Menu's `useMediaQuery` mobile branch on."
+          "description": "Mobile temporary Drawer (21rem, left-anchored). Forced open on mount; the\n`mobile1` viewport flips Menu's `useMediaQuery` mobile branch on."
         }
       ],
       "import": "import { MemoryRouter } from 'react-router-dom';\nimport { Menu, NavRailProvider } from 'hathor';"
     },
-    "components-data-datapagecontent": {
-      "id": "components-data-datapagecontent",
-      "name": "PageContentDemo",
-      "path": "./src/components/data/DataPageContent.stories.tsx",
+    "components-netexid": {
+      "id": "components-netexid",
+      "name": "NetexId",
+      "path": "./src/components/NetexId.stories.tsx",
       "jsDocTags": {},
+      "description": "Read-only chip rendering a NeTEx id, with the optional version surfaced as\na small nested chip (`vN`) inside the outer chip. Monospace label for\nlegibility; outlined outer + filled inner so the version reads as a badge.",
       "reactDocgen": {
-        "description": "",
+        "description": "Read-only chip rendering a NeTEx id, with the optional version surfaced as\na small nested chip (`vN`) inside the outer chip. Monospace label for\nlegibility; outlined outer + filled inner so the version reads as a badge.",
         "methods": [],
-        "displayName": "DataPageContent",
-        "definedInFile": "/home/runner/work/hathor/hathor/src/components/data/DataPageContent.tsx",
-        "actualName": "DataPageContent",
+        "displayName": "NetexId",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/NetexId.tsx",
+        "actualName": "NetexId",
         "exportName": "default",
         "props": {
-          "data": {
+          "id": {
             "required": true,
             "tsType": {
-              "name": "Array",
-              "elements": [
-                {
-                  "name": "T"
-                }
-              ],
-              "raw": "T[]"
+              "name": "string"
             },
-            "description": ""
+            "description": "Full NeTEx id of the form `CODESPACE:TYPE:VALUE`, e.g. `NMR:Vehicle:abc-123`."
           },
-          "loading": {
-            "required": true,
-            "tsType": {
-              "name": "boolean"
-            },
-            "description": ""
-          },
-          "error": {
-            "required": true,
+          "version": {
+            "required": false,
             "tsType": {
               "name": "union",
-              "raw": "string | null",
+              "raw": "string | number",
               "elements": [
                 {
                   "name": "string"
                 },
                 {
-                  "name": "null"
+                  "name": "number"
                 }
               ]
             },
-            "description": ""
+            "description": "Optional version; rendered as a nested chip labelled `vN`."
           },
-          "totalCount": {
-            "required": true,
-            "tsType": {
-              "name": "number"
-            },
-            "description": ""
-          },
-          "order": {
-            "required": true,
+          "copy": {
+            "required": false,
             "tsType": {
               "name": "union",
-              "raw": "'asc' | 'desc'",
+              "raw": "'show' | 'hide' | 'onHover' | 'only'",
               "elements": [
                 {
                   "name": "literal",
-                  "value": "'asc'"
+                  "value": "'show'"
                 },
                 {
                   "name": "literal",
-                  "value": "'desc'"
+                  "value": "'hide'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'onHover'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'only'"
                 }
               ]
             },
-            "description": ""
+            "description": "Copy-button visibility toggle. Defaults to `'hide'`.",
+            "defaultValue": {
+              "value": "'hide'",
+              "computed": false
+            }
           },
-          "orderBy": {
-            "required": true,
+          "size": {
+            "required": false,
             "tsType": {
-              "name": "K"
-            },
-            "description": ""
-          },
-          "handleRequestSort": {
-            "required": true,
-            "tsType": {
-              "name": "signature",
-              "type": "function",
-              "raw": "(property: K) => void",
-              "signature": {
-                "arguments": [
-                  {
-                    "type": {
-                      "name": "K"
-                    },
-                    "name": "property"
-                  }
-                ],
-                "return": {
-                  "name": "void"
-                }
-              }
-            },
-            "description": ""
-          },
-          "page": {
-            "required": true,
-            "tsType": {
-              "name": "number"
-            },
-            "description": ""
-          },
-          "rowsPerPage": {
-            "required": true,
-            "tsType": {
-              "name": "number"
-            },
-            "description": ""
-          },
-          "setPage": {
-            "required": true,
-            "tsType": {
-              "name": "signature",
-              "type": "function",
-              "raw": "(page: number) => void",
-              "signature": {
-                "arguments": [
-                  {
-                    "type": {
-                      "name": "number"
-                    },
-                    "name": "page"
-                  }
-                ],
-                "return": {
-                  "name": "void"
-                }
-              }
-            },
-            "description": ""
-          },
-          "setRowsPerPage": {
-            "required": true,
-            "tsType": {
-              "name": "signature",
-              "type": "function",
-              "raw": "(rowsPerPage: number) => void",
-              "signature": {
-                "arguments": [
-                  {
-                    "type": {
-                      "name": "number"
-                    },
-                    "name": "rowsPerPage"
-                  }
-                ],
-                "return": {
-                  "name": "void"
-                }
-              }
-            },
-            "description": ""
-          },
-          "columns": {
-            "required": true,
-            "tsType": {
-              "name": "Array",
+              "name": "union",
+              "raw": "'small' | 'medium' | 'large'",
               "elements": [
                 {
-                  "name": "union",
-                  "raw": "SortableColumn<T, K> | NonSortableColumn<T>",
-                  "elements": [
-                    {
-                      "name": "SortableColumn",
-                      "elements": [
-                        {
-                          "name": "T"
-                        },
-                        {
-                          "name": "K"
-                        }
-                      ],
-                      "raw": "SortableColumn<T, K>"
-                    },
-                    {
-                      "name": "NonSortableColumn",
-                      "elements": [
-                        {
-                          "name": "T"
-                        }
-                      ],
-                      "raw": "NonSortableColumn<T>"
-                    }
-                  ]
+                  "name": "literal",
+                  "value": "'small'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'medium'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'large'"
                 }
-              ],
-              "raw": "ColumnDefinition<T, K>[]"
+              ]
             },
-            "description": ""
+            "description": "Scales the chip and all sub-elements proportionally. Defaults to `'medium'`.",
+            "defaultValue": {
+              "value": "'medium'",
+              "computed": false
+            }
           },
-          "title": {
+          "variant": {
+            "defaultValue": {
+              "value": "'outlined'",
+              "computed": false
+            },
+            "required": false
+          }
+        },
+        "composes": [
+          "Omit"
+        ]
+      },
+      "stories": [
+        {
+          "id": "components-netexid--with-controls",
+          "name": "With Controls",
+          "snippet": "const WithControls = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" size=\"medium\" copy=\"show\" variant=\"outlined\" />;"
+        },
+        {
+          "id": "components-netexid--copy-on-hover",
+          "name": "Copy On Hover",
+          "snippet": "const CopyOnHover = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" copy=\"onHover\" />;",
+          "description": "`copy: 'onHover'` keeps the chip narrow at rest. The copy button slides in\nwhen the chip is hovered or any child element is focused — try\ntab-navigating to the chip with the keyboard."
+        },
+        {
+          "id": "components-netexid--copy-only",
+          "name": "Copy Only",
+          "snippet": "const CopyOnly = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" copy=\"only\" />;",
+          "description": "`copy: 'only'` drops the segmented label and renders just the copy\nbutton. Use in dense meta rows where the id text would clutter the\nlayout but you still want a one-click copy. The tooltip embeds the\nfull id."
+        },
+        {
+          "id": "components-netexid--versioned",
+          "name": "Versioned",
+          "snippet": "const Versioned = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" version={3} copy=\"show\" />;"
+        },
+        {
+          "id": "components-netexid--malformed-id",
+          "name": "Malformed Id",
+          "snippet": "const MalformedId = () => <NetexId id=\"abc-123\" copy=\"hide\" />;",
+          "description": "Fewer than 3 segments — leftmost missing parts render as `???`. Useful\nwhen surfacing partial / malformed ids from upstream without crashing."
+        },
+        {
+          "id": "components-netexid--all-sizes",
+          "name": "All Sizes",
+          "snippet": "const AllSizes = () => (\n  <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>\n    {SIZES.map(size => (\n      <Box key={size} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n        <Typography variant=\"caption\" sx={{ width: 64, fontFamily: 'monospace' }}>\n          {size}\n        </Typography>\n        <NetexId id={SAMPLE_ID} version={3} copy=\"show\" size={size} />\n      </Box>\n    ))}\n  </Stack>\n);",
+          "description": "All four sizes side-by-side. Outer chip, version pill, copy button, and\nfont all scale proportionally."
+        }
+      ],
+      "import": "import { Box, Stack, Typography } from '@mui/material';\nimport { NetexId } from 'hathor';"
+    },
+    "components-form-layout-sectiontoc": {
+      "id": "components-form-layout-sectiontoc",
+      "name": "SectionToc",
+      "path": "./src/components/SectionToc.stories.tsx",
+      "jsDocTags": {
+        "param": [
+          "props.sections section names, in page order",
+          "props.active the section currently in view",
+          "props.onSelect called with the picked section",
+          "props.variant `list` (default) or `dropdown`",
+          "props.label accessible name of the landmark; default `'Sections'`",
+          "props.loading draw each entry as a skeleton of itself, unpickable",
+          "props.sx styling for the `<nav>` root"
+        ],
+        "returns": [
+          "the navigation landmark, or `null` when there are no sections"
+        ]
+      },
+      "description": "Render a list of sections as in-page navigation.",
+      "reactDocgen": {
+        "description": "Render a list of sections as in-page navigation.\n\n@param props.sections section names, in page order\n@param props.active the section currently in view\n@param props.onSelect called with the picked section\n@param props.variant `list` (default) or `dropdown`\n@param props.label accessible name of the landmark; default `'Sections'`\n@param props.loading draw each entry as a skeleton of itself, unpickable\n@param props.sx styling for the `<nav>` root\n@returns the navigation landmark, or `null` when there are no sections",
+        "methods": [],
+        "displayName": "SectionToc",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/SectionToc.tsx",
+        "actualName": "SectionToc",
+        "exportName": "SectionToc",
+        "props": {
+          "sections": {
+            "required": true,
+            "tsType": {
+              "name": "unknown"
+            },
+            "description": "Section names, in the order they appear on the page."
+          },
+          "active": {
             "required": false,
             "tsType": {
               "name": "string"
             },
-            "description": ""
+            "description": "The section currently in view. Omitted or unknown → nothing is marked."
           },
-          "titleKey": {
-            "required": false,
-            "tsType": {
-              "name": "string"
-            },
-            "description": "i18n key for the title; resolved here and used for the breadcrumb leaf. Takes precedence over {@link title}."
-          },
-          "handleColumnEvent": {
-            "required": false,
+          "onSelect": {
+            "required": true,
             "tsType": {
               "name": "signature",
               "type": "function",
-              "raw": "(event: string, column: ColumnDefinition<T, K>, item: T) => void",
+              "raw": "(section: string) => void",
               "signature": {
                 "arguments": [
                   {
                     "type": {
                       "name": "string"
                     },
-                    "name": "event"
-                  },
-                  {
-                    "type": {
-                      "name": "union",
-                      "raw": "SortableColumn<T, K> | NonSortableColumn<T>",
-                      "elements": [
-                        {
-                          "name": "SortableColumn",
-                          "elements": [
-                            {
-                              "name": "T"
-                            },
-                            {
-                              "name": "K"
-                            }
-                          ],
-                          "raw": "SortableColumn<T, K>"
-                        },
-                        {
-                          "name": "NonSortableColumn",
-                          "elements": [
-                            {
-                              "name": "T"
-                            }
-                          ],
-                          "raw": "NonSortableColumn<T>"
-                        }
-                      ]
-                    },
-                    "name": "column"
-                  },
-                  {
-                    "type": {
-                      "name": "T"
-                    },
-                    "name": "item"
+                    "name": "section"
                   }
                 ],
                 "return": {
@@ -456,167 +287,722 @@
                 }
               }
             },
-            "description": ""
+            "description": "Fired with the section the reader picked."
           },
-          "onRowClick": {
-            "required": false,
-            "tsType": {
-              "name": "signature",
-              "type": "function",
-              "raw": "(item: T) => void",
-              "signature": {
-                "arguments": [
-                  {
-                    "type": {
-                      "name": "T"
-                    },
-                    "name": "item"
-                  }
-                ],
-                "return": {
-                  "name": "void"
-                }
-              }
-            },
-            "description": ""
-          },
-          "selectedId": {
+          "variant": {
             "required": false,
             "tsType": {
               "name": "union",
-              "raw": "string | null",
+              "raw": "'list' | 'dropdown'",
               "elements": [
                 {
-                  "name": "string"
+                  "name": "literal",
+                  "value": "'list'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'dropdown'"
+                }
+              ]
+            },
+            "description": "Presentation; default `list`.",
+            "defaultValue": {
+              "value": "'list'",
+              "computed": false
+            }
+          },
+          "label": {
+            "required": false,
+            "tsType": {
+              "name": "string"
+            },
+            "description": "Accessible name of the `<nav>` landmark, and the dropdown's field label\n (English default, no i18n runtime).",
+            "defaultValue": {
+              "value": "'Sections'",
+              "computed": false
+            }
+          },
+          "loading": {
+            "required": false,
+            "tsType": {
+              "name": "boolean"
+            },
+            "description": "The sections are known (from the layout) but the record is still\n loading: each entry is drawn as a skeleton the size of the real one, so\n the TOC keeps its shape instead of collapsing; nothing is pickable.",
+            "defaultValue": {
+              "value": "false",
+              "computed": false
+            }
+          },
+          "sx": {
+            "required": false,
+            "tsType": {
+              "name": "SxProps",
+              "elements": [
+                {
+                  "name": "Theme"
+                }
+              ],
+              "raw": "SxProps<Theme>"
+            },
+            "description": "Applied to the `<nav>` root, after the defaults."
+          }
+        }
+      },
+      "stories": [
+        {
+          "id": "components-form-layout-sectiontoc--list",
+          "name": "List",
+          "snippet": "const List = () => <SectionToc\n    sections={['General', 'Dimensions', 'Propulsion', 'Capacity', 'Environment', 'Vehicles']}\n    active=\"Dimensions\"\n    onSelect={fn()} />;"
+        },
+        {
+          "id": "components-form-layout-sectiontoc--dropdown",
+          "name": "Dropdown",
+          "snippet": "const Dropdown = () => <SectionToc\n    sections={['General', 'Dimensions', 'Propulsion', 'Capacity', 'Environment', 'Vehicles']}\n    active=\"Dimensions\"\n    onSelect={fn()}\n    variant=\"dropdown\" />;",
+          "description": "For narrow layouts: pinned above the content, its value is a \"you are here\" line."
+        },
+        {
+          "id": "components-form-layout-sectiontoc--loading",
+          "name": "Loading",
+          "snippet": "const Loading = () => <SectionToc\n    sections={['General', 'Dimensions', 'Propulsion', 'Capacity', 'Environment', 'Vehicles']}\n    active=\"Dimensions\"\n    onSelect={fn()}\n    loading />;",
+          "description": "Sections known, record still loading: each entry keeps its size, nothing pickable."
+        }
+      ],
+      "import": "import { SectionToc } from 'hathor';\nimport { fn } from 'storybook/test';"
+    },
+    "components-squarebutton": {
+      "id": "components-squarebutton",
+      "name": "SquareButton",
+      "path": "./src/components/SquareButton.stories.tsx",
+      "jsDocTags": {
+        "param": [
+          "{SquareButtonProps} props `icon`, the label as `children`, `size`, an optional `to`, and any `ButtonBase` prop (`onClick`, `data-*`, `aria-label`, `sx`)"
+        ],
+        "returns": [
+          "{JSX.Element} the button, or a router link with `to`"
+        ]
+      },
+      "description": "Linje's secondary SquareButton, which MUI lacks: an icon in a bordered square, its label\nbeside it (or none: icon only). Hover and press fill the square; the focus ring sits on the\nsquare only. Disabled: a dashed grey square.",
+      "reactDocgen": {
+        "description": "Linje's secondary SquareButton, which MUI lacks: an icon in a bordered square, its label\nbeside it (or none: icon only). Hover and press fill the square; the focus ring sits on the\nsquare only. Disabled: a dashed grey square.\n\n@param {SquareButtonProps} props `icon`, the label as `children`, `size`, an optional `to`,\n  and any `ButtonBase` prop (`onClick`, `data-*`, `aria-label`, `sx`)\n@returns {JSX.Element} the button, or a router link with `to`",
+        "methods": [],
+        "displayName": "SquareButton",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/SquareButton.tsx",
+        "actualName": "SquareButton",
+        "exportName": "default",
+        "props": {
+          "icon": {
+            "required": true,
+            "tsType": {
+              "name": "ReactNode"
+            },
+            "description": "Drawn inside the square."
+          },
+          "children": {
+            "required": false,
+            "tsType": {
+              "name": "ReactNode"
+            },
+            "description": "The label beside the square; also the accessible name. Omit it for an icon-only square,\nwhich then needs `aria-label`."
+          },
+          "size": {
+            "required": false,
+            "tsType": {
+              "name": "union",
+              "raw": "keyof typeof SIZES",
+              "elements": [
+                {
+                  "name": "literal",
+                  "value": "medium"
+                },
+                {
+                  "name": "literal",
+                  "value": "small"
+                }
+              ]
+            },
+            "description": "",
+            "defaultValue": {
+              "value": "'medium'",
+              "computed": false
+            }
+          },
+          "to": {
+            "required": false,
+            "tsType": {
+              "name": "string"
+            },
+            "description": "A route: the button is then a router link."
+          }
+        },
+        "composes": [
+          "Omit"
+        ]
+      },
+      "stories": [
+        {
+          "id": "components-squarebutton--sizes",
+          "name": "Sizes",
+          "snippet": "const Sizes = () => (\n  <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>\n    <SquareButton icon={<Add />}>New vehicle type</SquareButton>\n    <SquareButton icon={<Add fontSize=\"small\" />} size=\"small\">\n      New vehicle type\n    </SquareButton>\n  </Stack>\n);"
+        },
+        {
+          "id": "components-squarebutton--as-link",
+          "name": "As Link",
+          "snippet": "const AsLink = () => (\n  <SquareButton icon={<Add />} to=\"/vehicle-types/new\">\n    Vehicle type\n  </SquareButton>\n);"
+        }
+      ],
+      "import": "import { Add } from '@mui/icons-material';\nimport { MemoryRouter } from 'react-router-dom';\nimport { SquareButton } from 'hathor';\nimport { Stack } from '@mui/material';"
+    },
+    "components-buspicture": {
+      "id": "components-buspicture",
+      "name": "BusPicture",
+      "path": "./src/components/bus-picture/BusPicture.stories.tsx",
+      "jsDocTags": {},
+      "description": "In `BusPictureFrame`: a card's picture area, 16:10, the `<img>` filling it.",
+      "reactDocgen": {
+        "description": "A record drawn as a 3D bus, for a card's picture area: an `<img>` shot on\nthe page's shared stage, and a note over it naming each dim drawn as the\nstandard bus's. A mode the package can't draw, or a picture that can't be\nshot (no WebGL), gets a line of text instead, and the area shrinks to it.\n\n@param {BusPictureProps} props dims, paint and mode\n@returns {JSX.Element} the picture and its note, or the unsupported text",
+        "methods": [],
+        "displayName": "BusPicture",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/bus-picture/components/BusPicture.tsx",
+        "actualName": "BusPicture",
+        "exportName": "BusPicture",
+        "props": {
+          "dims": {
+            "required": true,
+            "tsType": {
+              "name": "Partial",
+              "elements": [
+                {
+                  "name": "Record",
+                  "elements": [
+                    {
+                      "name": "union",
+                      "raw": "'length' | 'width' | 'height'",
+                      "elements": [
+                        {
+                          "name": "literal",
+                          "value": "'length'"
+                        },
+                        {
+                          "name": "literal",
+                          "value": "'width'"
+                        },
+                        {
+                          "name": "literal",
+                          "value": "'height'"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "union",
+                      "raw": "number | null",
+                      "elements": [
+                        {
+                          "name": "number"
+                        },
+                        {
+                          "name": "null"
+                        }
+                      ]
+                    }
+                  ],
+                  "raw": "Record<BusDim, number | null>"
+                }
+              ],
+              "raw": "Partial<Record<BusDim, number | null>>"
+            },
+            "description": "Outer dims in metres; what is missing or can't be drawn comes from the standard bus."
+          },
+          "paint": {
+            "required": true,
+            "tsType": {
+              "name": "union",
+              "raw": "'vehicleType' | 'vehicle'",
+              "elements": [
+                {
+                  "name": "literal",
+                  "value": "'vehicleType'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'vehicle'"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "mode": {
+            "required": false,
+            "tsType": {
+              "name": "union",
+              "raw": "TransportMode | null",
+              "elements": [
+                {
+                  "name": "unknown[number]",
+                  "raw": "(typeof TRANSPORT_MODES)[number]"
                 },
                 {
                   "name": "null"
                 }
               ]
             },
-            "description": "NeTEx id of the row currently shown in the sidebar editor; that row gets a highlight."
-          },
-          "addAction": {
-            "required": false,
+            "description": "Anything but a bus, a coach, a trolleybus or no mode gets a line of text, no picture."
+          }
+        }
+      },
+      "stories": [
+        {
+          "id": "components-buspicture--full-dims",
+          "name": "Full Dims",
+          "snippet": "const FullDims = () => <Box sx={{ width: AREA_W }}>\n    <BusPictureFrame paint=\"vehicleType\" dims={{ length: 13.2, width: 2.55, height: 3.3 }} />\n</Box>;",
+          "description": "All three outer dims: drawn as given, no note."
+        },
+        {
+          "id": "components-buspicture--no-dims",
+          "name": "No Dims",
+          "snippet": "const NoDims = () => <Box sx={{ width: AREA_W }}>\n    <BusPictureFrame paint=\"vehicleType\" dims={{}} />\n</Box>;",
+          "description": "No dims at all: the standard bus, and a note naming all three."
+        },
+        {
+          "id": "components-buspicture--no-height",
+          "name": "No Height",
+          "snippet": "const NoHeight = () => <Box sx={{ width: AREA_W }}>\n    <BusPictureFrame paint=\"vehicleType\" dims={{ length: 18, width: 2.55 }} />\n</Box>;",
+          "description": "One dim missing: only that one is standard."
+        },
+        {
+          "id": "components-buspicture--out-of-range",
+          "name": "Out Of Range",
+          "snippet": "const OutOfRange = () => <Box sx={{ width: AREA_W }}>\n    <BusPictureFrame paint=\"vehicleType\" dims={{ length: 74, width: 2.9, height: 4.2 }} />\n</Box>;",
+          "description": "A 74 m train can't be drawn as a bus: standard length, said so."
+        },
+        {
+          "id": "components-buspicture--vehicle",
+          "name": "Vehicle",
+          "snippet": "const Vehicle = () => <Box sx={{ width: AREA_W }}>\n    <BusPictureFrame paint=\"vehicle\" dims={{ length: 12, width: 2.55, height: 3.2 }} />\n</Box>;",
+          "description": "A vehicle is red."
+        },
+        {
+          "id": "components-buspicture--unsupported",
+          "name": "Unsupported",
+          "snippet": "const Unsupported = () => <Box sx={{ width: AREA_W }}>\n    <BusPictureFrame\n        paint=\"vehicleType\"\n        mode=\"RAIL\"\n        dims={{ length: 74, width: 2.9, height: 4.2 }} />\n</Box>;",
+          "description": "Not a bus or coach: a line of text, and the area shrinks to it."
+        }
+      ],
+      "import": "import { Box } from '@mui/material';\nimport { BusPicture, BusPictureFrame } from 'hathor';"
+    },
+    "components-entitycollection-vehicle-types": {
+      "id": "components-entitycollection-vehicle-types",
+      "name": "Demo",
+      "path": "./src/components/collection/EntityCollection.stories.tsx",
+      "jsDocTags": {},
+      "error": {
+        "name": "No component import found",
+        "message": "No component file found for the \"Demo\" component.\n  67 | }\n  68 |\n> 69 | const meta: Meta<typeof Demo> = {\n     | ^\n  70 |   title: 'components/EntityCollection/vehicle-types',\n  71 |   component: Demo,\n  72 |   parameters: {\n\n./src/components/collection/EntityCollection.stories.tsx:\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { fn } from 'storybook/test';\nimport { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';\nimport { Typography } from '@mui/material';\nimport type { PropulsionType, VehicleType } from '../../data/vehicle-types/types/vehicleTypeTypes';\nimport type { VehicleTypeField } from '../../data/vehicle-types/types/vehicleTypeFields';\nimport type { TransportMode } from '../../data/netex/transportMode';\nimport { VehicleTypeCollection } from '../../data/vehicle-types/components/vehicleTypeCollectionConfig';\nimport type { EntityCollectionProps } from './index';\nimport { ALL_TOOLS } from './types';\n\nconst ROW_COUNT = 120;\nconst LIST = '/vehicle-types';\nconst NARROW_W = 360; // a phone: the toolbar wraps, the Columns tool trims the grid (U5)\nconst FRAME_H = 560; // a page-shell height: the toolbar and pager stay, the rows scroll (#278)\nconst MODES: TransportMode[] = ['BUS', 'COACH', 'RAIL', 'TRAM', 'WATER'];\nconst BUS_SHARE = 3; // of every 4 rows a bus, like a bus operator's fleet\nconst UNNAMED_EVERY = 15; // these rows have no name: the title reads as a dash\nconst MAKES = ['Volvo', 'Scania', 'Solaris', 'MAN', 'Stadler', 'Bombardier', 'Ærø'];\nconst MODELS = ['Citea', '8900', 'Urbino', 'Lion', 'Flirt', 'Talent', 'Express'];\nconst PROPULSION: PropulsionType[] = ['COMBUSTION', 'ELECTRIC', 'HYBRID'];\nconst CAPACITY_MIN = 40,\n  CAPACITY_SPAN = 110; // a midibus to an articulated bus\nconst NO_DIMS_EVERY = 4; // these rows have a length only: their bus says width and height are standard\nconst WIDTH_MIN = 2.45,\n  WIDTH_STEP = 0.1, // 2.45–2.65 m\n  HEIGHT_MIN = 2.9,\n  HEIGHT_STEP = 0.2; // 2.9–3.5 m\n\n/** Varied but the same on every load: values cycle at co-prime strides. */\nconst ROWS: VehicleType[] = Array.from({ length: ROW_COUNT }, (_, i) => ({\n  id: `NMR:VehicleType:${1000 + i}`,\n  version: 1 + (i % 3),\n  name:\n    i % UNNAMED_EVERY === 7\n      ? undefined\n      : { value: `${MAKES[i % MAKES.length]} ${MODELS[(i * 3) % MODELS.length]}` },\n  transportMode: i % (BUS_SHARE + 1) ? 'BUS' : MODES[1 + ((i >> 2) % (MODES.length - 1))],\n  length: 8 + ((i * 7) % 180) / 10,\n  ...(i % NO_DIMS_EVERY !== NO_DIMS_EVERY - 1 && {\n    width: WIDTH_MIN + (i % 3) * WIDTH_STEP,\n    height: HEIGHT_MIN + (i % 4) * HEIGHT_STEP,\n  }),\n  lowFloor: i % 5 < 3,\n  propulsionTypes: [PROPULSION[i % PROPULSION.length]],\n  passengerCapacity: { totalCapacity: CAPACITY_MIN + ((i * 37) % CAPACITY_SPAN) },\n  deckPlan: i % 5 === 0 ? { id: `NMR:DeckPlan:${i}`, name: { value: `Deck ${i}` } } : undefined,\n}));\n\ntype Props = EntityCollectionProps<VehicleType, VehicleTypeField>;\n\n/** Where an Edit link lands: shows the id it opened. */\nfunction DetailsStandin() {\n  return <Typography variant=\"h5\">Details page for {useParams().id}</Typography>;\n}\n\n/** The vehicle-types page's own collection under a router, so its Edit links navigate. */\nfunction Demo(props: Props) {\n  return (\n    <MemoryRouter initialEntries={[LIST]}>\n      <Routes>\n        <Route path={LIST} element={<VehicleTypeCollection {...props} />} />\n        <Route path={`${LIST}/:id`} element={<DetailsStandin />} />\n      </Routes>\n    </MemoryRouter>\n  );\n}\n\nconst meta: Meta<typeof Demo> = {\n  title: 'components/EntityCollection/vehicle-types',\n  component: Demo,\n  parameters: {\n    layout: 'padded',\n    docs: {\n      description: {\n        component:\n          \"Embedded port of the sandbox `EntityCollection` (#261, epic #252): toolbar (search · filter · sort · columns · density · view), grid / cards. Hathor additions: a field's `render` (transport mode as icon + text), an Edit link per record (`editHref`), the id muted. Drawn with the vehicle-types page's own collection config (`vehicleTypeFields`, `vehicleTypeCollectionConfig.tsx`, #271) over 120 seeded rows.\",\n      },\n    },\n  },\n  args: {\n    rows: ROWS,\n    tools: [...ALL_TOOLS],\n    filterMode: 'client',\n    onQueryChange: fn(),\n    onViewChange: fn(),\n  },\n  argTypes: {\n    view: { control: 'inline-radio', options: ['grid', 'cards'] },\n    filterMode: { control: 'inline-radio', options: ['client', 'server'] },\n    tools: { control: 'check', options: [...ALL_TOOLS] },\n    rows: { control: false },\n  },\n};\nexport default meta;\n\ntype Story = StoryObj<typeof Demo>;\n\n/** Uncontrolled: starts on the grid; the toolbar's view switch changes it. */\nexport const Grid: Story = {};\n\n/** Each type drawn as a bus; one row in four has no width or height and says so. */\nexport const Cards: Story = { args: { view: 'cards' } };\n\nexport const Empty: Story = { args: { rows: [] } };\n\n/** A phone's width: the toolbar wraps; the Columns tool trims what the grid shows (U5). */\nexport const Narrow: Story = {\n  decorators: [\n    Story => (\n      <div style={{ width: NARROW_W }}>\n        <Story />\n      </div>\n    ),\n  ],\n};\n\n/** In a frame of set height, as the page shell gives it: the toolbar and the pager stay put\n *  and the rows scroll between them — the grid under its fixed headers (#278). */\nexport const Framed: Story = {\n  decorators: [\n    Story => (\n      <div style={{ height: FRAME_H, display: 'flex', flexDirection: 'column' }}>\n        <Story />\n      </div>\n    ),\n  ],\n};\n"
+      },
+      "stories": [
+        {
+          "id": "components-entitycollection-vehicle-types--grid",
+          "name": "Grid",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        },
+        {
+          "id": "components-entitycollection-vehicle-types--cards",
+          "name": "Cards",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        },
+        {
+          "id": "components-entitycollection-vehicle-types--empty",
+          "name": "Empty",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        },
+        {
+          "id": "components-entitycollection-vehicle-types--narrow",
+          "name": "Narrow",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        },
+        {
+          "id": "components-entitycollection-vehicle-types--framed",
+          "name": "Framed",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        }
+      ],
+      "import": "import { MemoryRouter, Route, Routes } from 'react-router-dom';\nimport { Typography } from '@mui/material';\nimport { VehicleTypeCollection } from 'hathor';"
+    },
+    "components-entitycollection-deck-plans": {
+      "id": "components-entitycollection-deck-plans",
+      "name": "Demo",
+      "path": "./src/components/collection/EntityCollectionDeckPlans.stories.tsx",
+      "jsDocTags": {},
+      "error": {
+        "name": "No component import found",
+        "message": "No component file found for the \"Demo\" component.\n  41 | }\n  42 |\n> 43 | const meta: Meta<typeof Demo> = {\n     | ^\n  44 |   title: 'components/EntityCollection/deck-plans',\n  45 |   component: Demo,\n  46 |   parameters: {\n\n./src/components/collection/EntityCollectionDeckPlans.stories.tsx:\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { fn } from 'storybook/test';\nimport { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';\nimport { Typography } from '@mui/material';\nimport type { DeckPlan } from '../../data/deck-plans/types/deckPlanTypes';\nimport type { DeckPlanField } from '../../data/deck-plans/types/deckPlanFields';\nimport { DeckPlanCollection } from '../../data/deck-plans/components/deckPlanCollectionConfig';\nimport type { EntityCollectionProps } from './index';\nimport { ALL_TOOLS } from './types';\n\nconst ROW_COUNT = 25;\nconst LIST = '/deck-plans';\nconst UNNAMED_EVERY = 6; // these rows have no name: Name falls back to the id\n\n/** Varied but the same on every load. */\nconst ROWS: DeckPlan[] = Array.from({ length: ROW_COUNT }, (_, i) => ({\n  id: `NMR:DeckPlan:${300 + i}`,\n  version: 1 + (i % 3),\n  // Sobek's empty name is whitespace.\n  name: i % UNNAMED_EVERY === 2 ? { value: '  ' } : { value: `Wagon ${i + 1}` },\n  description: i % 2 ? { value: `${1 + (i % 2)} decks, ${40 + i} seats` } : undefined,\n}));\n\ntype Props = EntityCollectionProps<DeckPlan, DeckPlanField>;\n\n/** Where an Edit link lands: shows the id it opened. */\nfunction DetailsStandin() {\n  return <Typography variant=\"h5\">Details page for {useParams().id}</Typography>;\n}\n\n/** The deck-plans page's own collection under a router, so its Edit links navigate. */\nfunction Demo(props: Props) {\n  return (\n    <MemoryRouter initialEntries={[LIST]}>\n      <Routes>\n        <Route path={LIST} element={<DeckPlanCollection {...props} />} />\n        <Route path={`${LIST}/:id`} element={<DetailsStandin />} />\n      </Routes>\n    </MemoryRouter>\n  );\n}\n\nconst meta: Meta<typeof Demo> = {\n  title: 'components/EntityCollection/deck-plans',\n  component: Demo,\n  parameters: {\n    layout: 'padded',\n    docs: {\n      description: {\n        component:\n          \"The deck-plans page's own collection (`deckPlanFields`, `deckPlanCollectionConfig.tsx`, #287) over 25 seeded rows: Name falls back to the id; cards are text only (drawing decks needs one XML read per plan).\",\n      },\n    },\n  },\n  args: {\n    rows: ROWS,\n    tools: [...ALL_TOOLS],\n    filterMode: 'client',\n    onQueryChange: fn(),\n    onViewChange: fn(),\n  },\n  argTypes: {\n    view: { control: 'inline-radio', options: ['grid', 'cards'] },\n    tools: { control: 'check', options: [...ALL_TOOLS] },\n    rows: { control: false },\n  },\n};\nexport default meta;\n\ntype Story = StoryObj<typeof Demo>;\n\n/** Uncontrolled: starts on the grid; unnamed rows read their id. */\nexport const Grid: Story = {};\n\n/** Each plan as a text card. */\nexport const Cards: Story = { args: { view: 'cards' } };\n"
+      },
+      "stories": [
+        {
+          "id": "components-entitycollection-deck-plans--grid",
+          "name": "Grid",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        },
+        {
+          "id": "components-entitycollection-deck-plans--cards",
+          "name": "Cards",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        }
+      ],
+      "import": "import { DeckPlanCollection } from 'hathor';\nimport { MemoryRouter, Route, Routes } from 'react-router-dom';\nimport { Typography } from '@mui/material';"
+    },
+    "components-entitycollection-vehicles": {
+      "id": "components-entitycollection-vehicles",
+      "name": "Demo",
+      "path": "./src/components/collection/EntityCollectionVehicles.stories.tsx",
+      "jsDocTags": {},
+      "error": {
+        "name": "No component import found",
+        "message": "No component file found for the \"Demo\" component.\n  60 | }\n  61 |\n> 62 | const meta: Meta<typeof Demo> = {\n     | ^\n  63 |   title: 'components/EntityCollection/vehicles',\n  64 |   component: Demo,\n  65 |   parameters: {\n\n./src/components/collection/EntityCollectionVehicles.stories.tsx:\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { fn } from 'storybook/test';\nimport { MemoryRouter, Route, Routes, useParams } from 'react-router-dom';\nimport { Typography } from '@mui/material';\nimport type { Vehicle } from '../../data/vehicles/types/vehicle';\nimport type { VehicleField } from '../../data/vehicles/types/vehicleFields';\nimport { VehicleCollection } from '../../data/vehicles/components/vehicleCollectionConfig';\nimport { withOrganisations } from '../../contexts/mockOrganisations';\nimport { stubSobek, withSobekUrl } from '../../contexts/mockSobek';\nimport type { EntityCollectionProps } from './index';\nimport { ALL_TOOLS } from './types';\n\nconst ROW_COUNT = 40;\nconst LIST = '/vehicles';\nconst UNNAMED_EVERY = 7; // these rows have no name: Name falls back to the registration number\n\n// Sobek's wire shape, kept in step with the query by the e2e suite. Globbed: the fixture\n// sits outside `src`, so the app's TypeScript project can't import it.\nconst [vehicleTypesMock] = Object.values(\n  import.meta.glob('../../../e2e-tests/fixtures/vehicle-types-mock.json', {\n    eager: true,\n    import: 'default',\n  })\n);\n\n/** The mock's three types: a bus with full dims, a rail type, one with no mode. */\nconst TYPES: NonNullable<Vehicle['transportType']>[] = [\n  { id: 'NMR:VehicleType:1', name: { value: 'Type Alpha' }, transportMode: 'BUS' },\n  { id: 'NMR:VehicleType:2', name: { value: 'Type Beta' }, transportMode: 'RAIL' },\n  { id: 'NMR:VehicleType:3', name: { value: 'Type Gamma' } },\n];\n\n/** Varied but the same on every load. */\nconst ROWS: Vehicle[] = Array.from({ length: ROW_COUNT }, (_, i) => ({\n  id: `NMR:Vehicle:${2000 + i}`,\n  version: 1 + (i % 2),\n  name: i % UNNAMED_EVERY === 3 ? { value: '  ' } : { value: `Bus ${4000 + i}` },\n  registrationNumber: `EL ${String(10000 + i * 37).slice(-5)}`,\n  operationalNumber: String(4000 + i),\n  transportType: TYPES[i % TYPES.length],\n}));\n\ntype Props = EntityCollectionProps<Vehicle, VehicleField>;\n\n/** Where an Edit link lands: shows the id it opened. */\nfunction DetailsStandin() {\n  return <Typography variant=\"h5\">Details page for {useParams().id}</Typography>;\n}\n\n/** The vehicles page's own collection under a router, so its Edit links navigate. */\nfunction Demo(props: Props) {\n  return (\n    <MemoryRouter initialEntries={[LIST]}>\n      <Routes>\n        <Route path={LIST} element={<VehicleCollection {...props} />} />\n        <Route path={`${LIST}/:id`} element={<DetailsStandin />} />\n      </Routes>\n    </MemoryRouter>\n  );\n}\n\nconst meta: Meta<typeof Demo> = {\n  title: 'components/EntityCollection/vehicles',\n  component: Demo,\n  parameters: {\n    layout: 'padded',\n    docs: {\n      description: {\n        component:\n          \"The vehicles page's own collection (`vehicleFields`, `vehicleCollectionConfig.tsx`, #285) over 40 seeded rows: Name falls back to the registration number, the mode shows as icon + text, cards draw a red bus in the vehicle type's dims (the type list is the e2e mock, answered by `stubSobek`).\",\n      },\n    },\n  },\n  decorators: [withSobekUrl(), withOrganisations()],\n  beforeEach: stubSobek({ vehicleTypes: vehicleTypesMock }),\n  args: {\n    rows: ROWS,\n    tools: [...ALL_TOOLS],\n    filterMode: 'client',\n    onQueryChange: fn(),\n    onViewChange: fn(),\n  },\n  argTypes: {\n    view: { control: 'inline-radio', options: ['grid', 'cards'] },\n    tools: { control: 'check', options: [...ALL_TOOLS] },\n    rows: { control: false },\n  },\n};\nexport default meta;\n\ntype Story = StoryObj<typeof Demo>;\n\n/** Uncontrolled: starts on the grid; unnamed rows read their registration number. */\nexport const Grid: Story = {};\n\n/** Each vehicle as a red bus in its type's dims; a rail type gets a line of text. */\nexport const Cards: Story = { args: { view: 'cards' } };\n"
+      },
+      "stories": [
+        {
+          "id": "components-entitycollection-vehicles--grid",
+          "name": "Grid",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        },
+        {
+          "id": "components-entitycollection-vehicles--cards",
+          "name": "Cards",
+          "error": {
+            "name": "Error",
+            "message": "Could not generate snippet without component name."
+          }
+        }
+      ],
+      "import": "import { MemoryRouter, Route, Routes } from 'react-router-dom';\nimport { Typography } from '@mui/material';\nimport { VehicleCollection } from 'hathor';"
+    },
+    "components-form-layout-editfooter": {
+      "id": "components-form-layout-editfooter",
+      "name": "EditFooter",
+      "path": "./src/components/form-layout/EditFooter.stories.tsx",
+      "jsDocTags": {
+        "param": [
+          "props see {@link EditFooterProps}"
+        ],
+        "returns": [
+          "a status line paired with Cancel (inert unless `dirty`) and Save"
+        ]
+      },
+      "description": "Render the action footer for an edit session.",
+      "reactDocgen": {
+        "description": "Render the action footer for an edit session.\n\n@param props see {@link EditFooterProps}\n@returns a status line paired with Cancel (inert unless `dirty`) and Save",
+        "methods": [],
+        "displayName": "EditFooter",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/form-layout/components/EditFooter.tsx",
+        "actualName": "EditFooter",
+        "exportName": "EditFooter",
+        "props": {
+          "dirty": {
+            "required": true,
             "tsType": {
-              "name": "ReactNode"
+              "name": "boolean"
             },
-            "description": "\"Add new\" action, right-aligned in the list-head."
+            "description": "Whether the form diverges from the entity the server last returned."
           },
-          "importAction": {
-            "required": false,
-            "tsType": {
-              "name": "ReactNode"
-            },
-            "description": "\"Import\" action, right-aligned in the list-head after {@link addAction}."
-          },
-          "urlFilterInfo": {
-            "required": false,
-            "tsType": {
-              "name": "UrlFilterInfo"
-            },
-            "description": ""
-          },
-          "sortLocked": {
+          "saving": {
             "required": false,
             "tsType": {
               "name": "boolean"
             },
-            "description": "Forwarded to {@link DataTableHeader}; when true, every sortable header\n is dimmed, click is suppressed, and hover shows the lock tooltip."
+            "description": "A save is in flight — locks both actions.",
+            "defaultValue": {
+              "value": "false",
+              "computed": false
+            }
+          },
+          "disabled": {
+            "required": false,
+            "tsType": {
+              "name": "boolean"
+            },
+            "description": "Lock both actions regardless of `dirty` (e.g. the form is still loading).",
+            "defaultValue": {
+              "value": "false",
+              "computed": false
+            }
+          },
+          "canSubmit": {
+            "required": false,
+            "tsType": {
+              "name": "boolean"
+            },
+            "description": "Extra Save gate, as `EditorActions.canSubmit`: false while a required field is\n missing. Save then says so instead of saving; Cancel can still discard. Default `true`.",
+            "defaultValue": {
+              "value": "true",
+              "computed": false
+            }
+          },
+          "saved": {
+            "required": false,
+            "tsType": {
+              "name": "boolean"
+            },
+            "description": "The last save succeeded and nothing changed since — e.g. `useEntityEditor().saved`.\n Without it a clean form stays silent: no status on entering a form.",
+            "defaultValue": {
+              "value": "false",
+              "computed": false
+            }
+          },
+          "onSave": {
+            "required": true,
+            "tsType": {
+              "name": "signature",
+              "type": "function",
+              "raw": "() => void",
+              "signature": {
+                "arguments": [],
+                "return": {
+                  "name": "void"
+                }
+              }
+            },
+            "description": "Fired only with something to save and nothing missing."
+          },
+          "onCancel": {
+            "required": true,
+            "tsType": {
+              "name": "signature",
+              "type": "function",
+              "raw": "() => void",
+              "signature": {
+                "arguments": [],
+                "return": {
+                  "name": "void"
+                }
+              }
+            },
+            "description": "Discard edits. Fired only when there is something to discard."
+          },
+          "labels": {
+            "required": false,
+            "tsType": {
+              "name": "EditFooterLabels"
+            },
+            "description": ""
+          },
+          "slotProps": {
+            "required": false,
+            "tsType": {
+              "name": "EditFooterSlotProps"
+            },
+            "description": "Per-button MUI overrides (variant, colour, size…)."
+          },
+          "sx": {
+            "required": false,
+            "tsType": {
+              "name": "SxProps",
+              "elements": [
+                {
+                  "name": "Theme"
+                }
+              ],
+              "raw": "SxProps<Theme>"
+            },
+            "description": "Applied after every default, so a host can restyle the band — including\n `backgroundImage: 'none'` to drop the dirty tint."
           }
         }
       },
       "stories": [
         {
-          "id": "components-data-datapagecontent--default",
-          "name": "Default",
-          "snippet": "const Default = () => <DataPageContent\n    title=\"Vehicle types\"\n    showAdd={false}\n    showImport={false}\n    filterCount={0}\n    empty={false} />;",
-          "description": "Baseline: breadcrumbs + h5 left-aligned title + count, sortable table, pagination."
+          "id": "components-form-layout-editfooter--clean",
+          "name": "Clean",
+          "snippet": "const Clean = () => <EditFooter\n    dirty={false}\n    saving={false}\n    disabled={false}\n    canSubmit\n    saved={false}\n    onSave={fn()}\n    onCancel={fn()} />;",
+          "description": "Entering a form — nothing to lose and nothing to say: Cancel inert, no status; Save says there is nothing to save."
         },
         {
-          "id": "components-data-datapagecontent--with-add-action",
-          "name": "With Add Action",
-          "snippet": "const WithAddAction = () => <DataPageContent title=\"Vehicles\" showAdd showImport={false} filterCount={0} empty={false} />;",
-          "description": "`/vehicles` head: right-aligned add-new slot."
+          "id": "components-form-layout-editfooter--saved-ok",
+          "name": "Saved Ok",
+          "snippet": "const SavedOk = () => <EditFooter\n    dirty={false}\n    saving={false}\n    disabled={false}\n    canSubmit\n    saved\n    onSave={fn()}\n    onCancel={fn()} />;",
+          "description": "Clean again after a successful save — green dot, \"All changes saved\"."
         },
         {
-          "id": "components-data-datapagecontent--with-import-action",
-          "name": "With Import Action",
-          "snippet": "const WithImportAction = () => <DataPageContent\n    title=\"Vehicle types\"\n    showAdd={false}\n    showImport\n    filterCount={0}\n    empty={false} />;",
-          "description": "`/vehicle-types` head: right-aligned import slot."
+          "id": "components-form-layout-editfooter--dirty",
+          "name": "Dirty",
+          "snippet": "const Dirty = () => <EditFooter\n    dirty\n    saving={false}\n    disabled={false}\n    canSubmit\n    saved={false}\n    onSave={fn()}\n    onCancel={fn()} />;",
+          "description": "Unsaved work — tinted band, pulsing dot, both actions live."
         },
         {
-          "id": "components-data-datapagecontent--with-both-actions",
-          "name": "With Both Actions",
-          "snippet": "const WithBothActions = () => <DataPageContent title=\"Vehicle types\" showAdd showImport filterCount={0} empty={false} />;",
-          "description": "Both action slots filled — add then import, right-aligned."
+          "id": "components-form-layout-editfooter--saving",
+          "name": "Saving",
+          "snippet": "const Saving = () => <EditFooter\n    dirty\n    saving\n    disabled={false}\n    canSubmit\n    saved={false}\n    onSave={fn()}\n    onCancel={fn()} />;",
+          "description": "A save in flight locks both: a discard would restore a baseline about to be replaced."
         },
         {
-          "id": "components-data-datapagecontent--with-url-filter-chip",
-          "name": "With Url Filter Chip",
-          "snippet": "const WithUrlFilterChip = () => <DataPageContent\n    title=\"Vehicle types\"\n    showAdd={false}\n    showImport={false}\n    filterCount={2}\n    empty={false} />;",
-          "description": "Post-import state: the url-filter-chip sits beside the count; its delete clears it."
+          "id": "components-form-layout-editfooter--missing-fields",
+          "name": "Missing Fields",
+          "snippet": "const MissingFields = () => <EditFooter\n    dirty\n    saving={false}\n    disabled={false}\n    canSubmit={false}\n    saved={false}\n    onSave={fn()}\n    onCancel={fn()} />;",
+          "description": "Dirty but a required field is empty — Save locked, Cancel still discards."
         },
         {
-          "id": "components-data-datapagecontent--empty",
-          "name": "Empty",
-          "snippet": "const Empty = () => <DataPageContent\n    title=\"Vehicle types\"\n    showAdd={false}\n    showImport={false}\n    filterCount={0}\n    empty />;",
-          "description": "Empty dataset — head still renders; table shows the no-data row."
+          "id": "components-form-layout-editfooter--on-long-form",
+          "name": "On Long Form",
+          "snippet": "const OnLongForm = () => <LongForm />;",
+          "description": "Type in any field, scroll to the end: Save / Cancel sit after the form, in flow (#293)."
         }
       ],
-      "import": "import { Add, LibraryAdd } from '@mui/icons-material';\nimport { Box, Button, Chip } from '@mui/material';\nimport { DataPageContent } from 'hathor';\nimport { MemoryRouter } from 'react-router-dom';"
+      "import": "import { Box } from '@mui/material';\nimport { EditFooter, FormSections, FormTextField } from 'hathor';\nimport { fn } from 'storybook/test';"
     },
-    "components-data-headbreadcrumbs": {
-      "id": "components-data-headbreadcrumbs",
-      "name": "HeadBreadcrumbs",
-      "path": "./src/components/data/HeadBreadcrumbs.stories.tsx",
+    "components-form-layout-formsections": {
+      "id": "components-form-layout-formsections",
+      "name": "Demo",
+      "path": "./src/components/form-layout/FormSections.stories.tsx",
       "jsDocTags": {
         "param": [
-          "props.title - Resolved label for the current page (the trail's leaf)."
+          "{FormSectionsProps} props the sections, the field renderer, the column-3 aside, the TOC's label, the section labels and the footer"
         ],
         "returns": [
-          "A MUI Breadcrumbs trail with a Home link and the current page."
+          "{JSX.Element} the laid-out form body, with its TOC and aside when it has them"
         ]
       },
-      "description": "List-head breadcrumb trail: `Home / <title>`.\n\nHome links back to the landing route; the leaf is plain text. Routes are\nplural by convention. The Home label is sourced from i18n (`breadcrumbs.home`).",
+      "description": "Stacked form sections on a 12-column grid, each field as wide as its resolved\n`width` from `sm` up. One section renders flat, with no heading. With a table\nof contents' worth of sections (`tocSections`) it also draws the `SectionToc`:\na sticky column on the right from `lg` up, a dropdown above the form below it,\nlinked to scrolling both ways through `useSectionSpy`. An `aside` stacks above\nthe TOC in that column. From `lg` up, in a host of fixed height (a form page), the\nform column and column 3 each scroll on their own: picture and TOC stay put while the\nform, its `footer` sticking to the bottom, scrolls (#293).",
       "reactDocgen": {
-        "description": "List-head breadcrumb trail: `Home / <title>`.\n\nHome links back to the landing route; the leaf is plain text. Routes are\nplural by convention. The Home label is sourced from i18n (`breadcrumbs.home`).\n\n@param props.title - Resolved label for the current page (the trail's leaf).\n@returns A MUI Breadcrumbs trail with a Home link and the current page.",
+        "description": "Stacked form sections on a 12-column grid, each field as wide as its resolved\n`width` from `sm` up. One section renders flat, with no heading. With a table\nof contents' worth of sections (`tocSections`) it also draws the `SectionToc`:\na sticky column on the right from `lg` up, a dropdown above the form below it,\nlinked to scrolling both ways through `useSectionSpy`. An `aside` stacks above\nthe TOC in that column. From `lg` up, in a host of fixed height (a form page), the\nform column and column 3 each scroll on their own: picture and TOC stay put while the\nform, its `footer` sticking to the bottom, scrolls (#293).\n\n@param {FormSectionsProps} props the sections, the field renderer, the column-3 aside, the\n  TOC's label, the section labels and the footer\n@returns {JSX.Element} the laid-out form body, with its TOC and aside when it has them",
         "methods": [],
-        "displayName": "HeadBreadcrumbs",
-        "definedInFile": "/home/runner/work/hathor/hathor/src/components/data/HeadBreadcrumbs.tsx",
-        "actualName": "HeadBreadcrumbs",
-        "exportName": "default",
+        "displayName": "FormSections",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/form-layout/components/FormSections.tsx",
+        "actualName": "FormSections",
+        "exportName": "FormSections",
         "props": {
-          "title": {
+          "sections": {
             "required": true,
+            "tsType": {
+              "name": "unknown"
+            },
+            "description": "From `resolveSections`."
+          },
+          "renderField": {
+            "required": true,
+            "tsType": {
+              "name": "signature",
+              "type": "function",
+              "raw": "(field: ResolvedField<K>) => ReactNode",
+              "signature": {
+                "arguments": [
+                  {
+                    "type": {
+                      "name": "ResolvedField",
+                      "elements": [
+                        {
+                          "name": "K"
+                        }
+                      ],
+                      "raw": "ResolvedField<K>"
+                    },
+                    "name": "field"
+                  }
+                ],
+                "return": {
+                  "name": "ReactNode"
+                }
+              }
+            },
+            "description": "Draws one field's control. The host owns it, view mode (`readOnly`) included."
+          },
+          "aside": {
+            "required": false,
+            "tsType": {
+              "name": "ReactNode"
+            },
+            "description": "Drawn above the TOC in column 3, e.g. the iteru-3dbus picture; the host sizes it.\n Below `lg` it sits above the form. Column 3 shows for it even without a TOC."
+          },
+          "tocLabel": {
+            "required": false,
             "tsType": {
               "name": "string"
             },
-            "description": "Already-resolved label for the current (leaf) page, e.g. \"Vehicle types\"."
+            "description": "The table of contents' name (its `nav` label and dropdown label); `SectionToc`'s\n \"Sections\" when omitted."
+          },
+          "sectionLabel": {
+            "required": false,
+            "tsType": {
+              "name": "signature",
+              "type": "function",
+              "raw": "(id: string) => string",
+              "signature": {
+                "arguments": [
+                  {
+                    "type": {
+                      "name": "string"
+                    },
+                    "name": "id"
+                  }
+                ],
+                "return": {
+                  "name": "string"
+                }
+              }
+            },
+            "description": "A section's heading and TOC entry, from its id (the layout key); the id itself when\n omitted. Keep ids stable: a changed id is a new section to the TOC (#293).",
+            "defaultValue": {
+              "value": "id => id",
+              "computed": false
+            }
+          },
+          "footer": {
+            "required": false,
+            "tsType": {
+              "name": "ReactNode"
+            },
+            "description": "Drawn last in the form column, e.g. the form page's sticky `EditFooter`; from\n `FormFooterContext` when omitted."
           }
         }
       },
       "stories": [
         {
-          "id": "components-data-headbreadcrumbs--default",
-          "name": "Default",
-          "snippet": "const Default = () => <HeadBreadcrumbs title=\"Vehicle types\" />;",
-          "description": "Default trail: `Home / Vehicle types`. Edit the `title` control to retitle the leaf."
+          "id": "components-form-layout-formsections--vehicle-type",
+          "name": "Vehicle Type",
+          "snippet": "const VehicleType = () => <FormSections\n    media\n    footer\n    dirty={false}\n    fields={vehicleTypeFields}\n    layout={Object.fromEntries(\n      VEHICLE_TYPE_SECTION_IDS.map(s => [\n        en[VEHICLE_TYPE_SECTION_LABEL[s] as keyof typeof en],\n        vehicleTypeSections[s],\n      ])\n    )} />;",
+          "description": "Six sections → TOC in column 3; scrolling moves the mark, a pick scrolls the form. Footer on."
         },
         {
-          "id": "components-data-headbreadcrumbs--vehicles",
-          "name": "Vehicles",
-          "snippet": "const Vehicles = () => <HeadBreadcrumbs title=\"Vehicles\" />;",
-          "description": "Vehicles list head."
+          "id": "components-form-layout-formsections--vehicle",
+          "name": "Vehicle",
+          "snippet": "const Vehicle = () => <FormSections\n    media\n    footer={false}\n    dirty={false}\n    fields={vehicleFields}\n    layout={vehicleLayout} />;",
+          "description": "The vehicle form page's own section (#285): one → flat, no heading, no TOC; column 3 still holds the picture when `media` is on."
         },
         {
-          "id": "components-data-headbreadcrumbs--deck-plans",
-          "name": "Deck Plans",
-          "snippet": "const DeckPlans = () => <HeadBreadcrumbs title=\"Deck plans\" />;",
-          "description": "Deck plans list head."
+          "id": "components-form-layout-formsections--deck-plan",
+          "name": "Deck Plan",
+          "snippet": "const DeckPlan = () => <FormSections\n    media\n    footer={false}\n    dirty={false}\n    fields={deckPlanFields}\n    layout={deckPlanLayout} />;",
+          "description": "The deck-plan form page's own section (#287): one → flat, no heading, no TOC."
+        },
+        {
+          "id": "components-form-layout-formsections--vehicle-type-loading",
+          "name": "Vehicle Type Loading",
+          "snippet": "const VehicleTypeLoading = () => <FormSections\n    media\n    footer={false}\n    dirty={false}\n    fields={vehicleTypeFields}\n    layout={Object.fromEntries(\n      VEHICLE_TYPE_SECTION_IDS.map(s => [\n        en[VEHICLE_TYPE_SECTION_LABEL[s] as keyof typeof en],\n        vehicleTypeSections[s],\n      ])\n    )}\n    loading />;",
+          "description": "The vehicle-type form loading: the same sections in skeleton blocks (48 px fields, 42 px\n checkbox rows), so the page doesn't jump when the record lands."
         }
       ],
-      "import": "import { HeadBreadcrumbs } from 'hathor';\nimport { MemoryRouter } from 'react-router-dom';"
+      "import": "import { Box, Paper, Typography } from '@mui/material';\nimport {\n  EditFooter,\n  FormCheckboxField,\n  FormNumberField,\n  FormSections,\n  FormSkeleton,\n  FormTextField,\n  PictureSkeleton,\n} from 'hathor';\nimport { vehicleTypeFields } from '../../data/vehicle-types/types/vehicleTypeFields.ts';\nimport { VEHICLE_TYPE_SECTION_IDS, VEHICLE_TYPE_SECTION_LABEL, vehicleTypeSections } from '../../data/vehicle-types/types/vehicleTypeLayout.ts';\nimport en from '../../locales/en/translation.json';\nimport { vehicleFields, vehicleLayout } from '../../data/vehicles/types/vehicleFields.ts';\nimport { deckPlanFields, deckPlanLayout } from '../../data/deck-plans/types/deckPlanFields.ts';"
     },
     "components-icons-menuicon": {
       "id": "components-icons-menuicon",
@@ -644,7 +1030,7 @@
             "required": true,
             "tsType": {
               "name": "union",
-              "raw": "'home' | 'vehicleTypes' | 'vehicles' | 'deckPlans' | 'menu'",
+              "raw": "'home' | 'vehicleTypes' | 'contractualVehicleTypes' | 'vehicles' | 'deckPlans' | 'menu'",
               "elements": [
                 {
                   "name": "literal",
@@ -653,6 +1039,10 @@
                 {
                   "name": "literal",
                   "value": "'vehicleTypes'"
+                },
+                {
+                  "name": "literal",
+                  "value": "'contractualVehicleTypes'"
                 },
                 {
                   "name": "literal",
@@ -801,317 +1191,448 @@
       ],
       "import": "import { Box, Typography } from '@mui/material';\nimport { TransportModeSprite } from 'hathor';"
     },
-    "data-deck-plans-deckplanform": {
-      "id": "data-deck-plans-deckplanform",
-      "name": "DeckPlanForm",
-      "path": "./src/data/deck-plans/components/DeckPlanForm.stories.tsx",
+    "components-editorframe-fullpage-vehicle-types": {
+      "id": "components-editorframe-fullpage-vehicle-types",
+      "name": "vehicle-types",
+      "path": "./src/components/sidebar/EditorFramePage.stories.tsx",
       "jsDocTags": {},
-      "description": "Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by\n`value`/`onChange`/`mode`, mirroring the VehicleType editor's shape. Tabs:\nEdit (name + description, then a horizontal strip of read-only deck\nrenderings) · XML (the read-only NeTEx source). Both panes render from the\nsame fetched body and so share its loading and fetch-error states.\n\nThe XML body is never editable — name and description are patched into the\nfetched document on save instead.\n\nHolds no fetch/save logic; chrome (title, EditorRail, snackbars, dirty\ntracking) lives in `DeckPlanDetails`.",
+      "error": {
+        "name": "No component found",
+        "message": "We could not detect the component from your story file. Specify meta.component.\n  14 | const CREATED_ID = 'NMR:VehicleType:2';\n  15 |\n> 16 | const meta: Meta = {\n     | ^\n  17 |   title: 'components/editorFrame/fullpage/vehicle-types',\n  18 |   parameters: {\n  19 |     layout: 'fullscreen',\n\n./src/components/sidebar/EditorFramePage.stories.tsx:\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { expect, screen, userEvent, within } from 'storybook/test';\nimport EditorFrame from './EditorFrame.tsx';\nimport { FormPage, STORY_SAVE_MS } from './formPageStory.tsx';\nimport { withOrganisations } from '../../contexts/mockOrganisations.tsx';\nimport { withSobekUrl } from '../../contexts/mockSobek.tsx';\nimport { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';\nimport { createFormState } from '../../hooks/useFormState.ts';\nimport VehicleTypeSections, {\n  VehicleTypeSectionsSkeleton,\n} from '../../data/vehicle-types/components/VehicleTypeSections.tsx';\nimport type { VehicleType } from '../../data/vehicle-types/types/vehicleTypeTypes.ts';\n\nconst CREATED_ID = 'NMR:VehicleType:2';\n\nconst meta: Meta = {\n  title: 'components/editorFrame/fullpage/vehicle-types',\n  parameters: {\n    layout: 'fullscreen',\n    docs: {\n      description: {\n        component:\n          '`EditorFrame` on a form page (#280): `PageShell` → `EntityDetailsShell` (`EditorHostContext` = page) → the frame around the real `VehicleTypeSections`. The record read and save hit an in-memory store, not Sobek. Vehicles: `…/fullpage/vehicles`; the sidebar version is `components/editorFrame/modal`.',\n      },\n    },\n  },\n  // EntityDetailsShell keys its editor on the current organisation; the read needs a base URL.\n  decorators: [withSobekUrl(), withOrganisations()],\n};\nexport default meta;\n\ntype Story = StoryObj;\n\nconst VT: VehicleType = {\n  id: 'NMR:VehicleType:1',\n  version: 3,\n  name: { value: 'Solaris Urbino 18 electric articulated, Ruter 2024 series' },\n  shortName: { value: 'Urbino 12e' },\n  transportMode: 'BUS',\n  length: 12,\n  width: 2.55,\n  height: 3.3,\n  lowFloor: true,\n  propulsionTypes: ['ELECTRIC'],\n  fuelTypes: ['BATTERY'],\n  passengerCapacity: { totalCapacity: 90, seatingCapacity: 30, standingCapacity: 60 },\n};\n/** Stands in for Sobek: a save lands here, so a create's redirect reads it back. */\nconst store = new Map([[VT.id, VT]]);\n\nconst vtForm = createFormState<VehicleType, VehicleType>({\n  blank: { id: '', version: 0 },\n  formFromSource: vt => vt ?? { id: '', version: 0 },\n});\n\n/** `VehicleTypeDetails` on its form page, with the in-memory store in place of Sobek. */\nfunction StoryVehicleTypeDetails(host: EntityEditorHostProps) {\n  const editor = useEntityEditor({\n    ...host,\n    fetchById: async id => store.get(id) ?? null,\n    formState: vtForm,\n    write: form =>\n      new Promise(done =>\n        setTimeout(() => {\n          const id = form.id || CREATED_ID;\n          store.set(id, { ...form, id });\n          done({ error: null, newId: id });\n        }, STORY_SAVE_MS)\n      ),\n    withNewId: (form, id) => ({ ...form, id, version: 1 }),\n    deactivateRequest: async () => {},\n  });\n  const { form } = editor;\n  return (\n    <EditorFrame\n      editor={editor}\n      entity={form}\n      testId=\"vehicle-type\"\n      copy={{\n        title: 'vehicleType.detailsTitle',\n        notFound: 'vehicleType.notFound',\n        saved: 'vehicleType.saveSuccess',\n        deactivateTitle: 'vehicleType.deactivateConfirmTitle',\n        deactivateMessage: 'vehicleType.deactivateConfirmMessage',\n      }}\n      skeleton={<VehicleTypeSectionsSkeleton />}\n    >\n      <VehicleTypeSections\n        value={form}\n        onChange={editor.setForm}\n        mode={editor.actions.mode}\n        euroClasses={[]}\n        isCreate={editor.isCreate}\n      />\n    </EditorFrame>\n  );\n}\n\nconst vtEditor = (host: EntityEditorHostProps) => <StoryVehicleTypeDetails {...host} />;\n\n/** A record opens ready to edit: Back / Deactivate in the title row; at the form's end Cancel inert and\n *  Save with nothing to save until a field changes; Save settles after a beat and keeps editing. */\nexport const Edit: Story = {\n  render: () => <FormPage entity=\"vehicle-types\" id={VT.id} renderEditor={vtEditor} />,\n};\n\n/** After a confirmed Deactivate: red \"Deactivated\" in the title row, fields frozen, no footer. */\nexport const Deactivated: Story = {\n  render: () => <FormPage entity=\"vehicle-types\" id={VT.id} renderEditor={vtEditor} />,\n  play: async ({ canvasElement }) => {\n    const canvas = within(canvasElement);\n    await userEvent.click(await canvas.findByTestId('editor-page-deactivate'));\n    const dialog = within(await screen.findByRole('dialog'));\n    await userEvent.click(dialog.getByRole('button', { name: 'Deactivate' }));\n    await expect(await canvas.findByTestId('editor-page-deactivated')).toBeVisible();\n  },\n};\n\n/** A create at `/new`: blank form, no Vehicles section, no NetexId; Save redirects to the new id. */\nexport const Create: Story = {\n  render: () => <FormPage entity=\"vehicle-types\" id=\"new\" renderEditor={vtEditor} />,\n};\n"
+      },
+      "stories": [
+        {
+          "id": "components-editorframe-fullpage-vehicle-types--edit",
+          "name": "Edit",
+          "snippet": "const Edit = () => <FormPage entity=\"vehicle-types\" id={VT.id} renderEditor={vtEditor} />;",
+          "description": "A record opens ready to edit: Back / Deactivate in the title row; at the form's end Cancel inert and\n Save with nothing to save until a field changes; Save settles after a beat and keeps editing."
+        },
+        {
+          "id": "components-editorframe-fullpage-vehicle-types--deactivated",
+          "name": "Deactivated",
+          "snippet": "const Deactivated = () => <FormPage entity=\"vehicle-types\" id={VT.id} renderEditor={vtEditor} />;",
+          "description": "After a confirmed Deactivate: red \"Deactivated\" in the title row, fields frozen, no footer."
+        },
+        {
+          "id": "components-editorframe-fullpage-vehicle-types--create",
+          "name": "Create",
+          "snippet": "const Create = () => <FormPage entity=\"vehicle-types\" id=\"new\" renderEditor={vtEditor} />;",
+          "description": "A create at `/new`: blank form, no Vehicles section, no NetexId; Save redirects to the new id."
+        }
+      ],
+      "import": "import { EditorFrame, FormPage, VehicleTypeSections, VehicleTypeSectionsSkeleton } from 'hathor';"
+    },
+    "components-editorframe-fullpage-deck-plans": {
+      "id": "components-editorframe-fullpage-deck-plans",
+      "name": "deck-plans",
+      "path": "./src/components/sidebar/EditorFramePageDeckPlans.stories.tsx",
+      "jsDocTags": {},
+      "error": {
+        "name": "No component found",
+        "message": "We could not detect the component from your story file. Specify meta.component.\n  76 | const deckPlanEditor = (host: EntityEditorHostProps) => <StoryDeckPlanDetails {...host} />;\n  77 |\n> 78 | const meta: Meta = {\n     | ^\n  79 |   title: 'components/editorFrame/fullpage/deck-plans',\n  80 |   parameters: {\n  81 |     layout: 'fullscreen',\n\n./src/components/sidebar/EditorFramePageDeckPlans.stories.tsx:\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { expect, within } from 'storybook/test';\nimport EditorFrame, { type EditorCopy } from './EditorFrame.tsx';\nimport { FormPage, STORY_SAVE_MS } from './formPageStory.tsx';\nimport { withOrganisations } from '../../contexts/mockOrganisations.tsx';\nimport { withSobekUrl } from '../../contexts/mockSobek.tsx';\nimport { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';\nimport DeckPlanSections, {\n  DeckPlanSectionsSkeleton,\n} from '../../data/deck-plans/components/DeckPlanSections.tsx';\nimport { deckPlanForm } from '../../data/deck-plans/stores/deckPlanFormState.ts';\nimport type { DeckPlan } from '../../data/deck-plans/types/deckPlanTypes.ts';\nimport wagon1Raw from '../../../story-fixtures/deck-plans/Wagon_1.xml?raw';\n\nconst CREATED_ID = 'NMR:DeckPlan:2';\n\nconst COPY: EditorCopy = {\n  title: 'deckPlans.detailsTitle',\n  notFound: 'deckPlans.notFound',\n  saved: 'deckPlans.saveSuccess',\n  deactivateTitle: 'deckPlan.deactivateConfirmTitle',\n  deactivateMessage: 'deckPlan.deactivateConfirmMessage',\n};\n\n/** `Wagon_1.xml`'s plan, under a full NeTEx id (the editor's export carries `DeckPlan/id/1`). */\nconst DECK_PLAN: DeckPlan = {\n  id: 'NMR:DeckPlan:1',\n  version: 1,\n  name: { value: 'Type 75 middle car, lower deck with bicycle area' },\n  description: { value: 'Regional wagon, one deck' },\n};\nconst wagon1 = wagon1Raw.replace(/\"DeckPlan\\/id\\/1\"/g, `\"${DECK_PLAN.id}\"`);\n/** Stands in for Sobek's deck plans: a save lands here, so a create's redirect reads it back. */\nconst store = new Map([[DECK_PLAN.id, DECK_PLAN]]);\n\n/** `DeckPlanDetails` on its form page, with the in-memory store and a fixed body in place of Sobek. */\nfunction StoryDeckPlanDetails(host: EntityEditorHostProps) {\n  const editor = useEntityEditor({\n    ...host,\n    fetchById: async id => store.get(id) ?? null,\n    formState: deckPlanForm,\n    write: form =>\n      new Promise(done =>\n        setTimeout(() => {\n          const id = form.id || CREATED_ID;\n          store.set(id, { ...form, id });\n          done({ error: null, newId: id });\n        }, STORY_SAVE_MS)\n      ),\n    withNewId: (form, id) => ({ ...form, id, version: 1 }),\n    deactivateRequest: async () => {},\n  });\n  const { form } = editor;\n  return (\n    <EditorFrame\n      editor={editor}\n      entity={form}\n      testId=\"deck-plan\"\n      copy={COPY}\n      skeleton={<DeckPlanSectionsSkeleton />}\n    >\n      <DeckPlanSections\n        value={form}\n        onChange={editor.setForm}\n        mode={editor.actions.mode}\n        isCreate={editor.isCreate}\n        xml={editor.isCreate ? '' : wagon1}\n        loading={false}\n        fetchError={null}\n        onRetry={() => {}}\n      />\n    </EditorFrame>\n  );\n}\n\nconst deckPlanEditor = (host: EntityEditorHostProps) => <StoryDeckPlanDetails {...host} />;\n\nconst meta: Meta = {\n  title: 'components/editorFrame/fullpage/deck-plans',\n  parameters: {\n    layout: 'fullscreen',\n    docs: {\n      description: {\n        component:\n          '`EditorFrame` on the deck-plan form page (#287): `PageShell` → `EntityDetailsShell` → the frame around the real `DeckPlanSections`, the decks upright in column 3 with a \"Show XML\" button (a no-op in epic #252). The record read and save hit an in-memory store; the body is `story-fixtures/deck-plans/Wagon_1.xml`.',\n      },\n    },\n  },\n  // The editor reads the record once a base URL is set; nothing calls it.\n  decorators: [withSobekUrl(), withOrganisations()],\n};\nexport default meta;\n\ntype Story = StoryObj;\n\n/** A record opens ready to edit; its decks drawn in column 3. */\nexport const Edit: Story = {\n  render: () => <FormPage entity=\"deck-plans\" id={DECK_PLAN.id} renderEditor={deckPlanEditor} />,\n  play: async ({ canvasElement }) => {\n    const canvas = within(canvasElement);\n    await expect(await canvas.findByTestId('deck-plan-decks')).toBeVisible();\n    await expect(canvas.getByTestId('deck-plan-show-xml')).toHaveTextContent('Show XML');\n  },\n};\n\n/** A create at `/new`: no body yet, so \"No decks yet\" and no XML button. */\nexport const Create: Story = {\n  render: () => <FormPage entity=\"deck-plans\" id=\"new\" renderEditor={deckPlanEditor} />,\n  play: async ({ canvasElement }) => {\n    const canvas = within(canvasElement);\n    await expect(await canvas.findByTestId('deck-plan-decks-placeholder')).toHaveTextContent(\n      'No decks yet'\n    );\n    await expect(canvas.queryByTestId('deck-plan-show-xml')).toBeNull();\n  },\n};\n"
+      },
+      "stories": [
+        {
+          "id": "components-editorframe-fullpage-deck-plans--edit",
+          "name": "Edit",
+          "snippet": "const Edit = () => <FormPage entity=\"deck-plans\" id={DECK_PLAN.id} renderEditor={deckPlanEditor} />;",
+          "description": "A record opens ready to edit; its decks drawn in column 3."
+        },
+        {
+          "id": "components-editorframe-fullpage-deck-plans--create",
+          "name": "Create",
+          "snippet": "const Create = () => <FormPage entity=\"deck-plans\" id=\"new\" renderEditor={deckPlanEditor} />;",
+          "description": "A create at `/new`: no body yet, so \"No decks yet\" and no XML button."
+        }
+      ],
+      "import": "import { DeckPlanSections, DeckPlanSectionsSkeleton, EditorFrame, FormPage } from 'hathor';"
+    },
+    "components-editorframe-fullpage-vehicles": {
+      "id": "components-editorframe-fullpage-vehicles",
+      "name": "vehicles",
+      "path": "./src/components/sidebar/EditorFramePageVehicles.stories.tsx",
+      "jsDocTags": {},
+      "error": {
+        "name": "No component found",
+        "message": "We could not detect the component from your story file. Specify meta.component.\n  82 | const vehicleEditor = (host: EntityEditorHostProps) => <StoryVehicleDetails {...host} />;\n  83 |\n> 84 | const meta: Meta = {\n     | ^\n  85 |   title: 'components/editorFrame/fullpage/vehicles',\n  86 |   parameters: {\n  87 |     layout: 'fullscreen',\n\n./src/components/sidebar/EditorFramePageVehicles.stories.tsx:\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { expect, within } from 'storybook/test';\nimport EditorFrame, { type EditorCopy } from './EditorFrame.tsx';\nimport { FormPage, STORY_SAVE_MS } from './formPageStory.tsx';\nimport { withOrganisations } from '../../contexts/mockOrganisations.tsx';\nimport { stubSobek, withSobekUrl } from '../../contexts/mockSobek.tsx';\nimport { useEntityEditor, type EntityEditorHostProps } from '../../hooks/useEntityEditor.ts';\nimport VehicleSections, {\n  VehicleSectionsSkeleton,\n} from '../../data/vehicles/components/VehicleSections.tsx';\nimport type { VehicleEditFormValue } from '../../data/vehicles/types/vehicle.ts';\nimport { canSubmit, vehicleForm } from '../../data/vehicles/stores/vehicleFormState.ts';\nimport type { Vehicle } from '../../data/vehicles/types/vehicle.ts';\n\n// Sobek's wire shape, kept in step with the query by the e2e suite. Globbed: the fixture\n// sits outside `src`, so the app's TypeScript project can't import it.\nconst [vehicleTypesMock] = Object.values(\n  import.meta.glob('../../../e2e-tests/fixtures/vehicle-types-mock.json', {\n    eager: true,\n    import: 'default',\n  })\n);\n\nconst CREATED_ID = 'NMR:Vehicle:2';\n\nconst COPY: EditorCopy = {\n  title: 'vehicles.detailsTitle',\n  notFound: 'vehicles.notFound',\n  saved: 'vehicles.saveSuccess',\n  deactivateTitle: 'vehicle.deactivateConfirmTitle',\n  deactivateMessage: 'vehicle.deactivateConfirmMessage',\n};\n\n/** A bus of the mock's `Type Alpha` (10 × 2.5 × 3 m). */\nconst VEHICLE: Vehicle = {\n  id: 'NMR:Vehicle:1',\n  version: 2,\n  name: { value: 'Ruter 4021 Solaris Urbino 18 electric (Alnabru depot)' },\n  registrationNumber: 'EL 12345',\n  operationalNumber: '4021',\n  transportType: { id: 'NMR:VehicleType:1', name: { value: 'Type Alpha' }, transportMode: 'BUS' },\n};\n/** Stands in for Sobek's vehicles: a save lands here, so a create's redirect reads it back. */\nconst store = new Map([[VEHICLE.id, VEHICLE]]);\n\n/** `VehicleDetails` on its form page, with the in-memory store in place of Sobek. */\nfunction StoryVehicleDetails(host: EntityEditorHostProps) {\n  const editor = useEntityEditor<Vehicle, VehicleEditFormValue>({\n    ...host,\n    fetchById: async id => store.get(id) ?? null,\n    formState: vehicleForm,\n    write: form =>\n      new Promise(done =>\n        setTimeout(() => {\n          const id = form.vehicle.id || CREATED_ID;\n          store.set(id, { ...form.vehicle, id });\n          done({ error: null, newId: id });\n        }, STORY_SAVE_MS)\n      ),\n    withNewId: (form, id) => ({ vehicle: { ...form.vehicle, id, version: 1 } }),\n    deactivateRequest: async () => {},\n    canSubmit: (form, isCreate) => !isCreate || canSubmit(form),\n  });\n  const { form } = editor;\n  return (\n    <EditorFrame\n      editor={editor}\n      entity={form.vehicle}\n      testId=\"vehicle\"\n      copy={COPY}\n      skeleton={<VehicleSectionsSkeleton />}\n    >\n      <VehicleSections\n        value={form.vehicle}\n        onChange={vehicle => editor.setForm({ ...form, vehicle })}\n        mode={editor.actions.mode}\n      />\n    </EditorFrame>\n  );\n}\n\nconst vehicleEditor = (host: EntityEditorHostProps) => <StoryVehicleDetails {...host} />;\n\nconst meta: Meta = {\n  title: 'components/editorFrame/fullpage/vehicles',\n  parameters: {\n    layout: 'fullscreen',\n    docs: {\n      description: {\n        component:\n          \"`EditorFrame` on the vehicle form page (#285): `PageShell` → `EntityDetailsShell` → the frame around the real `VehicleSections`, a red bus in the picked type's dims. The record read and save hit an in-memory store; the type list is the e2e mock, answered by `stubSobek`.\",\n      },\n    },\n  },\n  decorators: [withSobekUrl(), withOrganisations()],\n  beforeEach: stubSobek({ vehicleTypes: vehicleTypesMock }),\n};\nexport default meta;\n\ntype Story = StoryObj;\n\n/** A record opens ready to edit, drawn in its type's dims; \"Open vehicle type\" under the picker. */\nexport const Edit: Story = {\n  render: () => <FormPage entity=\"vehicles\" id={VEHICLE.id} renderEditor={vehicleEditor} />,\n};\n\n/** A create at `/new`: \"Select type\" in the picture box, and no Save, until a type is picked. */\nexport const Create: Story = {\n  render: () => <FormPage entity=\"vehicles\" id=\"new\" renderEditor={vehicleEditor} />,\n  play: async ({ canvasElement }) => {\n    const canvas = within(canvasElement);\n    await expect(await canvas.findByTestId('bus-picture-placeholder')).toHaveTextContent(\n      'Select type'\n    );\n  },\n};\n"
+      },
+      "stories": [
+        {
+          "id": "components-editorframe-fullpage-vehicles--edit",
+          "name": "Edit",
+          "snippet": "const Edit = () => <FormPage entity=\"vehicles\" id={VEHICLE.id} renderEditor={vehicleEditor} />;",
+          "description": "A record opens ready to edit, drawn in its type's dims; \"Open vehicle type\" under the picker."
+        },
+        {
+          "id": "components-editorframe-fullpage-vehicles--create",
+          "name": "Create",
+          "snippet": "const Create = () => <FormPage entity=\"vehicles\" id=\"new\" renderEditor={vehicleEditor} />;",
+          "description": "A create at `/new`: \"Select type\" in the picture box, and no Save, until a type is picked."
+        }
+      ],
+      "import": "import { EditorFrame, FormPage, VehicleSections, VehicleSectionsSkeleton } from 'hathor';"
+    },
+    "components-sitenavcards": {
+      "id": "components-sitenavcards",
+      "name": "SiteNavCards",
+      "path": "./src/components/site-nav-cards/SiteNavCards.stories.tsx",
+      "jsDocTags": {
+        "param": [
+          "{ComboProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the layout (default `combo`); look toggles apply to combo only (see {@link ComboStrip})."
+        ],
+        "returns": [
+          "the combo strip, or the metric strip + browse grid + create row stacked."
+        ]
+      },
+      "description": "The Home dashboard's org-gated body. Types whose feature flag is off are dropped\nhere, before any layout sees them.",
       "reactDocgen": {
-        "description": "Reusable, presentational DeckPlan editor — a tabbed FormLayout driven by\n`value`/`onChange`/`mode`, mirroring the VehicleType editor's shape. Tabs:\nEdit (name + description, then a horizontal strip of read-only deck\nrenderings) · XML (the read-only NeTEx source). Both panes render from the\nsame fetched body and so share its loading and fetch-error states.\n\nThe XML body is never editable — name and description are patched into the\nfetched document on save instead.\n\nHolds no fetch/save logic; chrome (title, EditorRail, snackbars, dirty\ntracking) lives in `DeckPlanDetails`.",
+        "description": "The Home dashboard's org-gated body. Types whose feature flag is off are dropped\nhere, before any layout sees them.\n@param {ComboProps & { variant?: 'combo' | 'rows' }} props - `variant` picks the\n  layout (default `combo`); look toggles apply to combo only (see {@link ComboStrip}).\n@returns the combo strip, or the metric strip + browse grid + create row stacked.",
         "methods": [],
-        "displayName": "DeckPlanForm",
-        "definedInFile": "/home/runner/work/hathor/hathor/src/data/deck-plans/components/DeckPlanForm.tsx",
-        "actualName": "DeckPlanForm",
+        "displayName": "SiteNavCards",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/components/site-nav-cards/SiteNavCards.tsx",
+        "actualName": "SiteNavCards",
         "exportName": "default",
         "props": {
-          "value": {
+          "ctx": {
             "required": true,
             "tsType": {
               "name": "signature",
               "type": "object",
-              "raw": "{\n  id: string;\n  version?: number;\n  name?: Name;\n  description?: Name;\n}",
+              "raw": "{\n  apiUrl?: string;\n  getToken: () => Promise<string | null>;\n  org?: string;\n}",
               "signature": {
                 "properties": [
                   {
-                    "key": "id",
+                    "key": "apiUrl",
                     "value": {
                       "name": "string",
+                      "required": false
+                    }
+                  },
+                  {
+                    "key": "getToken",
+                    "value": {
+                      "name": "signature",
+                      "type": "function",
+                      "raw": "() => Promise<string | null>",
+                      "signature": {
+                        "arguments": [],
+                        "return": {
+                          "name": "Promise",
+                          "elements": [
+                            {
+                              "name": "union",
+                              "raw": "string | null",
+                              "elements": [
+                                {
+                                  "name": "string"
+                                },
+                                {
+                                  "name": "null"
+                                }
+                              ]
+                            }
+                          ],
+                          "raw": "Promise<string | null>"
+                        }
+                      },
                       "required": true
                     }
                   },
                   {
-                    "key": "version",
+                    "key": "org",
                     "value": {
-                      "name": "number",
-                      "required": false
-                    }
-                  },
-                  {
-                    "key": "name",
-                    "value": {
-                      "name": "signature",
-                      "type": "object",
-                      "raw": "{\n  value: string;\n  lang?: string;\n}",
-                      "signature": {
-                        "properties": [
-                          {
-                            "key": "value",
-                            "value": {
-                              "name": "string",
-                              "required": true
-                            }
-                          },
-                          {
-                            "key": "lang",
-                            "value": {
-                              "name": "string",
-                              "required": false
-                            }
-                          }
-                        ]
-                      },
-                      "required": false
-                    }
-                  },
-                  {
-                    "key": "description",
-                    "value": {
-                      "name": "signature",
-                      "type": "object",
-                      "raw": "{\n  value: string;\n  lang?: string;\n}",
-                      "signature": {
-                        "properties": [
-                          {
-                            "key": "value",
-                            "value": {
-                              "name": "string",
-                              "required": true
-                            }
-                          },
-                          {
-                            "key": "lang",
-                            "value": {
-                              "name": "string",
-                              "required": false
-                            }
-                          }
-                        ]
-                      },
+                      "name": "string",
                       "required": false
                     }
                   }
                 ]
               }
             },
-            "description": "Current deck plan — the editable name/description fields."
+            "description": ""
           },
-          "onChange": {
-            "required": true,
+          "types": {
+            "required": false,
             "tsType": {
-              "name": "signature",
-              "type": "function",
-              "raw": "(next: DeckPlan) => void",
-              "signature": {
-                "arguments": [
-                  {
-                    "type": {
-                      "name": "signature",
-                      "type": "object",
-                      "raw": "{\n  id: string;\n  version?: number;\n  name?: Name;\n  description?: Name;\n}",
-                      "signature": {
-                        "properties": [
-                          {
-                            "key": "id",
-                            "value": {
-                              "name": "string",
-                              "required": true
+              "name": "Array",
+              "elements": [
+                {
+                  "name": "signature",
+                  "type": "object",
+                  "raw": "{\n  id: string;\n  icon: MenuIconName;\n  path: string;\n  titleKey: string;\n  descKey: string;\n  statKey: string;\n  createKey: string;\n  count: (ctx: CountCtx) => Promise<number>;\n  /** Hides the type unless this `sandboxFeatures` key is on in config.json. */\n  flag?: FeatureFlag;\n}",
+                  "signature": {
+                    "properties": [
+                      {
+                        "key": "id",
+                        "value": {
+                          "name": "string",
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "icon",
+                        "value": {
+                          "name": "union",
+                          "raw": "'home' | 'vehicleTypes' | 'contractualVehicleTypes' | 'vehicles' | 'deckPlans' | 'menu'",
+                          "elements": [
+                            {
+                              "name": "literal",
+                              "value": "'home'"
+                            },
+                            {
+                              "name": "literal",
+                              "value": "'vehicleTypes'"
+                            },
+                            {
+                              "name": "literal",
+                              "value": "'contractualVehicleTypes'"
+                            },
+                            {
+                              "name": "literal",
+                              "value": "'vehicles'"
+                            },
+                            {
+                              "name": "literal",
+                              "value": "'deckPlans'"
+                            },
+                            {
+                              "name": "literal",
+                              "value": "'menu'"
                             }
-                          },
-                          {
-                            "key": "version",
-                            "value": {
-                              "name": "number",
-                              "required": false
-                            }
-                          },
-                          {
-                            "key": "name",
-                            "value": {
-                              "name": "signature",
-                              "type": "object",
-                              "raw": "{\n  value: string;\n  lang?: string;\n}",
-                              "signature": {
-                                "properties": [
-                                  {
-                                    "key": "value",
-                                    "value": {
-                                      "name": "string",
-                                      "required": true
-                                    }
-                                  },
-                                  {
-                                    "key": "lang",
-                                    "value": {
-                                      "name": "string",
-                                      "required": false
-                                    }
+                          ],
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "path",
+                        "value": {
+                          "name": "string",
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "titleKey",
+                        "value": {
+                          "name": "string",
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "descKey",
+                        "value": {
+                          "name": "string",
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "statKey",
+                        "value": {
+                          "name": "string",
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "createKey",
+                        "value": {
+                          "name": "string",
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "count",
+                        "value": {
+                          "name": "signature",
+                          "type": "function",
+                          "raw": "(ctx: CountCtx) => Promise<number>",
+                          "signature": {
+                            "arguments": [
+                              {
+                                "type": {
+                                  "name": "signature",
+                                  "type": "object",
+                                  "raw": "{\n  apiUrl?: string;\n  getToken: () => Promise<string | null>;\n  org?: string;\n}",
+                                  "signature": {
+                                    "properties": [
+                                      {
+                                        "key": "apiUrl",
+                                        "value": {
+                                          "name": "string",
+                                          "required": false
+                                        }
+                                      },
+                                      {
+                                        "key": "getToken",
+                                        "value": {
+                                          "name": "signature",
+                                          "type": "function",
+                                          "raw": "() => Promise<string | null>",
+                                          "signature": {
+                                            "arguments": [],
+                                            "return": {
+                                              "name": "Promise",
+                                              "elements": [
+                                                {
+                                                  "name": "union",
+                                                  "raw": "string | null",
+                                                  "elements": [
+                                                    {
+                                                      "name": "string"
+                                                    },
+                                                    {
+                                                      "name": "null"
+                                                    }
+                                                  ]
+                                                }
+                                              ],
+                                              "raw": "Promise<string | null>"
+                                            }
+                                          },
+                                          "required": true
+                                        }
+                                      },
+                                      {
+                                        "key": "org",
+                                        "value": {
+                                          "name": "string",
+                                          "required": false
+                                        }
+                                      }
+                                    ]
                                   }
-                                ]
-                              },
-                              "required": false
+                                },
+                                "name": "ctx"
+                              }
+                            ],
+                            "return": {
+                              "name": "Promise",
+                              "elements": [
+                                {
+                                  "name": "number"
+                                }
+                              ],
+                              "raw": "Promise<number>"
                             }
                           },
-                          {
-                            "key": "description",
-                            "value": {
-                              "name": "signature",
-                              "type": "object",
-                              "raw": "{\n  value: string;\n  lang?: string;\n}",
-                              "signature": {
-                                "properties": [
-                                  {
-                                    "key": "value",
-                                    "value": {
-                                      "name": "string",
-                                      "required": true
-                                    }
-                                  },
-                                  {
-                                    "key": "lang",
-                                    "value": {
-                                      "name": "string",
-                                      "required": false
-                                    }
-                                  }
-                                ]
-                              },
-                              "required": false
-                            }
-                          }
-                        ]
+                          "required": true
+                        }
+                      },
+                      {
+                        "key": "flag",
+                        "value": {
+                          "name": "SandboxFeatures",
+                          "required": false
+                        },
+                        "description": "Hides the type unless this `sandboxFeatures` key is on in config.json."
                       }
-                    },
-                    "name": "next"
+                    ]
                   }
-                ],
-                "return": {
-                  "name": "void"
                 }
-              }
+              ],
+              "raw": "SiteType[]"
             },
-            "description": "Fired with the merged next value on every field edit."
+            "description": ""
           },
-          "mode": {
-            "required": true,
+          "variant": {
+            "required": false,
             "tsType": {
               "name": "union",
-              "raw": "'view' | 'edit'",
+              "raw": "'combo' | 'rows'",
               "elements": [
                 {
                   "name": "literal",
-                  "value": "'view'"
+                  "value": "'combo'"
                 },
                 {
                   "name": "literal",
-                  "value": "'edit'"
+                  "value": "'rows'"
                 }
               ]
             },
-            "description": "`'view'` disables the inputs; `'edit'` enables them."
-          },
-          "isCreate": {
-            "required": true,
-            "tsType": {
-              "name": "boolean"
-            },
-            "description": "Create flow — hides the tab strip; there is no persisted body yet."
-          },
-          "xml": {
-            "required": true,
-            "tsType": {
-              "name": "string"
-            },
-            "description": "NeTEx XML body, read-only."
-          },
-          "loading": {
-            "required": true,
-            "tsType": {
-              "name": "boolean"
-            },
-            "description": "Body fetch in flight; renders a spinner in both tabs' body panes."
-          },
-          "fetchError": {
-            "required": true,
-            "tsType": {
-              "name": "union",
-              "raw": "string | null",
-              "elements": [
-                {
-                  "name": "string"
-                },
-                {
-                  "name": "null"
-                }
-              ]
-            },
-            "description": "Body fetch error; renders an alert + retry in both tabs' body panes."
-          },
-          "onRetry": {
-            "required": true,
-            "tsType": {
-              "name": "signature",
-              "type": "function",
-              "raw": "() => void",
-              "signature": {
-                "arguments": [],
-                "return": {
-                  "name": "void"
-                }
-              }
-            },
-            "description": "Refetch trigger from the parent hook."
+            "description": "",
+            "defaultValue": {
+              "value": "'combo'",
+              "computed": false
+            }
           }
         }
       },
       "stories": [
         {
-          "id": "data-deck-plans-deckplanform--edit-tab",
-          "name": "Edit Tab",
-          "snippet": "const EditTab = () => <Editor {...base} railWidth={460} xml={SIX_DECKS} />;",
-          "description": "The default: fields on top, one rendering per Deck below, captioned by name.\nThis is the story the `<deck-rendering>` wiring exists for."
+          "id": "components-sitenavcards--combo",
+          "name": "Combo",
+          "snippet": "const Combo = () => <SiteNavCards ctx={{ getToken: () => Promise.resolve(null) }} />;",
+          "description": "Combo layout, as on Home — 40px glyph, no counts, no backdrop (`bgURL='none'`)."
         },
         {
-          "id": "data-deck-plans-deckplanform--edit-tab-sample",
-          "name": "Edit Tab Sample",
-          "snippet": "const EditTabSample = () => <Editor {...base} railWidth={460} xml={NO_DECKS} />;",
-          "description": "A plan with an empty `<decks/>` — the common case on real data. One ghost\ndeck is drawn under a SAMPLE heading so the tab is never blank."
+          "id": "components-sitenavcards--combo-counts",
+          "name": "Combo Counts",
+          "snippet": "const ComboCounts = () => <SiteNavCards ctx={{ getToken: () => Promise.resolve(null) }} counts />;",
+          "description": "Combo layout with per-type counts — they resolve one by one."
         },
         {
-          "id": "data-deck-plans-deckplanform--view-mode",
-          "name": "View Mode",
-          "snippet": "const ViewMode = () => <Editor {...base} railWidth={460} mode=\"view\" xml={SIX_DECKS} />;",
-          "description": "Read-only: inputs disabled, renderings unaffected."
+          "id": "components-sitenavcards--combo-bus",
+          "name": "Combo Bus",
+          "snippet": "const ComboBus = () => <SiteNavCards ctx={{ getToken: () => Promise.resolve(null) }} bgURL={BUS_SRC} />;",
+          "description": "Combo layout with the opt-in bus backdrop — black ink (faint watermark)."
         },
         {
-          "id": "data-deck-plans-deckplanform--body-loading",
-          "name": "Body Loading",
-          "snippet": "const BodyLoading = () => <Editor {...base} railWidth={460} loading xml=\"\" />;",
-          "description": "Body fetch in flight. The spinner replaces the strip only — Name and\nDescription stay interactive, so a slow fetch never blocks typing."
+          "id": "components-sitenavcards--combo-white-ink",
+          "name": "Combo White Ink",
+          "snippet": "const ComboWhiteInk = () => <SiteNavCards\n    ctx={{ getToken: () => Promise.resolve(null) }}\n    bgURL={BUS_SRC}\n    ink=\"white\" />;",
+          "description": "Combo layout with the opt-in white-ink (embossed-negative) bus backdrop."
         },
         {
-          "id": "data-deck-plans-deckplanform--body-fetch-error",
-          "name": "Body Fetch Error",
-          "snippet": "const BodyFetchError = () => <Editor {...base} railWidth={460} xml=\"\" fetchError=\"503 Service Unavailable\" />;",
-          "description": "Body fetch failed — alert plus retry, again scoped to the strip."
+          "id": "components-sitenavcards--rows",
+          "name": "Rows",
+          "snippet": "const Rows = () => <SiteNavCards ctx={{ getToken: () => Promise.resolve(null) }} variant=\"rows\" />;",
+          "description": "Legacy three-row layout."
         },
         {
-          "id": "data-deck-plans-deckplanform--create",
+          "id": "components-sitenavcards--loading",
+          "name": "Loading",
+          "snippet": "const Loading = () => <ComboStrip ctx={CTX} types={PENDING} counts />;",
+          "description": "Combo cards while every count is still pending (Skeleton)."
+        },
+        {
+          "id": "components-sitenavcards--failed",
+          "name": "Failed",
+          "snippet": "const Failed = () => <ComboStrip ctx={CTX} types={FAILING} counts />;",
+          "description": "Combo cards when every count fetch fails (muted dash + tooltip; screen-reader text)."
+        },
+        {
+          "id": "components-sitenavcards--stats",
+          "name": "Stats",
+          "snippet": "const Stats = () => <StatStrip ctx={CTX} />;",
+          "description": "Overview metric strip only (sample figures)."
+        },
+        {
+          "id": "components-sitenavcards--browse",
+          "name": "Browse",
+          "snippet": "const Browse = () => <NavGrid />;",
+          "description": "Browse tiles only — links to the three list views."
+        },
+        {
+          "id": "components-sitenavcards--create",
           "name": "Create",
-          "snippet": "const Create = () => <Editor {...base} railWidth={460} isCreate xml=\"\" />;",
-          "description": "Create flow — no persisted body yet, so no tab strip and no renderings."
+          "snippet": "const Create = () => <CreateRow />;",
+          "description": "Create-new action row only — `/<entity>/new` links."
+        },
+        {
+          "id": "components-sitenavcards--mobile",
+          "name": "Mobile",
+          "snippet": "const Mobile = () => <SiteNavCards ctx={{ getToken: () => Promise.resolve(null) }} />;",
+          "description": "Mobile layout: the `mobile1` viewport narrows the canvas below the `sm`\nbreakpoint, so the combo cards stack in a single column."
         }
       ],
-      "import": "import { Box } from '@mui/material';\nimport { DeckPlanForm } from 'hathor';"
+      "import": "import { Box } from '@mui/material';\nimport { ComboStrip, CreateRow, NavGrid, SiteNavCards, StatStrip } from 'hathor';\nimport { MemoryRouter } from 'react-router-dom';\nimport { BUS_SRC } from './SiteNavCards';"
     },
     "data-deck-plans-deckrendering": {
       "id": "data-deck-plans-deckrendering",
       "name": "DeckRendering",
       "path": "./src/data/deck-plans/components/DeckRendering.stories.tsx",
       "jsDocTags": {},
-      "description": "Read-only SVG rendering of a single deck, backed by the editor package's\n`<deck-rendering>` custom element.\n\nThe element is created and populated imperatively rather than written as\nJSX. Vue renders custom elements in `connectedCallback`, and the component's\n`stageSize` dereferences `deck.getBoundingBox()` on that first pass — so a\nReact-inserted element would throw before any effect could assign `deck`.\nCreating it detached, assigning props, then inserting sidesteps that and\nremoves the need to augment `JSX.IntrinsicElements`.\n\nRenders nothing until the bundle has loaded; callers own the loading UI.\nA mount that throws reports itself in place — silently rendering nothing\nwould read as \"this deck is empty\" while the strip around it looks healthy.",
+      "description": "Read-only SVG rendering of a single deck, backed by the editor package's\n`<deck-rendering>` custom element.\n\nThe element is created and populated imperatively rather than written as\nJSX. Vue renders custom elements in `connectedCallback`, and the component's\n`stageSize` dereferences `deck.getBoundingBox()` on that first pass — so a\nReact-inserted element would throw before any effect could assign `deck`.\nCreating it detached, assigning props, then inserting sidesteps that and\nremoves the need to augment `JSX.IntrinsicElements`.\n\nRenders nothing until the bundle has loaded; callers own the loading UI.\nA mount that throws reports itself in place rather than rendering nothing,\nwhich would read as \"this deck is empty\" while the strip around it looks\nhealthy. In practice `DeckStrip` catches a failed bundle load first, so that\nbranch is a guard for standalone use (the stories mount this directly), not\na path the app reaches.\n\nStyling is applied after insertion and cannot fail the rendering — see\n`deckRenderingStyles`.",
       "reactDocgen": {
-        "description": "Read-only SVG rendering of a single deck, backed by the editor package's\n`<deck-rendering>` custom element.\n\nThe element is created and populated imperatively rather than written as\nJSX. Vue renders custom elements in `connectedCallback`, and the component's\n`stageSize` dereferences `deck.getBoundingBox()` on that first pass — so a\nReact-inserted element would throw before any effect could assign `deck`.\nCreating it detached, assigning props, then inserting sidesteps that and\nremoves the need to augment `JSX.IntrinsicElements`.\n\nRenders nothing until the bundle has loaded; callers own the loading UI.\nA mount that throws reports itself in place — silently rendering nothing\nwould read as \"this deck is empty\" while the strip around it looks healthy.",
+        "description": "Read-only SVG rendering of a single deck, backed by the editor package's\n`<deck-rendering>` custom element.\n\nThe element is created and populated imperatively rather than written as\nJSX. Vue renders custom elements in `connectedCallback`, and the component's\n`stageSize` dereferences `deck.getBoundingBox()` on that first pass — so a\nReact-inserted element would throw before any effect could assign `deck`.\nCreating it detached, assigning props, then inserting sidesteps that and\nremoves the need to augment `JSX.IntrinsicElements`.\n\nRenders nothing until the bundle has loaded; callers own the loading UI.\nA mount that throws reports itself in place rather than rendering nothing,\nwhich would read as \"this deck is empty\" while the strip around it looks\nhealthy. In practice `DeckStrip` catches a failed bundle load first, so that\nbranch is a guard for standalone use (the stories mount this directly), not\na path the app reaches.\n\nStyling is applied after insertion and cannot fail the rendering — see\n`deckRenderingStyles`.",
         "methods": [],
         "displayName": "DeckRendering",
         "definedInFile": "/home/runner/work/hathor/hathor/src/data/deck-plans/components/DeckRendering.tsx",
@@ -1160,177 +1681,53 @@
         {
           "id": "data-deck-plans-deckrendering--ghost",
           "name": "Ghost",
-          "snippet": "const Ghost = () => <Framed label=\"ghost\" xml={GHOST_DECK_PLAN_XML} vertical />;",
-          "description": "The `SAMPLE` fallback — what renders when a real plan carries an empty\n`<decks/>`. Backed by Wagon_2's deck, so it looks like a real layout."
+          "snippet": "const Ghost = () => <Framed label=\"ghost\" xml={GHOST_XML} vertical />;",
+          "description": "The `SAMPLE` fallback — what renders when a real plan carries an empty\n`<decks/>`. A full carriage's worth of seats, so it reads as a real layout."
         },
         {
           "id": "data-deck-plans-deckrendering--orientations",
           "name": "Orientations",
-          "snippet": "const Orientations = () => (\n  <Stack direction=\"row\" spacing={4} alignItems=\"flex-start\">\n    <Framed label=\"vertical\" xml={SAMPLE_XML} vertical />\n    <Framed label=\"horizontal\" xml={SAMPLE_XML} />\n  </Stack>\n);",
+          "snippet": "const Orientations = () => (\n  <Stack direction=\"row\" spacing={4} sx={{ alignItems: 'flex-start' }}>\n    <Framed label=\"vertical\" xml={SAMPLE_XML} vertical />\n    <Framed label=\"horizontal\" xml={SAMPLE_XML} />\n  </Stack>\n);",
           "description": "A populated deck, in both orientations. `vertical` is what the sidebar uses:\neight seats fit a narrow column, where the native orientation overflows."
         },
         {
           "id": "data-deck-plans-deckrendering--scales",
           "name": "Scales",
-          "snippet": "const Scales = () => (\n  <Stack direction=\"row\" spacing={4} alignItems=\"flex-start\">\n    {[DECK_SCALE / 2, DECK_SCALE, DECK_SCALE * 2].map(s => (\n      <Framed key={s} label={`scale ${s}`} xml={SAMPLE_XML} vertical scale={s} />\n    ))}\n  </Stack>\n);",
+          "snippet": "const Scales = () => (\n  <Stack direction=\"row\" spacing={4} sx={{ alignItems: 'flex-start' }}>\n    {[DECK_SCALE / 2, DECK_SCALE, DECK_SCALE * 2].map(s => (\n      <Framed key={s} label={`scale ${s}`} xml={SAMPLE_XML} vertical scale={s} />\n    ))}\n  </Stack>\n);",
           "description": "Scale sweep — confirms px-per-metre is honoured and nothing clips."
         }
       ],
       "import": "import { Box, Stack, Typography } from '@mui/material';\nimport { DeckRendering } from 'hathor';"
     },
-    "data-netex-netexid": {
-      "id": "data-netex-netexid",
-      "name": "NetexId",
-      "path": "./src/data/netex/NetexId.stories.tsx",
+    "vehicle-imports-multiimport": {
+      "id": "vehicle-imports-multiimport",
+      "name": "MultiImport",
+      "path": "./src/data/vehicle-imports/components/MultiImport.stories.tsx",
       "jsDocTags": {},
-      "description": "Read-only chip rendering a NeTEx id, with the optional version surfaced as\na small nested chip (`vN`) inside the outer chip. Monospace label for\nlegibility; outlined outer + filled inner so the version reads as a badge.",
-      "reactDocgen": {
-        "description": "Read-only chip rendering a NeTEx id, with the optional version surfaced as\na small nested chip (`vN`) inside the outer chip. Monospace label for\nlegibility; outlined outer + filled inner so the version reads as a badge.",
-        "methods": [],
-        "displayName": "NetexId",
-        "definedInFile": "/home/runner/work/hathor/hathor/src/data/netex/NetexId.tsx",
-        "actualName": "NetexId",
-        "exportName": "default",
-        "props": {
-          "id": {
-            "required": true,
-            "tsType": {
-              "name": "string"
-            },
-            "description": "Full NeTEx id of the form `CODESPACE:TYPE:VALUE`, e.g. `NMR:Vehicle:abc-123`."
-          },
-          "version": {
-            "required": false,
-            "tsType": {
-              "name": "union",
-              "raw": "string | number",
-              "elements": [
-                {
-                  "name": "string"
-                },
-                {
-                  "name": "number"
-                }
-              ]
-            },
-            "description": "Optional version; rendered as a nested chip labelled `vN`."
-          },
-          "copy": {
-            "required": false,
-            "tsType": {
-              "name": "union",
-              "raw": "'show' | 'hide' | 'onHover' | 'only'",
-              "elements": [
-                {
-                  "name": "literal",
-                  "value": "'show'"
-                },
-                {
-                  "name": "literal",
-                  "value": "'hide'"
-                },
-                {
-                  "name": "literal",
-                  "value": "'onHover'"
-                },
-                {
-                  "name": "literal",
-                  "value": "'only'"
-                }
-              ]
-            },
-            "description": "Copy-button visibility toggle. Defaults to `'hide'`.",
-            "defaultValue": {
-              "value": "'hide'",
-              "computed": false
-            }
-          },
-          "size": {
-            "required": false,
-            "tsType": {
-              "name": "union",
-              "raw": "'xsmall' | 'small' | 'medium' | 'large'",
-              "elements": [
-                {
-                  "name": "literal",
-                  "value": "'xsmall'"
-                },
-                {
-                  "name": "literal",
-                  "value": "'small'"
-                },
-                {
-                  "name": "literal",
-                  "value": "'medium'"
-                },
-                {
-                  "name": "literal",
-                  "value": "'large'"
-                }
-              ]
-            },
-            "description": "Scales the chip and all sub-elements proportionally. Defaults to `'medium'`.",
-            "defaultValue": {
-              "value": "'medium'",
-              "computed": false
-            }
-          },
-          "variant": {
-            "defaultValue": {
-              "value": "'outlined'",
-              "computed": false
-            },
-            "required": false
-          }
-        },
-        "composes": [
-          "Omit"
-        ]
+      "error": {
+        "name": "No component found",
+        "message": "We could not detect the component from your story file. Specify meta.component.\n  24 | const LEVELS: WarnLevel[] = ['success', 'info', 'warning', 'error'];\n  25 |\n> 26 | const meta: Meta = {\n     | ^\n  27 |   title: 'vehicle-imports/MultiImport',\n  28 |   parameters: {\n  29 |     docs: {\n\n./src/data/vehicle-imports/components/MultiImport.stories.tsx:\nimport { useState } from 'react';\nimport type { Meta, StoryObj } from '@storybook/react-vite';\nimport { Box, Stack } from '@mui/material';\nimport MultiImportColumnMapper from './MultiImportColumnMapper.tsx';\nimport MultiImportReviewInput from './MultiImportReviewInput.tsx';\nimport type { ImportEntry } from '../types/importTypes.ts';\nimport type { WarnLevel } from '../utils/regNumbersTextTransformer.ts';\n\n/** A pasted sheet: the column mapper picks the registration and operational-id columns. */\nconst TABLE = {\n  kind: 'table' as const,\n  headers: ['Regnr', 'Internnr', 'Modell'],\n  rows: [\n    { Regnr: 'EB12345', Internnr: 'OP-001', Modell: 'Solaris Urbino 12 electric' },\n    { Regnr: 'EB12346', Internnr: 'OP-002', Modell: 'Solaris Urbino 12 electric' },\n    { Regnr: 'EL23456', Internnr: 'OP-003', Modell: 'Volvo 8900' },\n  ],\n  rowCount: 3,\n};\nconst ENTRIES: ImportEntry[] = [\n  { queryRegNumber: 'EB12345', operationalRef: 'OP-001' },\n  { queryRegNumber: 'EB12346' },\n];\nconst LEVELS: WarnLevel[] = ['success', 'info', 'warning', 'error'];\n\nconst meta: Meta = {\n  title: 'vehicle-imports/MultiImport',\n  parameters: {\n    docs: {\n      description: {\n        component:\n          \"The Statens vegvesen import dialog's steps: the column mapper's Linje pickers, and the review list with its add field level with the Add button.\",\n      },\n    },\n  },\n  decorators: [\n    Story => (\n      <Box sx={{ maxWidth: 720, p: 2 }}>\n        <Story />\n      </Box>\n    ),\n  ],\n};\nexport default meta;\ntype Story = StoryObj;\n\nexport const ColumnMapper: Story = {\n  render: () => <MultiImportColumnMapper tableMeta={TABLE} onConfirm={() => {}} />,\n};\n\nfunction Review({ level }: { level: WarnLevel }) {\n  const [entries, setEntries] = useState(ENTRIES);\n  return (\n    <MultiImportReviewInput\n      entries={entries}\n      status={{\n        uniqueCount: entries.length,\n        message: `${level}: 2 registration numbers`,\n        warnLevel: level,\n      }}\n      fetching={false}\n      onDeleteEntry={reg => setEntries(es => es.filter(e => e.queryRegNumber !== reg))}\n      onAddEntry={e => setEntries(es => [...es, e])}\n    />\n  );\n}\n\nexport const ReviewInput: Story = {\n  render: () => (\n    <Stack spacing={4}>\n      {LEVELS.map(level => (\n        <Review key={level} level={level} />\n      ))}\n    </Stack>\n  ),\n};\n"
       },
       "stories": [
         {
-          "id": "data-netex-netexid--with-controls",
-          "name": "With Controls",
-          "snippet": "const WithControls = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" size=\"medium\" copy=\"show\" variant=\"outlined\" />;"
+          "id": "vehicle-imports-multiimport--column-mapper",
+          "name": "Column Mapper",
+          "snippet": "const ColumnMapper = () => <MultiImportColumnMapper tableMeta={TABLE} onConfirm={() => {}} />;"
         },
         {
-          "id": "data-netex-netexid--copy-on-hover",
-          "name": "Copy On Hover",
-          "snippet": "const CopyOnHover = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" copy=\"onHover\" />;",
-          "description": "`copy: 'onHover'` keeps the chip narrow at rest. The copy button slides in\nwhen the chip is hovered or any child element is focused — try\ntab-navigating to the chip with the keyboard."
-        },
-        {
-          "id": "data-netex-netexid--copy-only",
-          "name": "Copy Only",
-          "snippet": "const CopyOnly = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" copy=\"only\" />;",
-          "description": "`copy: 'only'` drops the segmented label and renders just the copy\nbutton. Use in dense meta rows where the id text would clutter the\nlayout but you still want a one-click copy. The tooltip embeds the\nfull id."
-        },
-        {
-          "id": "data-netex-netexid--versioned",
-          "name": "Versioned",
-          "snippet": "const Versioned = () => <NetexId id=\"NSR:VehicleType:6f3a9e\" version={3} copy=\"show\" />;"
-        },
-        {
-          "id": "data-netex-netexid--malformed-id",
-          "name": "Malformed Id",
-          "snippet": "const MalformedId = () => <NetexId id=\"abc-123\" copy=\"hide\" />;",
-          "description": "Fewer than 3 segments — leftmost missing parts render as `???`. Useful\nwhen surfacing partial / malformed ids from upstream without crashing."
-        },
-        {
-          "id": "data-netex-netexid--all-sizes",
-          "name": "All Sizes",
-          "snippet": "const AllSizes = () => (\n  <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>\n    {SIZES.map(size => (\n      <Box key={size} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n        <Typography variant=\"caption\" sx={{ width: 64, fontFamily: 'monospace' }}>\n          {size}\n        </Typography>\n        <NetexId id={SAMPLE_ID} version={3} copy=\"show\" size={size} />\n      </Box>\n    ))}\n  </Stack>\n);",
-          "description": "All four sizes side-by-side. Outer chip, version pill, copy button, and\nfont all scale proportionally."
+          "id": "vehicle-imports-multiimport--review-input",
+          "name": "Review Input",
+          "snippet": "const ReviewInput = () => (\n  <Stack spacing={4}>\n    {LEVELS.map(level => (\n      <Review key={level} level={level} />\n    ))}\n  </Stack>\n);"
         }
       ],
-      "import": "import { Box, Stack, Typography } from '@mui/material';\nimport { NetexId } from 'hathor';"
+      "import": "import { Box, Stack } from '@mui/material';\nimport { MultiImportColumnMapper, MultiImportReviewInput } from 'hathor';"
     },
     "pages-home": {
       "id": "pages-home",
       "name": "HomePage",
       "path": "./src/pages/Home.stories.tsx",
       "jsDocTags": {},
-      "description": "Stories for the Home dashboard. A MemoryRouter decorator supplies the routing\ncontext the page's <Link>s need; `withOrganisations` and `withAuth` stand in\nfor the real OrganisationsProvider and OIDC provider (config/fetch-driven, so\nunavailable here) that gate the org sections and the logged-out band —\ntogether they put the page in its signed-in, org-selected state.\n`fullscreen` layout lets the flat, full-width\ndashboard breathe without Storybook's default padding. Domain glyphs come from\nthe nav-rail MenuIcon sprite, mounted globally in `.storybook/preview.tsx`.",
+      "description": "Stories for the Home dashboard. A MemoryRouter decorator supplies the routing\ncontext the page's <Link>s need (`Complete` brings its own router); `withOrganisations` and `withAuth` stand in\nfor the real OrganisationsProvider and OIDC provider (config/fetch-driven, so\nunavailable here) that gate the org sections and the logged-out band —\ntogether they put the page in its signed-in, org-selected state.\n`fullscreen` layout lets the flat, full-width\ndashboard breathe without Storybook's default padding. Domain glyphs come from\nthe nav-rail MenuIcon sprite, mounted globally in `.storybook/preview.tsx`.",
       "reactDocgen": {
         "description": "Registry dashboard home page.\n@returns the flat Home dashboard view.",
         "methods": [],
@@ -1351,13 +1748,84 @@
           "name": "Mobile",
           "snippet": "const Mobile = () => <HomePage />;",
           "description": "Mobile layout: the `mobile1` viewport narrows the canvas below the `sm`\nbreakpoint, so the metric strip and browse/create grids collapse to a single\ncolumn."
+        },
+        {
+          "id": "pages-home--complete",
+          "name": "Complete",
+          "snippet": "const Complete = () => <AppAt path=\"/\" />;",
+          "description": "The whole app on `/`: Header and Menu around Home. Its links work — a card opens\nthe collection, Edit its form page — on the e2e fixtures.",
+          "warning": "Incomplete snippet: `...APP_STORY_META` could not be resolved statically."
         }
       ],
-      "import": "import { HomePage } from 'hathor';\nimport { MemoryRouter } from 'react-router-dom';"
+      "import": "import { AppAt, HomePage } from 'hathor';\nimport { MemoryRouter } from 'react-router-dom';"
+    },
+    "pages-shell": {
+      "id": "pages-shell",
+      "name": "PageShell",
+      "path": "./src/pages/shell/PageShell.stories.tsx",
+      "jsDocTags": {
+        "returns": [
+          "{JSX.Element} The page frame around the matched child route."
+        ]
+      },
+      "description": "Outer frame for the collection and entity-details pages — their layout route\n(#252). A full-height\ncolumn under the app header; the child route fills a full-width {@link Container}\n(side gutters only) via `<Outlet/>`: a collection uses all of it, a form page caps\nand centres itself.",
+      "reactDocgen": {
+        "description": "Outer frame for the collection and entity-details pages — their layout route\n(#252). A full-height\ncolumn under the app header; the child route fills a full-width {@link Container}\n(side gutters only) via `<Outlet/>`: a collection uses all of it, a form page caps\nand centres itself.\n\n@returns {JSX.Element} The page frame around the matched child route.",
+        "methods": [],
+        "displayName": "PageShell",
+        "definedInFile": "/home/runner/work/hathor/hathor/src/pages/shell/PageShell.tsx",
+        "actualName": "PageShell",
+        "exportName": "default"
+      },
+      "stories": [
+        {
+          "id": "pages-shell--outer",
+          "name": "Outer",
+          "snippet": "const Outer = () => (\n  <AtRoute entry=\"/things\" path=\"things\" child={<Standin text=\"<Outlet/> — routed page\" />} />\n);",
+          "description": "The outer frame alone: the Outlet holds a stand-in page."
+        },
+        {
+          "id": "pages-shell--collection",
+          "name": "Collection",
+          "snippet": "const Collection = () => collection({});",
+          "description": "CollectionShell with its body: title row + actions, list stand-in."
+        },
+        {
+          "id": "pages-shell--collection-loading",
+          "name": "Collection Loading",
+          "snippet": "const CollectionLoading = () => collection({ loading: true });",
+          "description": "CollectionShell while the list loads."
+        },
+        {
+          "id": "pages-shell--collection-empty",
+          "name": "Collection Empty",
+          "snippet": "const CollectionEmpty = () => collection({ empty: true });",
+          "description": "CollectionShell with no rows: the host's empty state replaces the body."
+        },
+        {
+          "id": "pages-shell--collection-error",
+          "name": "Collection Error",
+          "snippet": "const CollectionError = () => collection({ error: 'Network request failed' });",
+          "description": "CollectionShell when the list read failed."
+        },
+        {
+          "id": "pages-shell--details",
+          "name": "Details",
+          "snippet": "const Details = () => details(`${LIST}/NMR:Thing:1`);",
+          "description": "EntityDetailsShell on a record deep link: view mode."
+        },
+        {
+          "id": "pages-shell--details-create",
+          "name": "Details Create",
+          "snippet": "const DetailsCreate = () => details(`${LIST}/new`);",
+          "description": "EntityDetailsShell at `/new`: the create pane, edit mode."
+        }
+      ],
+      "import": "import { CollectionShell, EntityDetailsShell, NewEntityFab, PageShell } from 'hathor';\nimport { MemoryRouter, Route, Routes } from 'react-router-dom';\nimport { Paper, Typography } from '@mui/material';"
     }
   },
   "meta": {
     "docgen": "react-docgen",
-    "durationMs": 1057
+    "durationMs": 1650
   }
 }

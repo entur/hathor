@@ -1,0 +1,24 @@
+import{n as e}from"./rolldown-runtime-BCiCTKAo.js";import{t}from"./react-BbeNlDUO.js";import{t as n}from"./jsx-runtime-BB9-612F.js";import{n as r,t as i}from"./Box-C0BOFjz-.js";import{a,g as o,l as s,n as c,r as l,t as u}from"./form-layout-PDBGI76M.js";import{n as d,t as f}from"./Paper--l2rxeKt.js";import{n as p,t as m}from"./Typography-Df7J5NOK.js";import{t as h}from"./collection-BlzMIiYu.js";import{i as g,r as _}from"./iframe-DfVmPrTe.js";import{i as v,o as y,r as b,s as x}from"./FormFields-Dn7jfSfJ.js";import{n as S}from"./types-CukKlRea.js";import{n as C,t as w}from"./vehicleTypeFields-BZk48PeA.js";import{i as T,r as E,t as D}from"./deckPlanFields-CDY8Vp5E.js";import{i as O,n as k,t as A}from"./vehicleFields-Bbb3L6Ll.js";import{i as j,n as M,r as N,t as P}from"./vehicleTypeLayout-CQ5N7myT.js";function F({kind:e,id:t,label:n}){let[r,i]=(0,I.useState)(``),[a,o]=(0,I.useState)(),[s,c]=(0,I.useState)(!1);return e===`switch`?(0,L.jsx)(b,{id:t,label:n,checked:s,onChange:c}):e===`number`?(0,L.jsx)(v,{id:t,label:n,value:a,onChange:o}):(0,L.jsx)(y,{id:t,label:n,type:e===`date`?`date`:`text`,value:r,onChange:i})}var I,L,R,z,B,V,H,U,W,G,K,q,J,Y,X;function Z(){return(Z=e((()=>{I=t(),r(),d(),p(),x(),h(),_(),w(),N(),A(),T(),u(),L=n(),{fn:R}=__STORYBOOK_MODULE_TEST__,z=72,B=1140,V=Object.fromEntries(P.map(e=>[g[M[e]],j[e]])),H=e=>({key:t,label:n})=>{let{kind:r}=e[t];return r===`grid`?(0,L.jsxs)(m,{variant:`body2`,sx:{color:`text.secondary`},children:[n,`: the host draws the related records here (chips today)`]}):(0,L.jsx)(F,{kind:r,id:`story-${t}`,label:n})},U=()=>(0,L.jsx)(i,{sx:{aspectRatio:S,border:`1px dashed`,borderColor:`divider`,borderRadius:1,display:`grid`,placeItems:`center`},children:(0,L.jsxs)(m,{variant:`caption`,sx:{color:`text.secondary`},children:[`3D bus · `,S]})}),W=({fields:e,layout:t,media:n,footer:r,dirty:u,loading:d})=>(0,L.jsxs)(i,{sx:{display:`grid`,gridTemplateColumns:`${z}px minmax(0, ${B}px)`,gap:3,alignItems:`start`,p:2},children:[(0,L.jsx)(f,{variant:`outlined`,sx:{position:`sticky`,top:0,height:`100vh`}}),(0,L.jsx)(i,{sx:{height:`calc(100vh - 32px)`,display:`flex`,flexDirection:`column`},children:d?(0,L.jsx)(c,{sections:s(e,t),fields:e,aside:n&&(0,L.jsx)(l,{})}):(0,L.jsx)(a,{sections:s(e,t),renderField:H(e),aside:n&&(0,L.jsx)(U,{}),footer:r&&(0,L.jsx)(o,{dirty:u,onSave:R(),onCancel:R()})})})]}),G={title:`components/form-layout/FormSections`,component:W,args:{media:!0,footer:!1,dirty:!1},argTypes:{media:{control:`boolean`},footer:{control:`boolean`},dirty:{control:`boolean`,if:{arg:`footer`}}},parameters:{layout:`fullscreen`,docs:{description:{component:"A form body laid out from a `Layout` (#267): stacked sections, field widths by kind or per-field override, a TOC from 3 sections up linked to scrolling both ways, and a picture slot above it (`aside`, toggle `media`). Toggle `footer` for the form page's `EditFooter`, last in the form column. From `lg` (in a fixed-height host) the form column scrolls while column 3 stays put (#293)."}}}},K={args:{fields:C,layout:V,footer:!0}},q={args:{fields:k,layout:O}},J={args:{fields:D,layout:E}},Y={args:{fields:C,layout:V,loading:!0}},X=[`VehicleType`,`Vehicle`,`DeckPlan`,`VehicleTypeLoading`],K.parameters={...K.parameters,docs:{...K.parameters?.docs,source:{originalSource:`{
+  args: {
+    fields: vehicleTypeFields,
+    layout: vehicleTypeLayout,
+    footer: true
+  }
+}`,...K.parameters?.docs?.source},description:{story:`Six sections → TOC in column 3; scrolling moves the mark, a pick scrolls the form. Footer on.`,...K.parameters?.docs?.description}}},q.parameters={...q.parameters,docs:{...q.parameters?.docs,source:{originalSource:`{
+  args: {
+    fields: vehicleFields,
+    layout: vehicleLayout
+  }
+}`,...q.parameters?.docs?.source},description:{story:"The vehicle form page's own section (#285): one → flat, no heading, no TOC; column 3 still holds the picture when `media` is on.",...q.parameters?.docs?.description}}},J.parameters={...J.parameters,docs:{...J.parameters?.docs,source:{originalSource:`{
+  args: {
+    fields: deckPlanFields,
+    layout: deckPlanLayout
+  }
+}`,...J.parameters?.docs?.source},description:{story:`The deck-plan form page's own section (#287): one → flat, no heading, no TOC.`,...J.parameters?.docs?.description}}},Y.parameters={...Y.parameters,docs:{...Y.parameters?.docs,source:{originalSource:`{
+  args: {
+    fields: vehicleTypeFields,
+    layout: vehicleTypeLayout,
+    loading: true
+  }
+}`,...Y.parameters?.docs?.source},description:{story:`The vehicle-type form loading: the same sections in skeleton blocks (48 px fields, 42 px
+ checkbox rows), so the page doesn't jump when the record lands.`,...Y.parameters?.docs?.description}}}})))()}Z();export{J as DeckPlan,q as Vehicle,K as VehicleType,Y as VehicleTypeLoading,X as __namedExportsOrder,G as default};

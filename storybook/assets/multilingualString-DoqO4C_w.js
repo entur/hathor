@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-BCiCTKAo.js";var t,n,r;function i(){return(i=e((()=>{t=(e,t)=>t===``?void 0:{...e,value:t},n=e=>{let t=e?.value?.trim();if(t)return e?.lang?{value:t,lang:e.lang}:{value:t}},r=e=>{let t=e;return(typeof e==`string`?e:t?.Text??t?.text_value??t?.value)?.trim()||void 0}})))()}export{r as i,t as n,n as r,i as t};
