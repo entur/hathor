@@ -1,7 +1,6 @@
 import { Box, Container } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import { APP_HEADER_HEIGHT_PX } from '../../components/Menu.tsx';
-import { PAGE_GUTTER } from '../../components/form-layout/index.ts';
+import { APP_HEADER_HEIGHT_PX, PAGE_GUTTER_VAR } from '../../components/Menu.tsx';
 
 /**
  * Outer frame for the collection and entity-details pages — their layout route
@@ -24,15 +23,16 @@ export default function PageShell() {
     >
       <Container
         maxWidth={false}
-        // Explicit gutters: a form page reaches out over them (`EditorFrame`).
-        sx={{
+        // MUI's gutters, as a var: a form page reaches out over them (`EditorFrame`).
+        sx={t => ({
           flex: 1,
           minHeight: 0,
-          px: PAGE_GUTTER,
+          [PAGE_GUTTER_VAR]: { xs: t.spacing(2), sm: t.spacing(3) },
+          px: `var(${PAGE_GUTTER_VAR})`,
           py: 3,
           display: 'flex',
           flexDirection: 'column',
-        }}
+        })}
       >
         <Outlet />
       </Container>

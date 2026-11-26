@@ -14,11 +14,6 @@ export const SECTION_GAP = 4,
 /** Theme spacing (4 px) a clipping box keeps around fields and buttons, so their focus ring
  *  (2 px, 2 px off a button, 0 off a field) isn't cut. */
 export const RING_GUTTER = 0.5;
-/** Theme spacing: PageShell's side gutters, per breakpoint (MUI Container's own). */
-export const PAGE_GUTTER = { xs: 2, sm: 3 } as const;
-/** A form page's width cap, set by `EditorFrame`: {@link FORM_PAGE_MAX_WIDTH}, or a narrow
- *  form's. */
-export const FORM_CAP_VAR = '--form-cap';
 /** From the page's edge to a form page's content: its gutter, a ring's room and the centring
  *  margin. The form page pads by it and the form column's scroller pulls back out over it, so
  *  a wheel over the page's side scrolls the form (#435). In `cqw` of `EntityDetailsShell`. */

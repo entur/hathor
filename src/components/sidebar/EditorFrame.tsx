@@ -15,8 +15,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import NetexId from '../NetexId.tsx';
 import BodyState from '../feedback/BodyState.tsx';
-import SaveErrorSnackbar from '../feedback/SaveErrorSnackbar.tsx';
-import SaveSuccessSnackbar from '../feedback/SaveSuccessSnackbar.tsx';
+import SaveToast from '../feedback/SaveToast.tsx';
+import { PAGE_GUTTER_VAR } from '../Menu.tsx';
 import type { EntityEditor } from '../../hooks/useEntityEditor.ts';
 import { useDiscardConfirm } from '../dialogs/useDiscardConfirm.tsx';
 import DeactivateDialog from '../dialogs/DeactivateDialog.tsx';
@@ -24,11 +24,9 @@ import DiscardDialog from '../dialogs/DiscardDialog.tsx';
 import {
   EditFooter,
   FormFooterContext,
-  FORM_CAP_VAR,
   FORM_COLUMN_ATTR,
   FORM_PAGE_MAX_WIDTH,
   FORM_SIDE_VAR,
-  PAGE_GUTTER,
   RING_GUTTER,
   formColumnWidth,
   NARROW_ATTR,
@@ -68,23 +66,22 @@ const formColumnCenter = (root: HTMLElement | null): number | undefined => {
   return (left + right) / 2;
 };
 
-/** One value per PageShell gutter breakpoint. */
-const perGutter = <V,>(f: (gutter: number) => V) =>
-  Object.fromEntries(Object.entries(PAGE_GUTTER).map(([bp, g]) => [bp, f(g)]));
+/** The form page's width cap: {@link FORM_PAGE_MAX_WIDTH}, or a narrow form's. */
+const CAP_VAR = '--form-cap';
+/** PageShell's gutter; 0 outside it. */
+const GUTTER = `var(${PAGE_GUTTER_VAR}, 0px)`;
 
 /** The page: from `lg` it stays put and the form column scrolls itself (`FormSections`, #293). */
 const FRAME_SX = (t: Theme) => ({
   height: '100%',
   // Capped, and centred in the page; the title row's actions end above column 3.
-  [FORM_CAP_VAR]: FORM_PAGE_MAX_WIDTH,
+  [CAP_VAR]: FORM_PAGE_MAX_WIDTH,
   // A body with no column 3 (`FormSections`) is one narrow column: the page shrinks to it.
-  [`&:has([${NARROW_ATTR}])`]: { [FORM_CAP_VAR]: formColumnWidth(t) },
+  [`&:has([${NARROW_ATTR}])`]: { [CAP_VAR]: formColumnWidth(t) },
   // Out over PageShell's gutters to the page's edges and padded back in, so the side strips
   // are inside the scroller (#435). The ring's room: it clips, and fields and buttons line its edges.
-  [FORM_SIDE_VAR]: perGutter(
-    g => `calc(${t.spacing(g + RING_GUTTER)} + max(0px, (100cqw - var(${FORM_CAP_VAR})) / 2))`
-  ),
-  mx: perGutter(g => -g),
+  [FORM_SIDE_VAR]: `calc(${GUTTER} + ${t.spacing(RING_GUTTER)} + max(0px, (100cqw - var(${CAP_VAR})) / 2))`,
+  mx: `calc(-1 * ${GUTTER})`,
   px: `var(${FORM_SIDE_VAR})`,
   py: RING_GUTTER,
   display: 'flex',
@@ -177,6 +174,8 @@ export default function EditorFrame<T, F>({
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const frozen = editor.isDeactivated;
   // The save toasts sit on the form column's centre line, clear of the footer's Cancel / Save.
+  // shortcut: measured on open and window resize only; a column that moves otherwise (aside
+  // or TOC appearing) keeps the old line until then. Render the toast in the column if it matters.
   const frameRef = useRef<HTMLDivElement>(null);
   const [toastX, setToastX] = useState<number>();
   const toastOpen = !!(editor.saveError || editor.warning || editor.saved);
@@ -384,22 +383,26 @@ export default function EditorFrame<T, F>({
         </Box>
       </FormFooterContext.Provider>
 
-      <SaveErrorSnackbar
-        error={editor.saveError}
+      <SaveToast
+        open={!!editor.saveError}
+        message={editor.saveError ?? ''}
+        severity="error"
         onClose={editor.clearSaveError}
         centerX={toastX}
       />
-      <SaveErrorSnackbar
-        error={editor.warning}
+      <SaveToast
+        open={!!editor.warning}
+        message={editor.warning ?? ''}
         severity="warning"
         onClose={editor.clearWarning}
         centerX={toastX}
       />
-      <SaveSuccessSnackbar
+      <SaveToast
         open={editor.saved}
-        centerX={toastX}
         message={t(copy.saved)}
+        severity="success"
         onClose={editor.clearSaved}
+        centerX={toastX}
       />
       {discard.dialog}
       <LeaveGuard dirty={actions.isDirty} onSave={dialogSave} />

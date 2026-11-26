@@ -128,7 +128,7 @@ interface SaveInterceptOpts {
  * branches on the query body:
  *  - `createOrUpdateVehicleType` → capture `variables.input`, merge it into the
  *    matching row (bumping `version`), and return the row's netexId — or, when
- *    `saveError` is set, return a GraphQL error (drives `SaveErrorSnackbar`).
+ *    `saveError` is set, return a GraphQL error (drives the error `SaveToast`).
  *  - `deactivateVehicleType` → succeed (counts as a write for `failRefetch`).
  *  - `vehicleTypes` → return the (possibly mutated) state, so the post-save
  *    list refetch re-resolves the row with the persisted edit + bumped version.

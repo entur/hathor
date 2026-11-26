@@ -81,16 +81,6 @@ export interface CollectionPagerProps {
 }
 
 /**
- * Render the pager; nothing when there are no rows.
- *
- * @param total    rows after filter + search
- * @param page     current page index, 0-based
- * @param pageSize rows per page
- * @param onQuery  receives `{ page }` or `{ pageSize }`
- * @param labels   UI strings
- * @returns the pager <nav>, or `null`
- */
-/**
  * The rows a page shows, as the pager words it ("Showing rows 1–25 of 120"); `empty` at none.
  *
  * @param {CollectionLabels} labels the collection's strings
@@ -109,6 +99,16 @@ export const rowsText = (
     ? labels.empty
     : labels.showingRows(page * pageSize + 1, Math.min((page + 1) * pageSize, total), total);
 
+/**
+ * Render the pager; nothing when there are no rows.
+ *
+ * @param total    rows after filter + search
+ * @param page     current page index, 0-based
+ * @param pageSize rows per page
+ * @param onQuery  receives `{ page }` or `{ pageSize }`
+ * @param labels   UI strings
+ * @returns the pager <nav>, or `null`
+ */
 export function CollectionPager({ total, page, pageSize, onQuery, labels }: CollectionPagerProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const currentId = useId();

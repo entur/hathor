@@ -5,10 +5,8 @@ export type { FormSectionsProps } from './components/FormSections.tsx';
 export { FormSkeleton, PictureSkeleton } from './components/FormSkeleton.tsx';
 export { FormFooterContext } from './formFooterContext.ts';
 export {
-  FORM_CAP_VAR,
   FORM_PAGE_MAX_WIDTH,
   FORM_SIDE_VAR,
-  PAGE_GUTTER,
   RING_GUTTER,
   formColumnWidth,
 } from './utils/formWidth.ts';

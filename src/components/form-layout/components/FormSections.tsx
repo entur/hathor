@@ -92,6 +92,8 @@ export function FormSections<K extends string>({
   });
   const column = toc.length > 0 || !!aside;
   const pinned = toc.length > 0 && !wide; // the dropdown sits over the top of the form
+  // From the page's edge to the form (`EditorFrame`); outside a form page, a ring's room.
+  const side = `var(${FORM_SIDE_VAR}, ${theme.spacing(RING_GUTTER)})`;
 
   // The TOC speaks labels; everything else, ids (a language switch keeps the mark).
   const tocLabels = toc.map(sectionLabel);
@@ -232,8 +234,8 @@ export function FormSections<K extends string>({
             minHeight: 0,
             overflowY: 'auto',
             py: RING_GUTTER,
-            pl: `var(${FORM_SIDE_VAR}, ${theme.spacing(RING_GUTTER)})`,
-            ml: `calc(-1 * var(${FORM_SIDE_VAR}, ${theme.spacing(RING_GUTTER)}))`,
+            pl: side,
+            ml: `calc(-1 * ${side})`,
           }),
           ...(wide && column && { gridColumn: 1, gridRow: 1 }),
         }}
