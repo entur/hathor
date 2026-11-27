@@ -9,6 +9,8 @@ import { SessionProvider } from '../contexts/SessionContext.tsx';
 import { withAuth } from '../auth/mockAuth.tsx';
 import { withOrganisations } from '../contexts/mockOrganisations.tsx';
 import { stubSobek, withSobekUrl } from '../contexts/mockSobek.tsx';
+import type { ThemeConfig } from '../theme/theme-config';
+import { withLocalNationale } from '../theme/localNationale.ts';
 
 // Sobek's wire shape, kept in step with the queries by the e2e suite. Globbed: the
 // fixtures sit outside `src`, so the app's TypeScript project can't import them.
@@ -18,14 +20,16 @@ const FIXTURES = Object.fromEntries(
   ).map(([path, body]) => [path.split('/').pop()!.replace('-mock.json', ''), body])
 );
 
-// The deployed Entur theme, served as a URL; `public/theme-*.json` are
-// gitignored copies that exist only after `npm run dev`.
-const [ENTUR_THEME_URL] = Object.values(
-  import.meta.glob<string>('../../.github/environments/theme-dev.json', {
+// The deployed Entur theme (in Nationale when it is set up locally), served as a URL;
+// `public/theme-*.json` are gitignored copies that exist only after `npm run dev`.
+const [enturTheme] = Object.values(
+  import.meta.glob<ThemeConfig>('../../.github/environments/theme-dev.json', {
     eager: true,
-    query: '?url',
     import: 'default',
   })
+);
+const ENTUR_THEME_URL = URL.createObjectURL(
+  new Blob([JSON.stringify(withLocalNationale(enturTheme))], { type: 'application/json' })
 );
 
 /**
